@@ -14,6 +14,7 @@ import Grid from "@mui/material/Grid2";
 import Button from "@mui/material/Button";
 import SaveIcon from "@mui/icons-material/Save";
 import AddIcon from "@mui/icons-material/Add";
+import { useNavigate } from "react-router-dom";
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from "./theme/customizations";
 
 const xThemeComponents = {
@@ -24,6 +25,7 @@ const xThemeComponents = {
 };
 
 export default function Senator(props) {
+	const navigate = useNavigate();
 	return (
 		<AppTheme {...props} themeComponents={xThemeComponents}>
 			<Box sx={{ display: "flex" }}>
@@ -67,7 +69,7 @@ export default function Senator(props) {
 								alignItems: "center",
 							}}
 						>
-							<Button variant="contained" startIcon={<AddIcon />}>Add Senator</Button>
+							<Button variant="contained" startIcon={<AddIcon />}  onClick={() => navigate("/add-senator")}>Add Senator</Button>
 							<Button variant="outlined">Fetch Senetors from Quorum</Button>
 
 					

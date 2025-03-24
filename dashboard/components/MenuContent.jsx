@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { NavLink } from 'react-router-dom'; // Import NavLink for navigation
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -12,17 +13,16 @@ import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 
 const mainListItems = [
-  { text: 'Senate', icon: <HomeRoundedIcon /> },
-  { text: 'Add Senator', icon: <HomeRoundedIcon /> },
-  { text: 'Reprensentative', icon: <AnalyticsRoundedIcon /> },
-  { text: 'Votes', icon: <PeopleRoundedIcon /> },
-  { text: 'Activity', icon: <AssignmentRoundedIcon /> },
+  { text: 'Senate', icon: <HomeRoundedIcon />, link: '/' },
+  { text: 'Add Senator', icon: <HomeRoundedIcon />, link: '/add-senator' },
+  { text: 'Representative', icon: <AnalyticsRoundedIcon />, link: '/representative' },
+  { text: 'Add Representative', icon: <AnalyticsRoundedIcon />, link: '/add-representative' },
+  { text: 'Bill We Track', icon: <PeopleRoundedIcon />, link: '/bills' },
+  // { text: 'Activity', icon: <AssignmentRoundedIcon />, link: '/activity' },
 ];
 
 const secondaryListItems = [
-  { text: 'Logout', icon: <SettingsRoundedIcon /> },
-  //{ text: 'About', icon: <InfoRoundedIcon /> },
-  //{ text: 'Feedback', icon: <HelpRoundedIcon /> },
+  { text: 'Logout', icon: <SettingsRoundedIcon />, link: '/logout' },
 ];
 
 export default function MenuContent() {
@@ -31,7 +31,7 @@ export default function MenuContent() {
       <List dense>
         {mainListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-            <ListItemButton selected={index === 0}>
+            <ListItemButton component={NavLink} to={item.link}>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
@@ -41,7 +41,7 @@ export default function MenuContent() {
       <List dense>
         {secondaryListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-            <ListItemButton>
+            <ListItemButton component={NavLink} to={item.link}>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
