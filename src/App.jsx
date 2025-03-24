@@ -14,6 +14,7 @@ import SaveSenetors from "/dashboard/AddSenator";
 import Senator from "/dashboard/Senator";
 import Representative from "/dashboard/Representative";
 import SaveRepresentative from "/dashboard/AddRepresentative";
+import Bill from "/dashboard/Bills";
 
 export default function App() {
   return (
@@ -31,52 +32,44 @@ export default function App() {
          path="/"
          element={
            <Senator/>
-           
          }
        />
        <Route
          path="add-senator"
          element={
-           
-               <SaveSenetors />
-              
+           <SaveSenetors />
          }
        />
        <Route
          path="edit-senator/:id"
          element={
-           
-               <SaveSenetors />
-           
+           <SaveSenetors />
          }
        />
-
-<Route
+       <Route
          path="representative"
          element={
            <Representative/>
-           
          }
        />
-
-<Route
+       <Route
          path="add-representative"
          element={
            <SaveRepresentative/>
-           
          }
        />
-
-<Route
+       <Route
          path="edit-representative"
          element={
            <SaveRepresentative/>
-           
          }
        />
-
-       
- 
+       <Route
+         path="bills"
+         element={
+           <Bill/>
+         }
+       />
      </Routes>
    </Router>
   );
