@@ -42,16 +42,14 @@ export default function App() {
               
          }
        />
-       {/* <Route
+       <Route
          path="edit-senator/:id"
          element={
-           <PrivateRoute>
-             <Layout>
+           
                <SaveSenetors />
-             </Layout>
-           </PrivateRoute>
+           
          }
-       /> */}
+       />
 
 <Route
          path="representative"
@@ -63,6 +61,14 @@ export default function App() {
 
 <Route
          path="add-representative"
+         element={
+           <SaveRepresentative/>
+           
+         }
+       />
+
+<Route
+         path="edit-representative"
          element={
            <SaveRepresentative/>
            
