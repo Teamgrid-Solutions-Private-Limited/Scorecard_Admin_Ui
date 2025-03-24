@@ -1,0 +1,21 @@
+body {
+	margin: 0;
+}
+h6 {
+	font-size: 500px;
+}
+
+.logo-sm {
+	height: 38px
+}
+
+.logo-lg {
+	height: 38px;
+	-webkit-transition: .3s;
+	transition: .3s;
+	margin-left: 4px
+}
+
+.spacer {
+	height: 25px;
+}
