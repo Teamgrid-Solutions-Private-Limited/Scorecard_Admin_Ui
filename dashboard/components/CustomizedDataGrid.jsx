@@ -5,64 +5,18 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 
-export default function CustomizedDataGrid({ type }) {
-    // Example data for senators and representatives
-    const data = {
-        senator: [
-            {
-                id: 1,
-                user: {
-                    username: "Sen.Angela D. Alsobrooks",
-                    avatar: "https://picsum.photos/200/300",
-                },
-                state: "Maryland",
-                party: "Democrat",
-                rating: "A",
-               
-            },
-        ],
-        representative: [
-            {
-                id: 1,
-                user: {
-                    username: "Rep.John Doe",
-                    avatar: "https://picsum.photos/200/300",
-                },
-                state: "California",
-                party: "Republican",
-                rating: "B",
-              
-            },
-        ],
-    };
-
-    const rows = data[type] || [];
-
+export default function CustomizedDataGrid({ type, rows, loading }) {
     const columns = [
-        ...(type === "bills"
-            ? [
-                  {
-                      field: "date",
-                      flex: 1,
-                      headerName: "Date",
-                      minWidth: 150,
-                      renderCell: (params) => (
-                          <Typography>
-                              {new Date(params.row.date).toLocaleDateString()}
-                          </Typography>
-                      ),
-                  },
-              ]
-            : []),
         {
-            field: "user",
+            field: "name",
             flex: 1,
             headerName: type === "senator" ? "Senator" : "Representative",
             minWidth: 150,
+			display: "flex",
             renderCell: (params) => (
-                <div style={{ display: "flex", alignItems: "center", columnGap: "10px" }}>
-                    <Avatar src={params.row.user.avatar} />
-                    <Typography>{params.row.user.username}</Typography>
+                <div style={{ display: "flex",flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
+                    <Avatar src={params.row.photo} />
+                    <Typography>{params.row.name}</Typography>
                 </div>
             ),
         },
@@ -83,10 +37,12 @@ export default function CustomizedDataGrid({ type }) {
     ];
 
     return (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", flexDirection: "column"}}>
             <DataGrid
                 rows={rows}
                 columns={columns}
+                loading={loading}
+                getRowId={(row) => row._id} // Use _id as the unique identifier
                 initialState={{
                     pagination: { paginationModel: { pageSize: 20 } },
                 }}
@@ -96,6 +52,7 @@ export default function CustomizedDataGrid({ type }) {
                 disableDensitySelector
                 disableColumnResize
                 disableRowSelectionOnClick
+             
             />
         </div>
     );

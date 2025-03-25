@@ -1,18 +1,10 @@
 import * as React from "react";
-import Grid from "@mui/material/Grid2";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import { Box, Typography, Grid } from "@mui/material";
 import Copyright from "../internals/components/Copyright";
 import CustomizedDataGrid from "./CustomizedDataGrid";
-import { useEffect, useState } from "react";
 
-export default function MainGrid({ type }) {
-    const [title, setTitle] = useState("");
-
-    useEffect(() => {
-        const newTitle = type === "senator" ? "All Senators" : "All Representatives";
-        setTitle(newTitle);
-    }, [type]);
+export default function MainGrid({ type, data, loading }) {
+    const title = type === "senator" ? "All Senators" : "All Representatives";
 
     return (
         <Box sx={{ width: "100%" }}>
@@ -20,8 +12,8 @@ export default function MainGrid({ type }) {
                 {title}
             </Typography>
             <Grid container spacing={2} columns={12}>
-                <Grid size={{ xs: 12, lg: 12 }}>
-                    <CustomizedDataGrid type={type} />
+                <Grid item xs={12} lg={12}>
+                    <CustomizedDataGrid type={type} rows={data} loading={loading} />
                 </Grid>
             </Grid>
             <Copyright sx={{ my: 4 }} />
