@@ -70,7 +70,7 @@ export default function Senator(props) {
                                 alignItems: "center",
                             }}
                         >
-                            <Button variant="contained" startIcon={<AddIcon />}  onClick={() => navigate("/add-senator")}>Add Bills</Button>
+                            <Button variant="contained" startIcon={<AddIcon />}  onClick={() => navigate("/add-bill")}>Add Bills</Button>
                             <Button variant="outlined">Fetch bills from Quorum</Button>
 
                     
