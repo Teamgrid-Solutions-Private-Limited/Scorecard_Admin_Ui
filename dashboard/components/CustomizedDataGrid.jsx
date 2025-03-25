@@ -6,43 +6,59 @@ import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 
 export default function CustomizedDataGrid({ type, rows, loading }) {
-    const columns = [
-        {
-            field: "name",
-            flex: 1,
-            headerName: type === "senator" ? "Senator" : "Representative",
-            minWidth: 150,
-			display: "flex",
-            renderCell: (params) => (
-                <div style={{ display: "flex",flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                    <Avatar src={params.row.photo} />
-                    <Typography>{params.row.name}</Typography>
-                </div>
-            ),
-        },
-        { field: "state", flex: 1, headerName: "State", minWidth: 150 },
-        { field: "party", flex: 1, headerName: "Party", minWidth: 150 },
-        {
-            field: "action",
-            flex: 1,
-            headerName: "Action",
-            minWidth: 150,
-            renderCell: () => (
-                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                    <EditIcon />
-                    <DeleteForeverIcon />
-                </div>
-            ),
-        },
-    ];
+    const columns = type === "bills"
+        ? [
+            { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
+            { field: "bill", flex: 1, headerName: "Bill", minWidth: 150 },
+            {
+                field: "action",
+                flex: 1,
+                headerName: "Action",
+                minWidth: 150,
+                renderCell: () => (
+                    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
+                        <EditIcon />
+                        <DeleteForeverIcon />
+                    </div>
+                ),
+            },
+        ]
+        : [
+            {
+                field: "name",
+                flex: 1,
+                headerName: type === "senator" ? "Senator" : "Representative",
+                minWidth: 150,
+                renderCell: (params) => (
+                    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
+                        <Avatar src={params.row.photo} />
+                        <Typography>{params.row.name}</Typography>
+                    </div>
+                ),
+            },
+            { field: "state", flex: 1, headerName: "State", minWidth: 150 },
+            { field: "party", flex: 1, headerName: "Party", minWidth: 150 },
+            {
+                field: "action",
+                flex: 1,
+                headerName: "Action",
+                minWidth: 150,
+                renderCell: () => (
+                    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
+                        <EditIcon />
+                        <DeleteForeverIcon />
+                    </div>
+                ),
+            },
+        ];
 
     return (
-        <div style={{ display: "flex", flexDirection: "column"}}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
             <DataGrid
                 rows={rows}
                 columns={columns}
                 loading={loading}
-                getRowId={(row) => row._id} // Use _id as the unique identifier
+                getRowId={(row) => row._id} // Use `id` as the unique identifier
                 initialState={{
                     pagination: { paginationModel: { pageSize: 20 } },
                 }}
@@ -52,7 +68,6 @@ export default function CustomizedDataGrid({ type, rows, loading }) {
                 disableDensitySelector
                 disableColumnResize
                 disableRowSelectionOnClick
-             
             />
         </div>
     );

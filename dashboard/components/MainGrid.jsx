@@ -4,7 +4,7 @@ import Copyright from "../internals/components/Copyright";
 import CustomizedDataGrid from "./CustomizedDataGrid";
 
 export default function MainGrid({ type, data, loading }) {
-    const title = type === "senator" ? "All Senators" : "All Representatives";
+    const title = type === "bills" ? "All Bills" : type === "senator" ? "All Senators" : "All Representatives";
 
     return (
         <Box sx={{ width: "100%" }}>
