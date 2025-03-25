@@ -1,22 +1,22 @@
 import * as React from "react";
-import Grid from "@mui/material/Grid2";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import { Box, Typography, Grid } from "@mui/material";
 import Copyright from "../internals/components/Copyright";
 import CustomizedDataGrid from "./CustomizedDataGrid";
 
-export default function MainGrid() {
-	return (
-		<Box sx={{ width: "100%" }}>
-			<Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-				All Senators
-			</Typography>
-			<Grid container spacing={2} columns={12}>
-				<Grid size={{ xs: 12, lg: 12 }}>
-					<CustomizedDataGrid />
-				</Grid>
-			</Grid>
-			<Copyright sx={{ my: 4 }} />
-		</Box>
-	);
+export default function MainGrid({ type, data, loading }) {
+    const title = type === "senator" ? "All Senators" : "All Representatives";
+
+    return (
+        <Box sx={{ width: "100%" }}>
+            <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+                {title}
+            </Typography>
+            <Grid container spacing={2} columns={12}>
+                <Grid item xs={12} lg={12}>
+                    <CustomizedDataGrid type={type} rows={data} loading={loading} />
+                </Grid>
+            </Grid>
+            <Copyright sx={{ my: 4 }} />
+        </Box>
+    );
 }
