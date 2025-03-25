@@ -75,7 +75,7 @@ export default function Representative(props) {
                     
                         </Stack>
 
-                        <MainGrid />
+                        <MainGrid type="representative" />
                         
                     </Stack>
                 </Box>

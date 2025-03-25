@@ -75,7 +75,7 @@ export default function Senator(props) {
 					
 						</Stack>
 
-						<MainGrid />
+						<MainGrid type="senator" />
 						
 					</Stack>
 				</Box>
