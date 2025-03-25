@@ -15,6 +15,7 @@ import Button from "@mui/material/Button";
 import SaveIcon from "@mui/icons-material/Save";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
+import Maingridbills from "./Maingridbills";
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from "./theme/customizations";
 
 const xThemeComponents = {
@@ -75,7 +76,7 @@ export default function Senator(props) {
                     
                         </Stack>
 
-                        <MainGrid />
+                        <Maingridbills />
                         
                     </Stack>
                 </Box>
