@@ -15,12 +15,14 @@ import Senator from "/dashboard/Senator";
 import Representative from "/dashboard/Representative";
 import SaveRepresentative from "/dashboard/AddRepresentative";
 import Bill from "/dashboard/Bills";
+import SignIn from "/Authentication/components/SignIn";
+import AddBill from '../dashboard/AddBill';
 
 export default function App() {
   return (
     <Router basename="/scorecard/admin">
      <Routes>
-       {/* <Route path="/login" element={<Login />} /> */}
+       <Route path="/login" element={<SignIn />} />
        {/* <Route
          index
          element={
@@ -68,6 +70,12 @@ export default function App() {
          path="bills"
          element={
            <Bill/>
+         }
+       />
+        <Route
+         path="add-bill"
+         element={
+           <AddBill/>
          }
        />
      </Routes>
