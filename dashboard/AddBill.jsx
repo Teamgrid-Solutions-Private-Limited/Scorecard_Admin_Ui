@@ -28,9 +28,6 @@ import Copyright from "./internals/components/Copyright";
 import { InputAdornment } from "@mui/material";
 
 export default function AddBill(props) {
-<<<<<<< HEAD
-  const [age, setAge] = React.useState("");
-=======
   const { id } = useParams();
   const [age, setAge] = React.useState("");
   const dispatch = useDispatch();
@@ -74,7 +71,6 @@ export default function AddBill(props) {
     preFillForm();  
   }, [selectedVote]);
 
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -89,16 +85,12 @@ export default function AddBill(props) {
   });
 
   const handleChange = (event) => {
-<<<<<<< HEAD
-    setAge(event.target.value);
-=======
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEditorChange = (content, editor, fieldName) => {
     setFormData((prev) => ({ ...prev, [fieldName]: content }));
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
   };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
@@ -289,11 +281,6 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={4}>
                     <FormControl fullWidth>
-<<<<<<< HEAD
-                      <Select value={age} sx={{ background: "#fff" }}>
-                        <MenuItem value={10}>Senate</MenuItem>
-                        <MenuItem value={20}>House</MenuItem>
-=======
                       <Select
                         value={formData.type} // Bind value to formData
                         name="type"
@@ -302,7 +289,6 @@ export default function AddBill(props) {
                       >
                         <MenuItem value="senate">Senate</MenuItem>
                         <MenuItem value="house">House</MenuItem>
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
                       </Select>
                     </FormControl>
                   </Grid>
@@ -350,11 +336,8 @@ export default function AddBill(props) {
                         required
                         id="title"
                         name="title"
-<<<<<<< HEAD
-=======
                         value={formData.title} // Bind value to formData
                         onChange={handleChange} // Update formData on change
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
                         fullWidth
                         size="small"
                         autoComplete="off"
@@ -378,15 +361,10 @@ export default function AddBill(props) {
                   <Grid size={10}>
                     <Editor
                       apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-<<<<<<< HEAD
-                      onInit={(_evt, editor) => (editorRef.current = editor)}
-                      initialValue="Test"
-=======
                       value={formData.shortDescription} // Bind value to formData
                       onEditorChange={(content, editor) =>
                         handleEditorChange(content, editor, "shortDescription")
                       } // Update formData on change
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
                       init={{
                         height: 250,
                         menubar: false,
@@ -436,15 +414,10 @@ export default function AddBill(props) {
                   <Grid size={10}>
                     <Editor
                       apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-<<<<<<< HEAD
-                      onInit={(_evt, editor) => (editorRef.current = editor)}
-                      initialValue="Test"
-=======
                       value={formData.longDescription} // Bind value to formData
                       onEditorChange={(content, editor) =>
                         handleEditorChange(content, editor, "longDescription")
                       } // Update formData on change
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
                       init={{
                         height: 250,
                         menubar: false,
@@ -497,15 +470,10 @@ export default function AddBill(props) {
                       <TextField
                         type="date"
                         required
-<<<<<<< HEAD
-                        id="title"
-                        name="title"
-=======
                         id="date"
                         name="date"
                         value={formData.date} // Bind value to formData
                         onChange={handleChange} // Update formData on change
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
                         fullWidth
                         size="small"
                         autoComplete="off"
@@ -531,15 +499,10 @@ export default function AddBill(props) {
                     <FormControl fullWidth>
                       <TextField
                         required
-<<<<<<< HEAD
-                        id="title"
-                        name="title"
-=======
                         id="congress"
                         name="congress"
                         value={formData.congress} // Bind value to formData
                         onChange={handleChange} // Update formData on change
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
                         fullWidth
                         size="small"
                         autoComplete="off"
@@ -563,16 +526,12 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={4}>
                     <FormControl fullWidth>
-<<<<<<< HEAD
-                      <Select value={age} sx={{ background: "#fff" }}>
-=======
                       <Select
                         value={formData.term}
                         name="term"
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
->>>>>>> 6f332be955353e3227ce6288f30427031e7c90c5
                         <MenuItem value="" disabled>
                           Select an option
                         </MenuItem>

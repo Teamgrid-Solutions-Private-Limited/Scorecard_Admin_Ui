@@ -14,6 +14,8 @@ import LoginIcon from "@mui/icons-material/Login";
 import logo from "../../src/assets/image/logo-sm.png";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import axios from "axios";
+import { API_URL } from "../../redux/api/API";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -71,7 +73,7 @@ export default function SignIn() {
   const nav = useNavigate();
 
   const [info, setInfo] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
@@ -81,9 +83,18 @@ export default function SignIn() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (info.username === "admin" && info.password === "admin") {
-      nav("/");
-    }
+    axios
+      .post(`${API_URL}/user/login`, info)
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.message === "Login successful") {
+          nav("/");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Invalid username or password");
+      });
   };
 
   return (
@@ -100,7 +111,7 @@ export default function SignIn() {
               borderRadius: "50%",
               objectFit: "cover",
               overflow: "hidden",
-            //   filter: "invert(100%)",
+              //   filter: "invert(100%)",
             }}
           />
 
@@ -127,9 +138,9 @@ export default function SignIn() {
           <FormControl>
             <FormLabel sx={{ color: "#4b5563", pb: 1 }}>Username</FormLabel>
             <TextField
-              id="username"
+              id="email"
               type="text"
-              name="username"
+              name="email"
               placeholder="Enter username"
               autoComplete="username"
               autoFocus
@@ -193,7 +204,7 @@ export default function SignIn() {
                   },
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#777", 
+                  borderColor: "#777",
                 },
                 "&:hover .MuiOutlinedInput-notchedOutline": {
                   borderColor: "#555",
