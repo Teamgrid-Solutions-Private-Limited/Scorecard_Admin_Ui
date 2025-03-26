@@ -5,7 +5,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 
-export default function CustomizedDataGrid({ type, rows, loading }) {
+export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDelete }) {
     const columns = type === "bills"
         ? [
             { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
@@ -15,10 +15,10 @@ export default function CustomizedDataGrid({ type, rows, loading }) {
                 flex: 1,
                 headerName: "Action",
                 minWidth: 150,
-                renderCell: () => (
+                renderCell: (params) => (
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                        <EditIcon />
-                        <DeleteForeverIcon />
+                        <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer" }} />
+                        <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer" }} />
                     </div>
                 ),
             },
@@ -43,10 +43,10 @@ export default function CustomizedDataGrid({ type, rows, loading }) {
                 flex: 1,
                 headerName: "Action",
                 minWidth: 150,
-                renderCell: () => (
+                renderCell: (params) => (
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                        <EditIcon />
-                        <DeleteForeverIcon />
+                        <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer" }} />
+                        <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer" }} />
                     </div>
                 ),
             },
