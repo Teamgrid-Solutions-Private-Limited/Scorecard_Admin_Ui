@@ -23,411 +23,505 @@ import Switch from "@mui/material/Switch";
 import Copyright from "./internals/components/Copyright";
 
 export default function AddSenator(props) {
-	const [age, setAge] = React.useState("");
-	const editorRef = useRef(null);
-	const VisuallyHiddenInput = styled("input")({
-		clip: "rect(0 0 0 0)",
-		clipPath: "inset(50%)",
-		height: 1,
-		overflow: "hidden",
-		position: "absolute",
-		bottom: 0,
-		left: 0,
-		whiteSpace: "nowrap",
-		width: 1,
-	});
+  const [age, setAge] = React.useState("");
+  const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
+  const [activity, setActivity] = React.useState([
+    { id: 1, option1: "", option2: "" },
+  ]);
+  const editorRef = useRef(null);
+  const VisuallyHiddenInput = styled("input")({
+    clip: "rect(0 0 0 0)",
+    clipPath: "inset(50%)",
+    height: 1,
+    overflow: "hidden",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    whiteSpace: "nowrap",
+    width: 1,
+  });
 
-	const handleChange = (event) => {
-		setAge(event.target.value);
-	};
+  // const handleChange = (event) => {
+  //   setAge(event.target.value);
+  // };
 
-	const label = { inputProps: { "aria-label": "Color switch demo" } };
+  const handleAdd = () => {
+    setVote([...vote, { id: vote.length + 1, option1: "", option2: "" }]);
+  };
 
-	return (
-		<AppTheme>
-			<Box sx={{ display: "flex" }}>
-				<SideMenu />
-				<Box
-					component="main"
-					sx={(theme) => ({
-						flexGrow: 1,
-						backgroundColor: theme.vars ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)` : alpha(theme.palette.background.default, 1),
-						overflow: "auto",
-					})}
-				>
-					<Stack
-						spacing={2}
-						sx={{
-							alignItems: "center",
-							mx: 3,
-							pb: 5,
-							mt: { xs: 8, md: 0 },
-						}}
-					>
-						{/* <Header /> */}
-						<Typography
-							variant="h4"
-							align="center"
-							sx={[
-								{
-									paddingTop: "50px",
-									color: "text.secondary",
-								},
-							]}
-						>
-							SBA Scorecard Management System
-						</Typography>
-						
+  const handleRemove = (id) => {
+    setVote(vote.filter((item) => item.id !== id));
+  };
 
-						<Stack
-							
-							direction="row"
-							spacing={2}
-							width="100%"
-							sx={{
-								justifyContent: "flex-end",
-								alignItems: "center",
-							}}
-						>
-							<Button variant="contained">Save</Button>
-							<Button variant="outlined">Fetch Senetors from Quorum</Button>
-						</Stack>
+  const handleRemoveActivity = (id) => {
+    setActivity(activity.filter((item) => item.id !== id));
+  };
 
-						<Paper elevation={2} sx={{ width: "100%" }}>
-							<Box sx={{ p: 5 }}>
-								<Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-									Senator's Information
-								</Typography>
-								<Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"}>
-									<Grid size={2}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											Senator's Name
-										</InputLabel>
-									</Grid>
-									<Grid size={4}>
-										<TextField required id="title" name="title" fullWidth size="small" autoComplete="off" variant="outlined" />
-									</Grid>
-									<Grid size={1}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											Status
-										</InputLabel>
-									</Grid>
-									<Grid size={5}>
-										<ButtonGroup variant="outlined" aria-label="Basic button group">
-											<Button>Active</Button>
-											<Button>Former</Button>
-										</ButtonGroup>
-									</Grid>
-									<Grid size={2}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											State
-										</InputLabel>
-									</Grid>
-									<Grid size={4}>
-										<FormControl fullWidth>
-											<Select value={age} sx={{ background: "#fff" }}>
-												<MenuItem value={10}>New York</MenuItem>
-												<MenuItem value={20}>Chicago</MenuItem>
-												<MenuItem value={30}>NC</MenuItem>
-											</Select>
-										</FormControl>
-									</Grid>
-									<Grid size={1} sx={{ alignContent: "center" }}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											Party
-										</InputLabel>
-									</Grid>
-									<Grid size={5}>
-										<FormControl fullWidth>
-											<Select value={age} sx={{ background: "#fff" }}>
-												<MenuItem selected value={10}>
-													Republican
-												</MenuItem>
-												<MenuItem value={20}>Democrat</MenuItem>
-												<MenuItem value={30}>Independent</MenuItem>
-											</Select>
-										</FormControl>
-									</Grid>
+  const label = { inputProps: { "aria-label": "Color switch demo" } };
 
-									<Grid size={2}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											Senator's Photo
-										</InputLabel>
-									</Grid>
-									<Grid size={10}>
-										<Button component="label" role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
-											Upload files
-											<VisuallyHiddenInput type="file" onChange={(event) => console.log(event.target.files)} multiple />
-										</Button>
-									</Grid>
-								</Grid>
-							</Box>
-						</Paper>
+  return (
+    <AppTheme>
+      <Box sx={{ display: "flex" }}>
+        <SideMenu />
+        <Box
+          component="main"
+          sx={(theme) => ({
+            flexGrow: 1,
+            backgroundColor: theme.vars
+              ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
+              : alpha(theme.palette.background.default, 1),
+            overflow: "auto",
+          })}
+        >
+          <Stack
+            spacing={2}
+            sx={{
+              alignItems: "center",
+              mx: 3,
+              pb: 5,
+              mt: { xs: 8, md: 0 },
+            }}
+          >
+            {/* <Header /> */}
+            <Typography
+              variant="h4"
+              align="center"
+              sx={[
+                {
+                  paddingTop: "50px",
+                  color: "text.secondary",
+                },
+              ]}
+            >
+              SBA Scorecard Management System
+            </Typography>
 
-						<div className="spacer"></div>
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button variant="contained">Save</Button>
+              <Button variant="outlined">Fetch Senetors from Quorum</Button>
+            </Stack>
 
-						<Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
-							<Box sx={{ padding: 5 }}>
-								<Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-									Senator's Term Information
-								</Typography>
-								<Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"}>
-									
+            <Paper elevation={2} sx={{ width: "100%" }}>
+              <Box sx={{ p: 5 }}>
+                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
+                  Senator's Information
+                </Typography>
+                <Grid
+                  container
+                  rowSpacing={2}
+                  columnSpacing={2}
+                  alignItems={"center"}
+                >
+                  <Grid size={2}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      Senator's Name
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={4}>
+                    <TextField
+                      required
+                      id="title"
+                      name="title"
+                      fullWidth
+                      size="small"
+                      autoComplete="off"
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid size={1}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      Status
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={5}>
+                    <ButtonGroup
+                      variant="outlined"
+                      aria-label="Basic button group"
+                    >
+                      <Button>Active</Button>
+                      <Button>Former</Button>
+                    </ButtonGroup>
+                  </Grid>
+                  <Grid size={2}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      State
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={4}>
+                    <FormControl fullWidth>
+                      <Select value={age} sx={{ background: "#fff" }}>
+                        <MenuItem value={10}>New York</MenuItem>
+                        <MenuItem value={20}>Chicago</MenuItem>
+                        <MenuItem value={30}>NC</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={1} sx={{ alignContent: "center" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      Party
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={5}>
+                    <FormControl fullWidth>
+                      <Select value={age} sx={{ background: "#fff" }}>
+                        <MenuItem selected value={10}>
+                          Republican
+                        </MenuItem>
+                        <MenuItem value={20}>Democrat</MenuItem>
+                        <MenuItem value={30}>Independent</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-									<Grid size={2}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											Term
-										</InputLabel>
-									</Grid>
-									<Grid size={4}>
-										<FormControl fullWidth>
-											<Select value={age} sx={{ background: "#fff" }}>
-												<MenuItem value={10}>New York</MenuItem>
-												<MenuItem value={20}>Chicago</MenuItem>
-												<MenuItem value={30}>NC</MenuItem>
-											</Select>
-										</FormControl>
-									</Grid>
+                  <Grid size={2}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      Senator's Photo
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={10}>
+                    <Button
+                      component="label"
+                      role={undefined}
+                      variant="contained"
+                      tabIndex={-1}
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload files
+                      <VisuallyHiddenInput
+                        type="file"
+                        onChange={(event) => console.log(event.target.files)}
+                        multiple
+                      />
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Paper>
 
-									<Grid size={1}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											SBA Rating
-										</InputLabel>
-									</Grid>
-									<Grid size={5}>
-										<FormControl fullWidth>
-											<Select value={age} sx={{ background: "#fff" }}>
-												<MenuItem value={10}>New York</MenuItem>
-												<MenuItem value={20}>Chicago</MenuItem>
-												<MenuItem value={30}>NC</MenuItem>
-											</Select>
-										</FormControl>
-									</Grid>
+            <div className="spacer"></div>
 
-									<Grid size={2}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											Term Summary
-										</InputLabel>
-									</Grid>
-									<Grid size={10}>
-										<Editor
-											apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-											onInit={(_evt, editor) => (editorRef.current = editor)}
-											initialValue="Test"
-											init={{
-												height: 250,
-												menubar: false,
-												plugins: [
-													"advlist",
-													"autolink",
-													"lists",
-													"link",
-													"image",
-													"charmap",
-													"preview",
-													"anchor",
-													"searchreplace",
-													"visualblocks",
-													"code",
-													"fullscreen",
-													"insertdatetime",
-													"media",
-													"table",
-													"code",
-													"help",
-													"wordcount",
-												],
-												toolbar:
-													"undo redo | blocks | " +
-													"bold italic forecolor | alignleft aligncenter " +
-													"alignright alignjustify | bullist numlist outdent indent | " +
-													"removeformat | help",
-												content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-											}}
-										/>
-									</Grid>
+            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
+              <Box sx={{ padding: 5 }}>
+                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
+                  Senator's Term Information
+                </Typography>
+                <Grid
+                  container
+                  rowSpacing={2}
+                  columnSpacing={2}
+                  alignItems={"center"}
+                >
+                  <Grid size={2}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      Term
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={4}>
+                    <FormControl fullWidth>
+                      <Select value={age} sx={{ background: "#fff" }}>
+                        <MenuItem value={10}>New York</MenuItem>
+                        <MenuItem value={20}>Chicago</MenuItem>
+                        <MenuItem value={30}>NC</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-									<Grid size={2} sx={{ alignContent: "center" }}>
-										<InputLabel
-											sx={{
-												display: "flex",
-												justifyContent: "end",
-												fontWeight: 700,
-												my: 0,
-											}}
-										>
-											Current Term
-										</InputLabel>
-									</Grid>
-									<Grid size={10}>
-										<Switch {...label} color="warning" />
-									</Grid>
+                  <Grid size={1}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      SBA Rating
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={5}>
+                    <FormControl fullWidth>
+                      <Select value={age} sx={{ background: "#fff" }}>
+                        <MenuItem value={10}>New York</MenuItem>
+                        <MenuItem value={20}>Chicago</MenuItem>
+                        <MenuItem value={30}>NC</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-									{/* Vote Repeater Start */}
-									<Grid rowSpacing={2} sx={{ width: "100%" }}>
-										<Grid size={12} display="flex" alignItems="center" columnGap={"15px"}>
-											<Grid size={2}>
-												<InputLabel
-													sx={{
-														display: "flex",
-														alignItems: "center",
-														justifyContent: "end",
-														fontWeight: 700,
-														my: 0,
-													}}
-												>
-													Scored Vote
-												</InputLabel>
-											</Grid>
-											<Grid size={4}>
-												<FormControl fullWidth>
-													<Select value={age} sx={{ background: "#fff" }}>
-														<MenuItem value={10}>New York</MenuItem>
-														<MenuItem value={20}>Chicago</MenuItem>
-														<MenuItem value={30}>NC</MenuItem>
-													</Select>
-												</FormControl>
-											</Grid>
-											<Grid size={5}>
-												<FormControl fullWidth>
-													<Select value={age} sx={{ background: "#fff" }}>
-														<MenuItem value={10}>New York</MenuItem>
-														<MenuItem value={20}>Chicago</MenuItem>
-														<MenuItem value={30}>NC</MenuItem>
-													</Select>
-												</FormControl>
-											</Grid>
-											<Grid size={1}>
-												<DeleteForeverIcon />
-											</Grid>
-										</Grid>
-									</Grid>
-									{/* Vote Repeater Ends */}
+                  <Grid size={2}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      Term Summary
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={10}>
+                    <Editor
+                      apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
+                      onInit={(_evt, editor) => (editorRef.current = editor)}
+                      initialValue="Test"
+                      init={{
+                        height: 250,
+                        menubar: false,
+                        plugins: [
+                          "advlist",
+                          "autolink",
+                          "lists",
+                          "link",
+                          "image",
+                          "charmap",
+                          "preview",
+                          "anchor",
+                          "searchreplace",
+                          "visualblocks",
+                          "code",
+                          "fullscreen",
+                          "insertdatetime",
+                          "media",
+                          "table",
+                          "code",
+                          "help",
+                          "wordcount",
+                        ],
+                        toolbar:
+                          "undo redo | blocks | " +
+                          "bold italic forecolor | alignleft aligncenter " +
+                          "alignright alignjustify | bullist numlist outdent indent | " +
+                          "removeformat | help",
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                      }}
+                    />
+                  </Grid>
 
-									<Grid size={1}></Grid>
-									<Grid size={10} sx={{ textAlign: "right" }}>
-										<Button variant="contained" startIcon={<AddIcon />}>
-											Add Vote
-										</Button>
-									</Grid>
-									<Grid size={1}></Grid>
-									{/* Add Vote Repeater Button Ends */}
+                  <Grid size={2} sx={{ alignContent: "center" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
+                      Current Term
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={10}>
+                    <Switch {...label} color="warning" />
+                  </Grid>
 
-									{/* Activity Repeater Start */}
-									<Grid rowSpacing={2} sx={{ width: "100%" }}>
-										<Grid size={12} display="flex" alignItems="center" columnGap={"15px"}>
-											<Grid size={2}>
-												<InputLabel
-													sx={{
-														display: "flex",
-														alignItems: "center",
-														justifyContent: "end",
-														fontWeight: 700,
-														my: 0,
-													}}
-												>
-													Tracked Activity
-												</InputLabel>
-											</Grid>
-											<Grid size={4}>
-												<FormControl fullWidth>
-													<Select value={age} sx={{ background: "#fff" }}>
-														<MenuItem value={10}>New York</MenuItem>
-														<MenuItem value={20}>Chicago</MenuItem>
-														<MenuItem value={30}>NC</MenuItem>
-													</Select>
-												</FormControl>
-											</Grid>
-											<Grid size={5}>
-												<FormControl fullWidth>
-													<Select value={age} sx={{ background: "#fff" }}>
-														<MenuItem value={10}>New York</MenuItem>
-														<MenuItem value={20}>Chicago</MenuItem>
-														<MenuItem value={30}>NC</MenuItem>
-													</Select>
-												</FormControl>
-											</Grid>
-											<Grid size={1}>
-												<DeleteForeverIcon />
-											</Grid>
-										</Grid>
-									</Grid>
-									{/* Activity Repeater Ends */}
+                  {/* Vote Repeater Start */}
+                  {vote.map((item) => (
+                    <Grid rowSpacing={2} sx={{ width: "100%" }}>
+                      <Grid
+                        size={12}
+                        display="flex"
+                        alignItems="center"
+                        columnGap={"15px"}
+                      >
+                        <Grid size={2}>
+                          <InputLabel
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "end",
+                              fontWeight: 700,
+                              my: 0,
+                            }}
+                          >
+                            Scored Vote
+                          </InputLabel>
+                        </Grid>
+                        <Grid size={4}>
+                          <FormControl fullWidth>
+                            <Select
+                              value={item.option1}
+                              sx={{ background: "#fff" }}
+                            >
+                              <MenuItem value={10}>New York</MenuItem>
+                              <MenuItem value={20}>Chicago</MenuItem>
+                              <MenuItem value={30}>NC</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid size={5}>
+                          <FormControl fullWidth>
+                            <Select
+                              value={item.option2}
+                              sx={{ background: "#fff" }}
+                            >
+                              <MenuItem value={10}>New York</MenuItem>
+                              <MenuItem value={20}>Chicago</MenuItem>
+                              <MenuItem value={30}>NC</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid size={1}>
+                          <DeleteForeverIcon
+                            onClick={() => {
+                              handleRemove(item.id);
+                            }}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  ))}
+                  {/* Vote Repeater Ends */}
 
-									<Grid size={1}></Grid>
-									<Grid size={10} sx={{ textAlign: "right" }}>
-										<Button variant="contained" startIcon={<AddIcon />}>
-											Add Activity
-										</Button>
-									</Grid>
-									<Grid size={1}></Grid>
-									{/* Add Activity Repeater Button Ends */}
-								</Grid>
-							</Box>
-						</Paper>
-					</Stack>
-					<Copyright sx={{ my: 4 }} />
-				</Box>
-			</Box>
-		</AppTheme>
-	);
+                  <Grid size={1}></Grid>
+                  <Grid size={10} sx={{ textAlign: "right" }} key={vote.id}>
+                    <Button
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      onClick={handleAdd}
+                    >
+                      Add Vote
+                    </Button>
+                  </Grid>
+                  <Grid size={1}></Grid>
+                  {/* Add Vote Repeater Button Ends */}
+
+                  {/* Activity Repeater Start */}
+                  {activity.map((item) => (
+                    <Grid rowSpacing={2} sx={{ width: "100%" }}>
+                      <Grid
+                        size={12}
+                        display="flex"
+                        alignItems="center"
+                        columnGap={"15px"}
+                      >
+                        <Grid size={2}>
+                          <InputLabel
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "end",
+                              fontWeight: 700,
+                              my: 0,
+                            }}
+                          >
+                            Tracked Activity
+                          </InputLabel>
+                        </Grid>
+                        <Grid size={4}>
+                          <FormControl fullWidth>
+                            <Select
+                              value={item.option1}
+                              sx={{ background: "#fff" }}
+                            >
+                              <MenuItem value={10}>New York</MenuItem>
+                              <MenuItem value={20}>Chicago</MenuItem>
+                              <MenuItem value={30}>NC</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid size={5}>
+                          <FormControl fullWidth>
+                            <Select
+                              value={item.option2}
+                              sx={{ background: "#fff" }}
+                            >
+                              <MenuItem value={10}>New York</MenuItem>
+                              <MenuItem value={20}>Chicago</MenuItem>
+                              <MenuItem value={30}>NC</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid size={1}>
+                          <DeleteForeverIcon
+                            onClick={() => {
+                              handleRemoveActivity(item.id);
+                            }}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  ))}
+
+                  {/* Activity Repeater Ends */}
+
+                  <Grid size={1}></Grid>
+                  <Grid size={10} sx={{ textAlign: "right" }}>
+                    <Button
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      onClick={() =>
+                        setActivity([
+                          ...activity,
+                          { id: activity.length + 1, option1: "", option2: "" },
+                        ])
+                      }
+                    >
+                      Add Activity
+                    </Button>
+                  </Grid>
+                  <Grid size={1}></Grid>
+                  {/* Add Activity Repeater Button Ends */}
+                </Grid>
+              </Box>
+            </Paper>
+          </Stack>
+          <Copyright sx={{ my: 4 }} />
+        </Box>
+      </Box>
+    </AppTheme>
+  );
 }
