@@ -128,8 +128,8 @@ const voteSlice = createSlice({
       state.error = null;
     });
     builder.addCase(getVoteById.fulfilled, (state, action) => {
-      state.loading = false;
-      state.vote = action.payload;
+      
+      state.vote = action.payload; 
     });
     builder.addCase(getVoteById.rejected, (state, action) => {
       state.loading = false;
