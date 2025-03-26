@@ -87,7 +87,12 @@ export default function SignIn() {
       .post(`${API_URL}/user/login`, info)
       .then((res) => {
         console.log(res.data);
-        if (res.data.message === "Login successful") {
+ 
+        if (res.data.message === "Login successful" && res.data.token) {
+          sessionStorage.setItem("token", res.data.token);
+ 
+    
+ 
           nav("/");
         }
       })
