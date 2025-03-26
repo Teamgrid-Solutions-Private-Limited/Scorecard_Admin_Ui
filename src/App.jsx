@@ -73,7 +73,13 @@ export default function App() {
          }
        />
         <Route
-         path="add-bill"
+         path="/add-bill"
+         element={
+           <AddBill/>
+         }
+       />
+       <Route
+         path="bills/edit-bill/:id"
          element={
            <AddBill/>
          }
