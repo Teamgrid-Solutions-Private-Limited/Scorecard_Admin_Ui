@@ -1,11 +1,27 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useDispatch } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
+import { deleteSenator } from "../../redux/slice/senetorSlice"; // Import the delete action
 
-export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDelete }) {
+export default function CustomizedDataGrid({ type, rows, loading }) {
+    const dispatch = useDispatch();
+    const navigate = useNavigate(); // Initialize useNavigate
+
+    const handleDelete = (row) => {
+        if (window.confirm(`Are you sure you want to delete ${row.name}?`)) {
+            dispatch(deleteSenator(row._id)); // Dispatch the delete action with the senator's ID
+        }
+    };
+
+    const handleEdit = (row) => {
+        navigate(`/edit-senator/${row._id}`); // Navigate to the edit page with the senator's ID
+    };
+
     const columns = type === "bills"
         ? [
             { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
@@ -17,8 +33,8 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
                 minWidth: 150,
                 renderCell: (params) => (
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                        <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer" }} />
-                        <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer" }} />
+                        <EditIcon onClick={() => handleEdit(params.row)} style={{ cursor: "pointer" }} />
+                        <DeleteForeverIcon onClick={() => handleDelete(params.row)} style={{ cursor: "pointer" }} />
                     </div>
                 ),
             },
@@ -60,8 +76,8 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
                 minWidth: 150,
                 renderCell: (params) => (
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                        <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer" }} />
-                        <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer" }} />
+                        <EditIcon onClick={() => handleEdit(params.row)} style={{ cursor: "pointer" }} />
+                        <DeleteForeverIcon onClick={() => handleDelete(params.row)} style={{ cursor: "pointer" }} />
                     </div>
                 ),
             },
@@ -73,7 +89,7 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
                 rows={rows}
                 columns={columns}
                 loading={loading}
-                getRowId={(row) => row._id} // Use `id` as the unique identifier
+                getRowId={(row) => row._id} // Use `_id` as the unique identifier
                 initialState={{
                     pagination: { paginationModel: { pageSize: 20 } },
                 }}
