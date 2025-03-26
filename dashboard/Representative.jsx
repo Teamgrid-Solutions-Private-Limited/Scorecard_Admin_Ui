@@ -23,15 +23,12 @@ export default function Representative(props) {
 
     // Fetch representatives from Redux store
     const { houses, loading } = useSelector((state) => state.house); // Ensure correct state mapping
-
-    // Debugging logs
-    console.log("Redux State (houses):", houses);
-    console.log("Loading State:", loading);
+ 
 
     // Transform data to include state extracted from district
     const transformedHouses = houses.map((house) => ({
         ...house,
-        state: house.district?.split(", ").pop() || "Unknown", // Extract state from district
+        district: house.district?.split(", ").pop() || "Unknown", // Extract state from district
     }));
 
     console.log("Transformed Houses Data:", transformedHouses);

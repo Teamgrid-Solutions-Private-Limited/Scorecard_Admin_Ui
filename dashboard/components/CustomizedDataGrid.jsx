@@ -36,8 +36,23 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
                     </div>
                 ),
             },
-            { field: "state", flex: 1, headerName: "State", minWidth: 150 },
+            ...(type === "representative"
+                ? [{ field: "district", flex: 1, headerName: "District", minWidth: 150 }]
+                : [{ field: "state", flex: 1, headerName: "State", minWidth: 150 }]
+            ),
             { field: "party", flex: 1, headerName: "Party", minWidth: 150 },
+            {
+                field: "rating",
+                flex: 1,
+                headerName: "Rating",
+                minWidth: 150,
+                valueGetter: (params) => {
+                    if (!params || !params.row) {
+                        return "N/A"; // Return "N/A" if params or params.row is undefined
+                    }
+                    return params.row.rating || "N/A"; // Return "rating" or "N/A" if rating is not provided
+                },
+            },
             {
                 field: "action",
                 flex: 1,
