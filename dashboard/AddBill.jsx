@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getVoteById } from "../redux/slice/voteSlice";
+import { getVoteById, clearVoteState } from "../redux/slice/voteSlice"; // Import clearVoteState
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -64,6 +64,10 @@ export default function AddBill(props) {
     if (id) {
       dispatch(getVoteById(id));  
     }
+
+    return () => {
+      dispatch(clearVoteState());  
+    };
   }, [id, dispatch]);
 
   useEffect(() => {
