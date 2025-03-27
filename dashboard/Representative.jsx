@@ -1,13 +1,15 @@
 import * as React from "react";
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllHouses } from "../redux/slice/houseSlice"; // Import the action
-import { Box, Stack, Typography, Button } from "@mui/material";
+import { Box, Stack, Typography, Button ,CircularProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "/shared-theme/AppTheme";
 import SideMenu from "./components/SideMenu";
 import MainGrid from "./components/MainGrid";
+import { API_URL } from "../redux/api/API"; 
+import axios from "axios";
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from "./theme/customizations";
 
 const xThemeComponents = {
@@ -23,6 +25,7 @@ export default function Representative(props) {
 
     // Fetch representatives from Redux store
     const { houses, loading } = useSelector((state) => state.house); // Ensure correct state mapping
+    const [fetching, setFetching] = useState(false);
  
 
     // Transform data to include state extracted from district
@@ -38,9 +41,25 @@ export default function Representative(props) {
         dispatch(getAllHouses());
     }, [dispatch]);
 
-    const handleEdit = (row) => {
-        navigate(`/edit-representative`);
-    }; 
+    const fetchRepresentativeFromQuorum = async () => {
+        setFetching(true); // Set fetching state to true
+        try {
+            const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
+                type: "representative",
+            });
+            if (response.status === 200) {
+               alert("success")
+                await dispatch(getAllHouses()); // Refresh the list of house
+            } else {
+                throw new Error("Failed to fetch senators from Quorum");
+            }
+        } catch (error) {
+            console.error("Error fetching senators from Quorum:", error);
+           
+        } finally {
+            setFetching(false); // Set fetching state to false
+        }
+    };
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -60,8 +79,9 @@ export default function Representative(props) {
                             <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-representative")}>
                                 Add Representative
                             </Button>
-                            <Button variant="outlined">Fetch Representative from Quorum</Button>
+                            <Button variant="outlined" onClick={fetchRepresentativeFromQuorum}>Fetch Representative from Quorum</Button>
                         </Stack>
+                         {fetching && <CircularProgress />}
 
                         {/* Pass transformed data to MainGrid */}
                         <MainGrid 
