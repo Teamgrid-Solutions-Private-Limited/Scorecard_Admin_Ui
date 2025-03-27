@@ -41,6 +41,10 @@ export default function Representative(props) {
         dispatch(getAllHouses());
     }, [dispatch]);
 
+    const handleEdit =  (row) => {
+        navigate(`/edit-representative/${row._id}`)
+    }
+
     const fetchRepresentativeFromQuorum = async () => {
         setFetching(true); // Set fetching state to true
         try {
@@ -84,7 +88,12 @@ export default function Representative(props) {
                          {fetching && <CircularProgress />}
 
                         {/* Pass transformed data to MainGrid */}
-                        <MainGrid type="representative" data={transformedHouses || []} loading={loading} />
+                        <MainGrid 
+                        type="representative" 
+                        data={transformedHouses || []} loading={loading}
+                        onEdit={handleEdit}
+                        // onDelete={handleDelete}
+                        />
                     </Stack>
                 </Box>
             </Box>

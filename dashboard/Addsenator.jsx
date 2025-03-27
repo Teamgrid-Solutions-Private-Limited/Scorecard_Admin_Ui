@@ -1,6 +1,12 @@
 import * as React from "react";
 import { useRef } from "react";
 import { alpha, styled } from "@mui/material/styles";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getSenatorById } from "../redux/slice/senetorSlice";
+import { getAllTerms } from "../redux/slice/termSlice";
+import { getSenatorDataBySenetorId } from "../redux/slice/senetorTermSlice";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
