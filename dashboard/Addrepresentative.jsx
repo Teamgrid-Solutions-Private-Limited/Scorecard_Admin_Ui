@@ -21,9 +21,69 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import Switch from "@mui/material/Switch";
 import Copyright from "./internals/components/Copyright";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { getHouseById,updateHouse } from "../redux/slice/houseSlice";
+import {getHouseDataByHouseId,updateHouseData} from "../redux/slice/houseTermSlice"
 
 export default function Addrepresentative(props) {
     const [age, setAge] = React.useState("");
+    const { id } = useParams();
+    const dispatch = useDispatch();
+    const {house: selectedHouse } = useSelector((state) => state.house);
+    const {houseData:selectedHouseData} =useSelector((state)=>state.houseData)
+    const [formData, setFormData] = useState({
+        name: "",   // Avoid undefined values
+        btn: "",
+        state: "", // Provide a default valid value
+        party: "",
+        photo: "",
+        //term
+        term: "",
+        rating: "",
+        summary: "",
+        currentTerm: "",
+        votesScore:"",
+        activitiesScore:""
+
+    });
+
+
+    const preFillForm = () => {
+        if (selectedHouse ||selectedHouseData) {
+            const extractedState = selectedHouse.district?.split(", ").pop() || ""; // Extracts the last part after the comma
+            setFormData({
+                name: selectedHouse?.name || "",
+                btn: selectedHouse?.btn || "",
+                state: extractedState,  // Extracted from district
+                party: selectedHouse.party || "",
+                img: selectedHouse.photo || "",
+                //termHouse
+                term: selectedHouseData.term || "NC",
+                rating: selectedHouseData.rating || "NC",
+                summary: selectedHouseData.summary || "hello summary",
+                currentTerm: selectedHouseData.currentTerm || "true",
+                votesScore:selectedHouseData?.votesScore?.score||"NC",
+                activitiesScore:selectedHouseData?.activitiesScore?.score||"NC",
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (id) {
+            dispatch(getHouseById(id));
+            dispatch(getHouseDataByHouseId(id))
+        }
+    }, [id, dispatch]);
+
+    useEffect(() => {
+        console.log("Prefilling Form with:", selectedHouse);  // Debugging log
+        console.log("house term selected data:",selectedHouseData );  // Debugging log
+
+        preFillForm();
+        // }
+    }, [selectedHouse,selectedHouseData]);
     const editorRef = useRef(null);
     const VisuallyHiddenInput = styled("input")({
         clip: "rect(0 0 0 0)",
@@ -36,13 +96,70 @@ export default function Addrepresentative(props) {
         whiteSpace: "nowrap",
         width: 1,
     });
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        setFormData((prev) => ({ ...prev, img: file }));
+    };
+    
 
     const handleChange = (event) => {
         setAge(event.target.value);
+        const { name, value } = event.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
+     const handleEditorChange = (content, editor, fieldName) => {
+    setFormData((prev) => ({ ...prev, [fieldName]: content }));
+  };
+
+  //handle Submission
+  const handleSave = async () => {
+    if (!id) {
+        console.error("No ID found for updating!");
+        return;
+    }
+
+    const { name, btn, state, party, img, term, rating, summary, currentTerm, votesScore, activitiesScore } = formData;
+    
+    console.log("Dispatching update with formData:", formData);
+
+    try {
+        if (img instanceof File) {
+            // If an image file is uploaded, use FormData
+            const formDataObject = new FormData();
+            formDataObject.append("name", name);
+            formDataObject.append("btn", btn);
+            formDataObject.append("state", state);
+            formDataObject.append("party", party);
+            formDataObject.append("img", img);
+
+            console.log("Dispatching updateHouse with:", formDataObject);
+
+            const houseResponse = await dispatch(updateHouse({ id, formData: formDataObject })).unwrap();
+            console.log("House update successful:", houseResponse);
+        } else {
+            // Update without image
+            const houseData = { name, btn, state, party };
+            console.log("Dispatching updateHouseData with:", houseData);
+
+            const houseDataResponse = await dispatch(updateHouseData({ id, data: houseData })).unwrap();
+            console.log("HouseData update successful:", houseDataResponse);
+        }
+
+        // Update term-related data
+        const termData = { term, rating, summary, currentTerm, votesScore, activitiesScore };
+        console.log("Dispatching updateHouseData for term-related data:", termData);
+
+        const termDataResponse = await dispatch(updateHouseData({ id, data: termData })).unwrap();
+        console.log("Term Data update successful:", termDataResponse);
+
+        alert("Update successful!");
+    } catch (error) {
+        console.error("Update failed:", error);
+    }
+};
+
 
     const label = { inputProps: { "aria-label": "Color switch demo" } };
-
     return (
         <AppTheme>
             <Box sx={{ display: "flex" }}>
@@ -86,7 +203,7 @@ export default function Addrepresentative(props) {
                                 alignItems: "center",
                             }}
                         >
-                            <Button variant="contained">Save</Button>
+                            <Button variant="contained" onClick={handleSave}>Save</Button>
                             <Button variant="outlined">Fetch Representatives from Quorum</Button>
                         </Stack>
 
@@ -110,7 +227,7 @@ export default function Addrepresentative(props) {
                                         </InputLabel>
                                     </Grid>
                                     <Grid size={4}>
-                                        <TextField required id="title" name="title" fullWidth size="small" autoComplete="off" variant="outlined" />
+                                        <TextField required id="title" name="name" value={formData.name} onChange={handleChange} fullWidth size="small" autoComplete="off" variant="outlined" />
                                     </Grid>
                                     <Grid size={1}>
                                         <InputLabel
@@ -125,7 +242,7 @@ export default function Addrepresentative(props) {
                                         </InputLabel>
                                     </Grid>
                                     <Grid size={5}>
-                                        <ButtonGroup variant="outlined" aria-label="Basic button group">
+                                        <ButtonGroup variant="outlined" name="btn" value={formData.btn} onChange={handleChange} aria-label="Basic button group">
                                             <Button>Active</Button>
                                             <Button>Former</Button>
                                         </ButtonGroup>
@@ -144,10 +261,11 @@ export default function Addrepresentative(props) {
                                     </Grid>
                                     <Grid size={4}>
                                         <FormControl fullWidth>
-                                            <Select value={age} sx={{ background: "#fff" }}>
-                                                <MenuItem value={10}>New York</MenuItem>
-                                                <MenuItem value={20}>Chicago</MenuItem>
-                                                <MenuItem value={30}>NC</MenuItem>
+                                            <Select name="state" value={formData.state} onChange={handleChange} sx={{ background: "#fff" }}>
+                                                <MenuItem value="New York">New York</MenuItem>
+                                                <MenuItem value="Chicago">Chicago</MenuItem>
+                                                <MenuItem value="California">California</MenuItem>                                              
+                                                <MenuItem value="Nc">NC</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Grid>
@@ -165,12 +283,11 @@ export default function Addrepresentative(props) {
                                     </Grid>
                                     <Grid size={5}>
                                         <FormControl fullWidth>
-                                            <Select value={age} sx={{ background: "#fff" }}>
-                                                <MenuItem selected value={10}>
-                                                    Republican
+                                            <Select name="party" value={formData.party} onChange={handleChange} sx={{ background: "#fff" }}>
+                                                <MenuItem value="republican">Republican
                                                 </MenuItem>
-                                                <MenuItem value={20}>Democrat</MenuItem>
-                                                <MenuItem value={30}>Independent</MenuItem>
+                                                <MenuItem value="democrat">Democrat</MenuItem>
+                                                <MenuItem value="independent">Independent</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Grid>
@@ -188,17 +305,19 @@ export default function Addrepresentative(props) {
                                         </InputLabel>
                                     </Grid>
                                     <Grid size={10}>
-                                        <Button component="label" role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
+                                        <Button component="label" name="photo" value={formData.photo}  role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
                                             Upload files
-                                            <VisuallyHiddenInput type="file" onChange={(event) => console.log(event.target.files)} multiple />
+                                            <VisuallyHiddenInput type="file" onChange={handleFileUpload} multiple />
                                         </Button>
+                                        {/* {formData.img && typeof formData.img === "string" && (
+                                        <Typography variant="caption">Currently: {formData.img}</Typography>
+                                    )} */}
                                     </Grid>
                                 </Grid>
                             </Box>
                         </Paper>
 
                         <div className="spacer"></div>
-
                         <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
                             <Box sx={{ padding: 5 }}>
                                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
@@ -220,10 +339,10 @@ export default function Addrepresentative(props) {
                                     </Grid>
                                     <Grid size={4}>
                                         <FormControl fullWidth>
-                                            <Select value={age} sx={{ background: "#fff" }}>
-                                                <MenuItem value={10}>New York</MenuItem>
-                                                <MenuItem value={20}>Chicago</MenuItem>
-                                                <MenuItem value={30}>NC</MenuItem>
+                                            <Select name="term" value={formData.term} sx={{ background: "#fff" }}>
+                                                <MenuItem value="New York">New York</MenuItem>
+                                                <MenuItem value="Chicago">Chicago</MenuItem>
+                                                <MenuItem value="NC">NC</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Grid>
@@ -243,10 +362,10 @@ export default function Addrepresentative(props) {
                                     </Grid>
                                     <Grid size={5}>
                                         <FormControl fullWidth>
-                                            <Select value={age} sx={{ background: "#fff" }}>
-                                                <MenuItem value={10}>New York</MenuItem>
-                                                <MenuItem value={20}>Chicago</MenuItem>
-                                                <MenuItem value={30}>NC</MenuItem>
+                                            <Select value={formData.rating} name="rating" onChange={handleChange} sx={{ background: "#fff" }}>
+                                                <MenuItem value="New York">New York</MenuItem>
+                                                <MenuItem value="Chicago">Chicago</MenuItem>
+                                                <MenuItem value="NC">NC</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Grid>
@@ -268,6 +387,11 @@ export default function Addrepresentative(props) {
                                             apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                                             onInit={(_evt, editor) => (editorRef.current = editor)}
                                             initialValue="Test"
+                                            name="summary"
+                                            value={formData.summary}
+                                            onEditorChange={(content,editor)=>
+                                                handleEditorChange(content,editor,"summary")
+                                            }
                                             init={{
                                                 height: 250,
                                                 menubar: false,
@@ -314,7 +438,7 @@ export default function Addrepresentative(props) {
                                         </InputLabel>
                                     </Grid>
                                     <Grid size={10}>
-                                        <Switch {...label} color="warning" />
+                                        <Switch {...label} name="currentTerm" value={formData.currentTerm} color="warning" />
                                     </Grid>
 
                                     {/* Vote Repeater Start */}
@@ -335,19 +459,19 @@ export default function Addrepresentative(props) {
                                             </Grid>
                                             <Grid size={4}>
                                                 <FormControl fullWidth>
-                                                    <Select value={age} sx={{ background: "#fff" }}>
-                                                        <MenuItem value={10}>New York</MenuItem>
-                                                        <MenuItem value={20}>Chicago</MenuItem>
-                                                        <MenuItem value={30}>NC</MenuItem>
+                                                    <Select value={formData.votesScore} name="votesScore"  onChange={handleChange} sx={{ background: "#fff" }}>
+                                                        <MenuItem value="New York">New York</MenuItem>
+                                                        <MenuItem value="Chicago">Chicago</MenuItem>
+                                                        <MenuItem value="NC">NC</MenuItem>
                                                     </Select>
                                                 </FormControl>
                                             </Grid>
                                             <Grid size={5}>
                                                 <FormControl fullWidth>
-                                                    <Select value={age} sx={{ background: "#fff" }}>
-                                                        <MenuItem value={10}>New York</MenuItem>
-                                                        <MenuItem value={20}>Chicago</MenuItem>
-                                                        <MenuItem value={30}>NC</MenuItem>
+                                                <Select value={formData.votesScore} name="votesScore"  onChange={handleChange} sx={{ background: "#fff" }}>
+                                                        <MenuItem value="New York">New York</MenuItem>
+                                                        <MenuItem value="Chicago">Chicago</MenuItem>
+                                                        <MenuItem value="NC">NC</MenuItem>
                                                     </Select>
                                                 </FormControl>
                                             </Grid>
@@ -385,19 +509,19 @@ export default function Addrepresentative(props) {
                                             </Grid>
                                             <Grid size={4}>
                                                 <FormControl fullWidth>
-                                                    <Select value={age} sx={{ background: "#fff" }}>
-                                                        <MenuItem value={10}>New York</MenuItem>
-                                                        <MenuItem value={20}>Chicago</MenuItem>
-                                                        <MenuItem value={30}>NC</MenuItem>
+                                                <Select value={formData.activitiesScore} name="activitiesScore" onChange={handleChange} sx={{ background: "#fff" }}>
+                                                <MenuItem value="New York">New York</MenuItem>
+                                                        <MenuItem value="Chicago">Chicago</MenuItem>
+                                                        <MenuItem value="NC">NC</MenuItem>
                                                     </Select>
                                                 </FormControl>
                                             </Grid>
                                             <Grid size={5}>
                                                 <FormControl fullWidth>
-                                                    <Select value={age} sx={{ background: "#fff" }}>
-                                                        <MenuItem value={10}>New York</MenuItem>
-                                                        <MenuItem value={20}>Chicago</MenuItem>
-                                                        <MenuItem value={30}>NC</MenuItem>
+                                                    <Select value={formData.activitiesScore} name="activitiesScore" onChange={handleChange} sx={{ background: "#fff" }}>
+                                                    <MenuItem value="New York">New York</MenuItem>
+                                                        <MenuItem value="Chicago">Chicago</MenuItem>
+                                                        <MenuItem value="NC">NC</MenuItem>
                                                     </Select>
                                                 </FormControl>
                                             </Grid>

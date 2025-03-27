@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllSenators } from "../redux/slice/senetorSlice"; // Import the action
+import { getAllSenators, deleteSenator} from "../redux/slice/senetorSlice"; // Import the action
 import { Box, Stack, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,16 @@ export default function Senator(props) {
 
     // Fetch senators from Redux store
     const { senators, loading } = useSelector((state) => state.senator);
+
+    //handle Delete
+    const handleDelete=async(row)=>{
+            if (window.confirm("Are you sure you want to delete this representative?")) {
+                await dispatch(deleteSenator(row._id));  
+                await dispatch(getAllSenators());  
+                console.log(deleteSenator(row._id))
+            
+        };
+    }
 
     // Fetch senators when the component mounts
     useEffect(() => {
@@ -79,7 +89,10 @@ export default function Senator(props) {
                         </Stack>
 
                         {/* Pass senators data to MainGrid */}
-                        <MainGrid type="senator" data={senators} loading={loading} />
+                        <MainGrid type="senator" data={senators}
+                         loading={loading}
+                         // onEdit={handleEdit}
+                         onDelete={handleDelete} />
                     </Stack>
                 </Box>
             </Box>
