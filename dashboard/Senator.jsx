@@ -1,11 +1,7 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-<<<<<<< HEAD
-import { getAllSenators,getSenatorById } from "../redux/slice/senetorSlice"; // Import the action
-=======
 import { deleteSenator, getAllSenators } from "../redux/slice/senetorSlice"; // Import the action
->>>>>>> development
 import { Box, Stack, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
@@ -34,9 +30,6 @@ export default function Senator(props) {
     }, [dispatch]);
 
     const handleEdit = (row) => {
-<<<<<<< HEAD
-        navigate(`edit-senator/${row._id}`);
-=======
         navigate(`edit-senator/${row._id}`)
     };
 
@@ -45,7 +38,6 @@ export default function Senator(props) {
             await dispatch(deleteSenator(row._id));
             await dispatch(getAllSenators());
         }
->>>>>>> development
     };
 
     return (
@@ -98,16 +90,8 @@ export default function Senator(props) {
                         </Stack>
 
                         {/* Pass senators data to MainGrid */}
-<<<<<<< HEAD
-                        <MainGrid 
-                        type="senator" 
-                        data={senators} loading={loading} 
-                        onEdit={handleEdit}
-                        />
-=======
                         <MainGrid type="senator" data={senators} loading={loading} onDelete={handleDelete}
                         onEdit={handleEdit}/>
->>>>>>> development
                     </Stack>
                 </Box>
             </Box>
