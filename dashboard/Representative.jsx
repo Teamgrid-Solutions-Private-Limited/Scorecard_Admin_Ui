@@ -41,6 +41,10 @@ export default function Representative(props) {
         dispatch(getAllHouses());
     }, [dispatch]);
 
+    const handleEdit =  (row) => {
+        navigate(`/edit-representative/${row._id}`)
+    }
+
     const fetchRepresentativeFromQuorum = async () => {
         setFetching(true); // Set fetching state to true
         try {
