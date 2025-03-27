@@ -10,71 +10,76 @@ import SideMenu from "./components/SideMenu";
 import MainGrid from "./components/MainGrid";
 
 export default function Bills(props) {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const { votes, loading } = useSelector((state) => state.vote);  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { votes, loading } = useSelector((state) => state.vote);
 
-    useEffect(() => {
-        dispatch(getAllVotes());
-    }, [dispatch]);
+  useEffect(() => {
+    dispatch(getAllVotes());
+  }, [dispatch]);
 
-    const billsData = votes.map((vote, index) => ({
-        _id: vote._id || index,  
-        date: vote.date,
-        bill: vote.billName || vote.title,  
-    }));
+  const formatDate = (isoDate) => {
+    return new Date(isoDate).toISOString().split("T")[0];
+  };
 
-    const handleEdit = (row) => {
-        navigate(`edit-bill/${row._id}`);
-    };
+  const billsData = votes.map((vote, index) => ({
+    _id: vote._id || index,
+    date: formatDate(vote.date),
+    bill: vote.billName || vote.title,
+  }));
 
-    const handleDelete = async (row) => {  
-        if (window.confirm("Are you sure you want to delete this bill?")) {
-            await dispatch(deleteVote(row._id));  
-            await dispatch(getAllVotes());  
-        }
-    };
+  const handleEdit = (row) => {
+    navigate(`edit-bill/${row._id}`);
+  };
 
-    return (
-        <AppTheme {...props}>
-            <Box sx={{ display: "flex" }}>
-                <SideMenu />
-                <Box sx={{ flexGrow: 1, overflow: "auto" }}>
-                    <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
-                        <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
-                            SBA Scorecard Management System
-                        </Typography>
-<<<<<<< HEAD
+  const handleDelete = async (row) => {
+    if (window.confirm("Are you sure you want to delete this bill?")) {
+      await dispatch(deleteVote(row._id));
+      await dispatch(getAllVotes());
+    }
+  };
 
-                        <Stack
-                            container
-                            direction="row"
-                            spacing={2}
-                            width="100%"
-                            sx={{
-                                justifyContent: "flex-end",
-                                alignItems: "center",
-                            }}
-                        >
-                            <Button variant="contained" startIcon={<AddIcon />}  onClick={() => navigate("/add-bill")}>Add Bills</Button>
-=======
-                        <Stack direction="row" spacing={2} width="100%" sx={{ justifyContent: "flex-end", alignItems: "center" }}>
-                            <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-bill")}>
-                                Add Bills
-                            </Button>
->>>>>>> 5e0af27b5658aeed3209defb80b8ed5ce2d274b3
-                            <Button variant="outlined">Fetch bills from Quorum</Button>
-                        </Stack>
-                        <MainGrid
-                            type="bills"
-                            data={billsData}
-                            loading={loading}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
-                    </Stack>
-                </Box>
-            </Box>
-        </AppTheme>
-    );
+  return (
+    <AppTheme {...props}>
+      <Box sx={{ display: "flex" }}>
+        <SideMenu />
+        <Box sx={{ flexGrow: 1, overflow: "auto" }}>
+          <Stack
+            spacing={2}
+            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
+          >
+            <Typography
+              variant="h4"
+              align="center"
+              sx={{ paddingTop: "50px", color: "text.secondary" }}
+            >
+              SBA Scorecard Management System
+            </Typography>
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{ justifyContent: "flex-end", alignItems: "center" }}
+            >
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => navigate("/add-bill")}
+              >
+                Add Bills
+              </Button>
+              <Button variant="outlined">Fetch bills from Quorum</Button>
+            </Stack>
+            <MainGrid
+              type="bills"
+              data={billsData}
+              loading={loading}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </Stack>
+        </Box>
+      </Box>
+    </AppTheme>
+  );
 }
