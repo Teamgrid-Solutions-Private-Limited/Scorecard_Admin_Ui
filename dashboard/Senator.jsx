@@ -103,14 +103,14 @@ export default function Senator(props) {
                                 alignItems: "center",
                             }}
                         >
-                            <Button
+                            {/* <Button
                                 variant="contained"
                                 startIcon={<AddIcon />}
                                 onClick={() => navigate("/add-senator")}
                             >
                                 Add Senator
-                            </Button>
-                            <Button variant="outlined" onClick={fetchSenatorsFromQuorum}>
+                            </Button> */}
+                            <Button variant="contained" onClick={fetchSenatorsFromQuorum}>
                                 Fetch Senators from Quorum
                             </Button>
                         </Stack>
