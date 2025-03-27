@@ -41,6 +41,10 @@ export default function Representative(props) {
         dispatch(getAllHouses());
     }, [dispatch]);
 
+    const handleEdit = (row) => {
+        navigate(`/edit-representative`);
+    }; 
+
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <Box sx={{ display: "flex" }}>
@@ -63,7 +67,12 @@ export default function Representative(props) {
                         </Stack>
 
                         {/* Pass transformed data to MainGrid */}
-                        <MainGrid type="representative" data={transformedHouses || []} loading={loading} />
+                        <MainGrid 
+                        type="representative" 
+                        data={transformedHouses || []} loading={loading}
+                        onEdit={handleEdit}
+                        // onDelete={handleDelete}
+                        />
                     </Stack>
                 </Box>
             </Box>
