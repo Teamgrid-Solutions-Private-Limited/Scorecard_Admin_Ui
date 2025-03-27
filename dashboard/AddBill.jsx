@@ -3,7 +3,8 @@ import { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getVoteById, clearVoteState } from "../redux/slice/voteSlice"; // Import clearVoteState
+import { getVoteById, clearVoteState, updateVote, createVote } from "../redux/slice/voteSlice"; // Import clearVoteState
+import { getAllTerms } from "../redux/slice/termSlice";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -31,7 +32,8 @@ export default function AddBill(props) {
   const { id } = useParams();
   const [age, setAge] = React.useState("");
   const dispatch = useDispatch();
-  const { vote: selectedVote } = useSelector((state) => state.vote);  
+  const { vote: selectedVote } = useSelector((state) => state.vote);
+  const { terms } = useSelector((state) => state.term);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -44,36 +46,61 @@ export default function AddBill(props) {
     readMore: "",
   });
 
+  // const preFillForm = () => {
+  //   if (selectedVote) {
+  //     console.log("Selected Vote:", selectedVote);
+  //     console.log("Terms:", terms);
+  //     const termId = selectedVote.termId && terms.length > 0
+  //       ? terms.find(term => term._id === selectedVote.termId)?._id || ""
+  //       : "";
+  //     console.log("Term ID:", termId);
+  //     setFormData({
+  //       type: selectedVote.type === "senate_bill" ? "senate" : selectedVote.type === "house_bill" ? "house" : "",
+  //       title: selectedVote.title || "",
+  //       shortDescription: selectedVote.shortDesc || selectedVote.shortDescription || "",
+  //       longDescription: selectedVote.longDesc || selectedVote.longDescription || "",
+  //       date: selectedVote.date ? selectedVote.date.split("T")[0] : "",
+  //       congress: selectedVote.congress || "",
+  //       term: termId,
+  //       rollCall: selectedVote.rollCall || "",
+  //       readMore: selectedVote.readMore || "",
+  //     });
+  //   }
+  // };
+
   const preFillForm = () => {
     if (selectedVote) {
+      const termId = selectedVote.termId?._id || "";
+      
       setFormData({
-        type: selectedVote.type === "senate_bill" ? "senate" : selectedVote.type === "house_bill" ? "house" : "",  
+        type: selectedVote.type === "senate_bill" ? "senate" : selectedVote.type === "house_bill" ? "house" : "",
         title: selectedVote.title || "",
-        shortDescription: selectedVote.shortDesc || selectedVote.shortDescription || "",  
-        longDescription: selectedVote.longDesc || selectedVote.longDescription || "",  
-        date: selectedVote.date ? selectedVote.date.split("T")[0] : "", 
+        shortDescription: selectedVote.shortDesc || selectedVote.shortDescription || "",
+        longDescription: selectedVote.longDesc || selectedVote.longDescription || "",
+        date: selectedVote.date ? selectedVote.date.split("T")[0] : "",
         congress: selectedVote.congress || "",
-        term: selectedVote.termId?.name || "",  
+        term: termId,
         rollCall: selectedVote.rollCall || "",
         readMore: selectedVote.readMore || "",
       });
     }
   };
-
+  
   useEffect(() => {
     if (id) {
-      dispatch(getVoteById(id));  
+      dispatch(getVoteById(id));
     }
-
+    dispatch(getAllTerms());
+  
     return () => {
-      dispatch(clearVoteState());  
+      dispatch(clearVoteState());
     };
   }, [id, dispatch]);
 
   useEffect(() => {
-    
-    preFillForm();  
-  }, [selectedVote]);
+ 
+    preFillForm();
+  }, [selectedVote, terms]);
 
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
@@ -88,13 +115,24 @@ export default function AddBill(props) {
     width: 1,
   });
 
+  
   const handleChange = (event) => {
     const { name, value } = event.target;
+   
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
   const handleEditorChange = (content, editor, fieldName) => {
     setFormData((prev) => ({ ...prev, [fieldName]: content }));
+  };
+ 
+
+  const handleSubmit = () => {
+   
+    if (id) {
+      dispatch(updateVote({ id, updatedData: formData })); // Dispatch updateVote action with formData
+    } else {
+      dispatch(createVote(formData)); // Dispatch createVote action with formData
+    }
   };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
@@ -122,16 +160,10 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {/* <Header /> */}
             <Typography
               variant="h4"
               align="center"
-              sx={[
-                {
-                  paddingTop: "50px",
-                  color: "text.secondary",
-                },
-              ]}
+              sx={[{ paddingTop: "50px", color: "text.secondary" }]}
             >
               SBA Scorecard Management System
             </Typography>
@@ -145,116 +177,9 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="contained">Save</Button>
+              <Button variant="contained" onClick={handleSubmit}>Save</Button>
               <Button variant="outlined">Fetch Data from Quorum</Button>
             </Stack>
-
-            {/* <Paper elevation={2} sx={{ width: "100%" }}>
-                            <Box sx={{ p: 5 }}>
-                                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-                                    Senator's Information
-                                </Typography>
-                                <Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"}>
-                                    <Grid size={2}>
-                                        <InputLabel
-                                            sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "end",
-                                                fontWeight: 700,
-                                                my: 0,
-                                            }}
-                                        >
-                                            Senator's Name
-                                        </InputLabel>
-                                    </Grid>
-                                    <Grid size={4}>
-                                        <TextField required id="title" name="title" fullWidth size="small" autoComplete="off" variant="outlined" />
-                                    </Grid>
-                                    <Grid size={1}>
-                                        <InputLabel
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent: "end",
-                                                fontWeight: 700,
-                                                my: 0,
-                                            }}
-                                        >
-                                            Status
-                                        </InputLabel>
-                                    </Grid>
-                                    <Grid size={5}>
-                                        <ButtonGroup variant="outlined" aria-label="Basic button group">
-                                            <Button>Active</Button>
-                                            <Button>Former</Button>
-                                        </ButtonGroup>
-                                    </Grid>
-                                    <Grid size={2}>
-                                        <InputLabel
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent: "end",
-                                                fontWeight: 700,
-                                                my: 0,
-                                            }}
-                                        >
-                                            State
-                                        </InputLabel>
-                                    </Grid>
-                                    <Grid size={4}>
-                                        <FormControl fullWidth>
-                                            <Select value={age} sx={{ background: "#fff" }}>
-                                                <MenuItem value={10}>New York</MenuItem>
-                                                <MenuItem value={20}>Chicago</MenuItem>
-                                                <MenuItem value={30}>NC</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                    </Grid>
-                                    <Grid size={1} sx={{ alignContent: "center" }}>
-                                        <InputLabel
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent: "end",
-                                                fontWeight: 700,
-                                                my: 0,
-                                            }}
-                                        >
-                                            Party
-                                        </InputLabel>
-                                    </Grid>
-                                    <Grid size={5}>
-                                        <FormControl fullWidth>
-                                            <Select value={age} sx={{ background: "#fff" }}>
-                                                <MenuItem selected value={10}>
-                                                    Republican
-                                                </MenuItem>
-                                                <MenuItem value={20}>Democrat</MenuItem>
-                                                <MenuItem value={30}>Independent</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                    </Grid>
-
-                                    <Grid size={2}>
-                                        <InputLabel
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent: "end",
-                                                fontWeight: 700,
-                                                my: 0,
-                                            }}
-                                        >
-                                            Senator's Photo
-                                        </InputLabel>
-                                    </Grid>
-                                    <Grid size={10}>
-                                        <Button component="label" role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
-                                            Upload files
-                                            <VisuallyHiddenInput type="file" onChange={(event) => console.log(event.target.files)} multiple />
-                                        </Button>
-                                    </Grid>
-                                </Grid>
-                            </Box>
-                        </Paper> */}
 
             <div className="spacer"></div>
 
@@ -263,32 +188,18 @@ export default function AddBill(props) {
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Bill's Information
                 </Typography>
-                <Grid
-                  container
-                  rowSpacing={2}
-                  columnSpacing={2}
-                  alignItems={"center"}
-                >
+                <Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"}>
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
                       Type
                     </InputLabel>
                   </Grid>
                   <Grid size={4}>
                     <FormControl fullWidth>
                       <Select
-                        value={formData.type} // Bind value to formData
+                        value={formData.type}
                         name="type"
-                        onChange={handleChange} // Update formData on change
+                        onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
                         <MenuItem value="senate">Senate</MenuItem>
@@ -297,40 +208,8 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  {/* <Grid size={1}>
-                                        <InputLabel
-                                            sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "end",
-                                                fontWeight: 700,
-                                                my: 0,
-                                            }}
-                                        >
-                                            SBA Rating
-                                        </InputLabel>
-                                    </Grid>
-                                    <Grid size={5}>
-                                        <FormControl fullWidth>
-                                            <Select value={age} sx={{ background: "#fff" }}>
-                                                <MenuItem value={10}>New York</MenuItem>
-                                                <MenuItem value={20}>Chicago</MenuItem>
-                                                <MenuItem value={30}>NC</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                    </Grid> */}
-
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
                       Title
                     </InputLabel>
                   </Grid>
@@ -340,8 +219,8 @@ export default function AddBill(props) {
                         required
                         id="title"
                         name="title"
-                        value={formData.title} // Bind value to formData
-                        onChange={handleChange} // Update formData on change
+                        value={formData.title}
+                        onChange={handleChange}
                         fullWidth
                         size="small"
                         autoComplete="off"
@@ -351,121 +230,51 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", justifyContent: "end", fontWeight: 700, my: 0 }}>
                       Short Description
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <Editor
                       apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-                      value={formData.shortDescription} // Bind value to formData
-                      onEditorChange={(content, editor) =>
-                        handleEditorChange(content, editor, "shortDescription")
-                      } // Update formData on change
+                      value={formData.shortDescription}
+                      onEditorChange={(content, editor) => handleEditorChange(content, editor, "shortDescription")}
                       init={{
                         height: 250,
                         menubar: false,
                         plugins: [
-                          "advlist",
-                          "autolink",
-                          "lists",
-                          "link",
-                          "image",
-                          "charmap",
-                          "preview",
-                          "anchor",
-                          "searchreplace",
-                          "visualblocks",
-                          "code",
-                          "fullscreen",
-                          "insertdatetime",
-                          "media",
-                          "table",
-                          "code",
-                          "help",
-                          "wordcount",
+                          "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor", "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media", "table", "code", "help", "wordcount",
                         ],
-                        toolbar:
-                          "undo redo | blocks | " +
-                          "bold italic forecolor | alignleft aligncenter " +
-                          "alignright alignjustify | bullist numlist outdent indent | " +
-                          "removeformat | help",
-                        content_style:
-                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                        toolbar: "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                        content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                       }}
                     />
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", justifyContent: "end", fontWeight: 700, my: 0 }}>
                       Long Description
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <Editor
                       apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-                      value={formData.longDescription} // Bind value to formData
-                      onEditorChange={(content, editor) =>
-                        handleEditorChange(content, editor, "longDescription")
-                      } // Update formData on change
+                      value={formData.longDescription}
+                      onEditorChange={(content, editor) => handleEditorChange(content, editor, "longDescription")}
                       init={{
                         height: 250,
                         menubar: false,
                         plugins: [
-                          "advlist",
-                          "autolink",
-                          "lists",
-                          "link",
-                          "image",
-                          "charmap",
-                          "preview",
-                          "anchor",
-                          "searchreplace",
-                          "visualblocks",
-                          "code",
-                          "fullscreen",
-                          "insertdatetime",
-                          "media",
-                          "table",
-                          "code",
-                          "help",
-                          "wordcount",
+                          "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor", "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media", "table", "code", "help", "wordcount",
                         ],
-                        toolbar:
-                          "undo redo | blocks | " +
-                          "bold italic forecolor | alignleft aligncenter " +
-                          "alignright alignjustify | bullist numlist outdent indent | " +
-                          "removeformat | help",
-                        content_style:
-                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                        toolbar: "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                        content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                       }}
                     />
                   </Grid>
+
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
                       Date
                     </InputLabel>
                   </Grid>
@@ -476,8 +285,8 @@ export default function AddBill(props) {
                         required
                         id="date"
                         name="date"
-                        value={formData.date} // Bind value to formData
-                        onChange={handleChange} // Update formData on change
+                        value={formData.date}
+                        onChange={handleChange}
                         fullWidth
                         size="small"
                         autoComplete="off"
@@ -485,17 +294,9 @@ export default function AddBill(props) {
                       />
                     </FormControl>
                   </Grid>
+
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
                       Congress
                     </InputLabel>
                   </Grid>
@@ -505,8 +306,8 @@ export default function AddBill(props) {
                         required
                         id="congress"
                         name="congress"
-                        value={formData.congress} // Bind value to formData
-                        onChange={handleChange} // Update formData on change
+                        value={formData.congress}
+                        onChange={handleChange}
                         fullWidth
                         size="small"
                         autoComplete="off"
@@ -514,24 +315,17 @@ export default function AddBill(props) {
                       />
                     </FormControl>
                   </Grid>
+
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
                       Term
                     </InputLabel>
                   </Grid>
                   <Grid size={4}>
                     <FormControl fullWidth>
                       <Select
-                        value={formData.term}
+                        value={formData.term || ""}
+                        id="term"
                         name="term"
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
@@ -539,23 +333,23 @@ export default function AddBill(props) {
                         <MenuItem value="" disabled>
                           Select an option
                         </MenuItem>
-                        <MenuItem value={10}>Select 1</MenuItem>
-                        <MenuItem value={20}>Select 2</MenuItem>
-                        <MenuItem value={20}>Select 3</MenuItem>
+                        {terms && terms.length > 0 ? (
+                          terms.map((term) => (
+                            <MenuItem key={term._id} value={term._id}>
+                              {term.name}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem value="" disabled>
+                            No terms available
+                          </MenuItem>
+                        )}
                       </Select>
                     </FormControl>
                   </Grid>
+
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
                       Roll Call
                     </InputLabel>
                   </Grid>
@@ -586,16 +380,13 @@ export default function AddBill(props) {
                         }}
                         fullWidth
                         variant="outlined"
+                        name="rollCall"
+                        value={formData.rollCall}
+                        onChange={handleChange}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Typography
-                                fontWeight="500"
-                                sx={{
-                                  fontSize: "13px",
-                                  backgroundColor: "#F9F9F9",
-                                }}
-                              >
+                              <Typography fontWeight="500" sx={{ fontSize: "13px", backgroundColor: "#F9F9F9" }}>
                                 URL:
                               </Typography>
                             </InputAdornment>
@@ -604,17 +395,9 @@ export default function AddBill(props) {
                       />
                     </FormControl>
                   </Grid>
+
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
                       Read More
                     </InputLabel>
                   </Grid>
@@ -645,16 +428,13 @@ export default function AddBill(props) {
                         }}
                         fullWidth
                         variant="outlined"
+                        name="readMore"
+                        value={formData.readMore}
+                        onChange={handleChange}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Typography
-                                fontWeight="500"
-                                sx={{
-                                  fontSize: "13px",
-                                  backgroundColor: "#F9F9F9",
-                                }}
-                              >
+                              <Typography fontWeight="500" sx={{ fontSize: "13px", backgroundColor: "#F9F9F9" }}>
                                 URL:
                               </Typography>
                             </InputAdornment>
