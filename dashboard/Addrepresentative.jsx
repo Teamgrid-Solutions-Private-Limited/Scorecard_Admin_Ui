@@ -118,19 +118,19 @@ export default function Addrepresentative(props) {
         return;
     }
 
-    const { name, btn, state, party, img, term, rating, summary, currentTerm, votesScore, activitiesScore } = formData;
+    const { name, btn, state, party, photo, term, rating, summary, currentTerm, votesScore, activitiesScore } = formData;
     
     console.log("Dispatching update with formData:", formData);
 
     try {
-        if (img instanceof File) {
+        if (photo instanceof File) {
             // If an image file is uploaded, use FormData
             const formDataObject = new FormData();
             formDataObject.append("name", name);
             formDataObject.append("btn", btn);
             formDataObject.append("state", district);
             formDataObject.append("party", party);
-            formDataObject.append("img", img);
+            formDataObject.append("img", photo);
 
             console.log("Dispatching updateHouse with:", formDataObject);
 
