@@ -56,7 +56,7 @@ export default function Addrepresentative(props) {
             setFormData({
                 name: selectedHouse?.name || "",
                 btn: selectedHouse?.btn || "",
-                state: extractedState,  // Extracted from district
+                district: extractedState,  // Extracted from district
                 party: selectedHouse.party || "",
                 img: selectedHouse.photo || "",
                 //termHouse
@@ -128,7 +128,7 @@ export default function Addrepresentative(props) {
             const formDataObject = new FormData();
             formDataObject.append("name", name);
             formDataObject.append("btn", btn);
-            formDataObject.append("state", state);
+            formDataObject.append("state", district);
             formDataObject.append("party", party);
             formDataObject.append("img", img);
 
@@ -261,7 +261,7 @@ export default function Addrepresentative(props) {
                                     </Grid>
                                     <Grid size={4}>
                                         <FormControl fullWidth>
-                                            <Select name="state" value={formData.state} onChange={handleChange} sx={{ background: "#fff" }}>
+                                            <Select name="district" value={formData.district} onChange={handleChange} sx={{ background: "#fff" }}>
                                                 <MenuItem value="New York">New York</MenuItem>
                                                 <MenuItem value="Chicago">Chicago</MenuItem>
                                                 <MenuItem value="California">California</MenuItem>                                              
