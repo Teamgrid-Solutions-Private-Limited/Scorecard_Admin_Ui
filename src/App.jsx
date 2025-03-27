@@ -61,8 +61,8 @@ export default function App() {
            <SaveRepresentative/>
          }
        />
-       <Route
-         path="edit-representative"
+        <Route
+         path="edit-representative/:id"
          element={
            <SaveRepresentative/>
          }
