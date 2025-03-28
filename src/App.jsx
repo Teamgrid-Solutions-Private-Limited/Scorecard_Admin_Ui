@@ -17,6 +17,7 @@ import SaveRepresentative from "/dashboard/AddRepresentative";
 import Bill from "/dashboard/Bills";
 import SignIn from "/Authentication/components/SignIn";
 import AddBill from '../dashboard/AddBill';
+import SearchBill from '../dashboard/SearchBill';
 
 export default function App() {
   return (
@@ -60,8 +61,8 @@ export default function App() {
            <SaveRepresentative/>
          }
        />
-       <Route
-         path="edit-representative"
+        <Route
+         path="edit-representative/:id"
          element={
            <SaveRepresentative/>
          }
@@ -84,6 +85,13 @@ export default function App() {
            <AddBill/>
          }
        />
+        <Route path="/search-bills" element={ 
+          
+               
+              <SearchBill /> 
+           
+      } 
+      />
      </Routes>
    </Router>
   );
