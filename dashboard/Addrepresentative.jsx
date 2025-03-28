@@ -49,7 +49,6 @@ const{vote:selectedVote}=useSelector((state)=>state.vote)
         currentTerm: "",
         votesScore: "",
         activitiesScore: ""
-
     });
 
     useEffect(() => {
