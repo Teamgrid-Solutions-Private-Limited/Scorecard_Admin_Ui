@@ -1,4 +1,15 @@
 import * as React from "react";
+import { useRef } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import {
+  getVoteById,
+  clearVoteState,
+  updateVote,
+  createVote,
+} from "../redux/slice/voteSlice"; // Import clearVoteState
+import { getAllTerms } from "../redux/slice/termSlice";
  
 import { useState } from "react";
  
@@ -119,7 +130,6 @@ export default function SearchBill(props) {
                 alignItems: "center",
               }}
             >
-             
               <Button variant="outlined">Fetch Data from Quorum</Button>
             </Stack>
 
@@ -128,46 +138,75 @@ export default function SearchBill(props) {
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-                   Search Bills
+                  Search Bills
                 </Typography>
-                <Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"}>
-                  
-                  <Grid size={4}>
-             
+                <Grid
+                  container
+                  rowSpacing={2}
+                  columnSpacing={2}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Grid
+                    item
+                    xs={12}
+                    md={8}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: { xs: "column", md: "row" },
+                      gap: { xs: 2, md: 3 },
+                      width: "100%",
+                      marginLeft: { xs: "0px", lg: "20px" },
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        minWidth: "120px",
+                        textAlign: { xs: "center", md: "right" },
+                        fontWeight: 500,
+                        color: "#656D9A",
+                      }}
+                    >
+                      Search Bills
+                    </Typography>
+
                     <TextField
-                      label="Search Bills"
+                      placeholder="Search Bills"
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      sx={{ marginBottom: 2 }}
+                      fullWidth
+                      sx={{
+                        maxWidth: { xs: "100%", md: "800px" },
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "gray !important", 
+                          },
+                        },
+                        "& .MuiInputBase-root": {
+                          "&.Mui-focused": {
+                            borderColor: "gray !important", 
+                            boxShadow: "none !important",
+                            outline: "none !important",
+                          },
+                        },
+                        
+                      }}
                     />
-                    <Button variant="contained" onClick={handleSearch}>Search</Button>
-                    {searchResults.length > 0 && (
-                      <Box sx={{ marginTop: 2 }}>
-                        {searchResults.map((bill) => (
-                          <Stack key={bill.id} direction="row" spacing={2} alignItems="center">
-                            <Typography variant="body1">{bill.title}</Typography>
-                            <Button variant="outlined" onClick={() => handleAddBill(bill)}>
-                              Add
-                            </Button>
-                          </Stack>
-                        ))}
-                      </Box>
-                    )}
 
-
-                    
+                    <Button
+                      variant="contained"
+                      onClick={handleSearch}
+                      sx={{
+                        width: { xs: "100%", md: "auto" },
+                        minWidth: "110px",
+                        
+                      }}
+                    >
+                      Search
+                    </Button>
                   </Grid>
-
-                  
-                  
-
-                
-
-                  
-
-                 
-                  
                 </Grid>
               </Box>
             </Paper>
