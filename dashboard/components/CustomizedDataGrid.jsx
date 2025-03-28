@@ -54,33 +54,6 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             ),
           },
           ...(type === "representative"
-<<<<<<< HEAD
-            ? [
-                {
-                  field: "district",
-                  flex: 1,
-                  headerName: "District",
-                  minWidth: 150,
-                },
-              ]
-            : [
-                { field: "state", flex: 1, headerName: "State", minWidth: 150 ,},
-              ]),
- 
- 
-              {
-                field: "party",
-                flex: 1,
-                headerName: "Party",
-                minWidth: 150,
-                valueGetter: (params) => {
-                  if (!params) return "N/A";  
-                  return params.charAt(0).toUpperCase() + params.slice(1).toLowerCase();
-                },
-              },
-             
-             
-=======
             ? [{ field: "district", flex: 1, headerName: "District", minWidth: 150 }]
             : [{ field: "state", flex: 1, headerName: "State", minWidth: 150 }]),
           {
@@ -93,7 +66,6 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
               return params.charAt(0).toUpperCase() + params.slice(1).toLowerCase();
             },
           },
->>>>>>> development
           {
             field: "rating",
             flex: 2,
