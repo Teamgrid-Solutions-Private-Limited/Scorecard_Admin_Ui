@@ -65,6 +65,11 @@ export default function AddSenator(props) {
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
+  // const handleSave = () => {    
+    
+  // } 
+
+
   return (
     <AppTheme>
       <Box sx={{ display: "flex" }}>
@@ -111,7 +116,7 @@ export default function AddSenator(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="contained">Save</Button>
+              <Button variant="contained" >Save</Button>
               <Button variant="outlined">Fetch Senetors from Quorum</Button>
             </Stack>
 

@@ -32,97 +32,36 @@ export default function Bills(props) {
     navigate(`edit-bill/${row._id}`);
   };
 
-    const handleDelete = async (row) => {  
-        if (window.confirm("Are you sure you want to delete this bill?")) {
-            await dispatch(deleteVote(row._id));  
-            await dispatch(getAllVotes());  
-        }
-    };
+  const handleDelete = async (row) => {
+    if (window.confirm("Are you sure you want to delete this bill?")) {
+      await dispatch(deleteVote(row._id));
+      await dispatch(getAllVotes());
+    }
+  };
 
-    return (
-        <AppTheme {...props}>
-            <Box sx={{ display: "flex" }}>
-                <SideMenu />
-                <Box sx={{ flexGrow: 1, overflow: "auto" }}>
-                    <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
-                        <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
-                            SBA Scorecard Management System
-                        </Typography>
-
-
-
-                        <Stack
-                            container
-                            direction="row"
-                            spacing={2}
-                            width="100%"
-                            sx={{
-                                justifyContent: "flex-end",
-                                alignItems: "center",
-                            }}
-                        >
-                            <Button variant="contained" startIcon={<AddIcon />}  onClick={() => navigate("/add-bill")}>Add Bills</Button>
-                        <Stack direction="row" spacing={2} width="100%" sx={{ justifyContent: "flex-end", alignItems: "center" }}>
-                            <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-bill")}>
-                                Add Bills
-                            </Button >
-                            <Button variant="outlined">Fetch bills from Quorum</Button>
-                        </Stack>
-                        <MainGrid
-                            type="bills"
-                            data={billsData}
-                            loading={loading}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
-                    </Stack>
-                    </Stack>
-                </Box>
-            </Box>
-        </AppTheme>      
   return (
     <AppTheme {...props}>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box sx={{ flexGrow: 1, overflow: "auto" }}>
-          <Stack
-            spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
-          >
-            <Typography
-              variant="h4"
-              align="center"
-              sx={{ paddingTop: "50px", color: "text.secondary" }}
-            >
+          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
+            <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
               SBA Scorecard Management System
             </Typography>
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{ justifyContent: "flex-end", alignItems: "center" }}
-            >
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => navigate("/add-bill")}
-              >
+
+            <Stack direction="row" spacing={2} width="100%" sx={{ justifyContent: "flex-end", alignItems: "center" }}>
+              <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-bill")}>
                 Add Bills
               </Button>
-              <Button variant="outlined"  onClick={() => navigate("/search-bills")}>Fetch bills from Quorum</Button>
+              <Button variant="outlined" onClick={() => navigate("/search-bills")}>
+                Fetch bills from Quorum
+              </Button>
             </Stack>
-            <MainGrid
-              type="bills"
-              data={billsData}
-              loading={loading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+
+            <MainGrid type="bills" data={billsData} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
           </Stack>
         </Box>
       </Box>
     </AppTheme>
-
   );
 }
-

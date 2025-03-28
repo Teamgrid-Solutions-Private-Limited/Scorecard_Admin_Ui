@@ -70,21 +70,13 @@ export default function CustomizedDataGrid({
                   flex: 1,
                   headerName: "District",
                   minWidth: 150,
-
-                },
-              ]
-            : [
-                { field: "state", flex: 1, headerName: "State", minWidth: 150 },
-              ]),
-          { field: "party", flex: 1, headerName: "Party", minWidth: 150 },
-
                 },
               ]
             : [
                 { field: "state", flex: 1, headerName: "State", minWidth: 150 ,},
               ]),
-
-
+ 
+ 
               {
                 field: "party",
                 flex: 1,
@@ -95,9 +87,8 @@ export default function CustomizedDataGrid({
                   return params.charAt(0).toUpperCase() + params.slice(1).toLowerCase();
                 },
               },
-              
-              
-
+             
+             
           {
             field: "rating",
             flex: 2,
@@ -158,8 +149,3 @@ export default function CustomizedDataGrid({
     </div>
   );
 }
-
-
- 
-
- 
