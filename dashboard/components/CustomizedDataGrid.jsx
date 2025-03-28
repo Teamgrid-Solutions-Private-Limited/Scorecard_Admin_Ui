@@ -44,9 +44,9 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
                 <Avatar
                   src={params.row.photo}
                   sx={{
-                    width: 50,
-                    height: 50,
-                    border: `5px solid ${getBorderColor(params.row.party)}`,
+                    width: 40,
+                    height: 40,
+                    border: `3px solid ${getBorderColor(params.row.party)}`,
                   }}
                 />
                 <Typography>{params.row.name}</Typography>
@@ -54,33 +54,6 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             ),
           },
           ...(type === "representative"
-<<<<<<< HEAD
-            ? [
-                {
-                  field: "district",
-                  flex: 1,
-                  headerName: "District",
-                  minWidth: 150,
-                },
-              ]
-            : [
-                { field: "state", flex: 1, headerName: "State", minWidth: 150 ,},
-              ]),
- 
- 
-              {
-                field: "party",
-                flex: 1,
-                headerName: "Party",
-                minWidth: 150,
-                valueGetter: (params) => {
-                  if (!params) return "N/A";  
-                  return params.charAt(0).toUpperCase() + params.slice(1).toLowerCase();
-                },
-              },
-             
-             
-=======
             ? [{ field: "district", flex: 1, headerName: "District", minWidth: 150 }]
             : [{ field: "state", flex: 1, headerName: "State", minWidth: 150 }]),
           {
@@ -93,7 +66,6 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
               return params.charAt(0).toUpperCase() + params.slice(1).toLowerCase();
             },
           },
->>>>>>> development
           {
             field: "rating",
             flex: 2,
@@ -113,8 +85,8 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             minWidth: 120,
             renderCell: (params) => (
               <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer" }} />
-                <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer" }} />
+                <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer", marginTop:"12px" }} />
+                <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer", marginTop:"12px" }} />
               </div>
             ),
           },
