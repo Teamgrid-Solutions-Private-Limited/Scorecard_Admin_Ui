@@ -3,7 +3,12 @@ import { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getVoteById, clearVoteState, updateVote, createVote } from "../redux/slice/voteSlice"; // Import clearVoteState
+import {
+  getVoteById,
+  clearVoteState,
+  updateVote,
+  createVote,
+} from "../redux/slice/voteSlice";
 import { getAllTerms } from "../redux/slice/termSlice";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -19,87 +24,65 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
-import ButtonGroup from "@mui/material/ButtonGroup";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { Editor } from "@tinymce/tinymce-react";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import AddIcon from "@mui/icons-material/Add";
-import Switch from "@mui/material/Switch";
 import Copyright from "./internals/components/Copyright";
 import { InputAdornment } from "@mui/material";
 
 export default function AddBill(props) {
   const { id } = useParams();
-  const [age, setAge] = React.useState("");
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
   const { terms } = useSelector((state) => state.term);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
-    shortDescription: "",
-    longDescription: "",
+    shortDesc: "",
+    longDesc: "",
     date: "",
     congress: "",
-    term: "",
+    termId: "",
     rollCall: "",
     readMore: "",
   });
 
-  // const preFillForm = () => {
-  //   if (selectedVote) {
-  //     console.log("Selected Vote:", selectedVote);
-  //     console.log("Terms:", terms);
-  //     const termId = selectedVote.termId && terms.length > 0
-  //       ? terms.find(term => term._id === selectedVote.termId)?._id || ""
-  //       : "";
-  //     console.log("Term ID:", termId);
-  //     setFormData({
-  //       type: selectedVote.type === "senate_bill" ? "senate" : selectedVote.type === "house_bill" ? "house" : "",
-  //       title: selectedVote.title || "",
-  //       shortDescription: selectedVote.shortDesc || selectedVote.shortDescription || "",
-  //       longDescription: selectedVote.longDesc || selectedVote.longDescription || "",
-  //       date: selectedVote.date ? selectedVote.date.split("T")[0] : "",
-  //       congress: selectedVote.congress || "",
-  //       term: termId,
-  //       rollCall: selectedVote.rollCall || "",
-  //       readMore: selectedVote.readMore || "",
-  //     });
-  //   }
-  // };
-
   const preFillForm = () => {
     if (selectedVote) {
-      const termId = selectedVote.termId?._id || "";
+      const termId = selectedVote.termId?._id || ""; 
       setFormData({
-        type: selectedVote.type === "senate_bill" ? "senate" : selectedVote.type === "house_bill" ? "house" : "",
+        ...formData,type:
+          selectedVote.type === "senate_bill"
+            ? "senate"
+            : selectedVote.type === "house_bill"
+            ? "house"
+            : "",
         title: selectedVote.title || "",
-        shortDescription: selectedVote.shortDesc || selectedVote.shortDescription || "",
-        longDescription: selectedVote.longDesc || selectedVote.longDescription || "",
+        shortDesc: selectedVote.shortDesc || "",
+        longDesc: selectedVote.longDesc || "",
         date: selectedVote.date ? selectedVote.date.split("T")[0] : "",
         congress: selectedVote.congress || "",
-        term: termId,
+        termId: termId, // Correctly set termId
         rollCall: selectedVote.rollCall || "",
         readMore: selectedVote.readMore || "",
       });
     }
   };
-  
+
   useEffect(() => {
     if (id) {
       dispatch(getVoteById(id));
     }
     dispatch(getAllTerms());
-  
+
     return () => {
       dispatch(clearVoteState());
     };
   }, [id, dispatch]);
 
   useEffect(() => {
- 
-    preFillForm();
-  }, [selectedVote, terms]);
+    if (selectedVote) {
+      preFillForm();
+    }
+  }, [selectedVote]);
 
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
@@ -114,27 +97,28 @@ export default function AddBill(props) {
     width: 1,
   });
 
-  
   const handleChange = (event) => {
     const { name, value } = event.target;
-   
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const handleEditorChange = (content, editor, fieldName) => {
+
+  const handleEditorChange = (content, fieldName) => {
     setFormData((prev) => ({ ...prev, [fieldName]: content }));
   };
- 
 
-  const handleSubmit = () => {
-   
+  const handleSubmit = async () => {
     if (id) {
-      dispatch(updateVote({ id, updatedData: formData })); // Dispatch updateVote action with formData
+      try {
+        await dispatch(updateVote({ id, updatedData: formData })).unwrap();
+        alert("Updated Successfully");
+        dispatch(getVoteById(id)); 
+      } catch (error) {
+        alert(`Update failed: ${error}`);
+      }
     } else {
-      dispatch(createVote(formData)); // Dispatch createVote action with formData
+      dispatch(createVote(formData));
     }
   };
-
-  const label = { inputProps: { "aria-label": "Color switch demo" } };
 
   return (
     <AppTheme>
@@ -176,20 +160,34 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="contained" onClick={handleSubmit}>Save</Button>
+              <Button variant="contained" onClick={handleSubmit}>
+                Save
+              </Button>
               <Button variant="outlined">Fetch Data from Quorum</Button>
             </Stack>
-
-            <div className="spacer"></div>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Bill's Information
                 </Typography>
-                <Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"}>
+                <Grid
+                  container
+                  rowSpacing={2}
+                  columnSpacing={2}
+                  alignItems={"center"}
+                >
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
                       Type
                     </InputLabel>
                   </Grid>
@@ -208,7 +206,16 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
                       Title
                     </InputLabel>
                   </Grid>
@@ -229,51 +236,116 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", justifyContent: "end", fontWeight: 700, my: 0 }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
                       Short Description
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <Editor
                       apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-                      value={formData.shortDescription}
-                      onEditorChange={(content, editor) => handleEditorChange(content, editor, "shortDescription")}
+                      value={formData.shortDesc}
+                      onEditorChange={(content) =>
+                        handleEditorChange(content, "shortDesc")
+                      }
                       init={{
                         height: 250,
                         menubar: false,
                         plugins: [
-                          "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor", "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media", "table", "code", "help", "wordcount",
+                          "advlist",
+                          "autolink",
+                          "lists",
+                          "link",
+                          "image",
+                          "charmap",
+                          "preview",
+                          "anchor",
+                          "searchreplace",
+                          "visualblocks",
+                          "code",
+                          "fullscreen",
+                          "insertdatetime",
+                          "media",
+                          "table",
+                          "code",
+                          "help",
+                          "wordcount",
                         ],
-                        toolbar: "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                        content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                        toolbar:
+                          "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                       }}
                     />
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", justifyContent: "end", fontWeight: 700, my: 0 }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                      }}
+                    >
                       Long Description
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <Editor
                       apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-                      value={formData.longDescription}
-                      onEditorChange={(content, editor) => handleEditorChange(content, editor, "longDescription")}
+                      value={formData.longDesc}
+                      onEditorChange={(content) =>
+                        handleEditorChange(content, "longDesc")
+                      }
                       init={{
                         height: 250,
                         menubar: false,
                         plugins: [
-                          "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor", "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media", "table", "code", "help", "wordcount",
+                          "advlist",
+                          "autolink",
+                          "lists",
+                          "link",
+                          "image",
+                          "charmap",
+                          "preview",
+                          "anchor",
+                          "searchreplace",
+                          "visualblocks",
+                          "code",
+                          "fullscreen",
+                          "insertdatetime",
+                          "media",
+                          "table",
+                          "code",
+                          "help",
+                          "wordcount",
                         ],
-                        toolbar: "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                        content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                        toolbar:
+                          "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                       }}
                     />
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
                       Date
                     </InputLabel>
                   </Grid>
@@ -295,7 +367,16 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
                       Congress
                     </InputLabel>
                   </Grid>
@@ -316,16 +397,25 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
                       Term
                     </InputLabel>
                   </Grid>
                   <Grid size={4}>
                     <FormControl fullWidth>
                       <Select
-                        value={formData.term || ""}
-                        id="term"
-                        name="term"
+                        value={formData.termId || ""}
+                        id="termId"
+                        name="termId"
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
@@ -348,7 +438,16 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
                       Roll Call
                     </InputLabel>
                   </Grid>
@@ -385,7 +484,13 @@ export default function AddBill(props) {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Typography fontWeight="500" sx={{ fontSize: "13px", backgroundColor: "#F9F9F9" }}>
+                              <Typography
+                                fontWeight="500"
+                                sx={{
+                                  fontSize: "13px",
+                                  backgroundColor: "#F9F9F9",
+                                }}
+                              >
                                 URL:
                               </Typography>
                             </InputAdornment>
@@ -396,7 +501,16 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
                       Read More
                     </InputLabel>
                   </Grid>
@@ -433,7 +547,13 @@ export default function AddBill(props) {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Typography fontWeight="500" sx={{ fontSize: "13px", backgroundColor: "#F9F9F9" }}>
+                              <Typography
+                                fontWeight="500"
+                                sx={{
+                                  fontSize: "13px",
+                                  backgroundColor: "#F9F9F9",
+                                }}
+                              >
                                 URL:
                               </Typography>
                             </InputAdornment>

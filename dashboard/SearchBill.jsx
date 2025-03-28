@@ -4,14 +4,25 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import {
   getVoteById,
   clearVoteState,
   updateVote,
   createVote,
 } from "../redux/slice/voteSlice"; // Import clearVoteState
 import { getAllTerms } from "../redux/slice/termSlice";
+<<<<<<< HEAD
  
  
+=======
+>>>>>>> development
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -37,56 +48,54 @@ import { InputAdornment } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/api/API";
 import axios from "axios";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function SearchBill(props) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false); // Loader state
+  const navigate = useNavigate();
 
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState([]);
-    const [loading, setLoading] = useState(false); // Loader state
-    const navigate = useNavigate();
-  
-    const handleSearch = async () => {
-      setLoading(true); 
-      try {
-        const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
-          type: "bills",
-          additionalParams: {
-            title: searchQuery,
-          },
-        });
-        setSearchResults(response.data.data);
-      } catch (error) {
-        console.error("Error searching bills:", error);
-      } finally {
-        setLoading(false);  
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
+        type: "bills",
+        additionalParams: {
+          title: searchQuery,
+        },
+      });
+      setSearchResults(response.data.data);
+    } catch (error) {
+      console.error("Error searching bills:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddBill = async (bill) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
+        bills: [bill],
+      });
+      console.log("Bill saved successfully:", response.data);
+
+      alert("Bill saved successfully");
+
+      const voteId = response.data.data[0]._id;
+      if (voteId) {
+        navigate(`/bills/edit-bill/${voteId}`);
+      } else {
+        console.error("voteId (_id) is missing in the API response.");
       }
-    };
-  
-    const handleAddBill = async (bill) => {
-      setLoading(true); 
-      try {
-        const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
-          bills: [bill],
-        });
-        console.log("Bill saved successfully:", response.data);
-  
-       alert("Bill saved successfully");
-  
-       
-        const voteId = response.data.data[0]._id;  
-        if (voteId) {
-          navigate(`/bills/edit-bill/${voteId}`);  
-        } else {
-          console.error("voteId (_id) is missing in the API response.");
-        }
-      } catch (error) {
-        console.error("Error saving bill:", error);
-      } finally {
-        setLoading(false);  
-      }
-    };
- 
- 
+    } catch (error) {
+      console.error("Error saving bill:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
   return (
@@ -129,7 +138,7 @@ export default function SearchBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="outlined">Fetch Data from Quorum</Button>
+              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <div className="spacer"></div>
@@ -180,17 +189,16 @@ export default function SearchBill(props) {
                         maxWidth: { xs: "100%", md: "800px" },
                         "& .MuiOutlinedInput-root": {
                           "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "gray !important", 
+                            borderColor: "gray !important",
                           },
                         },
                         "& .MuiInputBase-root": {
                           "&.Mui-focused": {
-                            borderColor: "gray !important", 
+                            borderColor: "gray !important",
                             boxShadow: "none !important",
                             outline: "none !important",
                           },
                         },
-                        
                       }}
                     />
 
@@ -206,6 +214,74 @@ export default function SearchBill(props) {
                       Search
                     </Button>
                   </Grid>
+
+                  {loading ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        marginTop: 2,
+                      }}
+                    >
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    searchResults.length > 0 && (
+                      <TableContainer
+                        component={Paper}
+                        sx={{ marginTop: 6, border: "1px solid #ddd" }}
+                      >
+                        <Table size="large" >
+                          
+                          <TableHead>
+                            <TableRow sx={{ }}>
+                              <TableCell
+                                sx={{
+                                  fontWeight: "bold",
+                                  borderBottom: "1px solid #ddd",
+                                }}
+                              >
+                                Title
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  fontWeight: "bold",
+                                  textAlign: "center",
+                                  borderBottom: "1px solid #ddd",
+                                }}
+                              >
+                                Action
+                              </TableCell>
+                            </TableRow>
+                          </TableHead>
+
+                          
+                          <TableBody>
+                            {searchResults.map((bill) => (
+                              <TableRow key={bill.id}>
+                                <TableCell sx={{ borderBottom: "1px solid #ddd" , fontSize:"13px" }}>
+                                  {bill.title}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    textAlign: "center",
+                                    borderBottom: "1px solid #ddd",
+                                  }}
+                                >
+                                  <Button
+                                    variant="outlined"
+                                    onClick={() => handleAddBill(bill)}
+                                  >
+                                    Add
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )
+                  )}
                 </Grid>
               </Box>
             </Paper>
