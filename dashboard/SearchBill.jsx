@@ -1,15 +1,4 @@
 import * as React from "react";
-import { useRef } from "react";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import {
-  getVoteById,
-  clearVoteState,
-  updateVote,
-  createVote,
-} from "../redux/slice/voteSlice"; // Import clearVoteState
-import { getAllTerms } from "../redux/slice/termSlice";
  
 import { useState } from "react";
  
@@ -130,7 +119,7 @@ export default function SearchBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="outlined">Fetch Data from Quorum</Button>
+              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <div className="spacer"></div>
@@ -168,7 +157,7 @@ export default function SearchBill(props) {
                         color: "#656D9A",
                       }}
                     >
-                      Search Bills
+                      Search  Bills  
                     </Typography>
 
                     <TextField
@@ -207,6 +196,19 @@ export default function SearchBill(props) {
                       Search
                     </Button>
                   </Grid>
+                  {searchResults.length > 0 && (
+                      <Box sx={{ marginTop: 2 }}>
+                        {searchResults.map((bill) => (
+                          <Stack key={bill.id} direction="row" spacing={2} alignItems="center">
+                            <Typography variant="body1">{bill.title}</Typography>
+                            <Button variant="outlined" onClick={() => handleAddBill(bill)}>
+                              Add
+                            </Button>
+                          </Stack>
+                        ))}
+                      </Box>
+                    )}
+
                 </Grid>
               </Box>
             </Paper>
