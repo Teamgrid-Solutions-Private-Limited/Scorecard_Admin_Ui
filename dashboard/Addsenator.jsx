@@ -1,11 +1,7 @@
 import * as React from "react";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { alpha, styled } from "@mui/material/styles";
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getSenatorById } from "../redux/slice/senetorSlice";
-import { getAllTerms } from "../redux/slice/termSlice";
+ 
 import { getSenatorDataBySenetorId } from "../redux/slice/senetorTermSlice";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -27,8 +23,116 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import Switch from "@mui/material/Switch";
 import Copyright from "./internals/components/Copyright";
+import { useDispatch, useSelector } from "react-redux";
+import { rating } from "./global/common";
+import { useParams } from "react-router-dom";
+import {
+  getVoteById,
+  clearVoteState,
+  updateVote,
+  createVote,
+  getAllVotes,
+} from "../redux/slice/voteSlice";
+import {
+  getSenatorById,
+  updateSenator,
+  clearSenatorState,
+} from "../redux/slice/senetorSlice";
+import { getAllTerms } from "../redux/slice/termSlice";
 
 export default function AddSenator(props) {
+  const { id } = useParams(); // Get the senator ID from the URL
+  const dispatch = useDispatch();
+  const { senator } = useSelector((state) => state.senator); // Access senator details from Redux state
+  const { terms } = useSelector((state) => state.term);
+  const { votes } = useSelector((state) => state.vote);
+  const [formData, setFormData] = useState(
+    {
+      name: "",
+      status: "",
+      state: "",
+      party: "",
+      photo: null,
+      term: "",
+      bill:""
+    },
+    []
+  );
+  const preFillForm = () => {
+    if (senator) {
+      const termId =
+        senator.termId && terms.length > 0
+          ? terms.find((term) => term._id === senator.termId)?._id || ""
+          : "";
+      setFormData({
+        name: senator.name || "",
+        status: senator.status || "",
+        state: senator.state || "",
+        party: senator.party || "",
+        photo: senator.photo || null, // Photo will not be pre-filled
+        term: termId,
+      });
+    }
+  };
+  useEffect(() => {
+    if (id) {
+      dispatch(getSenatorById(id)); // Fetch senator details by ID
+    }
+    dispatch(getAllTerms());
+    dispatch(getAllVotes());
+    return () => {
+      dispatch(clearSenatorState());
+    };
+  }, [id, dispatch]);
+
+  useEffect(() => {
+    console.log("Votes from Redux:", votes); // Log votes to verify
+  }, [votes]);
+  useEffect(() => {
+    preFillForm(); // Pre-fill the form when senator details are fetched
+  }, [senator, terms]);
+
+  const handleVoteChange = (event, index, field) => {
+    const { value } = event.target;
+    setVote((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setFormData((prev) => ({ ...prev, photo: file }));
+  };
+  const handleSave = async () => {
+    if (id) {
+      const updatedData = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) updatedData.append(key, value);
+      });
+      // Add votes to the formData
+      updatedData.append("votes", JSON.stringify(vote));
+ if (formData.term) {
+   updatedData.append("termId", formData.term); // Add termId
+ }
+ if (formData.bill) {
+   updatedData.append("billId", formData.bill); // Add billId
+ }
+      try {
+        await dispatch(updateSenator({ id, formData: updatedData })).unwrap(); // Wait for the update action to complete
+        console.log("Update successful");
+        alert("Update successful"); // Show success message
+      } catch (error) {
+        console.error("Update failed:", error);
+        alert("Update failed. Please try again."); // Show error message
+      }
+    }
+  };
+
   const [age, setAge] = React.useState("");
   const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
   const [activity, setActivity] = React.useState([
@@ -51,16 +155,20 @@ export default function AddSenator(props) {
   //   setAge(event.target.value);
   // };
 
+  const handleRemoveVote = (index) => {
+    setVote((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleStatusChange = (status) => {
+    setFormData((prev) => ({ ...prev, status })); // Update the status in formData
+  };
   const handleAdd = () => {
     setVote([...vote, { id: vote.length + 1, option1: "", option2: "" }]);
   };
 
-  const handleRemove = (id) => {
-    setVote(vote.filter((item) => item.id !== id));
-  };
-
-  const handleRemoveActivity = (id) => {
-    setActivity(activity.filter((item) => item.id !== id));
+  // Removed duplicate declaration of handleRemoveVote
+  const handleRemoveActivity = (index) => {
+    setActivity((prev) => prev.filter((_, i) => i !== index));
   };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
@@ -111,7 +219,17 @@ export default function AddSenator(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="contained">Save</Button>
+              <Button
+                variant="contained"
+                onClick={handleSave}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "green", // Change background color on hover
+                  },
+                }}
+              >
+                Save
+              </Button>
               <Button variant="outlined">Fetch Senetors from Quorum</Button>
             </Stack>
 
@@ -143,7 +261,9 @@ export default function AddSenator(props) {
                     <TextField
                       required
                       id="title"
-                      name="title"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
                       fullWidth
                       size="small"
                       autoComplete="off"
@@ -167,8 +287,26 @@ export default function AddSenator(props) {
                       variant="outlined"
                       aria-label="Basic button group"
                     >
-                      <Button>Active</Button>
-                      <Button>Former</Button>
+                      <Button
+                        variant={
+                          formData.status === "Active"
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={() => handleStatusChange("Active")}
+                      >
+                        Active
+                      </Button>
+                      <Button
+                        variant={
+                          formData.status === "Former"
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={() => handleStatusChange("Former")}
+                      >
+                        Former
+                      </Button>
                     </ButtonGroup>
                   </Grid>
                   <Grid size={2}>
@@ -184,13 +322,16 @@ export default function AddSenator(props) {
                     </InputLabel>
                   </Grid>
                   <Grid size={4}>
-                    <FormControl fullWidth>
-                      <Select value={age} sx={{ background: "#fff" }}>
-                        <MenuItem value={10}>New York</MenuItem>
-                        <MenuItem value={20}>Chicago</MenuItem>
-                        <MenuItem value={30}>NC</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <TextField
+                      id="state"
+                      name="state"
+                      value={formData.state} // Display the state from formData
+                      onChange={handleChange}
+                      fullWidth
+                      size="small"
+                      autoComplete="off"
+                      variant="outlined"
+                    />
                   </Grid>
                   <Grid size={1} sx={{ alignContent: "center" }}>
                     <InputLabel
@@ -205,15 +346,16 @@ export default function AddSenator(props) {
                     </InputLabel>
                   </Grid>
                   <Grid size={5}>
-                    <FormControl fullWidth>
-                      <Select value={age} sx={{ background: "#fff" }}>
-                        <MenuItem selected value={10}>
-                          Republican
-                        </MenuItem>
-                        <MenuItem value={20}>Democrat</MenuItem>
-                        <MenuItem value={30}>Independent</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <TextField
+                      id="party"
+                      name="party"
+                      value={formData.party} // Display the state from formData
+                      onChange={handleChange}
+                      fullWidth
+                      size="small"
+                      autoComplete="off"
+                      variant="outlined"
+                    />
                   </Grid>
 
                   <Grid size={2}>
@@ -229,20 +371,43 @@ export default function AddSenator(props) {
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
-                    <Button
-                      component="label"
-                      role={undefined}
-                      variant="contained"
-                      tabIndex={-1}
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      Upload files
-                      <VisuallyHiddenInput
-                        type="file"
-                        onChange={(event) => console.log(event.target.files)}
-                        multiple
-                      />
-                    </Button>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      {/* Preview the uploaded or dynamic image */}
+                      {formData.photo ? (
+                        <img
+                          src={
+                            typeof formData.photo === "string"
+                              ? formData.photo // Dynamic image URL
+                              : URL.createObjectURL(formData.photo) // Uploaded image preview
+                          }
+                          alt="Senator's Photo"
+                          style={{
+                            width: "100px",
+                            height: "100px",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                          }}
+                        />
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          No photo uploaded
+                        </Typography>
+                      )}
+
+                      {/* Upload button */}
+                      <Button
+                        component="label"
+                        variant="contained"
+                        startIcon={<CloudUploadIcon />}
+                      >
+                        Upload files
+                        <VisuallyHiddenInput
+                          type="file"
+                          onChange={handleFileChange}
+                          accept="image/*" // Optional: Restrict to image files
+                        />
+                      </Button>
+                    </Box>
                   </Grid>
                 </Grid>
               </Box>
@@ -276,10 +441,27 @@ export default function AddSenator(props) {
                   </Grid>
                   <Grid size={4}>
                     <FormControl fullWidth>
-                      <Select value={age} sx={{ background: "#fff" }}>
-                        <MenuItem value={10}>New York</MenuItem>
-                        <MenuItem value={20}>Chicago</MenuItem>
-                        <MenuItem value={30}>NC</MenuItem>
+                      <Select
+                        value={formData.term || ""}
+                        id="term"
+                        name="term"
+                        onChange={(event) => handleChange(event)}
+                        sx={{ background: "#fff" }}
+                      >
+                        <MenuItem value="" disabled>
+                          Select an option
+                        </MenuItem>
+                        {terms && terms.length > 0 ? (
+                          terms.map((term) => (
+                            <MenuItem key={term._id} value={term._id}>
+                              {term.name}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem value="" disabled>
+                            No terms available
+                          </MenuItem>
+                        )}
                       </Select>
                     </FormControl>
                   </Grid>
@@ -299,10 +481,21 @@ export default function AddSenator(props) {
                   </Grid>
                   <Grid size={5}>
                     <FormControl fullWidth>
-                      <Select value={age} sx={{ background: "#fff" }}>
-                        <MenuItem value={10}>New York</MenuItem>
-                        <MenuItem value={20}>Chicago</MenuItem>
-                        <MenuItem value={30}>NC</MenuItem>
+                      <Select
+                        value={formData.rating || ""} // Bind the selected value to formData.rating
+                        id="rating"
+                        name="rating"
+                        onChange={(event) => handleChange(event)}
+                        sx={{ background: "#fff" }}
+                      >
+                        <MenuItem value="" disabled>
+                          Select a rating
+                        </MenuItem>{" "}
+                        {rating.map((rate, index) => (
+                          <MenuItem key={index} value={rate}>
+                            {rate}
+                          </MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                   </Grid>
@@ -323,7 +516,7 @@ export default function AddSenator(props) {
                     <Editor
                       apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                       onInit={(_evt, editor) => (editorRef.current = editor)}
-                      initialValue="Test"
+                      initialValue={formData.termSummary || ""}
                       init={{
                         height: 250,
                         menubar: false,
@@ -375,8 +568,8 @@ export default function AddSenator(props) {
                   </Grid>
 
                   {/* Vote Repeater Start */}
-                  {vote.map((item) => (
-                    <Grid rowSpacing={2} sx={{ width: "100%" }}>
+                  {vote.map((item, index) => (
+                    <Grid rowSpacing={2} sx={{ width: "100%" }} key={index}>
                       <Grid
                         size={12}
                         display="flex"
@@ -398,33 +591,50 @@ export default function AddSenator(props) {
                         </Grid>
                         <Grid size={4}>
                           <FormControl fullWidth>
-                            <Select
-                              value={item.option1}
-                              sx={{ background: "#fff" }}
-                            >
-                              <MenuItem value={10}>New York</MenuItem>
-                              <MenuItem value={20}>Chicago</MenuItem>
-                              <MenuItem value={30}>NC</MenuItem>
+                           < Select
+      value={formData.bill || ""} // Bind the selected value to formData.bill
+      id="bill"
+      name="bill"
+      onChange={(event) => handleChange(event)} // Handle bill selection
+      sx={{ background: "#fff" }}
+    >
+      <MenuItem value="" disabled>
+        Select a Bill
+      </MenuItem>
+      {votes && votes.length > 0 ? (
+        votes.map((vote) => (
+          <MenuItem key={vote._id} value={vote._id}>
+            {vote.title}
+          </MenuItem>
+        ))
+      ) : (
+        <MenuItem value="" disabled>
+          No bills available
+        </MenuItem>
+      )}
                             </Select>
                           </FormControl>
                         </Grid>
                         <Grid size={5}>
                           <FormControl fullWidth>
                             <Select
-                              value={item.option2}
+                              value={item.option2 || ""}
+                              name={`vote-${index}`}
+                              onChange={(event) =>
+                                handleVoteChange(event, index, "option2")
+                              }
                               sx={{ background: "#fff" }}
                             >
-                              <MenuItem value={10}>New York</MenuItem>
-                              <MenuItem value={20}>Chicago</MenuItem>
-                              <MenuItem value={30}>NC</MenuItem>
+                              <MenuItem value={10}>Yes</MenuItem>
+                              <MenuItem value={20}>No</MenuItem>
+                              <MenuItem value={30}>Neutral</MenuItem>
+                              <MenuItem value={30}>None</MenuItem>
                             </Select>
                           </FormControl>
                         </Grid>
                         <Grid size={1}>
                           <DeleteForeverIcon
-                            onClick={() => {
-                              handleRemove(item.id);
-                            }}
+                            onClick={() => handleRemoveVote(index)}
                           />
                         </Grid>
                       </Grid>
@@ -447,7 +657,7 @@ export default function AddSenator(props) {
 
                   {/* Activity Repeater Start */}
                   {activity.map((item) => (
-                    <Grid rowSpacing={2} sx={{ width: "100%" }}>
+                    <Grid rowSpacing={2} sx={{ width: "100%" }} key={item.id}>
                       <Grid
                         size={12}
                         display="flex"

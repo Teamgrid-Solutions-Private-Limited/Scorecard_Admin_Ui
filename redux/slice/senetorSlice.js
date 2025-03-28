@@ -93,8 +93,19 @@ const initialState = {
 // Slice
 const senatorSlice = createSlice({
   name: "senators",
-  initialState,
-  reducers: {},
+  initialState: {
+    senators: [],
+    senator: null,
+    loading: false,
+    error: null,
+  },
+  reducers: {
+    clearSenatorState: (state) => {
+      state.senator = null; // Clear the selected senator
+      state.loading = false;
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     // Create senator
     builder
@@ -177,3 +188,4 @@ const senatorSlice = createSlice({
 });
 
 export default senatorSlice.reducer;
+export const { clearSenatorState } = senatorSlice.actions; 

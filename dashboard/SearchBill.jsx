@@ -10,6 +10,9 @@ import {
   createVote,
 } from "../redux/slice/voteSlice"; // Import clearVoteState
 import { getAllTerms } from "../redux/slice/termSlice";
+ 
+import { useState } from "react";
+ 
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -34,53 +37,57 @@ import Copyright from "./internals/components/Copyright";
 import { InputAdornment } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/api/API";
+import axios from "axios";
 
 export default function SearchBill(props) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState(false); // Loader state
-  const navigate = useNavigate();
 
-  const handleSearch = async () => {
-    setLoading(true); // Start loader
-    try {
-      const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
-        type: "bills",
-        additionalParams: {
-          title: searchQuery,
-        },
-      });
-      setSearchResults(response.data.data);
-    } catch (error) {
-      console.error("Error searching bills:", error);
-    } finally {
-      setLoading(false); // Stop loader
-    }
-  };
-
-  const handleAddBill = async (bill) => {
-    setLoading(true); // Start loader
-    try {
-      const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
-        bills: [bill],
-      });
-      console.log("Bill saved successfully:", response.data);
-
-      alert("Bill saved successfully");
-
-      const voteId = response.data.data[0]._id; // Use the first item's _id as voteId
-      if (voteId) {
-        navigate(`/bills/edit-vote/${voteId}`); // Redirect to edit page
-      } else {
-        console.error("voteId (_id) is missing in the API response.");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [loading, setLoading] = useState(false); // Loader state
+    const navigate = useNavigate();
+  
+    const handleSearch = async () => {
+      setLoading(true); 
+      try {
+        const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
+          type: "bills",
+          additionalParams: {
+            title: searchQuery,
+          },
+        });
+        setSearchResults(response.data.data);
+      } catch (error) {
+        console.error("Error searching bills:", error);
+      } finally {
+        setLoading(false);  
       }
-    } catch (error) {
-      console.error("Error saving bill:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    };
+  
+    const handleAddBill = async (bill) => {
+      setLoading(true); 
+      try {
+        const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
+          bills: [bill],
+        });
+        console.log("Bill saved successfully:", response.data);
+  
+       alert("Bill saved successfully");
+  
+       
+        const voteId = response.data.data[0]._id;  
+        if (voteId) {
+          navigate(`/bills/edit-bill/${voteId}`);  
+        } else {
+          console.error("voteId (_id) is missing in the API response.");
+        }
+      } catch (error) {
+        console.error("Error saving bill:", error);
+      } finally {
+        setLoading(false);  
+      }
+    };
+ 
+ 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
   return (
