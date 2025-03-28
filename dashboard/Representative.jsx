@@ -80,9 +80,9 @@ export default function Representative(props) {
                         </Typography>
 
                         <Stack direction="row" spacing={2} width="100%" sx={{ justifyContent: "flex-end", alignItems: "center" }}>
-                            <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-representative")}>
+                            {/* <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-representative")}>
                                 Add Representative
-                            </Button>
+                            </Button> */}
                             <Button variant="outlined" onClick={fetchRepresentativeFromQuorum}>Fetch Representative from Quorum</Button>
                         </Stack>
                          {fetching && <CircularProgress />}

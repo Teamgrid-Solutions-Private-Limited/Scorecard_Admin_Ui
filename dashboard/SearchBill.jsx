@@ -29,6 +29,7 @@ import Copyright from "./internals/components/Copyright";
 import { InputAdornment } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/api/API";
+import axios from "axios";
 
 export default function SearchBill(props) {
 
@@ -38,7 +39,7 @@ export default function SearchBill(props) {
     const navigate = useNavigate();
   
     const handleSearch = async () => {
-      setLoading(true); // Start loader
+      setLoading(true); 
       try {
         const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
           type: "bills",
@@ -50,12 +51,12 @@ export default function SearchBill(props) {
       } catch (error) {
         console.error("Error searching bills:", error);
       } finally {
-        setLoading(false); // Stop loader
+        setLoading(false);  
       }
     };
   
     const handleAddBill = async (bill) => {
-      setLoading(true); // Start loader
+      setLoading(true); 
       try {
         const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
           bills: [bill],
@@ -65,9 +66,9 @@ export default function SearchBill(props) {
        alert("Bill saved successfully");
   
        
-        const voteId = response.data.data[0]._id; // Use the first item's _id as voteId
+        const voteId = response.data.data[0]._id;  
         if (voteId) {
-          navigate(`/bills/edit-vote/${voteId}`); // Redirect to edit page
+          navigate(`/bills/edit-bill/${voteId}`);  
         } else {
           console.error("voteId (_id) is missing in the API response.");
         }
@@ -130,21 +131,12 @@ export default function SearchBill(props) {
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-                  Bill's Information
+                   Search Bills
                 </Typography>
                 <Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"}>
                   
                   <Grid size={4}>
-                    <FormControl fullWidth>
-                      <Select
-                        
-                        name="type"
-                        // onChange={handleChange}
-                        sx={{ background: "#fff" }}
-                      >
-                       
-                      </Select>
-                    </FormControl>
+             
                     <TextField
                       label="Search Bills"
                       variant="outlined"
@@ -153,15 +145,24 @@ export default function SearchBill(props) {
                       sx={{ marginBottom: 2 }}
                     />
                     <Button variant="contained" onClick={handleSearch}>Search</Button>
+                    {searchResults.length > 0 && (
+                      <Box sx={{ marginTop: 2 }}>
+                        {searchResults.map((bill) => (
+                          <Stack key={bill.id} direction="row" spacing={2} alignItems="center">
+                            <Typography variant="body1">{bill.title}</Typography>
+                            <Button variant="outlined" onClick={() => handleAddBill(bill)}>
+                              Add
+                            </Button>
+                          </Stack>
+                        ))}
+                      </Box>
+                    )}
+
 
                     
                   </Grid>
 
-                  <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
-                      Title
-                    </InputLabel>
-                  </Grid>
+                  
                   
 
                 
