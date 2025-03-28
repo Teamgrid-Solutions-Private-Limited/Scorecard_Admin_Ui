@@ -106,10 +106,15 @@ export default function AddBill(props) {
     setFormData((prev) => ({ ...prev, [fieldName]: content }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (id) {
-      dispatch(updateVote({ id, updatedData: formData }));
-      dispatch(getVoteById(id));
+      try {
+        await dispatch(updateVote({ id, updatedData: formData })).unwrap();
+        alert("Updated Successfully");
+        dispatch(getVoteById(id)); 
+      } catch (error) {
+        alert(`Update failed: ${error}`);
+      }
     } else {
       dispatch(createVote(formData));
     }
