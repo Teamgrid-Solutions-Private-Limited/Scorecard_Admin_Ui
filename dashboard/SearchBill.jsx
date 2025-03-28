@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useRef } from "react";
-import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -18,11 +17,9 @@ import {
   createVote,
 } from "../redux/slice/voteSlice"; // Import clearVoteState
 import { getAllTerms } from "../redux/slice/termSlice";
-<<<<<<< HEAD
  
+import { useState } from "react";
  
-=======
->>>>>>> development
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -208,7 +205,6 @@ export default function SearchBill(props) {
                       sx={{
                         width: { xs: "100%", md: "auto" },
                         minWidth: "110px",
-                        
                       }}
                     >
                       Search

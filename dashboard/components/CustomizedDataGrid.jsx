@@ -84,7 +84,6 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             headerName: "Action",
             minWidth: 120,
             renderCell: (params) => (
-<<<<<<< HEAD
               <div
               style={{
                 display: "flex",
@@ -117,12 +116,7 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
                 onMouseOut={(e) => (e.target.style.color = "#d32f2f")}
               />
             </div>            
-=======
-              <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer", marginTop:"12px" }} />
-                <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer", marginTop:"12px" }} />
-              </div>
->>>>>>> development
+            
             ),
           },
         ];
