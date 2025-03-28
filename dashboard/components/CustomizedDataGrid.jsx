@@ -111,23 +111,37 @@ export default function CustomizedDataGrid({
             minWidth: 150,
             renderCell: (params) => (
               <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                columnGap: "10px",
+                marginTop: "8px",
+              }}
+            >
+              <EditIcon
+                onClick={() => onEdit(params.row)}
                 style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  columnGap: "10px",
-                  marginTop: "8px",
+                  cursor: "pointer",
+                  marginTop: "5px",
+                  transition: "0.3s ease-in-out",
+                  color: "#1976d2", // Default blue color
                 }}
-              >
-                <EditIcon
-                  onClick={() => onEdit(params.row)}
-                  style={{ cursor: "pointer", marginTop: "5px" }}
-                />
-                <DeleteForeverIcon
-                  onClick={() => onDelete(params.row)}
-                  style={{ cursor: "pointer", marginTop: "5px" }}
-                />
-              </div>
+                onMouseOver={(e) => (e.target.style.color = "#1565c0")} // Darker blue on hover
+                onMouseOut={(e) => (e.target.style.color = "#1976d2")}
+              />
+              <DeleteForeverIcon
+                onClick={() => onDelete(params.row)}
+                style={{
+                  cursor: "pointer",
+                  marginTop: "5px",
+                  transition: "0.3s ease-in-out",
+                  color: "#d32f2f", // Default red color
+                }}
+                onMouseOver={(e) => (e.target.style.color = "#b71c1c")} // Darker red on hover
+                onMouseOut={(e) => (e.target.style.color = "#d32f2f")}
+              />
+            </div>            
             ),
           },
         ];

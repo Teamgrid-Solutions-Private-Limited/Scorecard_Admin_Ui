@@ -1,16 +1,16 @@
 import * as React from "react";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllHouses, deleteHouse, } from "../redux/slice/houseSlice"; // Import the action
-import { Box, Stack, Typography, Button } from "@mui/material";
+import { Box, Stack, Typography, Button, CircularProgress, TextField, Snackbar, Alert } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "/shared-theme/AppTheme";
 import SideMenu from "./components/SideMenu";
 import MainGrid from "./components/MainGrid";
-import { API_URL } from "../redux/api/API"; 
+import { API_URL } from "../redux/api/API";
 import axios from "axios";
-import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from "./theme/customizations";
+import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations, } from "./theme/customizations";
 
 const xThemeComponents = {
     ...chartsCustomizations,
@@ -22,10 +22,13 @@ const xThemeComponents = {
 export default function Representative(props) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
+    const [searchQuery, setSearchQuery] = useState(""); // Search state
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
     // Fetch representatives from Redux store
     const { houses, loading } = useSelector((state) => state.house); // Ensure correct state mapping
-const[fetching,setFetching]=useState(false)
+    const [fetching, setFetching] = useState(false)
     // Fetch representatives when the component mounts
     useEffect(() => {
         dispatch(getAllHouses());
@@ -39,12 +42,24 @@ const[fetching,setFetching]=useState(false)
 
     console.log("Transformed Houses Data:", transformedHouses);
 
+    // **Filter representatives based on search query**
+    const filteredHouses = transformedHouses.filter((house) => {
+        // Remove "Rep." prefix if present
+        const nameWithoutPrefix = house.name.replace(/^Rep\.\s*/, "").toLowerCase();
+
+        return (
+            nameWithoutPrefix.includes(searchQuery.toLowerCase()) ||
+            house.code?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    });
+
+
     // Fetch representatives when the component mounts
     useEffect(() => {
         dispatch(getAllHouses());
     }, [dispatch]);
 
-    const handleEdit =  (row) => {
+    const handleEdit = (row) => {
         navigate(`/edit-representative/${row._id}`)
     }
 
@@ -54,19 +69,26 @@ const[fetching,setFetching]=useState(false)
             const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
                 type: "representative",
             });
+
             if (response.status === 200) {
-               alert("success")
-                await dispatch(getAllHouses()); // Refresh the list of house
+                setSnackbarMessage("Success: Representatives fetched successfully!");
+                setSnackbarSeverity("success"); // Green success alert
+                await dispatch(getAllHouses()); // Refresh the list of representatives
             } else {
-                throw new Error("Failed to fetch senators from Quorum");
+                throw new Error("Failed to fetch representatives from Quorum.");
             }
         } catch (error) {
-            console.error("Error fetching senators from Quorum:", error);
-           
+            console.error("Error fetching representatives from Quorum:", error);
+            setSnackbarMessage("Error: Unable to fetch representatives.");
+            setSnackbarSeverity("error"); // Red error alert
         } finally {
-            setFetching(false); // Set fetching state to false
+            setFetching(false);
+            setSnackbarOpen(true); // Show the snackbar
         }
     };
+
+    // Snackbar Component
+
     // console.log("Transformed Houses Data:", transformedHouses);
     //handle Delete
     const handleDelete = async (row) => {
@@ -76,13 +98,17 @@ const[fetching,setFetching]=useState(false)
             console.log(deleteHouse(row._id))
         };
     }
-    
+
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <Box sx={{ display: "flex" }}>
                 <SideMenu />
-                <Box sx={{ flexGrow: 1, overflow: "auto" }}>
+                <Box sx={{
+                    flexGrow: 1, overflow: "auto",
+                    filter: fetching ? "blur(4px)" : "none", // Apply blur when fetching
+                    pointerEvents: fetching ? "none" : "auto", // Disable interactions
+                }}>
                     <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
                         <Typography
                             variant="h4"
@@ -93,22 +119,64 @@ const[fetching,setFetching]=useState(false)
                         </Typography>
 
                         <Stack direction="row" spacing={2} width="100%" sx={{ justifyContent: "flex-end", alignItems: "center" }}>
+                            {/* Search Input for Name and Code */}
+                            <TextField
+                                placeholder="Search by Name"
+                                size="small"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                             {/* <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-representative")}>
                                 Add Representative
                             </Button> */}
                             <Button variant="outlined" onClick={fetchRepresentativeFromQuorum}>Fetch Representative from Quorum</Button>
                         </Stack>
-                         {fetching && <CircularProgress />}
+                        {/* {fetching && <CircularProgress />} */}
 
                         {/* Pass transformed data to MainGrid */}
-                        <MainGrid type="representative" data={transformedHouses || []}
+                        <MainGrid type="representative" data={filteredHouses || []}
                             loading={loading}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
                         />
                     </Stack>
                 </Box>
+
+                {/* Overlay Loading Indicator (Prevents Blur) */}
+                {fetching && (
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
+                            zIndex: 10, // Keep above blurred background
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                )}
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={5000} // Auto close after 4 seconds
+                    onClose={() => setSnackbarOpen(false)}
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }} // Position at top-right
+                >
+                    <Alert
+                        onClose={() => setSnackbarOpen(false)}
+                        severity={snackbarSeverity}
+                        sx={{ width: "100%" }}
+                    >
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
             </Box>
+
         </AppTheme>
     );
 }
