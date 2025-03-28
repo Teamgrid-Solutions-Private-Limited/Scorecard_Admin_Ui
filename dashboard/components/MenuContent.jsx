@@ -13,17 +13,17 @@ import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 
 const mainListItems = [
   { text: "Senate", icon: <HomeRoundedIcon />, link: "/" },
-  { text: "Add Senator", icon: <PeopleRoundedIcon />, link: "/add-senator" },
+  // { text: "Add Senator", icon: <PeopleRoundedIcon />, link: "/add-senator" },
   {
     text: "Representative",
     icon: <AnalyticsRoundedIcon />,
     link: "/representative",
   },
-  {
-    text: "Add Representative",
-    icon: <AnalyticsRoundedIcon />,
-    link: "/add-representative",
-  },
+  // {
+  //   text: "Add Representative",
+  //   icon: <AnalyticsRoundedIcon />,
+  //   link: "/add-representative",
+  // },
   { text: "Bill We Track", icon: <PeopleRoundedIcon />, link: "/bills" },
 ];
 
