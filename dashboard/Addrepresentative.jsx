@@ -25,7 +25,7 @@ import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { getHouseById, updateHouse } from "../redux/slice/houseSlice";
-import { getHouseDataByHouseId, updateHouseData,createHouseData } from "../redux/slice/houseTermSlice"
+import { getHouseDataByHouseId, updateHouseData,createHouseData,getHouseDataById } from "../redux/slice/houseTermSlice"
 import { getVoteById,clearVoteState,updateVote,createVote } from "../redux/slice/voteSlice";
 import { getAllTerms } from "../redux/slice/termSlice";
 export default function Addrepresentative(props) {
@@ -43,7 +43,7 @@ const{vote:selectedVote}=useSelector((state)=>state.vote)
         party: "",
         photo: "",
         //term
-        term: "",
+        termId: "",
         rating: "",
         summary: "",
         currentTerm: "",
@@ -57,13 +57,11 @@ const{vote:selectedVote}=useSelector((state)=>state.vote)
         if (id) {
             dispatch(getHouseById(id));
             dispatch(getHouseDataByHouseId(id))
-            dispatch(getVoteById(id));
         }
             dispatch(getAllTerms());
         return ()=>{
                   dispatch(clearVoteState());
         }
-
 
     }, [id, dispatch]);
 
@@ -75,21 +73,24 @@ const{vote:selectedVote}=useSelector((state)=>state.vote)
     }, [selectedHouse, selectedHouseData,terms]);
     const preFillForm = () => {
         if (selectedHouse || selectedHouseData) {
-            const extractedState = selectedHouse.district?.split(", ").pop() || ""; // Extracts the last part after the comma
-            const termId=selectedHouseData?.termId ||"";
+            const extractedState = selectedHouse?.district?.split(", ").pop() || ""; // Extracts the last part after the comma
+            // const termId=selectedHouseData?.termId ||selectedHouseData?.termId?._id ||"";
+            const termId = selectedHouseData[0]?.termId?._id || selectedHouseData?.termId || "";
+            console.log("Extracted termId:", termId); // Debugging log
+
             setFormData({
                 name: selectedHouse?.name || "",
                 btn: selectedHouse?.btn || "",
                 district: extractedState,  // Extracted from district
-                party: selectedHouse.party || "",
-                photo: selectedHouse.photo || "",
+                party: selectedHouse?.party || "",
+                photo: selectedHouse?.photo || "",
                 //termHouse
                 termId: termId || "",
-                rating: selectedHouseData.rating || "",
-                summary: selectedHouseData.summary || "hello summary",
-                currentTerm: selectedHouseData.currentTerm || "true",
-                votesScore: selectedHouseData?.votesScore?._id || "",
-                activitiesScore: selectedHouseData?.activitiesScore?.score || "",
+                rating: selectedHouseData[0]?.rating || "",
+                summary: selectedHouseData[0]?.summary || "hello summary",
+                currentTerm: selectedHouseData[0]?.currentTerm || "true",
+                votesScore: selectedHouseData[0]?.votesScore?._id || "",
+                activitiesScore: selectedHouseData[0]?.activitiesScore?.score || "",
             });
         }
     };
@@ -130,69 +131,58 @@ const{vote:selectedVote}=useSelector((state)=>state.vote)
     //handle Submission
     const handleSave = async () => {
         try {
-            const { name, btn, district, party, photo, term, rating, summary, currentTerm } = formData;
+            const { name, btn, district, party, photo, termId, rating, summary, currentTerm } = formData;
     
             let formDataObject = new FormData();
             formDataObject.append("name", name);
             formDataObject.append("btn", btn);
             formDataObject.append("district", district);
             formDataObject.append("party", party);
-            
+    
             if (photo instanceof File) {
                 formDataObject.append("photo", photo);
             }
     
-            // Ensure votesScore is an array of objects
-            const formattedVotesScore = vote.length > 0 
-                ? vote.map(v => ({
-                    voteId: v.option1?.trim() || null,  
-                    score: v.option2?.trim() || null
-                })).filter(v => v.voteId && v.score)  
-                : [];
+            // Format votesScore
+            const formattedVotesScore = vote.map(v => ({
+                voteId: v.option1?.trim() || null,
+                score: v.option2?.trim() || null
+            })).filter(v => v.voteId && v.score); // Ensure only valid objects
     
-            // Ensure activitiesScore is an array of objects
-            const formattedActivitiesScore = activity.length > 0 
-                ? activity.map(a => ({
-                    activityId: a.option1?.trim() || null,
-                    score: a.option2?.trim() || null
-                })).filter(a => a.activityId && a.score)  
-                : [];
+            // Format activitiesScore
+            const formattedActivitiesScore = activity.map(a => ({
+                activityId: a.option1?.trim() || null,
+                score: a.option2?.trim() || null
+            })).filter(a => a.activityId && a.score);
     
             let houseId = id;
     
+            /** Step 1: Handle House Creation/Update */
             if (houseId) {
-                // ✅ Update existing house
                 await dispatch(updateHouse({ id: houseId, formData: formDataObject })).unwrap();
+            } else {
+                const newHouseResponse = await dispatch(createHouse(formDataObject)).unwrap();
+            }
+    
+            /** Step 2: Handle HouseData Creation/Update */
+            const houseDataPayload = {
+                houseId, // Link to house
+                 termId, // Ensure termId is passed
+                summary,
+                rating,
+                votesScore: formattedVotesScore,
+                activitiesScore: formattedActivitiesScore
+            };
+    
+            if (selectedHouseData && selectedHouseData?.info?._id) {
+                // Update existing houseData
                 await dispatch(updateHouseData({
-                    id: houseId,
-                    data: {
-                        term,
-                        rating,
-                        summary,
-                        currentTerm,
-                        votesScore: formattedVotesScore,
-                        activitiesScore: formattedActivitiesScore,
-                    },
+                    id: selectedHouseData._id, // Use existing _id
+                    data: houseDataPayload
                 })).unwrap();
             } else {
-                // ✅ Create new house first
-                const newHouseResponse = await dispatch(createHouse(formDataObject)).unwrap();
-                houseId = newHouseResponse?.id; // Get new house ID
-    
-                  
-                    // ✅ Create corresponding houseData with the new house ID
-                    await dispatch(createHouseData({
-                        id: houseId,
-                        data: {
-                            term,
-                            rating,
-                            summary,
-                            currentTerm,
-                            votesScore: formattedVotesScore,
-                            activitiesScore: formattedActivitiesScore,
-                        },
-                    })).unwrap();
-                
+                // Create new houseData
+                await dispatch(createHouseData(houseDataPayload)).unwrap();
             }
     
             alert("Operation successful!");
@@ -200,35 +190,7 @@ const{vote:selectedVote}=useSelector((state)=>state.vote)
             console.error("Save operation failed:", error);
         }
     };
-    
-
-    // const handleSave = async () => {
-    //     try {
-    //         const { name, btn, district, party, photo, term, rating, summary, currentTerm, votesScore, activitiesScore } = formData;
-    //         let formDataObject = new FormData();
-
-    //         formDataObject.append("name", name);
-    //         formDataObject.append("btn", btn);
-    //         formDataObject.append("district", district);
-    //         formDataObject.append("party", party);
-    //         if (photo instanceof File) {
-    //             formDataObject.append("photo", photo);
-    //         }
-    //         if (id) {
-    //             // Update existing house
-    //             await dispatch(updateHouse({ id, formData: formDataObject })).unwrap();
-    //             await dispatch(updateHouseData({ id, data: { term, rating, summary, currentTerm, votesScore, activitiesScore } })).unwrap();
-    //         } else {
-    //             // Create new house
-    //             const response = await dispatch(createHouse(formDataObject)).unwrap();
-    //             console.log("New house created:", response);
-    //         }
-
-    //         alert("Operation successful!");
-    //     } catch (error) {
-    //         console.error("Save operation failed:", error);
-    //     }
-    // };
+  
 
 
     const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
@@ -430,7 +392,7 @@ const{vote:selectedVote}=useSelector((state)=>state.vote)
                                     </Grid>
                                     <Grid size={4}>
                                         <FormControl fullWidth>
-                                            <Select name="term" value={formData.term} onChange={handleChange} sx={{ background: "#fff" }}>
+                                            <Select name="termId" value={formData.termId} onChange={handleChange} sx={{ background: "#fff" }}>
                                                 <MenuItem value="" disabled>
                                                     Select an option
                                                 </MenuItem>
