@@ -10,9 +10,6 @@ import {
   createVote,
 } from "../redux/slice/voteSlice"; // Import clearVoteState
 import { getAllTerms } from "../redux/slice/termSlice";
- 
-import { useState } from "react";
- 
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -38,6 +35,7 @@ import { InputAdornment } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/api/API";
 import axios from "axios";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function SearchBill(props) {
 
@@ -207,18 +205,25 @@ export default function SearchBill(props) {
                       Search
                     </Button>
                   </Grid>
-                  {searchResults.length > 0 && (
+                
+                 {loading ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    searchResults.length > 0 && (
                       <Box sx={{ marginTop: 2 }}>
                         {searchResults.map((bill) => (
-                          <Stack key={bill.id} direction="row" spacing={2} alignItems="center">
-                            <Typography variant="body1">{bill.title}</Typography>
+                          <Stack key={bill.id} direction="row" spacing={2} alignItems="center" sx={{padding:"15px"}}>
+                            <Typography sx={{width:"100%"}} variant="body1">{bill.title}</Typography>
                             <Button variant="outlined" onClick={() => handleAddBill(bill)}>
                               Add
                             </Button>
                           </Stack>
                         ))}
                       </Box>
-                    )}
+                    )
+                  )}
 
                 </Grid>
               </Box>
