@@ -24,19 +24,22 @@ import Copyright from "./internals/components/Copyright";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { getHouseById,updateHouse } from "../redux/slice/houseSlice";
-import {getHouseDataByHouseId,updateHouseData} from "../redux/slice/houseTermSlice"
-
+import { getHouseById, updateHouse } from "../redux/slice/houseSlice";
+import { getHouseDataByHouseId, updateHouseData,createHouseData } from "../redux/slice/houseTermSlice"
+import { getVoteById,clearVoteState,updateVote,createVote } from "../redux/slice/voteSlice";
+import { getAllTerms } from "../redux/slice/termSlice";
 export default function Addrepresentative(props) {
     const [age, setAge] = React.useState("");
     const { id } = useParams();
     const dispatch = useDispatch();
-    const {house: selectedHouse } = useSelector((state) => state.house);
-    const {houseData:selectedHouseData} =useSelector((state)=>state.houseData)
+    const { house: selectedHouse } = useSelector((state) => state.house);
+    const { houseData: selectedHouseData } = useSelector((state) => state.houseData)
+    const { terms } = useSelector((state) => state.term);
+const{vote:selectedVote}=useSelector((state)=>state.vote)
     const [formData, setFormData] = useState({
         name: "",   // Avoid undefined values
         btn: "",
-        state: "", // Provide a default valid value
+        district: "", // Provide a default valid value
         party: "",
         photo: "",
         //term
@@ -44,46 +47,53 @@ export default function Addrepresentative(props) {
         rating: "",
         summary: "",
         currentTerm: "",
-        votesScore:"",
-        activitiesScore:""
+        votesScore: "",
+        activitiesScore: ""
 
     });
 
+    useEffect(() => {
+        console.log("ID from URL:", id);
+        if (id) {
+            dispatch(getHouseById(id));
+            dispatch(getHouseDataByHouseId(id))
+            dispatch(getVoteById(id));
+        }
+            dispatch(getAllTerms());
+        return ()=>{
+                  dispatch(clearVoteState());
+        }
 
+
+    }, [id, dispatch]);
+
+    useEffect(() => {
+        console.log("Prefilling Form with:", selectedHouse);  // Debugging log
+        console.log("house term selected data:", selectedHouseData);  // Debugging log
+        preFillForm();
+        // }
+    }, [selectedHouse, selectedHouseData,terms]);
     const preFillForm = () => {
-        if (selectedHouse ||selectedHouseData) {
+        if (selectedHouse || selectedHouseData) {
             const extractedState = selectedHouse.district?.split(", ").pop() || ""; // Extracts the last part after the comma
+            const termId=selectedHouseData?.termId ||"";
             setFormData({
                 name: selectedHouse?.name || "",
                 btn: selectedHouse?.btn || "",
                 district: extractedState,  // Extracted from district
                 party: selectedHouse.party || "",
-                img: selectedHouse.photo || "",
+                photo: selectedHouse.photo || "",
                 //termHouse
-                term: selectedHouseData.term || "NC",
-                rating: selectedHouseData.rating || "NC",
+                termId: termId || "",
+                rating: selectedHouseData.rating || "",
                 summary: selectedHouseData.summary || "hello summary",
                 currentTerm: selectedHouseData.currentTerm || "true",
-                votesScore:selectedHouseData?.votesScore?.score||"NC",
-                activitiesScore:selectedHouseData?.activitiesScore?.score||"NC",
+                votesScore: selectedHouseData?.votesScore?._id || "",
+                activitiesScore: selectedHouseData?.activitiesScore?.score || "",
             });
         }
     };
 
-    useEffect(() => {
-        if (id) {
-            dispatch(getHouseById(id));
-            dispatch(getHouseDataByHouseId(id))
-        }
-    }, [id, dispatch]);
-
-    useEffect(() => {
-        console.log("Prefilling Form with:", selectedHouse);  // Debugging log
-        console.log("house term selected data:",selectedHouseData );  // Debugging log
-
-        preFillForm();
-        // }
-    }, [selectedHouse,selectedHouseData]);
     const editorRef = useRef(null);
     const VisuallyHiddenInput = styled("input")({
         clip: "rect(0 0 0 0)",
@@ -98,67 +108,145 @@ export default function Addrepresentative(props) {
     });
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
-        setFormData((prev) => ({ ...prev, img: file }));
+
+        if (file) {
+            const previewURL = URL.createObjectURL(file); // Create a preview URL
+            setFormData((prev) => ({
+                ...prev,
+                photo: file,       // Store File object
+                photoPreview: previewURL, // Store preview URL
+            }));
+        }
     };
-    
 
     const handleChange = (event) => {
         setAge(event.target.value);
         const { name, value } = event.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
-     const handleEditorChange = (content, editor, fieldName) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: content }));
-  };
-
-  //handle Submission
-  const handleSave = async () => {
-    if (!id) {
-        console.error("No ID found for updating!");
-        return;
-    }
-
-    const { name, btn, state, party, photo, term, rating, summary, currentTerm, votesScore, activitiesScore } = formData;
+    const handleEditorChange = (content, editor, fieldName) => {
+        setFormData((prev) => ({ ...prev, [fieldName]: content }));
+    };
+    //handle Submission
+    const handleSave = async () => {
+        try {
+            const { name, btn, district, party, photo, term, rating, summary, currentTerm } = formData;
     
-    console.log("Dispatching update with formData:", formData);
-
-    try {
-        if (photo instanceof File) {
-            // If an image file is uploaded, use FormData
-            const formDataObject = new FormData();
+            let formDataObject = new FormData();
             formDataObject.append("name", name);
             formDataObject.append("btn", btn);
-            formDataObject.append("state", district);
+            formDataObject.append("district", district);
             formDataObject.append("party", party);
-            formDataObject.append("img", photo);
-
-            console.log("Dispatching updateHouse with:", formDataObject);
-
-            const houseResponse = await dispatch(updateHouse({ id, formData: formDataObject })).unwrap();
-            console.log("House update successful:", houseResponse);
-        } else {
-            // Update without image
-            const houseData = { name, btn, state, party };
-            console.log("Dispatching updateHouseData with:", houseData);
-
-            const houseDataResponse = await dispatch(updateHouseData({ id, data: houseData })).unwrap();
-            console.log("HouseData update successful:", houseDataResponse);
+            
+            if (photo instanceof File) {
+                formDataObject.append("photo", photo);
+            }
+    
+            // Ensure votesScore is an array of objects
+            const formattedVotesScore = vote.length > 0 
+                ? vote.map(v => ({
+                    voteId: v.option1?.trim() || null,  
+                    score: v.option2?.trim() || null
+                })).filter(v => v.voteId && v.score)  
+                : [];
+    
+            // Ensure activitiesScore is an array of objects
+            const formattedActivitiesScore = activity.length > 0 
+                ? activity.map(a => ({
+                    activityId: a.option1?.trim() || null,
+                    score: a.option2?.trim() || null
+                })).filter(a => a.activityId && a.score)  
+                : [];
+    
+            let houseId = id;
+    
+            if (houseId) {
+                // ✅ Update existing house
+                await dispatch(updateHouse({ id: houseId, formData: formDataObject })).unwrap();
+                await dispatch(updateHouseData({
+                    id: houseId,
+                    data: {
+                        term,
+                        rating,
+                        summary,
+                        currentTerm,
+                        votesScore: formattedVotesScore,
+                        activitiesScore: formattedActivitiesScore,
+                    },
+                })).unwrap();
+            } else {
+                // ✅ Create new house first
+                const newHouseResponse = await dispatch(createHouse(formDataObject)).unwrap();
+                houseId = newHouseResponse?.id; // Get new house ID
+    
+                  
+                    // ✅ Create corresponding houseData with the new house ID
+                    await dispatch(createHouseData({
+                        id: houseId,
+                        data: {
+                            term,
+                            rating,
+                            summary,
+                            currentTerm,
+                            votesScore: formattedVotesScore,
+                            activitiesScore: formattedActivitiesScore,
+                        },
+                    })).unwrap();
+                
+            }
+    
+            alert("Operation successful!");
+        } catch (error) {
+            console.error("Save operation failed:", error);
         }
+    };
+    
 
-        // Update term-related data
-        const termData = { term, rating, summary, currentTerm, votesScore, activitiesScore };
-        console.log("Dispatching updateHouseData for term-related data:", termData);
+    // const handleSave = async () => {
+    //     try {
+    //         const { name, btn, district, party, photo, term, rating, summary, currentTerm, votesScore, activitiesScore } = formData;
+    //         let formDataObject = new FormData();
 
-        const termDataResponse = await dispatch(updateHouseData({ id, data: termData })).unwrap();
-        console.log("Term Data update successful:", termDataResponse);
+    //         formDataObject.append("name", name);
+    //         formDataObject.append("btn", btn);
+    //         formDataObject.append("district", district);
+    //         formDataObject.append("party", party);
+    //         if (photo instanceof File) {
+    //             formDataObject.append("photo", photo);
+    //         }
+    //         if (id) {
+    //             // Update existing house
+    //             await dispatch(updateHouse({ id, formData: formDataObject })).unwrap();
+    //             await dispatch(updateHouseData({ id, data: { term, rating, summary, currentTerm, votesScore, activitiesScore } })).unwrap();
+    //         } else {
+    //             // Create new house
+    //             const response = await dispatch(createHouse(formDataObject)).unwrap();
+    //             console.log("New house created:", response);
+    //         }
 
-        alert("Update successful!");
-    } catch (error) {
-        console.error("Update failed:", error);
-    }
-};
+    //         alert("Operation successful!");
+    //     } catch (error) {
+    //         console.error("Save operation failed:", error);
+    //     }
+    // };
 
 
+    const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
+    const [activity, setActivity] = React.useState([
+        { id: 1, option1: "", option2: "" },
+    ]);
+
+    const handleAdd = () => {
+        setVote([...vote, { id: vote.length + 1, option1: "", option2: "" }]);
+    };
+
+    const handleRemove = (id) => {
+        setVote(vote.filter((item) => item.id !== id));
+    };
+
+    const handleRemoveActivity = (id) => {
+        setActivity(activity.filter((item) => item.id !== id));
+    };
     const label = { inputProps: { "aria-label": "Color switch demo" } };
     return (
         <AppTheme>
@@ -168,7 +256,9 @@ export default function Addrepresentative(props) {
                     component="main"
                     sx={(theme) => ({
                         flexGrow: 1,
-                        backgroundColor: theme.vars ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)` : alpha(theme.palette.background.default, 1),
+                        backgroundColor: theme.vars
+                            ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
+                            : alpha(theme.palette.background.default, 1),
                         overflow: "auto",
                     })}
                 >
@@ -204,9 +294,10 @@ export default function Addrepresentative(props) {
                             }}
                         >
                             <Button variant="contained" onClick={handleSave}>Save</Button>
-                            <Button variant="outlined">Fetch Representatives from Quorum</Button>
+                            <Button variant="outlined">
+                                Fetch Representatives from Quorum
+                            </Button>
                         </Stack>
-
                         <Paper elevation={2} sx={{ width: "100%" }}>
                             <Box sx={{ p: 5 }}>
                                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
@@ -264,7 +355,7 @@ export default function Addrepresentative(props) {
                                             <Select name="district" value={formData.district} onChange={handleChange} sx={{ background: "#fff" }}>
                                                 <MenuItem value="New York">New York</MenuItem>
                                                 <MenuItem value="Chicago">Chicago</MenuItem>
-                                                <MenuItem value="California">California</MenuItem>                                              
+                                                <MenuItem value="California">California</MenuItem>
                                                 <MenuItem value="Nc">NC</MenuItem>
                                             </Select>
                                         </FormControl>
@@ -291,7 +382,6 @@ export default function Addrepresentative(props) {
                                             </Select>
                                         </FormControl>
                                     </Grid>
-
                                     <Grid size={2}>
                                         <InputLabel
                                             sx={{
@@ -305,13 +395,14 @@ export default function Addrepresentative(props) {
                                         </InputLabel>
                                     </Grid>
                                     <Grid size={10}>
-                                        <Button component="label" name="photo" value={formData.photo}  role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
+                                        <Button component="label" name="photo" value={formData.photo} role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
                                             Upload files
                                             <VisuallyHiddenInput type="file" onChange={handleFileUpload} multiple />
                                         </Button>
-                                        {/* {formData.img && typeof formData.img === "string" && (
-                                        <Typography variant="caption">Currently: {formData.img}</Typography>
-                                    )} */}
+                                        {formData.photoPreview && (
+                                            <img src={formData.photoPreview} alt="Preview" width={100} height={100} />
+                                        )}
+
                                     </Grid>
                                 </Grid>
                             </Box>
@@ -339,14 +430,24 @@ export default function Addrepresentative(props) {
                                     </Grid>
                                     <Grid size={4}>
                                         <FormControl fullWidth>
-                                            <Select name="term" value={formData.term} sx={{ background: "#fff" }}>
-                                                <MenuItem value="New York">New York</MenuItem>
-                                                <MenuItem value="Chicago">Chicago</MenuItem>
-                                                <MenuItem value="NC">NC</MenuItem>
+                                            <Select name="term" value={formData.term} onChange={handleChange} sx={{ background: "#fff" }}>
+                                                <MenuItem value="" disabled>
+                                                    Select an option
+                                                </MenuItem>
+                                                {terms && terms.length > 0 ? (
+                                                    terms.map((term) => (
+                                                        <MenuItem key={term._id} value={term._id}>
+                                                            {term.name}
+                                                        </MenuItem>
+                                                    ))
+                                                ) : (
+                                                    <MenuItem value="" disabled>
+                                                        No terms available
+                                                    </MenuItem>
+                                                )}
                                             </Select>
                                         </FormControl>
                                     </Grid>
-
                                     <Grid size={1}>
                                         <InputLabel
                                             sx={{
@@ -363,13 +464,12 @@ export default function Addrepresentative(props) {
                                     <Grid size={5}>
                                         <FormControl fullWidth>
                                             <Select value={formData.rating} name="rating" onChange={handleChange} sx={{ background: "#fff" }}>
-                                                <MenuItem value="New York">New York</MenuItem>
-                                                <MenuItem value="Chicago">Chicago</MenuItem>
-                                                <MenuItem value="NC">NC</MenuItem>
+                                                <MenuItem value="A+">A+</MenuItem>
+                                                <MenuItem value="F">F</MenuItem>
+                                                <MenuItem value="B">B</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Grid>
-
                                     <Grid size={2}>
                                         <InputLabel
                                             sx={{
@@ -389,8 +489,8 @@ export default function Addrepresentative(props) {
                                             initialValue="Test"
                                             name="summary"
                                             value={formData.summary}
-                                            onEditorChange={(content,editor)=>
-                                                handleEditorChange(content,editor,"summary")
+                                            onEditorChange={(content, editor) =>
+                                                handleEditorChange(content, editor, "summary")
                                             }
                                             init={{
                                                 height: 250,
@@ -438,7 +538,7 @@ export default function Addrepresentative(props) {
                                         </InputLabel>
                                     </Grid>
                                     <Grid size={10}>
-                                        <Switch {...label} name="currentTerm" value={formData.currentTerm} color="warning" />
+                                        <Switch {...label} name="currentTerm" value={formData.currentTerm} onChange={handleChange} color="warning" />
                                     </Grid>
 
                                     {/* Vote Repeater Start */}
@@ -459,7 +559,7 @@ export default function Addrepresentative(props) {
                                             </Grid>
                                             <Grid size={4}>
                                                 <FormControl fullWidth>
-                                                    <Select value={formData.votesScore} name="votesScore"  onChange={handleChange} sx={{ background: "#fff" }}>
+                                                    <Select value={formData.votesScore} name="votesScore" onChange={handleChange} sx={{ background: "#fff" }}>
                                                         <MenuItem value="New York">New York</MenuItem>
                                                         <MenuItem value="Chicago">Chicago</MenuItem>
                                                         <MenuItem value="NC">NC</MenuItem>
@@ -468,7 +568,7 @@ export default function Addrepresentative(props) {
                                             </Grid>
                                             <Grid size={5}>
                                                 <FormControl fullWidth>
-                                                <Select value={formData.votesScore} name="votesScore"  onChange={handleChange} sx={{ background: "#fff" }}>
+                                                    <Select value={formData.votesScore} name="votesScore" onChange={handleChange} sx={{ background: "#fff" }}>
                                                         <MenuItem value="New York">New York</MenuItem>
                                                         <MenuItem value="Chicago">Chicago</MenuItem>
                                                         <MenuItem value="NC">NC</MenuItem>
@@ -484,12 +584,14 @@ export default function Addrepresentative(props) {
 
                                     <Grid size={1}></Grid>
                                     <Grid size={10} sx={{ textAlign: "right" }}>
-                                        <Button variant="contained" startIcon={<AddIcon />}>
+                                        <Button variant="contained" startIcon={<AddIcon />}  onClick={handleAdd}
+                                        >
                                             Add Vote
                                         </Button>
                                     </Grid>
                                     <Grid size={1}></Grid>
                                     {/* Add Vote Repeater Button Ends */}
+                                    
 
                                     {/* Activity Repeater Start */}
                                     <Grid rowSpacing={2} sx={{ width: "100%" }}>
@@ -509,8 +611,8 @@ export default function Addrepresentative(props) {
                                             </Grid>
                                             <Grid size={4}>
                                                 <FormControl fullWidth>
-                                                <Select value={formData.activitiesScore} name="activitiesScore" onChange={handleChange} sx={{ background: "#fff" }}>
-                                                <MenuItem value="New York">New York</MenuItem>
+                                                    <Select value={formData.activitiesScore} name="activitiesScore" onChange={handleChange} sx={{ background: "#fff" }}>
+                                                        <MenuItem value="New York">New York</MenuItem>
                                                         <MenuItem value="Chicago">Chicago</MenuItem>
                                                         <MenuItem value="NC">NC</MenuItem>
                                                     </Select>
@@ -519,7 +621,7 @@ export default function Addrepresentative(props) {
                                             <Grid size={5}>
                                                 <FormControl fullWidth>
                                                     <Select value={formData.activitiesScore} name="activitiesScore" onChange={handleChange} sx={{ background: "#fff" }}>
-                                                    <MenuItem value="New York">New York</MenuItem>
+                                                        <MenuItem value="New York">New York</MenuItem>
                                                         <MenuItem value="Chicago">Chicago</MenuItem>
                                                         <MenuItem value="NC">NC</MenuItem>
                                                     </Select>
