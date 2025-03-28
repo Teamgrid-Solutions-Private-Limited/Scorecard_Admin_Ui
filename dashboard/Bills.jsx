@@ -71,7 +71,7 @@ export default function Bills(props) {
               >
                 Add Bills
               </Button> */}
-              <Button variant="outlined"  onClick={() => navigate("/search-bills")}>Fetch bills from Quorum</Button>
+              <Button variant="outlined"  onClick={() => navigate("/search-bills")}>Search bills from Quorum</Button>
             </Stack>
 
             <MainGrid type="bills" data={billsData} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />

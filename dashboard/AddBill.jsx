@@ -163,7 +163,7 @@ export default function AddBill(props) {
               <Button variant="contained" onClick={handleSubmit}>
                 Save
               </Button>
-              <Button variant="outlined">Fetch Data from Quorum</Button>
+              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>

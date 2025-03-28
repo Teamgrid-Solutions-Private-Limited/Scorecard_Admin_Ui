@@ -141,7 +141,7 @@ export default function SearchBill(props) {
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-                  Search Bills
+                  Search For Bills In Quorum
                 </Typography>
                 <Grid
                   container
@@ -171,11 +171,11 @@ export default function SearchBill(props) {
                         color: "#656D9A",
                       }}
                     >
-                      Search Bills
+                      Search Bills 
                     </Typography>
 
                     <TextField
-                      placeholder="Search Bills"
+                      placeholder="Search Bills By Title"
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
