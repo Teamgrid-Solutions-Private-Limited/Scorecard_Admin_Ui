@@ -2,10 +2,17 @@ import * as React from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import Avatar from "@mui/material/Avatar";
+import { Avatar, Box } from "@mui/material";
 import Typography from "@mui/material/Typography";
+import { useNavigate } from "react-router-dom";
 
-export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDelete }) {
+export default function CustomizedDataGrid({
+  type,
+  rows,
+  loading,
+  onEdit,
+  onDelete,
+}) {
   const getBorderColor = (party) => {
     if (!party) return "gray";
     const lowerParty = party.toLowerCase();
@@ -13,6 +20,9 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
     if (lowerParty === "democrat") return "blue";
     return "gray"; // Default for independent or unknown
   };
+
+  const navigate = useNavigate();
+ 
 
   const columns =
     type === "bills"
@@ -26,9 +36,24 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             minWidth: 150,
             headerAlign: "right",
             renderCell: (params) => (
-              <div style={{ display: "flex", justifyContent: "flex-end", flexDirection: "row", alignItems: "center", height: "100%", columnGap: "10px" }}>
-                <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer" }} />
-                <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer" }} />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  height: "100%",
+                  columnGap: "10px",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                <DeleteForeverIcon
+                  onClick={() => onDelete(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                />
               </div>
             ),
           },
@@ -40,22 +65,63 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             headerName: type === "senator" ? "Senator" : "Representative",
             minWidth: 150,
             renderCell: (params) => (
-              <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px", padding: "5px 0" }}>
-                <Avatar
-                  src={params.row.photo}
+              <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                columnGap: "10px",
+                padding: "5px 0",
+                width: "fit-content",
+                "&:hover": {
+                  cursor: "pointer",
+                  
+                },
+              }}
+                onClick={()=>{
+                  if(type=="senator" && params.row._id){
+                    navigate(`edit-senator/${params.row._id}`)
+                  }else{
+                    navigate(`/edit-representative/${params.row._id}`)
+                  }
+                }}
+              >
+                <Box
                   sx={{
-                    width: 40,
-                    height: 40,
-                    border: `3px solid ${getBorderColor(params.row.party)}`,
+                    width: 39, 
+                    height: 39,
+                    borderRadius: "50%", 
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+          
+                    border: `3px solid ${getBorderColor(params.row.party)}`, 
                   }}
-                />
+                >
+                  <Avatar
+                    src={params.row.photo}
+                    sx={{
+                      width: 35, 
+                      height: 35,
+                    }}
+                  />
+                </Box>
                 <Typography>{params.row.name}</Typography>
-              </div>
+              </Box>
             ),
           },
           ...(type === "representative"
-            ? [{ field: "district", flex: 1, headerName: "District", minWidth: 150 }]
-            : [{ field: "state", flex: 1, headerName: "State", minWidth: 150 }]),
+            ? [
+                {
+                  field: "district",
+                  flex: 1,
+                  headerName: "District",
+                  minWidth: 150,
+                },
+              ]
+            : [
+                { field: "state", flex: 1, headerName: "State", minWidth: 150 },
+              ]),
           {
             field: "party",
             flex: 1,
@@ -63,7 +129,9 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             minWidth: 150,
             valueGetter: (params) => {
               if (!params) return "N/A";
-              return params.charAt(0).toUpperCase() + params.slice(1).toLowerCase();
+              return (
+                params.charAt(0).toUpperCase() + params.slice(1).toLowerCase()
+              );
             },
           },
           {
@@ -84,9 +152,23 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             headerName: "Action",
             minWidth: 120,
             renderCell: (params) => (
-              <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer", marginTop:"12px" }} />
-                <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer", marginTop:"12px" }} />
+              <div
+                style={{
+                  height:"100%",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  columnGap: "10px",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                <DeleteForeverIcon
+                  onClick={() => onDelete(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                />
               </div>
             ),
           },
@@ -106,7 +188,7 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
         disableDensitySelector
         disableColumnResize
         disableRowSelectionOnClick
-        sx={{ '& .MuiDataGrid-row': { height: 90, alignItems: "center" } }}
+        sx={{ "& .MuiDataGrid-row": { height: 90, alignItems: "center" } }}
       />
     </div>
   );
