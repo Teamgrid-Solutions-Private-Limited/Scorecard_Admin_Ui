@@ -44,9 +44,9 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
                 <Avatar
                   src={params.row.photo}
                   sx={{
-                    width: 50,
-                    height: 50,
-                    border: `5px solid ${getBorderColor(params.row.party)}`,
+                    width: 40,
+                    height: 40,
+                    border: `3px solid ${getBorderColor(params.row.party)}`,
                   }}
                 />
                 <Typography>{params.row.name}</Typography>
@@ -85,8 +85,8 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             minWidth: 120,
             renderCell: (params) => (
               <div style={{ display: "flex", flexDirection: "row", alignItems: "center", columnGap: "10px" }}>
-                <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer" }} />
-                <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer" }} />
+                <EditIcon onClick={() => onEdit(params.row)} style={{ cursor: "pointer", marginTop:"12px" }} />
+                <DeleteForeverIcon onClick={() => onDelete(params.row)} style={{ cursor: "pointer", marginTop:"12px" }} />
               </div>
             ),
           },
