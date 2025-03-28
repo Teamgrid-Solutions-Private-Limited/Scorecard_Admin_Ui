@@ -16,18 +16,21 @@ export default function CustomizedDataGrid({
     type === "bills"
       ? [
           { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
-          { field: "bill", flex: 1, headerName: "Bill", minWidth: 150 },
+          { field: "bill", flex: 2, headerName: "Bill", minWidth: 150 },
           {
             field: "action",
             flex: 1,
             headerName: "Action",
             minWidth: 150,
+            headerAlign: "right",
             renderCell: (params) => (
               <div
                 style={{
                   display: "flex",
+                  justifyContent:"flex-end",
                   flexDirection: "row",
                   alignItems: "center",
+                  height:"100%",
                   columnGap: "10px",
                 }}
               >

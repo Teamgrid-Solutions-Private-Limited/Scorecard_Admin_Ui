@@ -3,7 +3,12 @@ import { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getVoteById, clearVoteState, updateVote, createVote } from "../redux/slice/voteSlice"; // Import clearVoteState
+import {
+  getVoteById,
+  clearVoteState,
+  updateVote,
+  createVote,
+} from "../redux/slice/voteSlice"; // Import clearVoteState
 import { getAllTerms } from "../redux/slice/termSlice";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -31,54 +36,51 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/api/API";
 
 export default function SearchBill(props) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false); // Loader state
+  const navigate = useNavigate();
 
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState([]);
-    const [loading, setLoading] = useState(false); // Loader state
-    const navigate = useNavigate();
-  
-    const handleSearch = async () => {
-      setLoading(true); // Start loader
-      try {
-        const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
-          type: "bills",
-          additionalParams: {
-            title: searchQuery,
-          },
-        });
-        setSearchResults(response.data.data);
-      } catch (error) {
-        console.error("Error searching bills:", error);
-      } finally {
-        setLoading(false); // Stop loader
+  const handleSearch = async () => {
+    setLoading(true); // Start loader
+    try {
+      const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
+        type: "bills",
+        additionalParams: {
+          title: searchQuery,
+        },
+      });
+      setSearchResults(response.data.data);
+    } catch (error) {
+      console.error("Error searching bills:", error);
+    } finally {
+      setLoading(false); // Stop loader
+    }
+  };
+
+  const handleAddBill = async (bill) => {
+    setLoading(true); // Start loader
+    try {
+      const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
+        bills: [bill],
+      });
+      console.log("Bill saved successfully:", response.data);
+
+      alert("Bill saved successfully");
+
+      const voteId = response.data.data[0]._id; // Use the first item's _id as voteId
+      if (voteId) {
+        navigate(`/bills/edit-vote/${voteId}`); // Redirect to edit page
+      } else {
+        console.error("voteId (_id) is missing in the API response.");
       }
-    };
-  
-    const handleAddBill = async (bill) => {
-      setLoading(true); // Start loader
-      try {
-        const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
-          bills: [bill],
-        });
-        console.log("Bill saved successfully:", response.data);
-  
-       alert("Bill saved successfully");
-  
-       
-        const voteId = response.data.data[0]._id; // Use the first item's _id as voteId
-        if (voteId) {
-          navigate(`/bills/edit-vote/${voteId}`); // Redirect to edit page
-        } else {
-          console.error("voteId (_id) is missing in the API response.");
-        }
-      } catch (error) {
-        console.error("Error saving bill:", error);
-      } finally {
-        setLoading(false);  
-      }
-    };
- 
- 
+    } catch (error) {
+      console.error("Error saving bill:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
   return (
@@ -121,7 +123,6 @@ export default function SearchBill(props) {
                 alignItems: "center",
               }}
             >
-             
               <Button variant="outlined">Fetch Data from Quorum</Button>
             </Stack>
 
@@ -130,46 +131,75 @@ export default function SearchBill(props) {
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-                  Bill's Information
+                  Search Bills
                 </Typography>
-                <Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"}>
-                  
-                  <Grid size={4}>
-                    <FormControl fullWidth>
-                      <Select
-                        
-                        name="type"
-                        // onChange={handleChange}
-                        sx={{ background: "#fff" }}
-                      >
-                       
-                      </Select>
-                    </FormControl>
+                <Grid
+                  container
+                  rowSpacing={2}
+                  columnSpacing={2}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Grid
+                    item
+                    xs={12}
+                    md={8}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: { xs: "column", md: "row" },
+                      gap: { xs: 2, md: 3 },
+                      width: "100%",
+                      marginLeft: { xs: "0px", lg: "20px" },
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        minWidth: "120px",
+                        textAlign: { xs: "center", md: "right" },
+                        fontWeight: 500,
+                        color: "#656D9A",
+                      }}
+                    >
+                      Search Bills
+                    </Typography>
+
                     <TextField
-                      label="Search Bills"
+                      placeholder="Search Bills"
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      sx={{ marginBottom: 2 }}
+                      fullWidth
+                      sx={{
+                        maxWidth: { xs: "100%", md: "800px" },
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "gray !important", 
+                          },
+                        },
+                        "& .MuiInputBase-root": {
+                          "&.Mui-focused": {
+                            borderColor: "gray !important", 
+                            boxShadow: "none !important",
+                            outline: "none !important",
+                          },
+                        },
+                        
+                      }}
                     />
-                    <Button variant="contained" onClick={handleSearch}>Search</Button>
 
-                    
+                    <Button
+                      variant="contained"
+                      onClick={handleSearch}
+                      sx={{
+                        width: { xs: "100%", md: "auto" },
+                        minWidth: "110px",
+                        
+                      }}
+                    >
+                      Search
+                    </Button>
                   </Grid>
-
-                  <Grid size={2}>
-                    <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: "end", fontWeight: 700, my: 0, width: "100%" }}>
-                      Title
-                    </InputLabel>
-                  </Grid>
-                  
-
-                
-
-                  
-
-                 
-                  
                 </Grid>
               </Box>
             </Paper>
