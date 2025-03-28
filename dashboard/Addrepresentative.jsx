@@ -21,7 +21,6 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import Switch from "@mui/material/Switch";
 import Copyright from "./internals/components/Copyright";
-
 export default function Addrepresentative(props) {
   const [age, setAge] = React.useState("");
   const editorRef = useRef(null);
