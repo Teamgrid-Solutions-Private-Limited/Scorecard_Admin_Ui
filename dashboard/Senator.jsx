@@ -110,7 +110,7 @@ export default function Senator(props) {
                             >
                                 Add Senator
                             </Button> */}
-                            <Button variant="contained" onClick={fetchSenatorsFromQuorum}>
+                            <Button variant="outlined" onClick={fetchSenatorsFromQuorum}>
                                 Fetch Senators from Quorum
                             </Button>
                         </Stack>

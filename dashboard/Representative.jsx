@@ -83,7 +83,7 @@ export default function Representative(props) {
                             {/* <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-representative")}>
                                 Add Representative
                             </Button> */}
-                            <Button variant="contained" onClick={fetchRepresentativeFromQuorum}>Fetch Representative from Quorum</Button>
+                            <Button variant="outlined" onClick={fetchRepresentativeFromQuorum}>Fetch Representative from Quorum</Button>
                         </Stack>
                          {fetching && <CircularProgress />}
 

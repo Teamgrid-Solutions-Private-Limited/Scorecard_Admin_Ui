@@ -48,14 +48,20 @@ export default function Bills(props) {
             <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
               SBA Scorecard Management System
             </Typography>
-
-            <Stack direction="row" spacing={2} width="100%" sx={{ justifyContent: "flex-end", alignItems: "center" }}>
-              <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/add-bill")}>
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{ justifyContent: "flex-end", alignItems: "center" }}
+            >
+              {/* <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => navigate("/add-bill")}
+              >
                 Add Bills
-              </Button>
-              <Button variant="outlined" onClick={() => navigate("/search-bills")}>
-                Fetch bills from Quorum
-              </Button>
+              </Button> */}
+              <Button variant="outlined"  onClick={() => navigate("/search-bills")}>Fetch bills from Quorum</Button>
             </Stack>
 
             <MainGrid type="bills" data={billsData} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
