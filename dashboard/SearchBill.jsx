@@ -130,7 +130,7 @@ export default function SearchBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="outlined">Fetch Data from Quorum</Button>
+              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <div className="spacer"></div>
@@ -168,7 +168,7 @@ export default function SearchBill(props) {
                         color: "#656D9A",
                       }}
                     >
-                      Search Bills
+                      Search  Bills  
                     </Typography>
 
                     <TextField
@@ -207,6 +207,19 @@ export default function SearchBill(props) {
                       Search
                     </Button>
                   </Grid>
+                  {searchResults.length > 0 && (
+                      <Box sx={{ marginTop: 2 }}>
+                        {searchResults.map((bill) => (
+                          <Stack key={bill.id} direction="row" spacing={2} alignItems="center">
+                            <Typography variant="body1">{bill.title}</Typography>
+                            <Button variant="outlined" onClick={() => handleAddBill(bill)}>
+                              Add
+                            </Button>
+                          </Stack>
+                        ))}
+                      </Box>
+                    )}
+
                 </Grid>
               </Box>
             </Paper>

@@ -61,13 +61,13 @@ export default function Bills(props) {
               width="100%"
               sx={{ justifyContent: "flex-end", alignItems: "center" }}
             >
-              <Button
+              {/* <Button
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={() => navigate("/add-bill")}
               >
                 Add Bills
-              </Button>
+              </Button> */}
               <Button variant="outlined"  onClick={() => navigate("/search-bills")}>Fetch bills from Quorum</Button>
             </Stack>
             <MainGrid
