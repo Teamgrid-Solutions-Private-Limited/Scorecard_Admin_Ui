@@ -191,7 +191,7 @@ export default function AddBill(props) {
                       Type
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={10}>
                     <FormControl fullWidth>
                       <Select
                         value={formData.type}
@@ -219,7 +219,7 @@ export default function AddBill(props) {
                       Title
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -349,7 +349,7 @@ export default function AddBill(props) {
                       Date
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={10}>
                     <FormControl fullWidth>
                       <TextField
                         type="date"
@@ -380,7 +380,7 @@ export default function AddBill(props) {
                       Congress
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -410,7 +410,7 @@ export default function AddBill(props) {
                       Term
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={10}>
                     <FormControl fullWidth>
                       <Select
                         value={formData.termId || ""}
@@ -451,7 +451,7 @@ export default function AddBill(props) {
                       Roll Call
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={10}>
                     <FormControl fullWidth>
                       <TextField
                         sx={{
@@ -514,7 +514,7 @@ export default function AddBill(props) {
                       Read More
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={10}>
                     <FormControl fullWidth>
                       <TextField
                         sx={{
