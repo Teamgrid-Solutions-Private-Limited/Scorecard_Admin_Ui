@@ -81,6 +81,7 @@ export default function Senator(props) {
     const filteredSenators = senators.filter((senator) =>
         senator.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
