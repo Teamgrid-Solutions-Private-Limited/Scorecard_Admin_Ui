@@ -9,16 +9,6 @@ import { useNavigate } from "react-router-dom";
 import SideMenu from "./components/SideMenu";
 import MainGrid from "./components/MainGrid";
 
-
-import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations } from "./theme/customizations";
-
-const xThemeComponents = {
-    ...chartsCustomizations,
-    ...dataGridCustomizations,
-    ...datePickersCustomizations,
-    ...treeViewCustomizations,
-};
-
 export default function Bills(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -50,7 +40,7 @@ export default function Bills(props) {
   };
 
   return (
-    <AppTheme {...props} themeComponents={xThemeComponents}>
+    <AppTheme {...props}>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box sx={{ flexGrow: 1, overflow: "auto" }}>
@@ -71,7 +61,7 @@ export default function Bills(props) {
               >
                 Add Bills
               </Button> */}
-              <Button variant="outlined"  onClick={() => navigate("/search-bills")}>Search bills from Quorum</Button>
+              <Button variant="outlined"  onClick={() => navigate("/search-bills")}>Fetch bills from Quorum</Button>
             </Stack>
 
             <MainGrid type="bills" data={billsData} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
@@ -79,5 +69,10 @@ export default function Bills(props) {
         </Box>
       </Box>
     </AppTheme>
+  
+
   );
+
+
 }
+

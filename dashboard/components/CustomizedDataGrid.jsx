@@ -27,14 +27,14 @@ export default function CustomizedDataGrid({
   const columns =
     type === "bills"
       ? [
-          { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
-          { field: "bill", flex: 2, headerName: "Bill", minWidth: 150 },
+          { field: "date", flex: 1.5, headerName: "Date", minWidth: 150 },
+          { field: "bill", flex: 6, headerName: "Bill", minWidth: 150 },
           {
             field: "action",
             flex: 1,
             headerName: "Action",
-            minWidth: 150,
-            headerAlign: "right",
+            minWidth: 120,
+            // headerAlign: "right",
             renderCell: (params) => (
               <div
                 style={{
