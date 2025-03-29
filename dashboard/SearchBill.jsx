@@ -1,4 +1,23 @@
 import * as React from "react";
+import { useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import {
+  getVoteById,
+  clearVoteState,
+  updateVote,
+  createVote,
+} from "../redux/slice/voteSlice"; // Import clearVoteState
+import { getAllTerms } from "../redux/slice/termSlice";
+ 
 import { useState } from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -13,11 +32,12 @@ import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/api/API";
 import axios from "axios";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Loader state
   const navigate = useNavigate();
 
   const handleSearch = async () => {
@@ -25,7 +45,9 @@ export default function SearchBill(props) {
     try {
       const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
         type: "bills",
-        additionalParams: { title: searchQuery },
+        additionalParams: {
+          title: searchQuery,
+        },
       });
       setSearchResults(response.data.data);
     } catch (error) {
@@ -41,10 +63,11 @@ export default function SearchBill(props) {
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [bill],
       });
+      console.log("Bill saved successfully:", response.data);
 
       alert("Bill saved successfully");
 
-      const voteId = response.data.data[0]?._id;
+      const voteId = response.data.data[0]._id;
       if (voteId) {
         navigate(`/bills/edit-bill/${voteId}`);
       } else {
@@ -56,6 +79,8 @@ export default function SearchBill(props) {
       setLoading(false);
     }
   };
+
+  const label = { inputProps: { "aria-label": "Color switch demo" } };
 
   return (
     <AppTheme>
@@ -79,39 +104,140 @@ export default function SearchBill(props) {
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-                  Search Bills
+                  Search For Bills In Quorum
                 </Typography>
-                <Grid container rowSpacing={2} columnSpacing={2} alignItems="center" justifyContent="center">
-                  <Grid item xs={12} md={8} sx={{ display: "flex", alignItems: "center", flexDirection: { xs: "column", md: "row" }, gap: { xs: 2, md: 3 }, width: "100%", marginLeft: { xs: "0px", lg: "20px" } }}>
-                    <Typography sx={{ minWidth: "120px", textAlign: { xs: "center", md: "right" }, fontWeight: 500, color: "#656D9A" }}>
-                      Search Bills
+                <Grid
+                  container
+                  rowSpacing={2}
+                  columnSpacing={2}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Grid
+                    item
+                    xs={12}
+                    md={8}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: { xs: "column", md: "row" },
+                      gap: { xs: 2, md: 3 },
+                      width: "100%",
+                      marginLeft: { xs: "0px", lg: "20px" },
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        minWidth: "120px",
+                        textAlign: { xs: "center", md: "right" },
+                        fontWeight: 500,
+                        color: "#656D9A",
+                      }}
+                    >
+                      Search Bills 
                     </Typography>
 
                     <TextField
-                      placeholder="Search Bills"
+                      placeholder="Search Bills By Title"
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       fullWidth
-                      sx={{ maxWidth: { xs: "100%", md: "800px" } }}
+                      sx={{
+                        maxWidth: { xs: "100%", md: "800px" },
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "gray !important",
+                          },
+                        },
+                        "& .MuiInputBase-root": {
+                          "&.Mui-focused": {
+                            borderColor: "gray !important",
+                            boxShadow: "none !important",
+                            outline: "none !important",
+                          },
+                        },
+                      }}
                     />
 
-                    <Button variant="contained" onClick={handleSearch} sx={{ width: { xs: "100%", md: "auto" }, minWidth: "110px" }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleSearch}
+                      sx={{
+                        width: { xs: "100%", md: "auto" },
+                        minWidth: "110px",
+                      }}
+                    >
                       Search
                     </Button>
                   </Grid>
 
-                  {searchResults.length > 0 && (
-                    <Box sx={{ marginTop: 2 }}>
-                      {searchResults.map((bill) => (
-                        <Stack key={bill.id} direction="row" spacing={2} alignItems="center">
-                          <Typography variant="body1">{bill.title}</Typography>
-                          <Button variant="outlined" onClick={() => handleAddBill(bill)}>
-                            Add
-                          </Button>
-                        </Stack>
-                      ))}
+                  {loading ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        marginTop: 2,
+                      }}
+                    >
+                      <CircularProgress />
                     </Box>
+                  ) : (
+                    searchResults.length > 0 && (
+                      <TableContainer
+                        component={Paper}
+                        sx={{ marginTop: 6, border: "1px solid #ddd" }}
+                      >
+                        <Table size="large" >
+                          
+                          <TableHead>
+                            <TableRow sx={{ }}>
+                              <TableCell
+                                sx={{
+                                  fontWeight: "bold",
+                                  borderBottom: "1px solid #ddd",
+                                }}
+                              >
+                                Title
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  fontWeight: "bold",
+                                  textAlign: "center",
+                                  borderBottom: "1px solid #ddd",
+                                }}
+                              >
+                                Action
+                              </TableCell>
+                            </TableRow>
+                          </TableHead>
+
+                          
+                          <TableBody>
+                            {searchResults.map((bill) => (
+                              <TableRow key={bill.id}>
+                                <TableCell sx={{ borderBottom: "1px solid #ddd" , fontSize:"13px" }}>
+                                  {bill.title}
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    textAlign: "center",
+                                    borderBottom: "1px solid #ddd",
+                                  }}
+                                >
+                                  <Button
+                                    variant="outlined"
+                                    onClick={() => handleAddBill(bill)}
+                                  >
+                                    Add
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )
                   )}
                 </Grid>
               </Box>

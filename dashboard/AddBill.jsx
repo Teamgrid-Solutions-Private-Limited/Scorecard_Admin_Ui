@@ -106,10 +106,15 @@ export default function AddBill(props) {
     setFormData((prev) => ({ ...prev, [fieldName]: content }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (id) {
-      dispatch(updateVote({ id, updatedData: formData }));
-      dispatch(getVoteById(id));
+      try {
+        await dispatch(updateVote({ id, updatedData: formData })).unwrap();
+        alert("Updated Successfully");
+        dispatch(getVoteById(id)); 
+      } catch (error) {
+        alert(`Update failed: ${error}`);
+      }
     } else {
       dispatch(createVote(formData));
     }
@@ -158,7 +163,7 @@ export default function AddBill(props) {
               <Button variant="contained" onClick={handleSubmit}>
                 Save
               </Button>
-              <Button variant="outlined">Fetch Data from Quorum</Button>
+              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
