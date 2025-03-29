@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useRef } from "react";
-import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -18,6 +17,9 @@ import {
   createVote,
 } from "../redux/slice/voteSlice"; // Import clearVoteState
 import { getAllTerms } from "../redux/slice/termSlice";
+ 
+import { useState } from "react";
+ 
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
