@@ -37,15 +37,15 @@ export default function CustomizedDataGrid({
             // headerAlign: "right",
             renderCell: (params) => (
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  height: "100%",
-                  columnGap: "10px",
-                }}
-              >
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                height: "100%",
+                columnGap: "10px",
+                marginRight: "55%",
+              }}
+            >
                 <EditIcon
                   onClick={() => onEdit(params.row)}
                   sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
@@ -61,9 +61,10 @@ export default function CustomizedDataGrid({
       : [
           {
             field: "name",
-            flex: 3,
+            flex: 2,
             headerName: type === "senator" ? "Senator" : "Representative",
             minWidth: 150,
+            minHeight : 200,
             renderCell: (params) => (
               <Box
               sx={{
@@ -88,8 +89,8 @@ export default function CustomizedDataGrid({
               >
                 <Box
                   sx={{
-                    width: 39, 
-                    height: 39,
+                    width: 55, 
+                    height: 55,
                     borderRadius: "50%", 
                     display: "flex",
                     alignItems: "center",
@@ -101,8 +102,8 @@ export default function CustomizedDataGrid({
                   <Avatar
                     src={params.row.photo}
                     sx={{
-                      width: 35, 
-                      height: 35,
+                      width: 50, 
+                      height: 50,
                     }}
                   />
                 </Box>
@@ -114,7 +115,7 @@ export default function CustomizedDataGrid({
             ? [
                 {
                   field: "district",
-                  flex: 1,
+                  flex: 1.5,
                   headerName: "District",
                   minWidth: 150,
                 },
@@ -124,7 +125,7 @@ export default function CustomizedDataGrid({
               ]),
           {
             field: "party",
-            flex: 1,
+            flex: 1.5,
             headerName: "Party",
             minWidth: 150,
             valueGetter: (params) => {
@@ -136,7 +137,7 @@ export default function CustomizedDataGrid({
           },
           {
             field: "rating",
-            flex: 2,
+            flex: 1,
             headerName: "Rating",
             minWidth: 150,
             valueGetter: (params) => {
@@ -175,7 +176,7 @@ export default function CustomizedDataGrid({
         ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", flexDirection: "column"  , width: "100%"}}>  
       <DataGrid
         rows={rows}
         columns={columns}
@@ -188,7 +189,15 @@ export default function CustomizedDataGrid({
         disableDensitySelector
         disableColumnResize
         disableRowSelectionOnClick
-        sx={{ "& .MuiDataGrid-row": { height: 90, alignItems: "center" } }}
+        rowHeight={70}
+        sx={{
+          "& .MuiDataGrid-row": {
+            maxHeight: "70px !important", 
+            minHeight: "70px !important", 
+            height: "70px !important", 
+            alignItems: "center",
+          },
+        }}
       />
     </div>
   );
