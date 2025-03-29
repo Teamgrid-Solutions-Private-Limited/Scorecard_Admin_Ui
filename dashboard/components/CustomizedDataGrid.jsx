@@ -46,6 +46,7 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             flex: 2,
             headerName: type === "senator" ? "Senator" : "Representative",
             minWidth: 150,
+            minHeight : 200,
             renderCell: (params) => (
               <Box
               sx={{
@@ -70,8 +71,8 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
               >
                 <Box
                   sx={{
-                    width: 39, 
-                    height: 39,
+                    width: 55, 
+                    height: 55,
                     borderRadius: "50%", 
                     display: "flex",
                     alignItems: "center",
@@ -83,8 +84,8 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
                   <Avatar
                     src={params.row.photo}
                     sx={{
-                      width: 35, 
-                      height: 35,
+                      width: 50, 
+                      height: 50,
                     }}
                   />
                 </Box>
@@ -156,22 +157,30 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
           },
         ];
 
-        return (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              loading={loading}
-              getRowId={(row) => row._id}
-              initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
-              pageSizeOptions={[10, 20, 50]}
-              disableColumnFilter
-              disableColumnSelector
-              disableDensitySelector
-              disableColumnResize
-              disableRowSelectionOnClick
-              sx={{ "& .MuiDataGrid-row": { height: 90, alignItems: "center" } }}
-            />
-          </div>
-        );
-      }
+  return (
+    <div style={{ display: "flex", flexDirection: "column"  , width: "100%"}}>  
+      <DataGrid
+        rows={rows}
+        columns={columns}
+        loading={loading}
+        getRowId={(row) => row._id}
+        initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+        pageSizeOptions={[10, 20, 50]}
+        disableColumnFilter
+        disableColumnSelector
+        disableDensitySelector
+        disableColumnResize
+        disableRowSelectionOnClick
+        rowHeight={70}
+        sx={{
+          "& .MuiDataGrid-row": {
+            maxHeight: "70px !important", 
+            minHeight: "70px !important", 
+            height: "70px !important", 
+            alignItems: "center",
+          },
+        }}
+      />
+    </div>
+  );
+}
