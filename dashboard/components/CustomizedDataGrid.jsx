@@ -43,7 +43,7 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
       : [
           {
             field: "name",
-            flex: 3,
+            flex: 2,
             headerName: type === "senator" ? "Senator" : "Representative",
             minWidth: 150,
             renderCell: (params) => (
@@ -96,7 +96,7 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
             ? [
                 {
                   field: "district",
-                  flex: 1,
+                  flex: 1.5,
                   headerName: "District",
                   minWidth: 150,
                 },
@@ -106,7 +106,7 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
               ]),
           {
             field: "party",
-            flex: 1,
+            flex: 1.5,
             headerName: "Party",
             minWidth: 150,
             valueGetter: (params) => {
@@ -118,7 +118,7 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
           },
           {
             field: "rating",
-            flex: 2,
+            flex: 1,
             headerName: "Rating",
             minWidth: 150,
             valueGetter: (params) => {
