@@ -24,16 +24,16 @@ export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDele
   const columns = type === "bills"
     ? [
         { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
-        { field: "bill", flex: 2, headerName: "Bill", minWidth: 150 },
+        { field: "bill", flex: 3, headerName: "Bill", minWidth: 150 },
         { field: "billsType", flex: 1, headerName: "Type", minWidth: 150 ,headerAlign:"center", align: "center"},
         {
           field: "action",
           flex: 1,
           headerName: "Action",
-          minWidth: 150,
-          headerAlign: "right",
+          minWidth: 120,
+          headerAlign: "center",
           renderCell: (params) => (
-            <div style={{ display: "flex", justifyContent: "flex-end", columnGap: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "center", height:"100%", alignItems:"center", columnGap: "10px" }}>
               <EditIcon onClick={() => onEdit(params.row)} sx={{ cursor: "pointer", "&:hover": { color: "blue" } }} />
               <DeleteForeverIcon onClick={() => onDelete(params.row)} sx={{ cursor: "pointer", "&:hover": { color: "red" } }} />
             </div>
