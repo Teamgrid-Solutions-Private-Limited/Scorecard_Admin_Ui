@@ -16,11 +16,9 @@ const xThemeComponents = {
     ...datePickersCustomizations,
     ...treeViewCustomizations,
 };
-
 export default function Senator(props) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
     // Fetch senators from Redux store
     const { senators, loading } = useSelector((state) => state.senator);
     const [progress, setProgress] = useState(0);
@@ -39,7 +37,6 @@ export default function Senator(props) {
     const handleEdit = (row) => {
         navigate(`/edit-senator/${row._id}`);
     };
-
     const handleDeleteClick = (row) => {
         setSelectedSenator(row); // Store senator data
         setOpenDeleteDialog(true); // Open dialog
@@ -52,7 +49,6 @@ export default function Senator(props) {
             setProgress((prev) => (prev >= 100 ? 0 : prev + 25))
         }, 1000);
         try {
-
             await dispatch(deleteSenator(selectedSenator._id));
             await dispatch(getAllSenators());
             setSnackbarMessage(`${selectedSenator.name} deleted successfully.`);
@@ -62,12 +58,10 @@ export default function Senator(props) {
             setSnackbarSeverity("error");
         } finally {
             clearInterval(interval)
-            setSnackbarOpen(true);
             setFetching(false);
+            setSnackbarOpen(true);
             setProgress(100);
-            setTimeout(() => {
-                setProgress(0)
-            }, 500);
+            setTimeout(() => setProgress(0), 500); // Re
         }
     }
 
@@ -99,9 +93,6 @@ export default function Senator(props) {
             setSnackbarOpen(true);
             setProgress(100); // Ensure it completes
             setTimeout(() => setProgress(0), 500); // Re
-            setFetching(false);
-            setSnackbarOpen(true);
-            setProgress(100); // Ensure it completes
             // setTimeout(() => setProgress(0), 500); // Re
         }
     };
@@ -109,8 +100,6 @@ export default function Senator(props) {
     const filteredSenators = senators.filter((senator) =>
         senator.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-  
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -121,10 +110,6 @@ export default function Senator(props) {
                     filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
                     pointerEvents: fetching ? "none" : "auto", // Disable interactions
                 }}>
-                <Box sx={{ flexGrow: 1, overflow: "auto",
-                      filter: fetching ? "blur(2px)" : "none", // Apply blur when fetching
-                      pointerEvents: fetching ? "none" : "auto", // Disable interactions
-                 }}>
                     <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
                         <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
                             SBA Scorecard Management System
@@ -143,14 +128,12 @@ export default function Senator(props) {
                                 sx={{ width: "170px" }} // Adjust width if needed
                             />
                         </Box>
-
                         <MainGrid type="senator" data={filteredSenators}
                             loading={fetching ? false : loading}
                             onDelete={handleDeleteClick}
                             onEdit={handleEdit} />
                     </Stack>
-                </Box>
-
+                    </Box>
 
                 {/* Overlay Loading Indicator (Prevents Blur) */}
                 {fetching && (
@@ -171,7 +154,6 @@ export default function Senator(props) {
                         <CircularProgress variant="determinate" value={progress} />
                     </Box>
                 )}
-
                 {/* Snackbar for success/error messages */}
                 <Snackbar
                     open={snackbarOpen}
@@ -212,7 +194,6 @@ export default function Senator(props) {
                             Are you sure you want to delete <strong>{selectedSenator?.name}</strong>?
                         </DialogContentText>
                     </DialogContent>
-
                     <DialogActions>
                         <Stack
                             direction="row"
@@ -227,7 +208,6 @@ export default function Senator(props) {
                             >
                                 Cancel
                             </Button>
-
                             <Button
                                 onClick={handleConfirmDelete}
                                 variant="contained"
@@ -239,11 +219,8 @@ export default function Senator(props) {
                         </Stack>
                     </DialogActions>
                 </Dialog>
-                </Box>
             </Box>
-
             {/* Snackbar for success/error messages */}
-           
         </AppTheme>
     );
         }
