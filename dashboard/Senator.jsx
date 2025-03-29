@@ -24,7 +24,7 @@ export default function Senator(props) {
 
     // Fetch senators from Redux store
     const { senators, loading } = useSelector((state) => state.senator);
-
+    const [progress, setProgress] = useState(0);
     const [fetching, setFetching] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -51,6 +51,10 @@ export default function Senator(props) {
 
     const fetchSenatorsFromQuorum = async () => {
         setFetching(true);
+        setProgress(0); // Reset progress
+        const interval = setInterval(() => {
+            setProgress((prev) => (prev >= 100 ? 0 : prev + 25)); // Increase progress in steps
+        }, 1000); // Change progress every second
         try {
             const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
                 type: "senator",
@@ -69,6 +73,8 @@ export default function Senator(props) {
         } finally {
             setFetching(false);
             setSnackbarOpen(true);
+            setProgress(100); // Ensure it completes
+            // setTimeout(() => setProgress(0), 500); // Re
         }
     };
 
@@ -81,7 +87,7 @@ export default function Senator(props) {
             <Box sx={{ display: "flex" }}>
                 <SideMenu />
                 <Box sx={{ flexGrow: 1, overflow: "auto",
-                      filter: fetching ? "blur(4px)" : "none", // Apply blur when fetching
+                      filter: fetching ? "blur(2px)" : "none", // Apply blur when fetching
                       pointerEvents: fetching ? "none" : "auto", // Disable interactions
                  }}>
                     <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
@@ -90,14 +96,18 @@ export default function Senator(props) {
                         </Typography>
 
                         <Stack direction="row" spacing={2} width="100%" sx={{ justifyContent: "flex-end", alignItems: "center" }}>
-                            <TextField
-                                placeholder="Search by Name"
-                                size="small"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
                             <Button variant="outlined" onClick={fetchSenatorsFromQuorum}>Fetch Senators from Quorum</Button>
                         </Stack>
+                         {/* Search Input - Positioned ABOVE the table */}
+                                                <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mt: 2 }}>
+                                                    <TextField
+                                                        placeholder="Search by Name"
+                                                        size="small"
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                        sx={{ width: "170px" }} // Adjust width if needed
+                                                    />
+                                                </Box>
 
                         <MainGrid type="senator" data={filteredSenators} loading={loading} onDelete={handleDelete} onEdit={handleEdit} />
                     </Stack>
@@ -114,11 +124,11 @@ export default function Senator(props) {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
+                            // backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
                             zIndex: 10, // Keep above blurred background
                         }}
                     >
-                        <CircularProgress />
+                        <CircularProgress  variant="determinate" value={progress} />
                     </Box>
                 )}
             </Box>

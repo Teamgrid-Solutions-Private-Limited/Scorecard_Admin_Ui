@@ -112,7 +112,7 @@ export default function Representative(props) {
                 <SideMenu />
                 <Box sx={{
                     flexGrow: 1, overflow: "auto",
-                    filter: fetching ? "blur(2px)" : "none", // Apply blur when fetching
+                    filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
                     pointerEvents: fetching ? "none" : "auto", // Disable interactions
                 }}>
                     <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
