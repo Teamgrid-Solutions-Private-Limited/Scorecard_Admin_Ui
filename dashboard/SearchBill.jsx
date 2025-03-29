@@ -16,12 +16,8 @@ import {
   updateVote,
   createVote,
 } from "../redux/slice/voteSlice"; // Import clearVoteState
-import { getAllTerms } from "../redux/slice/termSlice";
- 
+import { getAllTerms } from "../redux/slice/termSlice"; 
 import { useState } from "react";
- 
-import { useState } from "react";
- 
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";

@@ -3,10 +3,8 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteSenator, getAllSenators } from "../redux/slice/senetorSlice"; // Import actions
 import { Box, Stack, Typography, Button, CircularProgress, Snackbar, Alert, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, } from "@mui/material";
-import { deleteSenator, getAllSenators } from "../redux/slice/senetorSlice"; // Import actions
-import { Box, Stack, Typography, Button, CircularProgress, Snackbar, Alert, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AppTheme from "/shared-theme/AppTheme";
+import AppTheme from "../shared-theme/AppTheme";
 import SideMenu from "./components/SideMenu";
 import MainGrid from "./components/MainGrid";
 import axios from "axios";
@@ -241,53 +239,11 @@ export default function Senator(props) {
                         </Stack>
                     </DialogActions>
                 </Dialog>
-
-
-                         {/* Search Input - Positioned ABOVE the table */}
-                                                <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mt: 2 }}>
-                                                    <TextField
-                                                        placeholder="Search by Name"
-                                                        size="small"
-                                                        value={searchQuery}
-                                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                                        sx={{ width: "170px" }} // Adjust width if needed
-                                                    />
-                                                </Box>
-
-                        <MainGrid type="senator" data={filteredSenators} loading={loading} onDelete={handleDelete} onEdit={handleEdit} />
                 </Box>
-                {/* Overlay Loading Indicator (Prevents Blur) */}
-                {fetching && (
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            // backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
-                            zIndex: 10, // Keep above blurred background
-                        }}
-                    >
-                        <CircularProgress  variant="determinate" value={progress} />
-                    </Box>
-                )}
             </Box>
 
             {/* Snackbar for success/error messages */}
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={4000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
+           
         </AppTheme>
     );
         }
