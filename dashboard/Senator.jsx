@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteSenator, getAllSenators } from "../redux/slice/senetorSlice"; // Import actions
 import { Box, Stack, Typography, Button, CircularProgress, Snackbar, Alert, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, } from "@mui/material";
+import { deleteSenator, getAllSenators } from "../redux/slice/senetorSlice"; // Import actions
+import { Box, Stack, Typography, Button, CircularProgress, Snackbar, Alert, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "/shared-theme/AppTheme";
 import SideMenu from "./components/SideMenu";
@@ -69,8 +71,7 @@ export default function Senator(props) {
                 setProgress(0)
             }, 500);
         }
-    };
-
+    }
 
     const fetchSenatorsFromQuorum = async () => {
         setFetching(true);
@@ -100,12 +101,18 @@ export default function Senator(props) {
             setSnackbarOpen(true);
             setProgress(100); // Ensure it completes
             setTimeout(() => setProgress(0), 500); // Re
+            setFetching(false);
+            setSnackbarOpen(true);
+            setProgress(100); // Ensure it completes
+            // setTimeout(() => setProgress(0), 500); // Re
         }
     };
 
     const filteredSenators = senators.filter((senator) =>
         senator.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+  
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -116,6 +123,10 @@ export default function Senator(props) {
                     filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
                     pointerEvents: fetching ? "none" : "auto", // Disable interactions
                 }}>
+                <Box sx={{ flexGrow: 1, overflow: "auto",
+                      filter: fetching ? "blur(2px)" : "none", // Apply blur when fetching
+                      pointerEvents: fetching ? "none" : "auto", // Disable interactions
+                 }}>
                     <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
                         <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
                             SBA Scorecard Management System
@@ -232,7 +243,51 @@ export default function Senator(props) {
                 </Dialog>
 
 
+                         {/* Search Input - Positioned ABOVE the table */}
+                                                <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mt: 2 }}>
+                                                    <TextField
+                                                        placeholder="Search by Name"
+                                                        size="small"
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                        sx={{ width: "170px" }} // Adjust width if needed
+                                                    />
+                                                </Box>
+
+                        <MainGrid type="senator" data={filteredSenators} loading={loading} onDelete={handleDelete} onEdit={handleEdit} />
+                </Box>
+                {/* Overlay Loading Indicator (Prevents Blur) */}
+                {fetching && (
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            // backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
+                            zIndex: 10, // Keep above blurred background
+                        }}
+                    >
+                        <CircularProgress  variant="determinate" value={progress} />
+                    </Box>
+                )}
             </Box>
+
+            {/* Snackbar for success/error messages */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </AppTheme>
     );
-}
+        }

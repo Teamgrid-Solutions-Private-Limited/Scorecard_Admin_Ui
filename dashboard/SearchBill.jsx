@@ -20,6 +20,8 @@ import { getAllTerms } from "../redux/slice/termSlice";
  
 import { useState } from "react";
  
+import { useState } from "react";
+ 
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -28,20 +30,8 @@ import SideMenu from "./components/SideMenu";
 import AppTheme from "/shared-theme/AppTheme";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
-import Grid from "@mui/material/Grid2";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
+import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import ButtonGroup from "@mui/material/ButtonGroup";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { Editor } from "@tinymce/tinymce-react";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import AddIcon from "@mui/icons-material/Add";
-import Switch from "@mui/material/Switch";
-import Copyright from "./internals/components/Copyright";
-import { InputAdornment } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/api/API";
 import axios from "axios";
@@ -109,36 +99,10 @@ export default function SearchBill(props) {
             overflow: "auto",
           })}
         >
-          <Stack
-            spacing={2}
-            sx={{
-              alignItems: "center",
-              mx: 3,
-              pb: 5,
-              mt: { xs: 8, md: 0 },
-            }}
-          >
-            <Typography
-              variant="h4"
-              align="center"
-              sx={[{ paddingTop: "50px", color: "text.secondary" }]}
-            >
+          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
+            <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
               SBA Scorecard Management System
             </Typography>
-
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
-            </Stack>
-
-            <div className="spacer"></div>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
@@ -282,7 +246,6 @@ export default function SearchBill(props) {
               </Box>
             </Paper>
           </Stack>
-          <Copyright sx={{ my: 4 }} />
         </Box>
       </Box>
     </AppTheme>

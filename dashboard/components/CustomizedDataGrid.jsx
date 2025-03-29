@@ -27,25 +27,25 @@ export default function CustomizedDataGrid({
   const columns =
     type === "bills"
       ? [
-          { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
-          { field: "bill", flex: 2, headerName: "Bill", minWidth: 150 },
+          { field: "date", flex: 1.5, headerName: "Date", minWidth: 150 },
+          { field: "bill", flex: 6, headerName: "Bill", minWidth: 150 },
           {
             field: "action",
             flex: 1,
             headerName: "Action",
-            minWidth: 150,
-            headerAlign: "right",
+            minWidth: 120,
+            // headerAlign: "right",
             renderCell: (params) => (
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  height: "100%",
-                  columnGap: "10px",
-                }}
-              >
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                height: "100%",
+                columnGap: "10px",
+                marginRight: "55%",
+              }}
+            >
                 <EditIcon
                   onClick={() => onEdit(params.row)}
                   sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
@@ -61,7 +61,7 @@ export default function CustomizedDataGrid({
       : [
           {
             field: "name",
-            flex: 3,
+            flex: 2,
             headerName: type === "senator" ? "Senator" : "Representative",
             minWidth: 150,
             renderCell: (params) => (
@@ -114,7 +114,7 @@ export default function CustomizedDataGrid({
             ? [
                 {
                   field: "district",
-                  flex: 1,
+                  flex: 1.5,
                   headerName: "District",
                   minWidth: 150,
                 },
@@ -124,7 +124,7 @@ export default function CustomizedDataGrid({
               ]),
           {
             field: "party",
-            flex: 1,
+            flex: 1.5,
             headerName: "Party",
             minWidth: 150,
             valueGetter: (params) => {
@@ -136,7 +136,7 @@ export default function CustomizedDataGrid({
           },
           {
             field: "rating",
-            flex: 2,
+            flex: 1,
             headerName: "Rating",
             minWidth: 150,
             valueGetter: (params) => {
