@@ -2,17 +2,13 @@ import * as React from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { Avatar, Box } from "@mui/material";
+import { Avatar,Box } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
 
-export default function CustomizedDataGrid({
-  type,
-  rows,
-  loading,
-  onEdit,
-  onDelete,
-}) {
+
+
+export default function CustomizedDataGrid({ type, rows, loading, onEdit, onDelete }) {
   const getBorderColor = (party) => {
     if (!party) return "gray";
     const lowerParty = party.toLowerCase();
@@ -22,42 +18,28 @@ export default function CustomizedDataGrid({
   };
 
   const navigate = useNavigate();
- 
 
-  const columns =
-    type === "bills"
-      ? [
-          { field: "date", flex: 1.5, headerName: "Date", minWidth: 150 },
-          { field: "bill", flex: 6, headerName: "Bill", minWidth: 150 },
-          {
-            field: "action",
-            flex: 1,
-            headerName: "Action",
-            minWidth: 120,
-            // headerAlign: "right",
-            renderCell: (params) => (
-              <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                height: "100%",
-                columnGap: "10px",
-                marginRight: "55%",
-              }}
-            >
-                <EditIcon
-                  onClick={() => onEdit(params.row)}
-                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-                />
-                <DeleteForeverIcon
-                  onClick={() => onDelete(params.row)}
-                  sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                />
-              </div>
-            ),
-          },
-        ]
+
+
+  const columns = type === "bills"
+    ? [
+        { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
+        { field: "bill", flex: 3, headerName: "Bill", minWidth: 150 },
+        { field: "billsType", flex: 1, headerName: "Type", minWidth: 150 ,headerAlign:"center", align: "center"},
+        {
+          field: "action",
+          flex: 1,
+          headerName: "Action",
+          minWidth: 120,
+          headerAlign: "center",
+          renderCell: (params) => (
+            <div style={{ display: "flex", justifyContent: "center", height:"100%", alignItems:"center", columnGap: "10px" }}>
+              <EditIcon onClick={() => onEdit(params.row)} sx={{ cursor: "pointer", "&:hover": { color: "blue" } }} />
+              <DeleteForeverIcon onClick={() => onDelete(params.row)} sx={{ cursor: "pointer", "&:hover": { color: "red" } }} />
+            </div>
+          ),
+        },
+      ]
       : [
           {
             field: "name",

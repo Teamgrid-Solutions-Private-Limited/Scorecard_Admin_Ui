@@ -34,7 +34,13 @@ export default function Bills(props) {
     _id: vote._id || index,
     date: formatDate(vote.date),
     bill: vote.billName || vote.title,
+    billsType: vote.type ? 
+              (vote.type.toLowerCase().includes("senate") ? "Senate" : 
+               vote.type.toLowerCase().includes("house") ? "House" : "Other") 
+              : "Other"
   }));
+
+
 
   const handleEdit = (row) => {
     navigate(`edit-bill/${row._id}`);
