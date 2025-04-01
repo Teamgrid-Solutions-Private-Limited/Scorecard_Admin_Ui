@@ -65,7 +65,7 @@ export default function Bills(props) {
     try {
       await dispatch(deleteVote(selectedVote._id));
       await dispatch(getAllVotes());
-      setSnackbarMessage(`${selectedVote.name} deleted successfully.`);
+      setSnackbarMessage(`This bill deleted successfully.`);
       setSnackbarSeverity("success");
     } catch (error) {
       setSnackbarMessage("Failed to delete senator.");
