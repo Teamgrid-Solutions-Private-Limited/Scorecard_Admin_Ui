@@ -9,19 +9,27 @@ import { useNavigate } from "react-router-dom";
 import SideMenu from "./components/SideMenu";
 import MainGrid from "./components/MainGrid";
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations, } from "./theme/customizations";
-
+import {  CircularProgress, Snackbar, Alert, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, } from "@mui/material";
+import { useState } from "react";
 const xThemeComponents = {
-    ...chartsCustomizations,
-    ...dataGridCustomizations,
-    ...datePickersCustomizations,
-    ...treeViewCustomizations,
+  ...chartsCustomizations,
+  ...dataGridCustomizations,
+  ...datePickersCustomizations,
+  ...treeViewCustomizations,
 };
 
 export default function Bills(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { votes, loading } = useSelector((state) => state.vote);
-
+  const [progress, setProgress] = useState(0);
+  const [fetching, setFetching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedVote, setSelectedVote] = useState(null);
   useEffect(() => {
     dispatch(getAllVotes());
   }, [dispatch]);
@@ -34,30 +42,56 @@ export default function Bills(props) {
     _id: vote._id || index,
     date: formatDate(vote.date),
     bill: vote.billName || vote.title,
-    billsType: vote.type ? 
-              (vote.type.toLowerCase().includes("senate") ? "Senate" : 
-               vote.type.toLowerCase().includes("house") ? "House" : "Other") 
-              : "Other"
+    billsType: vote.type ?
+      (vote.type.toLowerCase().includes("senate") ? "Senate" :
+        vote.type.toLowerCase().includes("house") ? "House" : "Other")
+      : "Other"
   }));
-
-
 
   const handleEdit = (row) => {
     navigate(`edit-bill/${row._id}`);
   };
-
-  const handleDelete = async (row) => {
-    if (window.confirm("Are you sure you want to delete this bill?")) {
-      await dispatch(deleteVote(row._id));
-      await dispatch(getAllVotes());
-    }
+  const handleDeleteClick = (row) => {
+    setSelectedVote(row); // Store senator data
+    setOpenDeleteDialog(true); // Open dialog
   };
+  const handleConfirmDelete = async () => {
+    setOpenDeleteDialog(false);
+    setFetching(true);
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 25))
+    }, 1000);
+    try {
+      await dispatch(deleteVote(selectedVote._id));
+      await dispatch(getAllVotes());
+      setSnackbarMessage(`This bill has been successfully deleted.`);
+      setSnackbarSeverity("success");
+    } catch (error) {
+      setSnackbarMessage("Failed to delete this bill.");
+      setSnackbarSeverity("error");
+    } finally {
+      clearInterval(interval)
+      setFetching(false);
+      setSnackbarOpen(true);
+      setProgress(100);
+      setTimeout(() => setProgress(0), 500); // Re
+    }
+  }
+  // const handleDelete = async (row) => {
+  //   if (window.confirm("Are you sure you want to delete this bill?")) {
+  //     await dispatch(deleteVote(row._id));
+  //     await dispatch(getAllVotes());
+  //   }
+  // };
 
   return (
-     <AppTheme {...props} themeComponents={xThemeComponents}>
+    <AppTheme {...props} themeComponents={xThemeComponents}>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
-        <Box sx={{ flexGrow: 1, overflow: "auto" }}>
+        <Box sx={{ flexGrow: 1, overflow: "auto",
+          filter:fetching? "blur(1px)":"none",
+        pointerEvents:fetching? "none":"auto",         }}>
           <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
             <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
               SBA Scorecard Management System
@@ -75,15 +109,100 @@ export default function Bills(props) {
               >
                 Add Bills
               </Button> */}
-              <Button variant="outlined"  onClick={() => navigate("/search-bills")}>Fetch bills from Quorum</Button>
+              <Button variant="outlined" onClick={() => navigate("/search-bills")}>Fetch bills from Quorum</Button>
             </Stack>
-
-            <MainGrid type="bills" data={billsData} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
+            <MainGrid type="bills" data={billsData}
+              loading={fetching? false:loading}
+              onEdit={handleEdit}
+              onDelete={handleDeleteClick} />
           </Stack>
         </Box>
       </Box>
+       {fetching && (
+                          <Box
+                              sx={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  width: "100%",
+                                  height: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  // backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
+                                  zIndex: 10, // Keep above blurred background
+                              }}
+                          >
+                              <CircularProgress variant="determinate" value={progress} />
+                          </Box>
+                      )}
+                      {/* Snackbar for success/error messages */}
+                      <Snackbar
+                          open={snackbarOpen}
+                          autoHideDuration={4000}
+                          onClose={() => setSnackbarOpen(false)}
+                          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                      >
+                          <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+                              {snackbarMessage}
+                          </Alert>
+                      </Snackbar>
+                      <Dialog
+                          open={openDeleteDialog}
+                          onClose={() => setOpenDeleteDialog(false)}
+                          PaperProps={{
+                              sx: { borderRadius: 3, padding: 2, minWidth: 350 }
+                          }}
+                      >
+                          <DialogTitle
+                              sx={{
+                                  fontSize: "1.4rem",
+                                  fontWeight: "bold",
+                                  textAlign: "center",
+                                  color: "error.main"
+                              }}
+                          >
+                              Confirm Deletion
+                          </DialogTitle>
+      
+                          <DialogContent>
+                              <DialogContentText
+                                  sx={{
+                                      textAlign: "center",
+                                      fontSize: "1rem",
+                                      color: "text.secondary"
+                                  }}
+                              >
+                                  Are you sure you want to delete?
+                              </DialogContentText>
+                          </DialogContent>
+                          <DialogActions>
+                              <Stack
+                                  direction="row"
+                                  spacing={2}
+                                  sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                              >
+                                  <Button
+                                      onClick={() => setOpenDeleteDialog(false)}
+                                      variant="outlined"
+                                      color="secondary"
+                                      sx={{ borderRadius: 2, paddingX: 3 }}
+                                  >
+                                      Cancel
+                                  </Button>
+                                  <Button
+                                      onClick={handleConfirmDelete}
+                                      variant="contained"
+                                      color="error"
+                                      sx={{ borderRadius: 2, paddingX: 3 }}
+                                  >
+                                      Delete
+                                  </Button>
+                              </Stack>
+                          </DialogActions>
+                      </Dialog>
     </AppTheme>
-  
+
 
   );
 
