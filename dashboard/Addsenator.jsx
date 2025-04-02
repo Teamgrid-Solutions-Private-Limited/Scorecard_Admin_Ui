@@ -1,9 +1,8 @@
 import * as React from "react";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState , useCallback} from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-
 import { getSenatorDataBySenetorId } from "../redux/slice/senetorTermSlice";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -28,6 +27,7 @@ import Copyright from "./internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "./global/common";
 import { useParams } from "react-router-dom";
+
 import {
   getVoteById,
   clearVoteState,
@@ -35,6 +35,9 @@ import {
   createVote,
   getAllVotes,
 } from "../redux/slice/voteSlice";
+
+import {createSenatorData} from '../redux/slice/senetorTermSlice'
+import {clearSenatorDataState, updateSenatorData} from '../redux/slice/senetorTermSlice'
 import {
   getSenatorById,
   updateSenator,
@@ -42,12 +45,70 @@ import {
 } from "../redux/slice/senetorSlice";
 import { getAllTerms } from "../redux/slice/termSlice";
 
+
 export default function AddSenator(props) {
   const { id } = useParams(); // Get the senator ID from the URL
   const dispatch = useDispatch();
   const { senator } = useSelector((state) => state.senator); // Access senator details from Redux state
   const { terms } = useSelector((state) => state.term);
   const { votes } = useSelector((state) => state.vote);
+  const senatorData = useSelector((state)=> state.senatorData)
+
+
+  const [senatorTermData  , setSenatorTermData] = useState(
+   {
+    senateId:id,
+    summary:"",
+    rating:"",
+    voteScore:"",
+    termId:null,
+   }
+
+  )
+
+  const handleTermChange = (e) => {
+    setSenatorTermData({ ...senatorTermData, [e.target.name]: e.target.value });
+  };
+
+
+const contentRef = useRef("");
+
+const handleEditorChange = useCallback((content) => {
+  contentRef.current = content;
+}, []);
+
+const handleBlur = useCallback(() => {
+  setSenatorTermData(prev => ({
+    ...prev,
+    summary: contentRef.current
+  }));
+}, []);
+
+
+  const termPreFill = () => {
+    if (senatorData?.currentSenator?.[0]) {
+      const currentTerm = senatorData.currentSenator[0];
+      
+      // Find the full term object that matches the name
+      const matchedTerm = terms?.find(term => 
+        term.name === currentTerm.termId?.name
+      );
+  
+      setSenatorTermData({
+        summary: currentTerm.summary || "",
+        rating: currentTerm.rating || "",
+        termId: matchedTerm?._id || "" 
+      });
+    }
+  };
+
+  useEffect(() => {
+    termPreFill()
+  }, [id ,senatorData]);
+
+  
+
+
   const [formData, setFormData] = useState(
     {
       name: "",
@@ -62,7 +123,9 @@ export default function AddSenator(props) {
   );
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Can be "success", "error", "warning", or "info"
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); 
+
+
   const preFillForm = () => {
     if (senator) {
       const termId =
@@ -74,28 +137,30 @@ export default function AddSenator(props) {
         status: senator.status || "",
         state: senator.state || "",
         party: senator.party || "",
-        photo: senator.photo || null, // Photo will not be pre-filled
+        photo: senator.photo || null, 
         term: termId,
       });
     }
   };
   useEffect(() => {
     if (id) {
-      dispatch(getSenatorById(id)); // Fetch senator details by ID
+      dispatch(getSenatorById(id));
+      dispatch(getSenatorDataBySenetorId(id));
     }
     dispatch(getAllTerms());
     dispatch(getAllVotes());
     return () => {
       dispatch(clearSenatorState());
+      dispatch(clearSenatorDataState());
     };
   }, [id, dispatch]);
 
+  
   useEffect(() => {
-    console.log("Votes from Redux:", votes); // Log votes to verify
-  }, [votes]);
-  useEffect(() => {
-    preFillForm(); // Pre-fill the form when senator details are fetched
+    preFillForm(); 
   }, [senator, terms]);
+
+
 
   const handleVoteChange = (event, index, field) => {
     const { value } = event.target;
@@ -113,30 +178,88 @@ export default function AddSenator(props) {
     const file = event.target.files[0];
     setFormData((prev) => ({ ...prev, photo: file }));
   };
-  const handleSave = async () => {
-    if (id) {
-      const updatedData = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value) updatedData.append(key, value);
-      });
-      // Add votes to the formData
-      updatedData.append("votes", JSON.stringify(vote));
-      if (formData.term) {
-        updatedData.append("termId", formData.term); // Add termId
+
+
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+ 
+    const existingTermData = senatorData?.currentSenator?.[0];
+    let operationType = null; 
+    
+    try {
+      // --- Update or Create Senator Term Data ---
+      if (existingTermData) {
+        await dispatch(
+          updateSenatorData({ 
+            id: existingTermData._id, 
+            data: senatorTermData 
+          })
+        ).unwrap();
+        operationType = 'update';
+      } else {
+        await dispatch(createSenatorData(senatorTermData)).unwrap();
+        operationType = 'create';
       }
-      if (formData.bill) {
-        updatedData.append("billId", formData.bill); // Add billId
+      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+  
+      // ===== (2) Handle Senator Data =========
+      if (id) {
+        const updatedData = new FormData();
+        
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value) updatedData.append(key, value);
+        });
+
+        updatedData.append("votes", JSON.stringify(vote));
+  
+        if (formData.term) updatedData.append("termId", formData.term);
+        if (formData.bill) updatedData.append("billId", formData.bill);
+
+        await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
       }
-      try {
-        await dispatch(updateSenator({ id, formData: updatedData })).unwrap(); // Wait for the update action to complete
-        console.log("Update successful");
-        handleSnackbarOpen("Update successful!", "success"); // Show success message
-      } catch (error) {
-        console.error("Update failed:", error);
-        handleSnackbarOpen("Update failed. Please try again.", "error"); // Show error message
+  
+   
+      if (operationType === 'create') {
+        handleSnackbarOpen("Data created successfully!", "success");
+      } else {
+        handleSnackbarOpen("Data updated successfully!", "success");
       }
+    } catch (error) {
+      console.error("Save failed:", error);
+      handleSnackbarOpen("Failed to save: " + error.message, "error");
     }
   };
+
+  // below function is commented temporarily 
+
+
+  // const handleSave = async () => {
+  //   if (id) {
+  //     const updatedData = new FormData();
+  //     Object.entries(formData).forEach(([key, value]) => {
+  //       if (value) updatedData.append(key, value);
+  //     });
+  //     // Add votes to the formData
+  //     updatedData.append("votes", JSON.stringify(vote));
+  //     if (formData.term) {
+  //       updatedData.append("termId", formData.term); // Add termId
+  //     }
+  //     if (formData.bill) {
+  //       updatedData.append("billId", formData.bill); // Add billId
+  //     }
+  //     try {
+  //       await dispatch(updateSenator({ id, formData: updatedData })).unwrap(); // Wait for the update action to complete
+  //       console.log("Update successful");
+  //       handleSnackbarOpen("Update successful!", "success"); // Show success message
+  //     } catch (error) {
+  //       console.error("Update failed:", error);
+  //       handleSnackbarOpen("Update failed. Please try again.", "error"); // Show error message
+  //     }
+  //   }
+  // };
+
+
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -243,7 +366,7 @@ export default function AddSenator(props) {
             >
               <Button
                 variant="contained"
-                onClick={handleSave}
+                onClick={(e)=>{handleSave(e)}}
                 sx={{
                   "&:hover": {
                     backgroundColor: "green", // Change background color on hover
@@ -464,10 +587,10 @@ export default function AddSenator(props) {
                   <Grid size={4}>
                     <FormControl fullWidth>
                       <Select
-                        value={formData.term || ""}
+                        value={senatorTermData.termId || ""}
                         id="term"
-                        name="term"
-                        onChange={(event) => handleChange(event)}
+                        name="termId"
+                        onChange={(event) => handleTermChange(event)}
                         sx={{ background: "#fff" }}
                       >
                         <MenuItem value="" disabled>
@@ -504,10 +627,10 @@ export default function AddSenator(props) {
                   <Grid size={5}>
                     <FormControl fullWidth>
                       <Select
-                        value={formData.rating || ""} // Bind the selected value to formData.rating
+                        value={senatorTermData.rating || ""} // Bind the selected value to formData.rating
                         id="rating"
                         name="rating"
-                        onChange={(event) => handleChange(event)}
+                        onChange={(event) => handleTermChange(event)}
                         sx={{ background: "#fff" }}
                       >
                         <MenuItem value="" disabled>
@@ -535,42 +658,25 @@ export default function AddSenator(props) {
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
-                    <Editor
-                      apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-                      onInit={(_evt, editor) => (editorRef.current = editor)}
-                      initialValue={formData.termSummary || ""}
-                      init={{
-                        height: 250,
-                        menubar: false,
-                        plugins: [
-                          "advlist",
-                          "autolink",
-                          "lists",
-                          "link",
-                          "image",
-                          "charmap",
-                          "preview",
-                          "anchor",
-                          "searchreplace",
-                          "visualblocks",
-                          "code",
-                          "fullscreen",
-                          "insertdatetime",
-                          "media",
-                          "table",
-                          "code",
-                          "help",
-                          "wordcount",
-                        ],
-                        toolbar:
-                          "undo redo | blocks | " +
-                          "bold italic forecolor | alignleft aligncenter " +
-                          "alignright alignjustify | bullist numlist outdent indent | " +
-                          "removeformat | help",
-                        content_style:
-                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                      }}
-                    />
+                  <Editor
+    apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
+    onInit={(_evt, editor) => (editorRef.current = editor)}
+    initialValue={senatorTermData.summary || ""}
+    onEditorChange={handleEditorChange}
+    onBlur={handleBlur}
+    init={{
+      height: 250,
+      menubar: false,
+      plugins: [
+        "advlist", "autolink", "lists", "link", "image", "charmap", "preview",
+        "anchor", "searchreplace", "visualblocks", "code", "fullscreen",
+        "insertdatetime", "media", "table", "code", "help", "wordcount"
+      ],
+      toolbar: "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+      content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+      directionality: 'ltr'
+    }}
+  />
                   </Grid>
 
                   <Grid size={2} sx={{ alignContent: "center" }}>
@@ -616,8 +722,8 @@ export default function AddSenator(props) {
                             <Select
                               value={formData.bill || ""} // Bind the selected value to formData.bill
                               id="bill"
-                              name="bill"
-                              onChange={(event) => handleChange(event)} // Handle bill selection
+                              name="voteScore"
+                              onChange={(event) => handleTermChange(event)} // Handle bill selection
                               sx={{ background: "#fff" }}
                             >
                               <MenuItem value="" disabled>
