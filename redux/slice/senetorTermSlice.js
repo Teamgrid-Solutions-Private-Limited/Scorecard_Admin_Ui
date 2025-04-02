@@ -94,7 +94,13 @@ const initialState = {
 const senatorDataSlice = createSlice({
   name: 'senatorData',
   initialState,
-  reducers: {},
+  reducers: {
+    clearSenatorDataState: (state) => {
+      state.currentSenator = null; 
+      state.loading = false;
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Create Senator Data
@@ -176,3 +182,4 @@ const senatorDataSlice = createSlice({
 });
 
 export default senatorDataSlice.reducer;
+export const { clearSenatorDataState } = senatorDataSlice.actions; 
