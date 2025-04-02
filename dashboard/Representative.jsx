@@ -12,6 +12,7 @@ import { API_URL } from "../redux/api/API";
 import axios from "axios";
 import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations, } from "./theme/customizations";
 
+
 const xThemeComponents = {
     ...chartsCustomizations,
     ...dataGridCustomizations,
@@ -31,6 +32,8 @@ export default function Representative(props) {
     const [fetching, setFetching] = useState(false)
     const [progress, setProgress] = useState(0);
     // const [progressStep, setProgressStep] = useState(0); // Controls which quarter is visible
+
+    
 
 
     // Fetch representatives when the component mounts

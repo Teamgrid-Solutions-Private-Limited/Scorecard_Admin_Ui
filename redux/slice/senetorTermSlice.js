@@ -135,7 +135,6 @@ const senatorDataSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
       .addCase(getSenatorDataBySenetorId.pending, (state) => {
         state.loading = true;
         state.error = null;
