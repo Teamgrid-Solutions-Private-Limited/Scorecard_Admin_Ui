@@ -3,6 +3,7 @@ import { useRef, useEffect, useState , useCallback} from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+
 import { getSenatorDataBySenetorId } from "../redux/slice/senetorTermSlice";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -123,7 +124,9 @@ const handleBlur = useCallback(() => {
   );
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); 
+
 
 
   const preFillForm = () => {
@@ -181,6 +184,7 @@ const handleBlur = useCallback(() => {
 
 
 
+
   const handleSave = async (e) => {
     e.preventDefault();
  
@@ -200,6 +204,8 @@ const handleBlur = useCallback(() => {
       } else {
         await dispatch(createSenatorData(senatorTermData)).unwrap();
         operationType = 'create';
+
+
       }
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
   
@@ -258,6 +264,7 @@ const handleBlur = useCallback(() => {
   //     }
   //   }
   // };
+
 
 
 
@@ -722,8 +729,10 @@ const handleBlur = useCallback(() => {
                             <Select
                               value={formData.bill || ""} // Bind the selected value to formData.bill
                               id="bill"
+
                               name="voteScore"
                               onChange={(event) => handleTermChange(event)} // Handle bill selection
+
                               sx={{ background: "#fff" }}
                             >
                               <MenuItem value="" disabled>
