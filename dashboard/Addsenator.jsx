@@ -1,7 +1,9 @@
 import * as React from "react";
 import { useRef, useEffect, useState } from "react";
 import { alpha, styled } from "@mui/material/styles";
- 
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+
 import { getSenatorDataBySenetorId } from "../redux/slice/senetorTermSlice";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -54,10 +56,13 @@ export default function AddSenator(props) {
       party: "",
       photo: null,
       term: "",
-      bill:""
+      bill: "",
     },
     []
   );
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Can be "success", "error", "warning", or "info"
   const preFillForm = () => {
     if (senator) {
       const termId =
@@ -116,21 +121,34 @@ export default function AddSenator(props) {
       });
       // Add votes to the formData
       updatedData.append("votes", JSON.stringify(vote));
- if (formData.term) {
-   updatedData.append("termId", formData.term); // Add termId
- }
- if (formData.bill) {
-   updatedData.append("billId", formData.bill); // Add billId
- }
+      if (formData.term) {
+        updatedData.append("termId", formData.term); // Add termId
+      }
+      if (formData.bill) {
+        updatedData.append("billId", formData.bill); // Add billId
+      }
       try {
         await dispatch(updateSenator({ id, formData: updatedData })).unwrap(); // Wait for the update action to complete
         console.log("Update successful");
-        alert("Update successful"); // Show success message
+        handleSnackbarOpen("Update successful!", "success"); // Show success message
       } catch (error) {
         console.error("Update failed:", error);
-        alert("Update failed. Please try again."); // Show error message
+        handleSnackbarOpen("Update failed. Please try again.", "error"); // Show error message
       }
     }
+  };
+
+  const handleSnackbarOpen = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
   };
 
   const [age, setAge] = React.useState("");
@@ -173,10 +191,9 @@ export default function AddSenator(props) {
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
-  // const handleSave = () => {    
-    
-  // } 
+  // const handleSave = () => {
 
+  // }
 
   return (
     <AppTheme>
@@ -596,27 +613,27 @@ export default function AddSenator(props) {
                         </Grid>
                         <Grid size={4}>
                           <FormControl fullWidth>
-                           < Select
-      value={formData.bill || ""} // Bind the selected value to formData.bill
-      id="bill"
-      name="bill"
-      onChange={(event) => handleChange(event)} // Handle bill selection
-      sx={{ background: "#fff" }}
-    >
-      <MenuItem value="" disabled>
-        Select a Bill
-      </MenuItem>
-      {votes && votes.length > 0 ? (
-        votes.map((vote) => (
-          <MenuItem key={vote._id} value={vote._id}>
-            {vote.title}
-          </MenuItem>
-        ))
-      ) : (
-        <MenuItem value="" disabled>
-          No bills available
-        </MenuItem>
-      )}
+                            <Select
+                              value={formData.bill || ""} // Bind the selected value to formData.bill
+                              id="bill"
+                              name="bill"
+                              onChange={(event) => handleChange(event)} // Handle bill selection
+                              sx={{ background: "#fff" }}
+                            >
+                              <MenuItem value="" disabled>
+                                Select a Bill
+                              </MenuItem>
+                              {votes && votes.length > 0 ? (
+                                votes.map((vote) => (
+                                  <MenuItem key={vote._id} value={vote._id}>
+                                    {vote.title}
+                                  </MenuItem>
+                                ))
+                              ) : (
+                                <MenuItem value="" disabled>
+                                  No bills available
+                                </MenuItem>
+                              )}
                             </Select>
                           </FormControl>
                         </Grid>
@@ -740,6 +757,22 @@ export default function AddSenator(props) {
               </Box>
             </Paper>
           </Stack>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          >
+            <MuiAlert
+              onClose={handleSnackbarClose}
+              severity={snackbarSeverity}
+              sx={{ width: "100%" }}
+              elevation={6}
+              variant="filled"
+            >
+              {snackbarMessage}
+            </MuiAlert>
+          </Snackbar>
           <Copyright sx={{ my: 4 }} />
         </Box>
       </Box>
