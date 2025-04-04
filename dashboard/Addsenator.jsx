@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useRef, useEffect, useState , useCallback} from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -36,8 +36,11 @@ import {
   getAllVotes,
 } from "../redux/slice/voteSlice";
 
-import {createSenatorData} from '../redux/slice/senetorTermSlice'
-import {clearSenatorDataState, updateSenatorData} from '../redux/slice/senetorTermSlice'
+import { createSenatorData } from "../redux/slice/senetorTermSlice";
+import {
+  clearSenatorDataState,
+  updateSenatorData,
+} from "../redux/slice/senetorTermSlice";
 import {
   getSenatorById,
   updateSenator,
@@ -45,69 +48,113 @@ import {
 } from "../redux/slice/senetorSlice";
 import { getAllTerms } from "../redux/slice/termSlice";
 
-
 export default function AddSenator(props) {
   const { id } = useParams(); // Get the senator ID from the URL
   const dispatch = useDispatch();
   const { senator } = useSelector((state) => state.senator); // Access senator details from Redux state
   const { terms } = useSelector((state) => state.term);
   const { votes } = useSelector((state) => state.vote);
-  const senatorData = useSelector((state)=> state.senatorData)
+  const senatorData = useSelector((state) => state.senatorData);
 
-
-  const [senatorTermData  , setSenatorTermData] = useState(
-   {
-    senateId:id,
-    summary:"",
-    rating:"",
-    voteScore:"",
-    termId:null,
-   }
-
-  )
+  const [senatorTermData, setSenatorTermData] = useState({
+    senateId: id,
+    summary: "",
+    rating: "",
+    votesScore: [{ voteId: null, score: "" }],
+    currentTerm: false,
+    termId: null,
+  });
 
   const handleTermChange = (e) => {
     setSenatorTermData({ ...senatorTermData, [e.target.name]: e.target.value });
   };
 
+  const handleSwitchChange = (e) => {
+    setSenatorTermData({
+      ...senatorTermData,
+      [e.target.name]: e.target.checked,
+    });
+  };
 
-const contentRef = useRef("");
+  const handleAddVote = () => {
+    setSenatorTermData((prev) => ({
+      ...prev,
+      votesScore: [
+        ...prev.votesScore,
+        { voteId: null, score: "" }, // New empty vote
+      ],
+    }));
+  };
 
-const handleEditorChange = useCallback((content) => {
-  contentRef.current = content;
-}, []);
+  const handleRemoveVote = (index) => {
+    setSenatorTermData((prev) => ({
+      ...prev,
+      votesScore: prev.votesScore.filter((_, i) => i !== index),
+    }));
+  };
 
-const handleBlur = useCallback(() => {
-  setSenatorTermData(prev => ({
-    ...prev,
-    summary: contentRef.current
-  }));
-}, []);
+  const handleVoteChange = (index, field, value) => {
+    setSenatorTermData((prev) => {
+      const updatedVotes = [...prev.votesScore];
+      updatedVotes[index] = {
+        ...updatedVotes[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        votesScore: updatedVotes,
+      };
+    });
+  };
 
+  const contentRef = useRef("");
+
+  const handleEditorChange = useCallback((content) => {
+    contentRef.current = content;
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    setSenatorTermData((prev) => ({
+      ...prev,
+      summary: contentRef.current,
+    }));
+  }, []);
 
   const termPreFill = () => {
     if (senatorData?.currentSenator?.[0]) {
       const currentTerm = senatorData.currentSenator[0];
-      
-      // Find the full term object that matches the name
-      const matchedTerm = terms?.find(term => 
-        term.name === currentTerm.termId?.name
+
+      const matchedTerm = terms?.find(
+        (term) => term.name === currentTerm.termId?.name
       );
-  
+
+      // Map votes if they exist, otherwise use empty array
+      const votes =
+        currentTerm.votesScore?.length > 0
+          ? currentTerm.votesScore.map((vote) => ({
+              voteId: vote.voteId?._id || null,
+              score: vote.score || "",
+            }))
+          : [{ voteId: null, score: "" }]; // Default empty vote if no votes exist
+
       setSenatorTermData({
         summary: currentTerm.summary || "",
         rating: currentTerm.rating || "",
-        termId: matchedTerm?._id || "" 
+        termId: matchedTerm?._id || "",
+        currentTerm: currentTerm.currentTerm || false,
+        votesScore: votes,
       });
+    } else {
+      // If no existing term data, initialize with one empty vote
+      setSenatorTermData((prev) => ({
+        ...prev,
+        votesScore: [{ voteId: null, score: "" }],
+      }));
     }
   };
-
   useEffect(() => {
-    termPreFill()
-  }, [id ,senatorData]);
-
-  
-
+    termPreFill();
+  }, [id, senatorData]);
 
   const [formData, setFormData] = useState(
     {
@@ -117,14 +164,12 @@ const handleBlur = useCallback(() => {
       party: "",
       photo: null,
       term: "",
-      bill: "",
     },
     []
   );
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); 
-
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const preFillForm = () => {
     if (senator) {
@@ -137,7 +182,7 @@ const handleBlur = useCallback(() => {
         status: senator.status || "",
         state: senator.state || "",
         party: senator.party || "",
-        photo: senator.photo || null, 
+        photo: senator.photo || null,
         term: termId,
       });
     }
@@ -155,19 +200,16 @@ const handleBlur = useCallback(() => {
     };
   }, [id, dispatch]);
 
-  
   useEffect(() => {
-    preFillForm(); 
+    preFillForm();
   }, [senator, terms]);
 
-
-
-  const handleVoteChange = (event, index, field) => {
-    const { value } = event.target;
-    setVote((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
-    );
-  };
+  // const handleVoteChange = (event, index, field) => {
+  //   const { value } = event.target;
+  //   setVote((prev) =>
+  //     prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+  //   );
+  // };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -179,48 +221,45 @@ const handleBlur = useCallback(() => {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-
-
   const handleSave = async (e) => {
     e.preventDefault();
- 
+
     const existingTermData = senatorData?.currentSenator?.[0];
-    let operationType = null; 
-    
+    let operationType = null;
+
     try {
       // --- Update or Create Senator Term Data ---
       if (existingTermData) {
         await dispatch(
-          updateSenatorData({ 
-            id: existingTermData._id, 
-            data: senatorTermData 
+          updateSenatorData({
+            id: existingTermData._id,
+            data: senatorTermData,
           })
         ).unwrap();
-        operationType = 'update';
+        operationType = "update";
       } else {
         await dispatch(createSenatorData(senatorTermData)).unwrap();
-        operationType = 'create';
+        operationType = "create";
       }
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-  
+
       // ===== (2) Handle Senator Data =========
       if (id) {
         const updatedData = new FormData();
-        
+
         Object.entries(formData).forEach(([key, value]) => {
           if (value) updatedData.append(key, value);
         });
 
         updatedData.append("votes", JSON.stringify(vote));
-  
+
         if (formData.term) updatedData.append("termId", formData.term);
         if (formData.bill) updatedData.append("billId", formData.bill);
 
         await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
       }
-  
-   
-      if (operationType === 'create') {
+
+      if (operationType === "create") {
         handleSnackbarOpen("Data created successfully!", "success");
       } else {
         handleSnackbarOpen("Data updated successfully!", "success");
@@ -231,8 +270,7 @@ const handleBlur = useCallback(() => {
     }
   };
 
-  // below function is commented temporarily 
-
+  // below function is commented temporarily
 
   // const handleSave = async () => {
   //   if (id) {
@@ -258,8 +296,6 @@ const handleBlur = useCallback(() => {
   //     }
   //   }
   // };
-
-
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -292,16 +328,8 @@ const handleBlur = useCallback(() => {
     width: 1,
   });
 
-  // const handleChange = (event) => {
-  //   setAge(event.target.value);
-  // };
-
-  const handleRemoveVote = (index) => {
-    setVote((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const handleStatusChange = (status) => {
-    setFormData((prev) => ({ ...prev, status })); // Update the status in formData
+    setFormData((prev) => ({ ...prev, status }));
   };
   const handleAdd = () => {
     setVote([...vote, { id: vote.length + 1, option1: "", option2: "" }]);
@@ -313,10 +341,6 @@ const handleBlur = useCallback(() => {
   };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
-
-  // const handleSave = () => {
-
-  // }
 
   return (
     <AppTheme>
@@ -366,7 +390,9 @@ const handleBlur = useCallback(() => {
             >
               <Button
                 variant="contained"
-                onClick={(e)=>{handleSave(e)}}
+                onClick={(e) => {
+                  handleSave(e);
+                }}
                 sx={{
                   "&:hover": {
                     backgroundColor: "green", // Change background color on hover
@@ -658,25 +684,42 @@ const handleBlur = useCallback(() => {
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
-                  <Editor
-    apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-    onInit={(_evt, editor) => (editorRef.current = editor)}
-    initialValue={senatorTermData.summary || ""}
-    onEditorChange={handleEditorChange}
-    onBlur={handleBlur}
-    init={{
-      height: 250,
-      menubar: false,
-      plugins: [
-        "advlist", "autolink", "lists", "link", "image", "charmap", "preview",
-        "anchor", "searchreplace", "visualblocks", "code", "fullscreen",
-        "insertdatetime", "media", "table", "code", "help", "wordcount"
-      ],
-      toolbar: "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-      content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-      directionality: 'ltr'
-    }}
-  />
+                    <Editor
+                      apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
+                      onInit={(_evt, editor) => (editorRef.current = editor)}
+                      initialValue={senatorTermData.summary || ""}
+                      onEditorChange={handleEditorChange}
+                      onBlur={handleBlur}
+                      init={{
+                        height: 250,
+                        menubar: false,
+                        plugins: [
+                          "advlist",
+                          "autolink",
+                          "lists",
+                          "link",
+                          "image",
+                          "charmap",
+                          "preview",
+                          "anchor",
+                          "searchreplace",
+                          "visualblocks",
+                          "code",
+                          "fullscreen",
+                          "insertdatetime",
+                          "media",
+                          "table",
+                          "code",
+                          "help",
+                          "wordcount",
+                        ],
+                        toolbar:
+                          "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+                        directionality: "ltr",
+                      }}
+                    />
                   </Grid>
 
                   <Grid size={2} sx={{ alignContent: "center" }}>
@@ -692,11 +735,17 @@ const handleBlur = useCallback(() => {
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
-                    <Switch {...label} color="warning" />
+                    <Switch
+                      {...label}
+                      name="currentTerm"
+                      checked={senatorTermData.currentTerm }
+                      onChange={handleSwitchChange}
+                      color="warning"
+                    />
                   </Grid>
 
                   {/* Vote Repeater Start */}
-                  {vote.map((item, index) => (
+                  {senatorTermData.votesScore.map((vote, index) => (
                     <Grid rowSpacing={2} sx={{ width: "100%" }} key={index}>
                       <Grid
                         size={12}
@@ -720,19 +769,26 @@ const handleBlur = useCallback(() => {
                         <Grid size={4}>
                           <FormControl fullWidth>
                             <Select
-                              value={formData.bill || ""} // Bind the selected value to formData.bill
-                              id="bill"
-                              name="voteScore"
-                              onChange={(event) => handleTermChange(event)} // Handle bill selection
+                              value={vote.voteId || ""}
+                              onChange={(event) =>
+                                handleVoteChange(
+                                  index,
+                                  "voteId",
+                                  event.target.value
+                                )
+                              }
                               sx={{ background: "#fff" }}
                             >
                               <MenuItem value="" disabled>
                                 Select a Bill
                               </MenuItem>
                               {votes && votes.length > 0 ? (
-                                votes.map((vote) => (
-                                  <MenuItem key={vote._id} value={vote._id}>
-                                    {vote.title}
+                                votes.map((voteItem) => (
+                                  <MenuItem
+                                    key={voteItem._id}
+                                    value={voteItem._id}
+                                  >
+                                    {voteItem.title}
                                   </MenuItem>
                                 ))
                               ) : (
@@ -746,17 +802,20 @@ const handleBlur = useCallback(() => {
                         <Grid size={5}>
                           <FormControl fullWidth>
                             <Select
-                              value={item.option2 || ""}
-                              name={`vote-${index}`}
+                              value={vote.score || ""}
                               onChange={(event) =>
-                                handleVoteChange(event, index, "option2")
+                                handleVoteChange(
+                                  index,
+                                  "score",
+                                  event.target.value
+                                )
                               }
                               sx={{ background: "#fff" }}
                             >
-                              <MenuItem value={10}>Yes</MenuItem>
-                              <MenuItem value={20}>No</MenuItem>
-                              <MenuItem value={30}>Neutral</MenuItem>
-                              <MenuItem value={30}>None</MenuItem>
+                              <MenuItem value="Yes">Yes</MenuItem>
+                              <MenuItem value="No">No</MenuItem>
+                              <MenuItem value="Neutral">Neutral</MenuItem>
+                              <MenuItem value="None">None</MenuItem>
                             </Select>
                           </FormControl>
                         </Grid>
@@ -775,7 +834,7 @@ const handleBlur = useCallback(() => {
                     <Button
                       variant="contained"
                       startIcon={<AddIcon />}
-                      onClick={handleAdd}
+                      onClick={handleAddVote}
                     >
                       Add Vote
                     </Button>

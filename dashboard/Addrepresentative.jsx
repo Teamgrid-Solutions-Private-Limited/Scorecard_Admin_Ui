@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useRef } from "react";
+import { useRef , useCallback} from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -24,6 +24,9 @@ import Copyright from "./internals/components/Copyright";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import { rating } from "./global/common";
+import {clearHouseState} from "../redux/slice/houseSlice"
+
 import {
   getHouseById,
   updateHouse,
@@ -34,6 +37,7 @@ import {
   updateHouseData,
   createHouseData,
   getHouseDataById,
+  clearHouseDataState,
 } from "../redux/slice/houseTermSlice";
 import {
   getAllVotes,
@@ -47,37 +51,157 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 export default function Addrepresentative(props) {
-  const [age, setAge] = React.useState("");
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { house: selectedHouse } = useSelector((state) => state.house);
-  const { houseData: selectedHouseData } = useSelector(
-    (state) => state.houseData
-  );
+  const { house } = useSelector((state) => state.house);
   const { terms } = useSelector((state) => state.term);
   const { votes } = useSelector((state) => state.vote);
-  const [scoredVotes, setScoredVotes] = useState([
-    { id: 1, voteId: "", score: "" },
-  ]);
+  const  houseData  = useSelector((state) => state.houseData);
+
+  const [houseTermData, setHouseTermData] = useState({
+    houseId: id,
+    summary: "",
+    rating: "",
+    votesScore:[{voteId:null, score:""}],
+    currentTerm:false,
+    termId: null
+  })
+
+  const handleTermChange = (e)=>{
+    setHouseTermData({...houseTermData, [e.target.name]:e.target.value});
+  }
+
+  const handleSwitchChange = (e)=>{
+    setHouseTermData({...houseTermData, [e.target.name]:e.target.checked});
+  }
+
+  const handleAddVote = () => {
+    setHouseTermData((prev) => ({
+      ...prev,
+      votesScore: [
+        ...prev.votesScore,
+        { voteId: null, score: "" }, // New empty vote
+      ],
+    }));
+  };
+
+  const handleRemoveVote = (index) => {
+    setHouseTermData((prev) => ({
+      ...prev,
+      votesScore: prev.votesScore.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleVoteChange = (index, field, value) => {
+    setHouseTermData((prev) => {
+      const updatedVotes = [...prev.votesScore];
+      updatedVotes[index] = {
+        ...updatedVotes[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        votesScore: updatedVotes,
+      };
+    });
+  };
+    const contentRef = useRef("");
+
+     const handleEditorChange = useCallback((content) => {
+        contentRef.current = content;
+      }, []);
+
+       const handleBlur = useCallback(() => {
+          setHouseTermData((prev) => ({
+            ...prev,
+            summary: contentRef.current,
+          }));
+        }, []);
+
+
+        const termPreFill = ()=>{
+          if (houseData?.currentHouse?.[0]){
+            const currentTerm = houseData.currentHouse[0]
+
+
+            const matchedTerm = terms?.find(
+              (term)=>term.name === currentTerm.termId?.name
+            );
+
+            const votes = 
+              currentTerm.votesScore?.length>0
+              ? currentTerm.votesScore.map((vote)=>({
+                voteId: vote.voteId || null,
+                score: vote.score || "",
+              }))
+              :
+              [{voteId:null, score:""}];
+
+             
+
+              setHouseTermData({
+                summary:currentTerm.summary || "",
+                rating: currentTerm.rating || "",
+                termId: matchedTerm._id || "",
+                currentTerm: currentTerm.currentTerm || false,
+                votesScore: votes,
+              })
+          }else{
+            setHouseTermData((prev)=>({
+              ...prev,
+              votesScore: [{voteId:null, score:""}],
+            }))
+          }
+        }
+
+        useEffect(()=>{
+          termPreFill()
+        },[id,houseData])
 
   const [formData, setFormData] = useState({
     name: "",
-    btn: "",
     district: "",
     party: "",
-    photo: "",
-    photoPreview: "",
-    termId: "",
-    rating: "",
-    summary: "",
-    currentTerm: "",
-    votesScore: "",
-    activitiesScore: "",
+    photo: null,
+    status:""
+  
   });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Can be "success", "error", "warning", or "info"
+
+  const preFillForm = ()=>{
+    if(house){
+      setFormData({
+        name:house.name || "",
+        district:house.district || "",
+        party:house.party || "",
+        photo:house.photo || "",
+        status:house.status || ""
+      })
+    }
+  }
+
+  useEffect(()=>{
+    if(id){
+      dispatch(getHouseById(id));
+      dispatch(getHouseDataByHouseId(id));
+    }
+    dispatch(getAllTerms());
+    dispatch(getAllVotes());
+
+    return ()=>{
+      dispatch(clearHouseState());
+      dispatch(clearHouseDataState())
+
+    }
+
+  },[id, dispatch])
+
+  useEffect(()=>{
+    preFillForm()
+  },[house,terms])
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -92,54 +216,73 @@ export default function Addrepresentative(props) {
     setOpenSnackbar(false);
   };
 
-  useEffect(() => {
-    console.log("ID from URL:", id);
-    if (id) {
-      dispatch(getHouseById(id));
-      dispatch(getHouseDataById(id));
-    }
-    dispatch(getAllTerms());
-    dispatch(getAllVotes());
-    return () => {
-      dispatch(clearVoteState());
-    };
-  }, [id, dispatch]);
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+  
 
-  useEffect(() => {
-    console.log("Selected House:", selectedHouse);
-    console.log("Selected House Data:", selectedHouseData);
-  }, [selectedHouse, selectedHouseData]);
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setFormData((prev) => ({ ...prev, photo: file }));
+  };
 
-  useEffect(() => {
-    if (selectedHouse || selectedHouseData) {
-      const extractedState = selectedHouse?.district?.split(", ").pop() || "";
-      const termId =
-        selectedHouseData[0]?.termId?._id || selectedHouseData?.termId || "";
 
-      setFormData({
-        name: selectedHouse?.name || "",
-        btn: selectedHouse?.btn || "",
-        district: extractedState,
-        party: selectedHouse?.party || "",
-        photo: selectedHouse?.photo || "",
-        termId: termId || "",
-        rating: selectedHouseData?.rating || "",
-        summary: selectedHouseData?.summary || "",
-        currentTerm: selectedHouseData[0]?.currentTerm || false,
-        votesScore: selectedHouseData[0]?.votesScore || [],
-        activitiesScore: selectedHouseData[0]?.activitiesScore || [],
-      });
+  const handleSave = async (e) => {
+      e.preventDefault();
 
-      if (selectedHouseData[0]?.votesScore) {
-        setScoredVotes(
-          selectedHouseData[0]?.votesScore.map((vote) => ({
-            voteId: vote.voteId || "",
-            score: vote.score || "",
-          }))
-        );
+      const existingTermData = houseData?.currentHouse?.[0];
+      console.log("existing term data:", existingTermData)
+      let operationType = null;
+  
+      try {
+        // --- Update or Create Senator Term Data ---
+        if (existingTermData) {
+          await dispatch(
+            updateHouseData({
+              id: existingTermData._id,
+              data: houseTermData,
+            })
+          ).unwrap();
+          operationType = "update";
+        } else {
+          await dispatch(createHouseData(houseTermData)).unwrap();
+          operationType = "create";
+        }
+        await dispatch(getHouseDataByHouseId(id)).unwrap();
+  
+        // ===== (2) Handle Senator Data =========
+        if (id) {
+          const updatedData = new FormData();
+  
+          Object.entries(formData).forEach(([key, value]) => {
+            if (value) updatedData.append(key, value);
+          });
+  
+          updatedData.append("votes", JSON.stringify(vote));
+  
+          if (formData.term) updatedData.append("termId", formData.term);
+          if (formData.bill) updatedData.append("billId", formData.bill);
+  
+          await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
+        }
+  
+        if (operationType === "create") {
+          handleSnackbarOpen("Data created successfully!", "success");
+        } else {
+          handleSnackbarOpen("Data updated successfully!", "success");
+        }
+      } catch (error) {
+        console.error("Save failed:", error);
+        handleSnackbarOpen("Failed to save: " + error.message, "error");
       }
-    }
-  }, [selectedHouse, selectedHouseData, terms, votes]);
+    };
+  
+   const [age, setAge] = React.useState("");
+    const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
+    const [activity, setActivity] = React.useState([
+      { id: 1, option1: "", option2: "" },
+    ]);
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -152,133 +295,16 @@ export default function Addrepresentative(props) {
     whiteSpace: "nowrap",
     width: 1,
   });
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        photo: file,
-        photoPreview: URL.createObjectURL(file),
-      }));
-    }
-  };
-  const handleAddScoredVote = () => {
-    setScoredVotes([...scoredVotes, { voteId: "", score: "" }]);
-  };
-  const handleScoredVoteChange = (event, index, field) => {
-    const { value } = event.target;
 
-    // Update the specific vote in the scoredVotes array
-    setScoredVotes((prev) => {
-      const updatedVotes = prev.map((item, i) =>
-        i === index ? { ...item, [field]: value } : item
-      );
-
-      console.log("Updated Scored Votes:", updatedVotes); // Debugging
-      return updatedVotes;
-    });
+  const handleStatusChange = (status) => {
+    setFormData((prev) => ({ ...prev, status }));
   };
 
-  const handleRemoveScoredVote = (index) => {
-    setScoredVotes((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveActivity = (index) => {
+    setActivity((prev) => prev.filter((_, i) => i !== index));
   };
-  const handleChange = (event) => {
-    setAge(event.target.value);
-    const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-  const handleEditorChange = (content, editor, fieldName) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: content }));
-  };
-
-  const handleSave = async () => {
-    try {
-      const {
-        name,
-        btn,
-        district,
-        party,
-        photo,
-        termId,
-        rating,
-        summary,
-        currentTerm,
-      } = formData;
-
-      let formDataObject = new FormData();
-      formDataObject.append("name", name);
-      formDataObject.append("btn", btn);
-      formDataObject.append("district", district);
-      formDataObject.append("party", party);
-
-      if (photo instanceof File) {
-        formDataObject.append("photo", photo);
-      }
-
-      // Format votesScore
-      const formattedVotesScore = vote
-        .map((v) => ({
-          voteId: v.option1?.trim() || null,
-          score: v.option2?.trim() || null,
-        }))
-        .filter((v) => v.voteId && v.score); // Ensure only valid objects
-
-      // Format activitiesScore
-      const formattedActivitiesScore = activity
-        .map((a) => ({
-          activityId: a.option1?.trim() || null,
-          score: a.option2?.trim() || null,
-        }))
-        .filter((a) => a.activityId && a.score);
-
-      let houseId = id;
-
-      /** Step 1: Handle House Creation/Update */
-      if (houseId) {
-        await dispatch(
-          updateHouse({ id: houseId, formData: formDataObject })
-        ).unwrap();
-      } else {
-        const newHouseResponse = await dispatch(
-          createHouse(formDataObject)
-        ).unwrap();
-      }
-
-      /** Step 2: Handle HouseData Creation/Update */
-      const houseDataPayload = {
-        houseId, // Link to house
-        termId, // Ensure termId is passed
-        summary,
-        rating,
-        votesScore: formattedVotesScore,
-        activitiesScore: formattedActivitiesScore,
-      };
-
-      if (selectedHouseData && selectedHouseData?.info?._id) {
-        // Update existing houseData
-        await dispatch(
-          updateHouseData({
-            id: selectedHouseData._id, // Use existing _id
-            data: houseDataPayload,
-          })
-        ).unwrap();
-      } else {
-        // Create new houseData
-        await dispatch(createHouseData(houseDataPayload)).unwrap();
-      }
-
-      handleSnackbarOpen(
-        "Representative and term information saved successfully!"
-      );
-    } catch (error) {
-      handleSnackbarOpen("Save operation failed:", error);
-    }
-  };
-
-  const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
-  const [activity, setActivity] = React.useState([
-    { id: 1, option1: "", option2: "" },
-  ]);
+  
+ 
 
   const handleAdd = () => {
     setVote([...vote, { id: vote.length + 1, option1: "", option2: "" }]);
@@ -288,9 +314,6 @@ export default function Addrepresentative(props) {
     setVote(vote.filter((item) => item.id !== id));
   };
 
-  const handleRemoveActivity = (id) => {
-    setActivity(activity.filter((item) => item.id !== id));
-  };
   const label = { inputProps: { "aria-label": "Color switch demo" } };
   return (
     <AppTheme>
@@ -402,15 +425,30 @@ export default function Addrepresentative(props) {
                     </InputLabel>
                   </Grid>
                   <Grid size={5}>
-                    <ButtonGroup
+                  <ButtonGroup
                       variant="outlined"
-                      name="btn"
-                      value={formData.btn}
-                      onChange={handleChange}
                       aria-label="Basic button group"
                     >
-                      <Button>Active</Button>
-                      <Button>Former</Button>
+                      <Button
+                        variant={
+                          formData.status === "Active"
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={() => handleStatusChange("Active")}
+                      >
+                        Active
+                      </Button>
+                      <Button
+                        variant={
+                          formData.status === "Former"
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={() => handleStatusChange("Former")}
+                      >
+                        Former
+                      </Button>
                     </ButtonGroup>
                   </Grid>
                   <Grid size={2}>
@@ -545,8 +583,8 @@ export default function Addrepresentative(props) {
                     <FormControl fullWidth>
                       <Select
                         name="termId"
-                        value={formData.termId}
-                        onChange={handleChange}
+                        value={houseTermData.termId || ""}
+                        onChange={(event)=> handleTermChange(event)}
                         sx={{ background: "#fff" }}
                       >
                         <MenuItem value="" disabled>
@@ -582,17 +620,21 @@ export default function Addrepresentative(props) {
                   <Grid size={5}>
                     <FormControl fullWidth>
                       <Select
-                        value={formData.rating}
+                        value={houseTermData.rating || ""}
                         name="rating"
-                        onChange={handleChange}
+                        onChange={(event)=>handleTermChange(event)}
                         sx={{ background: "#fff" }}
                       >
-                        <MenuItem value="A+">A+</MenuItem>
-                        <MenuItem value="F">A</MenuItem>
-                        <MenuItem value="B">B</MenuItem>
-                        <MenuItem value="B">C</MenuItem>
-                        <MenuItem value="B">D</MenuItem>
-                        <MenuItem value="B">F</MenuItem>
+                        <MenuItem value="" disabled>
+                          Select a rating
+                        </MenuItem>{" "}
+                        {
+                          rating.map((rate,index)=>(
+                            <MenuItem key={index} value={rate}>
+                              {rate}
+                            </MenuItem>
+                          ))
+                        }
                       </Select>
                     </FormControl>
                   </Grid>
@@ -612,12 +654,11 @@ export default function Addrepresentative(props) {
                     <Editor
                       apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                       onInit={(_evt, editor) => (editorRef.current = editor)}
-                      initialValue={formData.summary}
+                      initialValue={houseTermData.summary}
                       name="summary"
-                      value={formData.summary}
-                      onEditorChange={(content, editor) =>
-                        handleEditorChange(content, editor, "summary")
-                      }
+                    
+                      onEditorChange={handleEditorChange}
+                      onBlur={handleBlur}
                       init={{
                         height: 250,
                         menubar: false,
@@ -668,90 +709,100 @@ export default function Addrepresentative(props) {
                     <Switch
                       {...label}
                       name="currentTerm"
-                      value={formData.currentTerm}
-                      onChange={handleChange}
+                      checked={houseTermData.currentTerm }
+                      onChange={handleSwitchChange}
                       color="warning"
                     />
                   </Grid>
 
-                  {scoredVotes.map((item, index) => (
-                    <Grid rowSpacing={2} sx={{ width: "100%" }} key={index}>
-                      <Grid
-                        size={12}
-                        display="flex"
-                        alignItems="center"
-                        columnGap={"15px"}
-                      >
-                        <Grid size={2}>
-                          <InputLabel
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "end",
-                              fontWeight: 700,
-                              my: 0,
-                            }}
-                          >
-                            Scored Vote
-                          </InputLabel>
-                        </Grid>
-                        <Grid size={4}>
-                          <FormControl fullWidth>
-                            <Select
-                              value={item.voteId || ""}
-                              onChange={(event) =>
-                                handleScoredVoteChange(event, index, "voteId")
-                              }
-                              sx={{ background: "#fff" }}
-                            >
-                              <MenuItem value="" disabled>
-                                Select a Vote
-                              </MenuItem>
-                              {votes && votes.length > 0 ? (
-                                votes.map((vote) => (
-                                  <MenuItem key={vote._id} value={vote._id}>
-                                    {vote.title}
-                                  </MenuItem>
-                                ))
-                              ) : (
-                                <MenuItem value="" disabled>
-                                  No votes available
-                                </MenuItem>
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid size={5}>
-                          <FormControl fullWidth>
-                            <InputLabel>Select Score</InputLabel>
-                            <Select
-                              value={item.score || ""}
-                              onChange={(event) =>
-                                handleScoredVoteChange(event, index, "score")
-                              }
-                              sx={{ background: "#fff" }}
-                            >
-                              <MenuItem value="Yes">Yes</MenuItem>
-                              <MenuItem value="No">No</MenuItem>
-                              <MenuItem value="Neutral">Neutral</MenuItem>
-                              <MenuItem value="None">None</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid size={1}>
-                          <DeleteForeverIcon
-                            onClick={() => handleRemoveScoredVote(index)}
-                          />
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                  ))}
+                   {houseTermData.votesScore.map((vote, index) => (
+                                      <Grid rowSpacing={2} sx={{ width: "100%" }} key={index}>
+                                        <Grid
+                                          size={12}
+                                          display="flex"
+                                          alignItems="center"
+                                          columnGap={"15px"}
+                                        >
+                                          <Grid size={2}>
+                                            <InputLabel
+                                              sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "end",
+                                                fontWeight: 700,
+                                                my: 0,
+                                              }}
+                                            >
+                                              Scored Vote
+                                            </InputLabel>
+                                          </Grid>
+                                          <Grid size={4}>
+                                            <FormControl fullWidth>
+                                              <Select
+                                                value={vote.voteId || ""}
+                                                onChange={(event) =>
+                                                  handleVoteChange(
+                                                    index,
+                                                    "voteId",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                sx={{ background: "#fff" }}
+                                              >
+                                                <MenuItem value="" disabled>
+                                                  Select a Bill
+                                                </MenuItem>
+                                                {votes && votes.length > 0 ? (
+                                                  votes.map((voteItem) => (
+                                                    <MenuItem
+                                                      key={voteItem._id}
+                                                      value={voteItem._id}
+                                                    >
+                                                      {voteItem.title}
+                                                    </MenuItem>
+                                                  ))
+                                                ) : (
+                                                  <MenuItem value="" disabled>
+                                                    No bills available
+                                                  </MenuItem>
+                                                )}
+                                              </Select>
+                                            </FormControl>
+                                          </Grid>
+                                          <Grid size={5}>
+                                            <FormControl fullWidth>
+                                              <Select
+                                                value={vote.score || ""}
+                                                onChange={(event) =>
+                                                  handleVoteChange(
+                                                    index,
+                                                    "score",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                sx={{ background: "#fff" }}
+                                              >
+                                                <MenuItem value="Yes">Yes</MenuItem>
+                                                <MenuItem value="No">No</MenuItem>
+                                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                                <MenuItem value="None">None</MenuItem>
+                                              </Select>
+                                            </FormControl>
+                                          </Grid>
+                                          <Grid size={1}>
+                                            <DeleteForeverIcon
+                                              onClick={() => handleRemoveVote(index)}
+                                            />
+                                          </Grid>
+                                        </Grid>
+                                      </Grid>
+                                    ))}
                   <Grid size={1}></Grid>
                   <Grid size={10} sx={{ textAlign: "right" }}>
                     <Button
                       variant="contained"
                       startIcon={<AddIcon />}
-                      onClick={handleAddScoredVote}
+                      onClick={handleAddVote}
                     >
                       Add Vote
                     </Button>
