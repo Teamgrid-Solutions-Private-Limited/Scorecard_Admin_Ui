@@ -686,7 +686,7 @@ export default function AddSenator(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
+                      apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
                       onInit={(_evt, editor) => (editorRef.current = editor)}
                       initialValue={senatorTermData.summary || ""}
                       onEditorChange={handleEditorChange}
