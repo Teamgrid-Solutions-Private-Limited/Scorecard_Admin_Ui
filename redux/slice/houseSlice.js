@@ -94,7 +94,13 @@ const initialState = {
 const houseSlice = createSlice({
   name: "house",
   initialState,
-  reducers: {},
+  reducers: {
+    clearHouseState: (state) => {
+      state.house = null;
+      state.loading = false;
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     // Create house
     builder
@@ -177,3 +183,5 @@ const houseSlice = createSlice({
 });
 
 export default houseSlice.reducer;
+
+export const {clearHouseState} = houseSlice.actions
