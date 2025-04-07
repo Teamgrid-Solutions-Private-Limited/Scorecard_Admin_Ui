@@ -49,6 +49,7 @@ import {
 } from "../redux/slice/senetorSlice";
 import { getAllTerms } from "../redux/slice/termSlice";
 
+
 export default function AddSenator(props) {
   const { id } = useParams(); // Get the senator ID from the URL
   const dispatch = useDispatch();
@@ -183,7 +184,7 @@ export default function AddSenator(props) {
         status: senator.status || "",
         state: senator.state || "",
         party: senator.party || "",
-        photo: senator.photo || null,
+        photo: senator.photo || null, 
         term: termId,
       });
     }
@@ -201,6 +202,7 @@ export default function AddSenator(props) {
     };
   }, [id, dispatch]);
 
+  
   useEffect(() => {
     preFillForm();
   }, [senator, terms]);
@@ -253,7 +255,6 @@ export default function AddSenator(props) {
         });
 
         updatedData.append("votes", JSON.stringify(vote));
-
         if (formData.term) updatedData.append("termId", formData.term);
         if (formData.bill) updatedData.append("billId", formData.bill);
 
