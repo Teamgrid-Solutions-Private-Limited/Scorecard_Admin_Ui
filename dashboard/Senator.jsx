@@ -103,6 +103,24 @@ export default function Senator(props) {
 
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
+            {(loading || fetching) && (
+                <Box
+                  sx={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 9999
+                  }}
+                >
+                  <CircularProgress sx={{ color: 'black' }} />
+                </Box>
+              )}
             <Box sx={{ display: "flex" }}>
                 <SideMenu />
                 <Box sx={{
@@ -135,25 +153,6 @@ export default function Senator(props) {
                     </Stack>
                     </Box>
 
-                {/* Overlay Loading Indicator (Prevents Blur) */}
-                {fetching && (
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            // backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
-                            zIndex: 10, // Keep above blurred background
-                        }}
-                    >
-                        <CircularProgress variant="determinate" value={progress} />
-                    </Box>
-                )}
                 {/* Snackbar for success/error messages */}
                 <Snackbar
                     open={snackbarOpen}
