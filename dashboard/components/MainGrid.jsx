@@ -8,9 +8,7 @@ export default function MainGrid({ type, data, loading, onEdit, onDelete }) {
 
     return (
         <Box sx={{ width: "100%" }}>
-            <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-                {title}
-            </Typography>
+           
             <Grid container spacing={2} columns={12} >
                 <Grid item xs={12} lg={12}>
                     <CustomizedDataGrid
