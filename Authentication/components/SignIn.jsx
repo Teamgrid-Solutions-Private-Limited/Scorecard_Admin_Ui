@@ -62,7 +62,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontWeight: "bold",
   fontSize: "16px",
   padding: "10px",
-  height: "35px",
+  height: "40px",
   textTransform: "none",
   "&:hover": {
     background: "#black",
@@ -87,12 +87,10 @@ export default function SignIn() {
       .post(`${API_URL}/user/login`, info)
       .then((res) => {
         console.log(res.data);
- 
+
         if (res.data.message === "Login successful" && res.data.token) {
           sessionStorage.setItem("token", res.data.token);
- 
-    
- 
+
           nav("/");
         }
       })
@@ -112,7 +110,7 @@ export default function SignIn() {
             style={{
               width: "80px",
               height: "80px",
-              marginBottom: "16px",
+              marginBottom: "8px",
               borderRadius: "50%",
               objectFit: "cover",
               overflow: "hidden",
@@ -120,11 +118,11 @@ export default function SignIn() {
             }}
           />
 
-          <Typography variant="h5" fontWeight="bold" color="black">
+          <Typography variant="h6" fontWeight="bold" color="black">
             SBA Scorecard Management System
           </Typography>
-          <Typography variant="body1" color="black">
-            Sign in to continue.
+          <Typography variant="body1" color="black" sx={{ mb: 3 }}>
+            Sign in to continue
           </Typography>
         </Header>
 
@@ -135,9 +133,10 @@ export default function SignIn() {
           sx={{
             display: "flex",
             flexDirection: "column",
-            gap: 2.5,
+            gap: 2,
             paddingX: 3,
-            height: "200px",
+            pt: 0,
+            // height: "200px",
           }}
         >
           <FormControl>
