@@ -49,126 +49,181 @@ import {
 } from "../redux/slice/senetorSlice";
 import { getAllTerms } from "../redux/slice/termSlice";
 
-
 export default function AddSenator(props) {
-  const { id } = useParams(); // Get the senator ID from the URL
+  const { id } = useParams();
   const dispatch = useDispatch();
-  const { senator } = useSelector((state) => state.senator); // Access senator details from Redux state
+  const { senator } = useSelector((state) => state.senator);
   const { terms } = useSelector((state) => state.term);
   const { votes } = useSelector((state) => state.vote);
   const senatorData = useSelector((state) => state.senatorData);
 
-  const [senatorTermData, setSenatorTermData] = useState({
-    senateId: id,
-    summary: "",
-    rating: "",
-    votesScore: [{ voteId: null, score: "" }],
-    currentTerm: false,
-    termId: null,
-  });
+  // Initialize senatorTermData as an array to support multiple terms
+  const [senatorTermData, setSenatorTermData] = useState([
+    {
+      senateId: id,
+      summary: "",
+      rating: "",
+      votesScore: [{ voteId: null, score: "" }],
+      currentTerm: false,
+      termId: null,
+    },
+  ]);
 
-  const handleTermChange = (e) => {
-    setSenatorTermData({ ...senatorTermData, [e.target.name]: e.target.value });
+  const handleTermChange = (e, termIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? { ...term, [e.target.name]: e.target.value }
+          : term
+      )
+    );
   };
 
-  const handleSwitchChange = (e) => {
-    setSenatorTermData({
-      ...senatorTermData,
-      [e.target.name]: e.target.checked,
-    });
+  const handleSwitchChange = (e, termIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? { ...term, [e.target.name]: e.target.checked }
+          : term
+      )
+    );
   };
 
-  const handleAddVote = () => {
-    setSenatorTermData((prev) => ({
-      ...prev,
-      votesScore: [
-        ...prev.votesScore,
-        { voteId: null, score: "" }, // New empty vote
-      ],
-    }));
+  const handleAddVote = (termIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              votesScore: [...term.votesScore, { voteId: null, score: "" }],
+            }
+          : term
+      )
+    );
   };
 
-  const handleRemoveVote = (index) => {
-    setSenatorTermData((prev) => ({
-      ...prev,
-      votesScore: prev.votesScore.filter((_, i) => i !== index),
-    }));
+  const handleRemoveVote = (termIndex, voteIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+            }
+          : term
+      )
+    );
   };
 
-  const handleVoteChange = (index, field, value) => {
-    setSenatorTermData((prev) => {
-      const updatedVotes = [...prev.votesScore];
-      updatedVotes[index] = {
-        ...updatedVotes[index],
-        [field]: value,
-      };
-      return {
-        ...prev,
-        votesScore: updatedVotes,
-      };
-    });
+  const handleVoteChange = (termIndex, voteIndex, field, value) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
+          : term
+      )
+    );
   };
 
-  const contentRef = useRef("");
+  const contentRefs = useRef([]);
 
-  const handleEditorChange = useCallback((content) => {
-    contentRef.current = content;
+  const handleEditorChange = useCallback((content, termIndex) => {
+    if (!contentRefs.current[termIndex]) {
+      contentRefs.current[termIndex] = {};
+    }
+    contentRefs.current[termIndex].content = content;
   }, []);
 
-  const handleBlur = useCallback(() => {
-    setSenatorTermData((prev) => ({
-      ...prev,
-      summary: contentRef.current,
-    }));
+  const handleBlur = useCallback((termIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              summary: contentRefs.current[termIndex]?.content || "",
+            }
+          : term
+      )
+    );
   }, []);
+
+  // Add a new empty term
+  const handleAddTerm = () => {
+    setSenatorTermData((prev) => [
+      ...prev,
+      {
+        senateId: id,
+        summary: "",
+        rating: "",
+        votesScore: [{ voteId: null, score: "" }],
+        currentTerm: false,
+        termId: null,
+      },
+    ]);
+  };
+
+  // Remove a term
+  const handleRemoveTerm = (termIndex) => {
+    setSenatorTermData((prev) =>
+      prev.filter((_, index) => index !== termIndex)
+    );
+  };
 
   const termPreFill = () => {
-    if (senatorData?.currentSenator?.[0]) {
-      const currentTerm = senatorData.currentSenator[0];
+    if (senatorData?.currentSenator?.length > 0) {
+      const termsData = senatorData.currentSenator.map((term) => {
+        const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
 
-      const matchedTerm = terms?.find(
-        (term) => term.name === currentTerm.termId?.name
-      );
-
-      // Map votes if they exist, otherwise use empty array
-      const votes =
-        currentTerm.votesScore?.length > 0
-          ? currentTerm.votesScore.map((vote) => ({
-              voteId: vote.voteId?._id || null,
-              score: vote.score || "",
-            }))
-          : [{ voteId: null, score: "" }]; // Default empty vote if no votes exist
-
-      setSenatorTermData({
-        summary: currentTerm.summary || "",
-        rating: currentTerm.rating || "",
-        termId: matchedTerm?._id || "",
-        currentTerm: currentTerm.currentTerm || false,
-        votesScore: votes,
+        return {
+          _id: term._id,
+          summary: term.summary || "",
+          rating: term.rating || "",
+          termId: matchedTerm?._id || "",
+          currentTerm: term.currentTerm || false,
+          votesScore:
+            term.votesScore?.length > 0
+              ? term.votesScore.map((vote) => ({
+                  voteId: vote.voteId || null,
+                  score: vote.score || "",
+                }))
+              : [{ voteId: null, score: "" }],
+        };
       });
+
+      setSenatorTermData(termsData);
     } else {
-      // If no existing term data, initialize with one empty vote
-      setSenatorTermData((prev) => ({
-        ...prev,
-        votesScore: [{ voteId: null, score: "" }],
-      }));
+      // If no existing term data, initialize with one empty term
+      setSenatorTermData([
+        {
+          senateId: id,
+          summary: "",
+          rating: "",
+          votesScore: [{ voteId: null, score: "" }],
+          currentTerm: false,
+          termId: null,
+        },
+      ]);
     }
   };
+
   useEffect(() => {
     termPreFill();
   }, [id, senatorData]);
 
-  const [formData, setFormData] = useState(
-    {
-      name: "",
-      status: "",
-      state: "",
-      party: "",
-      photo: null,
-      term: "",
-    },
-    []
-  );
+  const [formData, setFormData] = useState({
+    name: "",
+    status: "",
+    state: "",
+    party: "",
+    photo: null,
+    term: "",
+  });
+
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -181,14 +236,15 @@ export default function AddSenator(props) {
           : "";
       setFormData({
         name: senator.name || "",
-        status: senator.status || "",
+        status: senator.status || "Active",
         state: senator.state || "",
         party: senator.party || "",
-        photo: senator.photo || null, 
+        photo: senator.photo || null,
         term: termId,
       });
     }
   };
+
   useEffect(() => {
     if (id) {
       dispatch(getSenatorById(id));
@@ -202,17 +258,9 @@ export default function AddSenator(props) {
     };
   }, [id, dispatch]);
 
-  
   useEffect(() => {
     preFillForm();
   }, [senator, terms]);
-
-  // const handleVoteChange = (event, index, field) => {
-  //   const { value } = event.target;
-  //   setVote((prev) =>
-  //     prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
-  //   );
-  // };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -227,77 +275,49 @@ export default function AddSenator(props) {
   const handleSave = async (e) => {
     e.preventDefault();
 
-    const existingTermData = senatorData?.currentSenator?.[0];
-    let operationType = null;
-
     try {
-      // --- Update or Create Senator Term Data ---
-      if (existingTermData) {
-        await dispatch(
-          updateSenatorData({
-            id: existingTermData._id,
-            data: senatorTermData,
-          })
-        ).unwrap();
-        operationType = "update";
-      } else {
-        await dispatch(createSenatorData(senatorTermData)).unwrap();
-        operationType = "create";
-      }
-      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-
-      // ===== (2) Handle Senator Data =========
+      // First handle senator data
       if (id) {
         const updatedData = new FormData();
-
         Object.entries(formData).forEach(([key, value]) => {
           if (value) updatedData.append(key, value);
         });
-
-        updatedData.append("votes", JSON.stringify(vote));
-        if (formData.term) updatedData.append("termId", formData.term);
-        if (formData.bill) updatedData.append("billId", formData.bill);
-
         await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
       }
 
-      if (operationType === "create") {
-        handleSnackbarOpen("Data created successfully!", "success");
-      } else {
-        handleSnackbarOpen("Data updated successfully!", "success");
-      }
+      // Then handle senator term data
+      const termPromises = senatorTermData.map((termData) => {
+        if (termData._id) {
+          // Existing term - update
+          return dispatch(
+            updateSenatorData({
+              id: termData._id,
+              data: {
+                ...termData,
+                senateId: id,
+              },
+            })
+          ).unwrap();
+        } else {
+          // New term - create
+          return dispatch(
+            createSenatorData({
+              ...termData,
+              senateId: id,
+            })
+          ).unwrap();
+        }
+      });
+
+      await Promise.all(termPromises);
+      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+
+      handleSnackbarOpen("Data saved successfully!", "success");
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen("Failed to save: " + error.message, "error");
     }
   };
-
-  // below function is commented temporarily
-
-  // const handleSave = async () => {
-  //   if (id) {
-  //     const updatedData = new FormData();
-  //     Object.entries(formData).forEach(([key, value]) => {
-  //       if (value) updatedData.append(key, value);
-  //     });
-  //     // Add votes to the formData
-  //     updatedData.append("votes", JSON.stringify(vote));
-  //     if (formData.term) {
-  //       updatedData.append("termId", formData.term); // Add termId
-  //     }
-  //     if (formData.bill) {
-  //       updatedData.append("billId", formData.bill); // Add billId
-  //     }
-  //     try {
-  //       await dispatch(updateSenator({ id, formData: updatedData })).unwrap(); // Wait for the update action to complete
-  //       console.log("Update successful");
-  //       handleSnackbarOpen("Update successful!", "success"); // Show success message
-  //     } catch (error) {
-  //       console.error("Update failed:", error);
-  //       handleSnackbarOpen("Update failed. Please try again.", "error"); // Show error message
-  //     }
-  //   }
-  // };
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -313,7 +333,6 @@ export default function AddSenator(props) {
   };
 
   const [age, setAge] = React.useState("");
-  const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
   const [activity, setActivity] = React.useState([
     { id: 1, option1: "", option2: "" },
   ]);
@@ -333,11 +352,7 @@ export default function AddSenator(props) {
   const handleStatusChange = (status) => {
     setFormData((prev) => ({ ...prev, status }));
   };
-  const handleAdd = () => {
-    setVote([...vote, { id: vote.length + 1, option1: "", option2: "" }]);
-  };
 
-  // Removed duplicate declaration of handleRemoveVote
   const handleRemoveActivity = (index) => {
     setActivity((prev) => prev.filter((_, i) => i !== index));
   };
@@ -367,7 +382,6 @@ export default function AddSenator(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {/* <Header /> */}
             <Typography
               variant="h4"
               align="center"
@@ -397,7 +411,7 @@ export default function AddSenator(props) {
                 }}
                 sx={{
                   "&:hover": {
-                    backgroundColor: "green", // Change background color on hover
+                    backgroundColor: "green",
                   },
                 }}
               >
@@ -498,7 +512,7 @@ export default function AddSenator(props) {
                     <TextField
                       id="state"
                       name="state"
-                      value={formData.state} // Display the state from formData
+                      value={formData.state}
                       onChange={handleChange}
                       fullWidth
                       size="small"
@@ -522,7 +536,7 @@ export default function AddSenator(props) {
                     <TextField
                       id="party"
                       name="party"
-                      value={formData.party} // Display the state from formData
+                      value={formData.party}
                       onChange={handleChange}
                       fullWidth
                       size="small"
@@ -545,13 +559,12 @@ export default function AddSenator(props) {
                   </Grid>
                   <Grid size={10}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      {/* Preview the uploaded or dynamic image */}
                       {formData.photo ? (
                         <img
                           src={
                             typeof formData.photo === "string"
-                              ? formData.photo // Dynamic image URL
-                              : URL.createObjectURL(formData.photo) // Uploaded image preview
+                              ? formData.photo
+                              : URL.createObjectURL(formData.photo)
                           }
                           alt="Senator's Photo"
                           style={{
@@ -567,7 +580,6 @@ export default function AddSenator(props) {
                         </Typography>
                       )}
 
-                      {/* Upload button */}
                       <Button
                         component="label"
                         variant="contained"
@@ -577,7 +589,7 @@ export default function AddSenator(props) {
                         <VisuallyHiddenInput
                           type="file"
                           onChange={handleFileChange}
-                          accept="image/*" // Optional: Restrict to image files
+                          accept="image/*"
                         />
                       </Button>
                     </Box>
@@ -588,358 +600,426 @@ export default function AddSenator(props) {
 
             <div className="spacer"></div>
 
-            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
-              <Box sx={{ padding: 5 }}>
-                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-                  Senator's Term Information
-                </Typography>
-                <Grid
-                  container
-                  rowSpacing={2}
-                  columnSpacing={2}
-                  alignItems={"center"}
-                >
-                  <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                      }}
-                    >
-                      Term
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={4}>
-                    <FormControl fullWidth>
-                      <Select
-                        value={senatorTermData.termId || ""}
-                        id="term"
-                        name="termId"
-                        onChange={(event) => handleTermChange(event)}
-                        sx={{ background: "#fff" }}
+            {/* Render each term in senatorTermData */}
+            {senatorTermData.map((term, termIndex) => (
+              <Paper
+                key={termIndex}
+                elevation={2}
+                sx={{
+                  width: "100%",
+                  marginBottom: "50px",
+                  position: "relative",
+                }}
+              >
+                <Box sx={{ padding: 5 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 3,
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      Senator's Term Information {termIndex + 1}
+                    </Typography>
+                    {termIndex > 0 && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<DeleteForeverIcon />}
+                        onClick={() => handleRemoveTerm(termIndex)}
                       >
-                        <MenuItem value="" disabled>
-                          Select an option
-                        </MenuItem>
-                        {terms && terms.length > 0 ? (
-                          terms.map((term) => (
-                            <MenuItem key={term._id} value={term._id}>
-                              {term.name}
-                            </MenuItem>
-                          ))
-                        ) : (
+                        Remove Term
+                      </Button>
+                    )}
+                  </Box>
+                  <Grid
+                    container
+                    rowSpacing={2}
+                    columnSpacing={2}
+                    alignItems={"center"}
+                  >
+                    <Grid size={2}>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "end",
+                          fontWeight: 700,
+                          my: 0,
+                        }}
+                      >
+                        Term
+                      </InputLabel>
+                    </Grid>
+                    <Grid size={4}>
+                      <FormControl fullWidth>
+                        <Select
+                          value={term.termId || ""}
+                          id="term"
+                          name="termId"
+                          onChange={(event) =>
+                            handleTermChange(event, termIndex)
+                          }
+                          sx={{ background: "#fff" }}
+                        >
                           <MenuItem value="" disabled>
-                            No terms available
+                            Select an option
                           </MenuItem>
-                        )}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid size={1}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                      }}
-                    >
-                      SBA Rating
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={5}>
-                    <FormControl fullWidth>
-                      <Select
-                        value={senatorTermData.rating || ""} // Bind the selected value to formData.rating
-                        id="rating"
-                        name="rating"
-                        onChange={(event) => handleTermChange(event)}
-                        sx={{ background: "#fff" }}
-                      >
-                        <MenuItem value="" disabled>
-                          Select a rating
-                        </MenuItem>{" "}
-                        {rating.map((rate, index) => (
-                          <MenuItem key={index} value={rate}>
-                            {rate}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                      }}
-                    >
-                      Term Summary
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={10}>
-                    <Editor
-                      apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-                      onInit={(_evt, editor) => (editorRef.current = editor)}
-                      initialValue={senatorTermData.summary || ""}
-                      onEditorChange={handleEditorChange}
-                      onBlur={handleBlur}
-                      init={{
-                        height: 250,
-                        menubar: false,
-                        plugins: [
-                          "advlist",
-                          "autolink",
-                          "lists",
-                          "link",
-                          "image",
-                          "charmap",
-                          "preview",
-                          "anchor",
-                          "searchreplace",
-                          "visualblocks",
-                          "code",
-                          "fullscreen",
-                          "insertdatetime",
-                          "media",
-                          "table",
-                          "code",
-                          "help",
-                          "wordcount",
-                        ],
-                        toolbar:
-                          "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                        content_style:
-                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-                        directionality: "ltr",
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid size={2} sx={{ alignContent: "center" }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                      }}
-                    >
-                      Current Term
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={10}>
-                    <Switch
-                      {...label}
-                      name="currentTerm"
-                      checked={senatorTermData.currentTerm }
-                      onChange={handleSwitchChange}
-                      color="warning"
-                    />
-                  </Grid>
-
-                  {/* Vote Repeater Start */}
-                  {senatorTermData.votesScore.map((vote, index) => (
-                    <Grid rowSpacing={2} sx={{ width: "100%" }} key={index}>
-                      <Grid
-                        size={12}
-                        display="flex"
-                        alignItems="center"
-                        columnGap={"15px"}
-                      >
-                        <Grid size={2}>
-                          <InputLabel
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "end",
-                              fontWeight: 700,
-                              my: 0,
-                            }}
-                          >
-                            Scored Vote
-                          </InputLabel>
-                        </Grid>
-                        <Grid size={4}>
-                          <FormControl fullWidth>
-                            <Select
-                              value={vote.voteId || ""}
-                              onChange={(event) =>
-                                handleVoteChange(
-                                  index,
-                                  "voteId",
-                                  event.target.value
-                                )
-                              }
-                              sx={{ background: "#fff" }}
-                            >
-                              <MenuItem value="" disabled>
-                                Select a Bill
+                          {terms && terms.length > 0 ? (
+                            terms.map((t) => (
+                              <MenuItem key={t._id} value={t._id}>
+                                {t.name}
                               </MenuItem>
-                              {votes && votes.length > 0 ? (
-                                votes.map((voteItem) => (
-                                  <MenuItem
-                                    key={voteItem._id}
-                                    value={voteItem._id}
-                                  >
-                                    {voteItem.title}
-                                  </MenuItem>
-                                ))
-                              ) : (
-                                <MenuItem value="" disabled>
-                                  No bills available
-                                </MenuItem>
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid size={5}>
-                          <FormControl fullWidth>
-                            <Select
-                              value={vote.score || ""}
-                              onChange={(event) =>
-                                handleVoteChange(
-                                  index,
-                                  "score",
-                                  event.target.value
-                                )
-                              }
-                              sx={{ background: "#fff" }}
-                            >
-                              <MenuItem value="Yes">Yes</MenuItem>
-                              <MenuItem value="No">No</MenuItem>
-                              <MenuItem value="Neutral">Neutral</MenuItem>
-                              <MenuItem value="None">None</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid size={1}>
-                          <DeleteForeverIcon
-                            onClick={() => handleRemoveVote(index)}
-                          />
-                        </Grid>
-                      </Grid>
+                            ))
+                          ) : (
+                            <MenuItem value="" disabled>
+                              No terms available
+                            </MenuItem>
+                          )}
+                        </Select>
+                      </FormControl>
                     </Grid>
-                  ))}
-                  {/* Vote Repeater Ends */}
 
-                  <Grid size={1}></Grid>
-                  <Grid size={10} sx={{ textAlign: "right" }} key={vote.id}>
-                    <Button
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      onClick={handleAddVote}
-                    >
-                      Add Vote
-                    </Button>
-                  </Grid>
-                  <Grid size={1}></Grid>
-                  {/* Add Vote Repeater Button Ends */}
-
-                  {/* Activity Repeater Start */}
-                  {activity.map((item) => (
-                    <Grid rowSpacing={2} sx={{ width: "100%" }} key={item.id}>
-                      <Grid
-                        size={12}
-                        display="flex"
-                        alignItems="center"
-                        columnGap={"15px"}
+                    <Grid size={1}>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "end",
+                          fontWeight: 700,
+                          my: 0,
+                        }}
                       >
-                        <Grid size={2}>
-                          <InputLabel
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "end",
-                              fontWeight: 700,
-                              my: 0,
-                            }}
-                          >
-                            Tracked Activity
-                          </InputLabel>
-                        </Grid>
-                        <Grid size={4}>
-                          <FormControl fullWidth>
-                            <Select
-                              value={item.option1}
-                              sx={{ background: "#fff" }}
+                        SBA Rating
+                      </InputLabel>
+                    </Grid>
+                    <Grid size={5}>
+                      <FormControl fullWidth>
+                        <Select
+                          value={term.rating || ""}
+                          id="rating"
+                          name="rating"
+                          onChange={(event) =>
+                            handleTermChange(event, termIndex)
+                          }
+                          sx={{ background: "#fff" }}
+                        >
+                          <MenuItem value="" disabled>
+                            Select a rating
+                          </MenuItem>
+                          {rating.map((rate, index) => (
+                            <MenuItem key={index} value={rate}>
+                              {rate}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid size={2}>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          justifyContent: "end",
+                          fontWeight: 700,
+                          my: 0,
+                        }}
+                      >
+                        Term Summary
+                      </InputLabel>
+                    </Grid>
+                    <Grid size={10}>
+                      <Editor
+                        apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                        onInit={(_evt, editor) => (editorRef.current = editor)}
+                        initialValue={term.summary || ""}
+                        onEditorChange={(content) =>
+                          handleEditorChange(content, termIndex)
+                        }
+                        onBlur={() => handleBlur(termIndex)}
+                        init={{
+                          height: 250,
+                          menubar: false,
+                          plugins: [
+                            "advlist",
+                            "autolink",
+                            "lists",
+                            "link",
+                            "image",
+                            "charmap",
+                            "preview",
+                            "anchor",
+                            "searchreplace",
+                            "visualblocks",
+                            "code",
+                            "fullscreen",
+                            "insertdatetime",
+                            "media",
+                            "table",
+                            "code",
+                            "help",
+                            "wordcount",
+                          ],
+                          toolbar:
+                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                          content_style:
+                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+                          directionality: "ltr",
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid size={2} sx={{ alignContent: "center" }}>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          justifyContent: "end",
+                          fontWeight: 700,
+                          my: 0,
+                        }}
+                      >
+                        Current Term
+                      </InputLabel>
+                    </Grid>
+                    <Grid size={10}>
+                      <Switch
+                        {...label}
+                        name="currentTerm"
+                        checked={term.currentTerm}
+                        onChange={(e) => handleSwitchChange(e, termIndex)}
+                        color="warning"
+                      />
+                    </Grid>
+
+                    {/* Vote Repeater Start */}
+                    {term.votesScore.map((vote, voteIndex) => (
+                      <Grid
+                        rowSpacing={2}
+                        sx={{ width: "100%" }}
+                        key={voteIndex}
+                      >
+                        <Grid
+                          size={12}
+                          display="flex"
+                          alignItems="center"
+                          columnGap={"15px"}
+                        >
+                          <Grid size={2}>
+                            <InputLabel
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "end",
+                                fontWeight: 700,
+                                my: 0,
+                              }}
                             >
-                              <MenuItem value={10}>New York</MenuItem>
-                              <MenuItem value={20}>Chicago</MenuItem>
-                              <MenuItem value={30}>NC</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid size={5}>
-                          <FormControl fullWidth>
-                            <Select
-                              value={item.option2}
-                              sx={{ background: "#fff" }}
-                            >
-                              <MenuItem value={10}>New York</MenuItem>
-                              <MenuItem value={20}>Chicago</MenuItem>
-                              <MenuItem value={30}>NC</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid size={1}>
-                          <DeleteForeverIcon
-                            onClick={() => {
-                              handleRemoveActivity(item.id);
-                            }}
-                          />
+                              Scored Vote
+                            </InputLabel>
+                          </Grid>
+                          <Grid size={4}>
+                            <FormControl fullWidth>
+                              <Select
+                                value={vote.voteId || ""}
+                                onChange={(event) =>
+                                  handleVoteChange(
+                                    termIndex,
+                                    voteIndex,
+                                    "voteId",
+                                    event.target.value
+                                  )
+                                }
+                                sx={{ background: "#fff" }}
+                              >
+                                <MenuItem value="" disabled>
+                                  Select a Bill
+                                </MenuItem>
+                                {votes && votes.length > 0 ? (
+                                  votes.map((voteItem) => (
+                                    <MenuItem
+                                      sx={{ width: "50px", height: "50px" }}
+                                      key={voteItem._id}
+                                      value={voteItem._id}
+                                    >
+                                      {voteItem.title}
+                                    </MenuItem>
+                                  ))
+                                ) : (
+                                  <MenuItem value="" disabled>
+                                    No bills available
+                                  </MenuItem>
+                                )}
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid size={5}>
+                            <FormControl fullWidth>
+                              <Select
+                                value={vote.score || ""}
+                                onChange={(event) =>
+                                  handleVoteChange(
+                                    termIndex,
+                                    voteIndex,
+                                    "score",
+                                    event.target.value
+                                  )
+                                }
+                                sx={{ background: "#fff" }}
+                              >
+                                <MenuItem value="Yes">Yes</MenuItem>
+                                <MenuItem value="No">No</MenuItem>
+                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="None">None</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid size={1}>
+                            <DeleteForeverIcon
+                              onClick={() =>
+                                handleRemoveVote(termIndex, voteIndex)
+                              }
+                            />
+                          </Grid>
                         </Grid>
                       </Grid>
+                    ))}
+                    {/* Vote Repeater Ends */}
+
+                    <Grid size={1}></Grid>
+                    <Grid size={10} sx={{ textAlign: "right" }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => handleAddVote(termIndex)}
+                      >
+                        Add Vote
+                      </Button>
                     </Grid>
-                  ))}
+                    <Grid size={1}></Grid>
 
-                  {/* Activity Repeater Ends */}
+                    {/* Activity Repeater Start */}
+                    {activity.map((item) => (
+                      <Grid rowSpacing={2} sx={{ width: "100%" }} key={item.id}>
+                        <Grid
+                          size={12}
+                          display="flex"
+                          alignItems="center"
+                          columnGap={"15px"}
+                        >
+                          <Grid size={2}>
+                            <InputLabel
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "end",
+                                fontWeight: 700,
+                                my: 0,
+                              }}
+                            >
+                              Tracked Activity
+                            </InputLabel>
+                          </Grid>
+                          <Grid size={4}>
+                            <FormControl fullWidth>
+                              <TextField
+                                value={formData.activitiesScore}
+                                name="activitiesScore"
+                                onChange={handleChange}
+                                sx={{ background: "#fff" }}
+                                placeholder="No Activity"
+                                disabled
+                              ></TextField>
+                            </FormControl>
+                          </Grid>
+                          <Grid size={5}>
+                            <FormControl fullWidth>
+                              <TextField
+                                value={formData.activitiesScore}
+                                name="activitiesScore"
+                                onChange={handleChange}
+                                sx={{
+                                  background: "#fff",
+                                  "& MuiOutlinedInput-root": {
+                                    "&:hover fieldset": {
+                                      borderColor: "transparent",
+                                    },
+                                    "&.Mui-disabled fieldset": {
+                                      borderColor: "transparent",
+                                    },
+                                  },
+                                }}
+                                placeholder="Select here"
+                                disabled
+                              ></TextField>
+                            </FormControl>
+                          </Grid>
+                          <Grid size={1}>
+                            <DeleteForeverIcon
+                              onClick={() => {
+                                handleRemoveActivity(item.id);
+                              }}
+                            />
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    ))}
+                    {/* Activity Repeater Ends */}
 
-                  <Grid size={1}></Grid>
-                  <Grid size={10} sx={{ textAlign: "right" }}>
-                    <Button
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      onClick={() =>
-                        setActivity([
-                          ...activity,
-                          { id: activity.length + 1, option1: "", option2: "" },
-                        ])
-                      }
-                    >
-                      Add Activity
-                    </Button>
+                    <Grid size={1}></Grid>
+                    <Grid size={10} sx={{ textAlign: "right" }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() =>
+                          setActivity([
+                            ...activity,
+                            {
+                              id: activity.length + 1,
+                              option1: "",
+                              option2: "",
+                            },
+                          ])
+                        }
+                      >
+                        Add Activity
+                      </Button>
+                    </Grid>
+                    <Grid size={1}></Grid>
                   </Grid>
-                  <Grid size={1}></Grid>
-                  {/* Add Activity Repeater Button Ends */}
-                </Grid>
-              </Box>
-            </Paper>
-          </Stack>
-          <Snackbar
-            open={openSnackbar}
-            autoHideDuration={6000}
-            onClose={handleSnackbarClose}
-            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          >
-            <MuiAlert
-              onClose={handleSnackbarClose}
-              severity={snackbarSeverity}
-              sx={{ width: "100%" }}
-              elevation={6}
-              variant="filled"
+                </Box>
+              </Paper>
+            ))}
+
+            {/* Add Term Button */}
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddTerm}
+              sx={{ alignSelf: "flex-start" }}
             >
-              {snackbarMessage}
-            </MuiAlert>
-          </Snackbar>
+              Add Another Term
+            </Button>
+
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={6000}
+              onClose={handleSnackbarClose}
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+              <MuiAlert
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{ width: "100%" }}
+                elevation={6}
+                variant="filled"
+              >
+                {snackbarMessage}
+              </MuiAlert>
+            </Snackbar>
+            
+          </Stack>
           <Copyright sx={{ my: 4 }} />
         </Box>
       </Box>
