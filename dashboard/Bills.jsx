@@ -109,7 +109,18 @@ export default function Bills(props) {
               >
                 Add Bills
               </Button> */}
-              <Button variant="outlined" onClick={() => navigate("/search-bills")}>Fetch bills from Quorum</Button>
+              <Button 
+                variant="contained" 
+                onClick={() => navigate("/search-bills")}
+                sx={{
+                  backgroundColor: 'black',
+                  '&:hover': {
+                    backgroundColor: '#333'
+                  }
+                }}
+              >
+                Add bills
+              </Button>
             </Stack>
             <MainGrid type="bills" data={billsData}
               loading={fetching? false:loading}

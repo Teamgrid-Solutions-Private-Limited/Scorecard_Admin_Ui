@@ -62,9 +62,9 @@ export default function SearchBill(props) {
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [bill],
       });
-      console.log("Bill saved successfully:", response.data);
+      // console.log("Bill saved successfully:", response.data);
 
-      alert("Bill saved successfully");
+      // alert("Bill saved successfully");
 
       const voteId = response.data.data[0]._id;
       if (voteId) {
@@ -83,6 +83,24 @@ export default function SearchBill(props) {
 
   return (
     <AppTheme>
+      {loading && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: ' rgba(255, 255, 255,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999
+          }}
+        >
+          <CircularProgress sx={{ color: 'black' }} />
+        </Box>
+      )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
@@ -125,7 +143,7 @@ export default function SearchBill(props) {
                       marginLeft: { xs: "0px", lg: "20px" },
                     }}
                   >
-                    <Typography
+                    {/* <Typography
                       sx={{
                         minWidth: "120px",
                         textAlign: { xs: "center", md: "right" },
@@ -134,16 +152,16 @@ export default function SearchBill(props) {
                       }}
                     >
                       Search Bills 
-                    </Typography>
+                    </Typography> */}
 
                     <TextField
-                      placeholder="Search Bills By Title"
+                      placeholder="Look for Bills in Quorum"
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       fullWidth
                       sx={{
-                        maxWidth: { xs: "100%", md: "800px" },
+                        maxWidth: { xs: "110%", md: "800px" },
                         "& .MuiOutlinedInput-root": {
                           "&:hover .MuiOutlinedInput-notchedOutline": {
                             borderColor: "gray !important",
@@ -165,6 +183,12 @@ export default function SearchBill(props) {
                       sx={{
                         width: { xs: "100%", md: "auto" },
                         minWidth: "110px",
+                        '&:hover': {
+                          backgroundColor: 'success.main',
+                          transform: 'scale(1.02)',
+                          boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                        },
+                        transition: 'all 0.3s ease'
                       }}
                     >
                       Search
@@ -179,7 +203,7 @@ export default function SearchBill(props) {
                         marginTop: 2,
                       }}
                     >
-                      <CircularProgress />
+                      {/* <CircularProgress /> */}
                     </Box>
                   ) : (
                     searchResults.length > 0 && (
@@ -227,6 +251,15 @@ export default function SearchBill(props) {
                                   <Button
                                     variant="outlined"
                                     onClick={() => handleAddBill(bill)}
+                                    sx={{
+                                      backgroundColor: "#F8F8F8",
+                                      color: "#000",
+                                       '&:hover': {
+                          backgroundColor: 'success.main',
+                          transform: 'scale(1.02)',
+                          boxShadow: '0 4px 8px rgba(10, 239, 86, 0.2)'
+                        } 
+                                    }}
                                   >
                                     Add
                                   </Button>
