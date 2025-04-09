@@ -67,10 +67,17 @@ export default function CustomizedDataGrid({
       : [
           {
             field: "name",
-            flex: 2.5,
+            flex: 2,
             headerName: type === "senator" ? "Senator" : "Representative",
-            minWidth: 160,
+            minWidth: 150,
             minHeight: 200,
+            headerAlign: "left",
+            align: "left",
+            renderHeader: (params) => (
+              <Typography sx={{ paddingLeft: "32px" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
             renderCell: (params) => (
               <Box
                 sx={{
@@ -80,6 +87,7 @@ export default function CustomizedDataGrid({
                   columnGap: "10px",
                   width: "fit-content",
                   height: "100%",
+                  paddingLeft: "32px",
                   "&:hover": {
                     cursor: "pointer",
                   },
@@ -128,19 +136,26 @@ export default function CustomizedDataGrid({
             ? [
                 {
                   field: "district",
-                  flex: 1,
+                  flex: 0.7,
                   headerName: "District",
-                  minWidth: 65,
+                  minWidth: 150,
                 },
               ]
-            : [{ field: "state", flex: 1, headerName: "State", minWidth: 65 }]),
+            : [
+                {
+                  field: "state",
+                  flex: 0.7,
+                  headerName: "State",
+                  minWidth: 150,
+                },
+              ]),
           {
             field: "party",
             flex: 1,
             headerName: "Party",
             headerAlign: "center",
             align: "center",
-            minWidth: 65,
+            minWidth: 60,
             valueGetter: (params) => {
               if (!params) return "N/A";
               return (
@@ -150,9 +165,10 @@ export default function CustomizedDataGrid({
           },
           {
             field: "rating",
-            flex: 1,
+            flex: 0.7,
             headerName: "Rating",
-            minWidth: 50,
+            minHeight: 200,
+            minWidth: 60,
             headerAlign: "center",
             align: "center",
             valueGetter: (params) => {
@@ -164,10 +180,16 @@ export default function CustomizedDataGrid({
           },
           {
             field: "action",
-            flex: 1,
+            flex: 0.7,
             headerName: "Action",
-            minWidth: 60,
-            headerAlign: "center",
+            minWidth: 30,
+            headerAlign: "right",
+            align: "right",
+            renderHeader: (params) => (
+              <Typography sx={{ paddingRight: "32px" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
             renderCell: (params) => (
               <div
                 // style={{
@@ -182,10 +204,16 @@ export default function CustomizedDataGrid({
 
                 style={{
                   display: "flex",
-                  justifyContent: "center",
-                  height: "100%",
-                  alignItems: "center",
+                  flexDirection: "row",
+                  alignItems: "Right",
+                  justifyContent: "flex-end",
                   columnGap: "10px",
+
+                  height: "100%",
+                  paddingRight: "32px",
+                  "&:hover": {
+                    cursor: "pointer",
+                  },
                 }}
               >
                 <EditIcon

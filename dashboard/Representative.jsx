@@ -204,11 +204,19 @@ export default function Representative(props) {
                 All Representatives
               </Typography>
               <TextField
-                placeholder="Search by Name"
+                placeholder="Search by Representative"
+                variant="outlined"
                 size="small"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                sx={{ width: "170px" }}
+                sx={{
+                  width: "170px",
+                  "& .MuiInputBase-input": {
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  },
+                }}
               />
             </Box>
             {/* Representative Table */}
