@@ -122,25 +122,24 @@ export default function Senator(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      {(loading || fetching) && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.05)", // More transparent background
-            backdropFilter: "blur(1px)", // Slight blur effect
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <CircularProgress sx={{ color: "black" }} />
-        </Box>
-      )}
+            {(loading || fetching) && (
+                <Box
+                  sx={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 9999
+                  }}
+                >
+                  <CircularProgress sx={{ color: 'black' }} />
+                </Box>
+              )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
 
@@ -170,14 +169,7 @@ export default function Senator(props) {
               width="100%"
               sx={{ justifyContent: "flex-end", alignItems: "center" }}
             >
-              <Button
-                variant="outlined"
-                onClick={async () => {
-                  setFetching(true); // Trigger fetching state
-                  await fetchSenatorsFromQuorum(); // Fetch data
-                  setFetching(false); // Reset fetching state
-                }}
-              >
+              <Button variant="outlined" onClick={fetchSenatorsFromQuorum}>
                 Fetch Senators from Quorum
               </Button>
             </Stack>

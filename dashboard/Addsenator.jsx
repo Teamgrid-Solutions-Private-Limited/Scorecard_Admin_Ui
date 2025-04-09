@@ -179,25 +179,27 @@ export default function AddSenator(props) {
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
 
+        // Fix: Properly handle voteId which might be an object or string
+        const votesScore =
+          term.votesScore?.length > 0
+            ? term.votesScore.map((vote) => ({
+                voteId: vote.voteId?._id || vote.voteId || null,
+                score: vote.score || "",
+              }))
+            : [{ voteId: null, score: "" }];
+
         return {
           _id: term._id,
           summary: term.summary || "",
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
           currentTerm: term.currentTerm || false,
-          votesScore:
-            term.votesScore?.length > 0
-              ? term.votesScore.map((vote) => ({
-                  voteId: vote.voteId || null,
-                  score: vote.score || "",
-                }))
-              : [{ voteId: null, score: "" }],
+          votesScore,
         };
       });
 
       setSenatorTermData(termsData);
     } else {
-      // If no existing term data, initialize with one empty term
       setSenatorTermData([
         {
           senateId: id,
@@ -274,7 +276,7 @@ export default function AddSenator(props) {
 
   const handleSave = async (e) => {
     e.preventDefault();
-
+    let operationType = "";
     try {
       // First handle senator data
       if (id) {
@@ -283,12 +285,13 @@ export default function AddSenator(props) {
           if (value) updatedData.append(key, value);
         });
         await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
+        operationType = "Updated";
       }
 
       // Then handle senator term data
       const termPromises = senatorTermData.map((termData) => {
         if (termData._id) {
-          // Existing term - update
+          operationType = "Updated";
           return dispatch(
             updateSenatorData({
               id: termData._id,
@@ -299,7 +302,7 @@ export default function AddSenator(props) {
             })
           ).unwrap();
         } else {
-          // New term - create
+          operationType = "Created";
           return dispatch(
             createSenatorData({
               ...termData,
@@ -312,7 +315,7 @@ export default function AddSenator(props) {
       await Promise.all(termPromises);
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
 
-      handleSnackbarOpen("Data saved successfully!", "success");
+      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen("Failed to save: " + error.message, "error");
@@ -333,6 +336,7 @@ export default function AddSenator(props) {
   };
 
   const [age, setAge] = React.useState("");
+  const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
   const [activity, setActivity] = React.useState([
     { id: 1, option1: "", option2: "" },
   ]);
@@ -355,6 +359,9 @@ export default function AddSenator(props) {
 
   const handleRemoveActivity = (index) => {
     setActivity((prev) => prev.filter((_, i) => i !== index));
+  };
+  const handleRemove = (id) => {
+    setVote(vote.filter((item) => item.id !== id));
   };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
@@ -819,7 +826,7 @@ export default function AddSenator(props) {
                               Scored Vote
                             </InputLabel>
                           </Grid>
-                          <Grid size={4}>
+                          <Grid size={8}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.voteId || ""}
@@ -839,7 +846,7 @@ export default function AddSenator(props) {
                                 {votes && votes.length > 0 ? (
                                   votes.map((voteItem) => (
                                     <MenuItem
-                                      sx={{ width: "50px", height: "50px" }}
+                                    sx={{width:"740px", height:"50px"}}
                                       key={voteItem._id}
                                       value={voteItem._id}
                                     >
@@ -854,7 +861,7 @@ export default function AddSenator(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={5}>
+                          <Grid size={1}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
@@ -921,7 +928,7 @@ export default function AddSenator(props) {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={4}>
+                          <Grid size={8}>
                             <FormControl fullWidth>
                               <TextField
                                 value={formData.activitiesScore}
@@ -933,7 +940,7 @@ export default function AddSenator(props) {
                               ></TextField>
                             </FormControl>
                           </Grid>
-                          <Grid size={5}>
+                          <Grid size={1}>
                             <FormControl fullWidth>
                               <TextField
                                 value={formData.activitiesScore}
@@ -1018,7 +1025,6 @@ export default function AddSenator(props) {
                 {snackbarMessage}
               </MuiAlert>
             </Snackbar>
-            
           </Stack>
           <Copyright sx={{ my: 4 }} />
         </Box>
