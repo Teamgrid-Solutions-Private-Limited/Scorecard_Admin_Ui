@@ -169,7 +169,7 @@ export default function SearchBill(props) {
                         },
                         "& .MuiInputBase-root": {
                           "&.Mui-focused": {
-                            borderColor: "gray !important",
+                            borderColor: "#CC9A3A !important",
                             boxShadow: "none !important",
                             outline: "none !important",
                           },
@@ -178,15 +178,17 @@ export default function SearchBill(props) {
                     />
 
                     <Button
-                      variant="contained"
+                      // variant="contained"
                       onClick={handleSearch}
                       sx={{
                         width: { xs: "100%", md: "auto" },
                         minWidth: "110px",
+                        backgroundColor: '#3b82f6',
+                        color: "white !important",
                         '&:hover': {
                           backgroundColor: 'success.main',
                           transform: 'scale(1.02)',
-                          boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                          boxShadow: '0 4px 8px rgba(18, 209, 63, 0.2)'
                         },
                         transition: 'all 0.3s ease'
                       }}

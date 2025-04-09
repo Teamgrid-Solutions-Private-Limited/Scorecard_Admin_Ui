@@ -35,6 +35,18 @@ export default function SideMenu() {
 				display: { xs: "none", md: "block" },
 				[`& .${drawerClasses.paper}`]: {
 					backgroundColor: "background.paper",
+					'& .MuiListItemButton-root:hover': {
+						color: '#CC9A3A !important',
+						'& .MuiListItemIcon-root': {
+							color: '#CC9A3A !important'
+						}
+					},
+					'& .MuiListItemButton-root.active': {
+						color: '#CC9A3A !important',
+						'& .MuiListItemIcon-root': {
+							color: '#CC9A3A !important'
+						}
+					}
 				},
 			}}
 		>
