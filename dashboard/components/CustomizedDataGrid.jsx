@@ -210,7 +210,7 @@ export default function CustomizedDataGrid({
                   columnGap: "10px",
 
                   height: "100%",
-                  padding: "20px 32px 20px 0",
+                  paddingRight: "32px",
                   "&:hover": {
                     cursor: "pointer",
                   },
