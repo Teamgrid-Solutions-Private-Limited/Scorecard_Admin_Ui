@@ -152,16 +152,28 @@ export default function Representative(props) {
                             </Button>
                         </Stack>
 
-                        <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mt: 2 }}>
-                            <TextField
-                                placeholder="Search by Name"
-                                size="small"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                sx={{ width: "170px" }}
-                            />
-                        </Box>
-
+                        {/* Search Input - Positioned ABOVE the table */}
+                       <Box
+                                     sx={{
+                                       width: "100%",
+                                       display: "flex",
+                                       justifyContent: "space-between",
+                                       alignItems: "center",
+                                       mt: 2,
+                                     }}
+                                   >
+                                     <Typography component="h2" variant="h6">
+                                       All Representatives
+                                     </Typography>
+                                     <TextField
+                                       placeholder="Search by Name"
+                                       size="small"
+                                       value={searchQuery}
+                                       onChange={(e) => setSearchQuery(e.target.value)}
+                                       sx={{ width: "170px" }}
+                                     />
+                                   </Box>
+                        {/* Representative Table */}
                         <MainGrid
                             type="representative"
                             data={filteredRepresentative || []}
