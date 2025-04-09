@@ -5,6 +5,15 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Avatar, Box } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
+import { GridOverlay } from "@mui/x-data-grid";
+
+const CustomNoRowsOverlay = () => (
+  <GridOverlay>
+    <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
+      Sorry, nothing matched your search term.
+    </Typography>
+  </GridOverlay>
+);
 
 export default function CustomizedDataGrid({
   type,
@@ -244,6 +253,9 @@ export default function CustomizedDataGrid({
         disableColumnResize
         disableRowSelectionOnClick
         rowHeight={70}
+        slots={{
+          noRowsOverlay: CustomNoRowsOverlay,
+        }}
         sx={{
           "& .MuiDataGrid-row": {
             maxHeight: "70px !important",
