@@ -14,7 +14,7 @@ export default function MainGrid({ type, data, loading, onEdit, onDelete }) {
                     <CustomizedDataGrid
                         type={type}
                         rows={data}
-                        loading={loading}
+                        // loading={loading}
                         onEdit={onEdit}
                         onDelete={onDelete}
                     />

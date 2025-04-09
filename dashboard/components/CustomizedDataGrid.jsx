@@ -200,7 +200,7 @@ export default function CustomizedDataGrid({
       <DataGrid
         rows={rows}
         columns={columns}
-        loading={loading}
+        // loading={loading}
         getRowId={(row) => row._id}
         initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
         pageSizeOptions={[10, 20, 50]}
