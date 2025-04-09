@@ -40,7 +40,7 @@ export default function CustomizedDataGrid({
             field: "action",
             flex: 1,
             headerName: "Action",
-            minWidth: 120,
+            minWidth: 60,
             headerAlign: "center",
             renderCell: (params) => (
               <div
@@ -67,9 +67,9 @@ export default function CustomizedDataGrid({
       : [
           {
             field: "name",
-            flex: 2,
+            flex: 2.5,
             headerName: type === "senator" ? "Senator" : "Representative",
-            minWidth: 150,
+            minWidth: 160,
             minHeight: 200,
             renderCell: (params) => (
               <Box
@@ -130,19 +130,17 @@ export default function CustomizedDataGrid({
                   field: "district",
                   flex: 1,
                   headerName: "District",
-                  minWidth: 150,
+                  minWidth: 65,
                 },
               ]
-            : [
-                { field: "state", flex: 1, headerName: "State", minWidth: 150 },
-              ]),
+            : [{ field: "state", flex: 1, headerName: "State", minWidth: 65 }]),
           {
             field: "party",
-            flex: 1.5,
+            flex: 1,
             headerName: "Party",
             headerAlign: "center",
             align: "center",
-            minWidth: 150,
+            minWidth: 65,
             valueGetter: (params) => {
               if (!params) return "N/A";
               return (
@@ -154,7 +152,7 @@ export default function CustomizedDataGrid({
             field: "rating",
             flex: 1,
             headerName: "Rating",
-            minWidth: 150,
+            minWidth: 50,
             headerAlign: "center",
             align: "center",
             valueGetter: (params) => {
@@ -168,17 +166,25 @@ export default function CustomizedDataGrid({
             field: "action",
             flex: 1,
             headerName: "Action",
-            minWidth: 120,
-            headerAlign: "right",
+            minWidth: 60,
+            headerAlign: "center",
             renderCell: (params) => (
               <div
-                style={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "end",
+                // style={{
+                //   height: "100%",
+                //   display: "flex",
+                //   flexDirection: "row",
+                //   alignItems: "center",
+                //   // justifyContent: "flex-end", // Adjusted alignment
+                //   columnGap: "10px",
+                //   // paddingRight: "10px", // Added padding to move slightly from the right
+                // }}
 
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  height: "100%",
+                  alignItems: "center",
                   columnGap: "10px",
                 }}
               >
