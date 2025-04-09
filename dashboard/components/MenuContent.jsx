@@ -37,7 +37,24 @@ export default function MenuContent() {
       <List dense>
         {mainListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: "block" }}>
-            <ListItemButton component={NavLink} to={item.link}>
+            <ListItemButton 
+              component={NavLink} 
+              to={item.link}
+              sx={{
+                '&:hover': {
+                  color: '#CC9A3A !important',
+                  '& .MuiListItemIcon-root': {
+                    color: '#CC9A3A !important'
+                  }
+                },
+                '&.active': {
+                  color: '#CC9A3A !important',
+                  '& .MuiListItemIcon-root': {
+                    color: '#CC9A3A !important'
+                  }
+                }
+              }}
+            >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
@@ -46,11 +63,25 @@ export default function MenuContent() {
       </List>
       <List dense>
         <ListItem disablePadding sx={{ display: "block" }}>
-          <ListItemButton
-            component={NavLink}
-            to="/login"
-            onClick={handleLogout}
-          >
+            <ListItemButton
+              component={NavLink}
+              to="/login"
+              onClick={handleLogout}
+              sx={{
+                '&:hover': {
+                  color: '#CC9A3A !important',
+                  '& .MuiListItemIcon-root': {
+                    color: '#CC9A3A !important'
+                  }
+                },
+                '&.active': {
+                  color: '#CC9A3A !important',
+                  '& .MuiListItemIcon-root': {
+                    color: '#CC9A3A !important'
+                  }
+                }
+              }}
+            >
             <ListItemIcon>
               <SettingsRoundedIcon />
             </ListItemIcon>
