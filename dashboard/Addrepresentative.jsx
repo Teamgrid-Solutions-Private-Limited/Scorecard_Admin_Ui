@@ -171,7 +171,9 @@ export default function Addrepresentative(props) {
   // Remove a term (can't remove the first one)
   const handleRemoveTerm = (termIndex) => {
     if (termIndex > 0) {
-      setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
+      setHouseTermData((prev) =>
+        prev.filter((_, index) => index !== termIndex)
+      );
     }
   };
 
@@ -179,19 +181,20 @@ export default function Addrepresentative(props) {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
-        
+
         return {
           _id: term._id,
           summary: term.summary || "",
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
           currentTerm: term.currentTerm || false,
-          votesScore: term.votesScore?.length > 0
-            ? term.votesScore.map((vote) => ({
-                voteId: vote.voteId || null,
-                score: vote.score || "",
-              }))
-            : [{ voteId: null, score: "" }],
+          votesScore:
+            term.votesScore?.length > 0
+              ? term.votesScore.map((vote) => ({
+                  voteId: vote.voteId || null,
+                  score: vote.score || "",
+                }))
+              : [{ voteId: null, score: "" }],
         };
       });
       setHouseTermData(termsData);
@@ -280,6 +283,7 @@ export default function Addrepresentative(props) {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    let operationType = "";
 
     try {
       // First handle house data
@@ -289,12 +293,13 @@ export default function Addrepresentative(props) {
           if (value) updatedData.append(key, value);
         });
         await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
+        operationType = "Updated";
       }
 
       // Then handle house term data
       const termPromises = houseTermData.map((termData) => {
         if (termData._id) {
-          // Update existing term
+          operationType = "Updated";
           return dispatch(
             updateHouseData({
               id: termData._id,
@@ -305,7 +310,7 @@ export default function Addrepresentative(props) {
             })
           ).unwrap();
         } else {
-          // Create new term
+          operationType = "Created";
           return dispatch(
             createHouseData({
               ...termData,
@@ -318,7 +323,7 @@ export default function Addrepresentative(props) {
       await Promise.all(termPromises);
       await dispatch(getHouseDataByHouseId(id)).unwrap();
 
-      handleSnackbarOpen("Data saved successfully!", "success");
+      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen("Failed to save: " + error.message, "error");
@@ -606,7 +611,11 @@ export default function Addrepresentative(props) {
               <Paper
                 key={termIndex}
                 elevation={2}
-                sx={{ width: "100%", marginBottom: "50px", position: "relative" }}
+                sx={{
+                  width: "100%",
+                  marginBottom: "50px",
+                  position: "relative",
+                }}
               >
                 <Box sx={{ padding: 5 }}>
                   <Box
@@ -725,7 +734,9 @@ export default function Addrepresentative(props) {
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary}
                         name="summary"
-                        onEditorChange={(content) => handleEditorChange(content, termIndex)}
+                        onEditorChange={(content) =>
+                          handleEditorChange(content, termIndex)
+                        }
                         onBlur={() => handleBlur(termIndex)}
                         init={{
                           height: 250,
@@ -784,13 +795,18 @@ export default function Addrepresentative(props) {
                     </Grid>
 
                     {term.votesScore.map((vote, voteIndex) => (
-                      <Grid rowSpacing={2} sx={{ width: "100%" }} key={voteIndex}>
+                      <Grid
+                        rowSpacing={2}
+                        sx={{ width: "100%" }}
+                        key={voteIndex}
+                      >
                         <Grid
                           size={12}
                           display="flex"
                           alignItems="center"
                           columnGap={"15px"}
                         >
+                          {/* Label - keep size 2 to match other labels */}
                           <Grid size={2}>
                             <InputLabel
                               sx={{
@@ -804,7 +820,9 @@ export default function Addrepresentative(props) {
                               Scored Vote
                             </InputLabel>
                           </Grid>
-                          <Grid size={4}>
+
+                          {/* Vote Select - adjusted to 5 (was 4) */}
+                          <Grid size={8}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.voteId || ""}
@@ -824,7 +842,7 @@ export default function Addrepresentative(props) {
                                 {votes && votes.length > 0 ? (
                                   votes.map((voteItem) => (
                                     <MenuItem
-                                    sx={{width:"50px" , height:"50px"}}
+                                      sx={{ width: "740px", height: "50px" }}
                                       key={voteItem._id}
                                       value={voteItem._id}
                                     >
@@ -839,7 +857,9 @@ export default function Addrepresentative(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={5}>
+
+                          {/* Score Select - adjusted to 3 (was 5) */}
+                          <Grid size={1}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
@@ -860,11 +880,17 @@ export default function Addrepresentative(props) {
                               </Select>
                             </FormControl>
                           </Grid>
+
+                          {/* Delete icon - keep size 1 */}
                           <Grid size={1}>
                             <DeleteForeverIcon
-                              onClick={() => handleRemoveVote(termIndex, voteIndex)}
+                              onClick={() =>
+                                handleRemoveVote(termIndex, voteIndex)
+                              }
                             />
                           </Grid>
+
+                          {/* Add an empty Grid to balance the layout */}
                         </Grid>
                       </Grid>
                     ))}
@@ -900,7 +926,7 @@ export default function Addrepresentative(props) {
                             Tracked Activity
                           </InputLabel>
                         </Grid>
-                        <Grid size={4}>
+                        <Grid size={8}>
                           <FormControl fullWidth>
                             <TextField
                               value={formData.activitiesScore}
@@ -909,30 +935,29 @@ export default function Addrepresentative(props) {
                               sx={{ background: "#fff" }}
                               placeholder="No Activity"
                               disabled
-                              
-                            >
-                            </TextField>
+                            ></TextField>
                           </FormControl>
                         </Grid>
-                        <Grid size={5}>
+                        <Grid size={1}>
                           <FormControl fullWidth>
                             <TextField
                               value={formData.activitiesScore}
                               name="activitiesScore"
                               onChange={handleChange}
-                              sx={{ background: "#fff", "& MuiOutlinedInput-root":{
-                                "&:hover fieldset":{
-                                  borderColor:"transparent",
+                              sx={{
+                                background: "#fff",
+                                "& MuiOutlinedInput-root": {
+                                  "&:hover fieldset": {
+                                    borderColor: "transparent",
+                                  },
+                                  "&.Mui-disabled fieldset": {
+                                    borderColor: "transparent",
+                                  },
                                 },
-                                "&.Mui-disabled fieldset":{
-                                  borderColor: "transparent",
-                                }
-                              } }}
+                              }}
                               placeholder="Select here"
                               disabled
-                              
-                            >
-                            </TextField>
+                            ></TextField>
                           </FormControl>
                         </Grid>
                         <Grid size={1}>
@@ -979,7 +1004,6 @@ export default function Addrepresentative(props) {
                 {snackbarMessage}
               </MuiAlert>
             </Snackbar>
-            
           </Stack>
           <Copyright sx={{ my: 4 }} />
         </Box>
