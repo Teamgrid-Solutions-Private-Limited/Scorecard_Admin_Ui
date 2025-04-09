@@ -182,7 +182,7 @@ export default function CustomizedDataGrid({
             field: "action",
             flex: 0.7,
             headerName: "Action",
-            minWidth: 30,
+            minWidth: 150,
             headerAlign: "right",
             align: "right",
             renderHeader: (params) => (
@@ -205,7 +205,7 @@ export default function CustomizedDataGrid({
                 style={{
                   display: "flex",
                   flexDirection: "row",
-                  alignItems: "Right",
+                  alignItems: "center",
                   justifyContent: "flex-end",
                   columnGap: "10px",
 
