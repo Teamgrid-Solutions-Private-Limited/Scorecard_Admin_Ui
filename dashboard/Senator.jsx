@@ -205,34 +205,38 @@ export default function Senator(props) {
           </Stack>
         </Box>
 
-                {/* Snackbar for success/error messages */}
-                <Snackbar
-                    open={snackbarOpen}
-                    autoHideDuration={4000}
-                    onClose={() => setSnackbarOpen(false)}
-                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                >
-                    <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
-                        {snackbarMessage}
-                    </Alert>
-                </Snackbar>
-                <Dialog
-                    open={openDeleteDialog}
-                    onClose={() => setOpenDeleteDialog(false)}
-                    PaperProps={{
-                        sx: { borderRadius: 3, padding: 2, minWidth: 350 }
-                    }}
-                >
-                    <DialogTitle
-                        sx={{
-                            fontSize: "1.4rem",
-                            fontWeight: "bold",
-                            textAlign: "center",
-                            color: "error.main"
-                        }}
-                    >
-                        Confirm Deletion
-                    </DialogTitle>
+        {/* Snackbar for success/error messages */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity={snackbarSeverity}
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+        <Dialog
+          open={openDeleteDialog}
+          onClose={() => setOpenDeleteDialog(false)}
+          PaperProps={{
+            sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              fontSize: "1.4rem",
+              fontWeight: "bold",
+              textAlign: "center",
+              color: "error.main",
+            }}
+          >
+            Confirm Deletion
+          </DialogTitle>
 
           <DialogContent>
             <DialogContentText

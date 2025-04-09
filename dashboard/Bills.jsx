@@ -8,8 +8,23 @@ import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import SideMenu from "./components/SideMenu";
 import MainGrid from "./components/MainGrid";
-import { chartsCustomizations, dataGridCustomizations, datePickersCustomizations, treeViewCustomizations, } from "./theme/customizations";
-import {  CircularProgress, Snackbar, Alert, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, } from "@mui/material";
+import {
+  chartsCustomizations,
+  dataGridCustomizations,
+  datePickersCustomizations,
+  treeViewCustomizations,
+} from "./theme/customizations";
+import {
+  CircularProgress,
+  Snackbar,
+  Alert,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from "@mui/material";
 import { useState } from "react";
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -42,10 +57,13 @@ export default function Bills(props) {
     _id: vote._id || index,
     date: formatDate(vote.date),
     bill: vote.billName || vote.title,
-    billsType: vote.type ?
-      (vote.type.toLowerCase().includes("senate") ? "Senate" :
-        vote.type.toLowerCase().includes("house") ? "House" : "Other")
-      : "Other"
+    billsType: vote.type
+      ? vote.type.toLowerCase().includes("senate")
+        ? "Senate"
+        : vote.type.toLowerCase().includes("house")
+        ? "House"
+        : "Other"
+      : "Other",
   }));
 
   const handleEdit = (row) => {
@@ -60,7 +78,7 @@ export default function Bills(props) {
     setFetching(true);
     setProgress(0);
     const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 25))
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
     }, 1000);
     try {
       await dispatch(deleteVote(selectedVote._id));
@@ -71,13 +89,13 @@ export default function Bills(props) {
       setSnackbarMessage("Failed to delete this bill.");
       setSnackbarSeverity("error");
     } finally {
-      clearInterval(interval)
+      clearInterval(interval);
       setFetching(false);
       setSnackbarOpen(true);
       setProgress(100);
       setTimeout(() => setProgress(0), 500); // Re
     }
-  }
+  };
   // const handleDelete = async (row) => {
   //   if (window.confirm("Are you sure you want to delete this bill?")) {
   //     await dispatch(deleteVote(row._id));
@@ -87,32 +105,44 @@ export default function Bills(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-
-           {(loading || fetching) && (
-                      <Box
-                        sx={{
-                          position: 'fixed',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          zIndex: 9999
-                        }}
-                      >
-                        <CircularProgress sx={{ color: 'black' }} />
-                      </Box>
-                    )}
+      {(loading || fetching) && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            backdropFilter: "blur(1px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress sx={{ color: "black" }} />
+        </Box>
+      )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
-        <Box sx={{ flexGrow: 1, overflow: "auto",
-          filter:fetching? "blur(1px)":"none",
-        pointerEvents:fetching? "none":"auto",         }}>
-          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
-            <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflow: "auto",
+            filter: fetching ? "blur(1px)" : "none",
+            pointerEvents: fetching ? "none" : "auto",
+          }}
+        >
+          <Stack
+            spacing={2}
+            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
+          >
+            <Typography
+              variant="h4"
+              align="center"
+              sx={{ paddingTop: "50px", color: "text.secondary" }}
+            >
               SBA Scorecard Management System
             </Typography>
             <Stack
@@ -128,114 +158,116 @@ export default function Bills(props) {
               >
                 Add Bills
               </Button> */}
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={() => navigate("/search-bills")}
                 sx={{
-                  backgroundColor: 'black',
-                  '&:hover': {
-                    backgroundColor: '#333'
-                  }
+                  backgroundColor: "black",
+                  "&:hover": {
+                    backgroundColor: "#333",
+                  },
                 }}
               >
                 Add bills
               </Button>
             </Stack>
-            <MainGrid type="bills" data={billsData}
-              loading={fetching? false:loading}
+            <MainGrid
+              type="bills"
+              data={billsData}
+              loading={fetching ? false : loading}
               onEdit={handleEdit}
-              onDelete={handleDeleteClick} />
+              onDelete={handleDeleteClick}
+            />
           </Stack>
         </Box>
       </Box>
-       {fetching && (
-                          <Box
-                              sx={{
-                                  position: "absolute",
-                                  top: 0,
-                                  left: 0,
-                                  width: "100%",
-                                  height: "100%",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  // backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
-                                  zIndex: 10, // Keep above blurred background
-                              }}
-                          >
-                              <CircularProgress variant="determinate" value={progress} />
-                          </Box>
-                      )}
-                      {/* Snackbar for success/error messages */}
-                      <Snackbar
-                          open={snackbarOpen}
-                          autoHideDuration={4000}
-                          onClose={() => setSnackbarOpen(false)}
-                          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                      >
-                          <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
-                              {snackbarMessage}
-                          </Alert>
-                      </Snackbar>
-                      <Dialog
-                          open={openDeleteDialog}
-                          onClose={() => setOpenDeleteDialog(false)}
-                          PaperProps={{
-                              sx: { borderRadius: 3, padding: 2, minWidth: 350 }
-                          }}
-                      >
-                          <DialogTitle
-                              sx={{
-                                  fontSize: "1.4rem",
-                                  fontWeight: "bold",
-                                  textAlign: "center",
-                                  color: "error.main"
-                              }}
-                          >
-                              Confirm Deletion
-                          </DialogTitle>
-      
-                          <DialogContent>
-                              <DialogContentText
-                                  sx={{
-                                      textAlign: "center",
-                                      fontSize: "1rem",
-                                      color: "text.secondary"
-                                  }}
-                              >
-                                  Are you sure you want to delete?
-                              </DialogContentText>
-                          </DialogContent>
-                          <DialogActions>
-                              <Stack
-                                  direction="row"
-                                  spacing={2}
-                                  sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
-                              >
-                                  <Button
-                                      onClick={() => setOpenDeleteDialog(false)}
-                                      variant="outlined"
-                                      color="secondary"
-                                      sx={{ borderRadius: 2, paddingX: 3 }}
-                                  >
-                                      Cancel
-                                  </Button>
-                                  <Button
-                                      onClick={handleConfirmDelete}
-                                      variant="contained"
-                                      color="error"
-                                      sx={{ borderRadius: 2, paddingX: 3 }}
-                                  >
-                                      Delete
-                                  </Button>
-                              </Stack>
-                          </DialogActions>
-                      </Dialog>
+      {fetching && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            // backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
+            zIndex: 10, // Keep above blurred background
+          }}
+        >
+          <CircularProgress variant="determinate" value={progress} />
+        </Box>
+      )}
+      {/* Snackbar for success/error messages */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        PaperProps={{
+          sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: "1.4rem",
+            fontWeight: "bold",
+            textAlign: "center",
+            color: "error.main",
+          }}
+        >
+          Confirm Deletion
+        </DialogTitle>
+
+        <DialogContent>
+          <DialogContentText
+            sx={{
+              textAlign: "center",
+              fontSize: "1rem",
+              color: "text.secondary",
+            }}
+          >
+            Are you sure you want to delete?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+          >
+            <Button
+              onClick={() => setOpenDeleteDialog(false)}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              variant="contained"
+              color="error"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+            >
+              Delete
+            </Button>
+          </Stack>
+        </DialogActions>
+      </Dialog>
     </AppTheme>
-
-
   );
-
-
 }
-
