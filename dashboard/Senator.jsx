@@ -137,7 +137,7 @@ export default function Senator(props) {
             zIndex: 9999,
           }}
         >
-          <CircularProgress sx={{ color: "black" }} />
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
       <Box sx={{ display: "flex" }}>
@@ -179,7 +179,7 @@ export default function Senator(props) {
               
               <Stack direction="row" spacing={2} alignItems="center">
                 <TextField
-                  placeholder="Search by Senator"
+                  placeholder="Search"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

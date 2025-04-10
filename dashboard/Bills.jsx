@@ -121,7 +121,7 @@ export default function Bills(props) {
             zIndex: 9999,
           }}
         >
-          <CircularProgress sx={{ color: "black" }} />
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
       <Box sx={{ display: "flex" }}>
@@ -141,24 +141,27 @@ export default function Bills(props) {
             <Typography
               variant="h4"
               align="center"
-              sx={{ paddingTop: "50px", color: "text.secondary" }}
+              sx={{ paddingTop: "50px", paddingBottom: "70px", color: "text.secondary", mb: 6 }}
             >
               SBA Scorecard Management System
             </Typography>
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{ justifyContent: "flex-end", alignItems: "center" }}
-            >
-              {/* <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => navigate("/add-bill")}
-              >
-                Add Bills
-              </Button> */}
-              <Button
+                  <Box
+                          sx={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mt: 4,
+                            gap: 2
+                          }}
+                        >
+                          <Typography component="h2" variant="h6">
+                              All Bills
+                            </Typography>
+                          
+                          <Stack direction="row" spacing={2} alignItems="center">
+                           
+                            <Button
                 // variant="contained"
                 onClick={() => navigate("/search-bills")}
                 sx={{
@@ -174,7 +177,8 @@ export default function Bills(props) {
               >
                 Add Bills
               </Button>
-            </Stack>
+                          </Stack>
+                        </Box>
             <MainGrid
               type="bills"
               data={billsData}

@@ -151,7 +151,7 @@ export default function Representative(props) {
             zIndex: 9999,
           }}
         >
-          <CircularProgress sx={{ color: "black" }} />
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
       <Box sx={{ display: "flex" }}>
@@ -192,7 +192,7 @@ export default function Representative(props) {
               
               <Stack direction="row" spacing={2} alignItems="center">
                 <TextField
-                  placeholder="Search by Representative"
+                  placeholder="Search"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
