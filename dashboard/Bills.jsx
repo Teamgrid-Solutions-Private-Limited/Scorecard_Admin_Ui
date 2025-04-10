@@ -155,16 +155,20 @@ export default function Bills(props) {
                 Add Bills
               </Button> */}
               <Button
-                variant="contained"
+                // variant="contained"
                 onClick={() => navigate("/search-bills")}
                 sx={{
-                  backgroundColor: "black",
-                  "&:hover": {
-                    backgroundColor: "#333",
-                  },
+                  backgroundColor: "#3b82f6 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
+                  '&:hover': {
+                    backgroundColor: "#3b82f6 !important" // Same color on hover
+                  }
                 }}
               >
-                Add bills
+                Add Bills
               </Button>
             </Stack>
             <MainGrid
@@ -177,7 +181,7 @@ export default function Bills(props) {
           </Stack>
         </Box>
       </Box>
-      {fetching && (
+      {/* {fetching && (
         <Box
           sx={{
             position: "absolute",
@@ -194,7 +198,7 @@ export default function Bills(props) {
         >
           <CircularProgress variant="determinate" value={progress} />
         </Box>
-      )}
+      )} */}
       {/* Snackbar for success/error messages */}
       <Snackbar
         open={snackbarOpen}

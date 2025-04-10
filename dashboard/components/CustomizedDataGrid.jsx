@@ -5,6 +5,15 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Avatar, Box } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
+import { GridOverlay } from "@mui/x-data-grid";
+
+const CustomNoRowsOverlay = () => (
+  <GridOverlay>
+    <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
+      Sorry, nothing matched your search term.
+    </Typography>
+  </GridOverlay>
+);
 
 export default function CustomizedDataGrid({
   type,
@@ -40,7 +49,7 @@ export default function CustomizedDataGrid({
             field: "action",
             flex: 1,
             headerName: "Action",
-            minWidth: 120,
+            minWidth: 60,
             headerAlign: "center",
             renderCell: (params) => (
               <div
@@ -71,6 +80,13 @@ export default function CustomizedDataGrid({
             headerName: type === "senator" ? "Senator" : "Representative",
             minWidth: 150,
             minHeight: 200,
+            headerAlign: "left",
+            align: "left",
+            renderHeader: (params) => (
+              <Typography sx={{ paddingLeft: "32px" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
             renderCell: (params) => (
               <Box
                 sx={{
@@ -80,6 +96,7 @@ export default function CustomizedDataGrid({
                   columnGap: "10px",
                   width: "fit-content",
                   height: "100%",
+                  paddingLeft: "32px",
                   "&:hover": {
                     cursor: "pointer",
                   },
@@ -128,21 +145,26 @@ export default function CustomizedDataGrid({
             ? [
                 {
                   field: "district",
-                  flex: 1,
+                  flex: 0.7,
                   headerName: "District",
                   minWidth: 150,
                 },
               ]
             : [
-                { field: "state", flex: 1, headerName: "State", minWidth: 150 },
+                {
+                  field: "state",
+                  flex: 0.7,
+                  headerName: "State",
+                  minWidth: 150,
+                },
               ]),
           {
             field: "party",
-            flex: 1.5,
+            flex: 1,
             headerName: "Party",
             headerAlign: "center",
             align: "center",
-            minWidth: 150,
+            minWidth: 60,
             valueGetter: (params) => {
               if (!params) return "N/A";
               return (
@@ -152,9 +174,10 @@ export default function CustomizedDataGrid({
           },
           {
             field: "rating",
-            flex: 1,
+            flex: 0.7,
             headerName: "Rating",
-            minWidth: 150,
+            minHeight: 200,
+            minWidth: 60,
             headerAlign: "center",
             align: "center",
             valueGetter: (params) => {
@@ -166,20 +189,40 @@ export default function CustomizedDataGrid({
           },
           {
             field: "action",
-            flex: 1,
+            flex: 0.7,
             headerName: "Action",
-            minWidth: 120,
+            minWidth: 150,
             headerAlign: "right",
+            align: "right",
+            renderHeader: (params) => (
+              <Typography sx={{ paddingRight: "32px" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
             renderCell: (params) => (
               <div
+                // style={{
+                //   height: "100%",
+                //   display: "flex",
+                //   flexDirection: "row",
+                //   alignItems: "center",
+                //   // justifyContent: "flex-end", // Adjusted alignment
+                //   columnGap: "10px",
+                //   // paddingRight: "10px", // Added padding to move slightly from the right
+                // }}
+
                 style={{
-                  height: "100%",
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "end",
-
+                  justifyContent: "flex-end",
                   columnGap: "10px",
+
+                  height: "100%",
+                  paddingRight: "32px",
+                  "&:hover": {
+                    cursor: "pointer",
+                  },
                 }}
               >
                 <EditIcon
@@ -210,6 +253,9 @@ export default function CustomizedDataGrid({
         disableColumnResize
         disableRowSelectionOnClick
         rowHeight={70}
+        slots={{
+          noRowsOverlay: CustomNoRowsOverlay,
+        }}
         sx={{
           "& .MuiDataGrid-row": {
             maxHeight: "70px !important",

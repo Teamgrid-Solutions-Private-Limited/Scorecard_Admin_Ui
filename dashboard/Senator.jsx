@@ -175,19 +175,43 @@ export default function Senator(props) {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                mt: 2,
+                mt: 4,
+                gap: 2
               }}
             >
               <Typography component="h2" variant="h6">
                 All Senators
               </Typography>
-              <TextField
-                placeholder="Search by Name"
-                size="small"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                sx={{ width: "170px" }}
-              />
+              
+              <Stack direction="row" spacing={2} alignItems="center">
+                <TextField
+                  placeholder="Search by Senator"
+                  size="small"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  sx={{ width: "160px",
+                     "& .MuiInputBase-root": {
+                          "&.Mui-focused": {
+                            borderColor: "#CC9A3A !important",
+                            boxShadow: "none !important",
+                            outline: "none !important",
+                          },
+                        }, }}
+                />
+                <Button variant="outlined"
+                  sx={{
+                  backgroundColor: "#3b82f6 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
+                  '&:hover': {
+                    backgroundColor: "#3b82f6 !important" // Same color on hover
+                  }
+                }} onClick={fetchSenatorsFromQuorum}>
+                  Fetch Senators from Quorum
+                </Button>
+              </Stack>
             </Box>
 
             <MainGrid
