@@ -10,6 +10,7 @@ import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 
 const mainListItems = [
   { text: "Senate", icon: <HomeRoundedIcon />, link: "/" },
@@ -37,22 +38,22 @@ export default function MenuContent() {
       <List dense>
         {mainListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: "block" }}>
-            <ListItemButton 
-              component={NavLink} 
+            <ListItemButton
+              component={NavLink}
               to={item.link}
               sx={{
-                '&:hover': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
+                "&:hover": {
+                  color: "#CC9A3A !important",
+                  "& .MuiListItemIcon-root": {
+                    color: "#CC9A3A !important",
+                  },
                 },
-                '&.active': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
-                }
+                "&.active": {
+                  color: "#CC9A3A !important",
+                  "& .MuiListItemIcon-root": {
+                    color: "#CC9A3A !important",
+                  },
+                },
               }}
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
@@ -63,27 +64,27 @@ export default function MenuContent() {
       </List>
       <List dense>
         <ListItem disablePadding sx={{ display: "block" }}>
-            <ListItemButton
-              component={NavLink}
-              to="/login"
-              onClick={handleLogout}
-              sx={{
-                '&:hover': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
+          <ListItemButton
+            component={NavLink}
+            to="/login"
+            onClick={handleLogout}
+            sx={{
+              "&:hover": {
+                color: "#CC9A3A !important",
+                "& .MuiListItemIcon-root": {
+                  color: "#CC9A3A !important",
                 },
-                '&.active': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
-                }
-              }}
-            >
+              },
+              "&.active": {
+                color: "#CC9A3A !important",
+                "& .MuiListItemIcon-root": {
+                  color: "#CC9A3A !important",
+                },
+              },
+            }}
+          >
             <ListItemIcon>
-              <SettingsRoundedIcon />
+              <LogoutRoundedIcon />
             </ListItemIcon>
             <ListItemText primary="Logout" />
           </ListItemButton>
