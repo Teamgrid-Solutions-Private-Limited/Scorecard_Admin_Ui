@@ -29,7 +29,7 @@ const mainListItems = [
 
 export default function MenuContent() {
   const handleLogout = () => {
-    sessionStorage.removeItem("token");
+    localStorage.removeItem("token");
   };
 
   return (
