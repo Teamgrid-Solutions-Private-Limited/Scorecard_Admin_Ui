@@ -26,7 +26,7 @@ import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
 import Copyright from "./internals/components/Copyright";
-import { InputAdornment } from "@mui/material";
+import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "./components/FixedHeader";
 
 export default function AddBill(props) {
@@ -107,22 +107,47 @@ export default function AddBill(props) {
     setFormData((prev) => ({ ...prev, [fieldName]: content }));
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async () => {
-    if (id) {
-      try {
+    setLoading(true);
+    try {
+      if (id) {
         await dispatch(updateVote({ id, updatedData: formData })).unwrap();
         alert("Updated Successfully");
-        dispatch(getVoteById(id)); 
-      } catch (error) {
-        alert(`Update failed: ${error}`);
+        dispatch(getVoteById(id));
+      } else {
+        await dispatch(createVote(formData)).unwrap();
+        alert("Created Successfully");
       }
-    } else {
-      dispatch(createVote(formData));
+    } catch (error) {
+      console.error("Save error:", error);
+      alert(`Operation failed: ${error.message || error}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <AppTheme>
+      {loading && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+        </Box>
+      )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
@@ -157,7 +182,7 @@ export default function AddBill(props) {
               }}
             >
               <Button variant="contained" onClick={handleSubmit}>
-                Save
+                Save The Changes
               </Button>
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>

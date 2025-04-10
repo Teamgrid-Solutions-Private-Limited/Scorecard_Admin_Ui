@@ -3,6 +3,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import { getSenatorDataBySenetorId } from "../redux/slice/senetorTermSlice";
 import Box from "@mui/material/Box";
@@ -228,6 +229,7 @@ export default function AddSenator(props) {
     term: "",
   });
 
+  const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -279,6 +281,7 @@ export default function AddSenator(props) {
   const handleSave = async (e) => {
     e.preventDefault();
     let operationType = "";
+    setLoading(true);
     try {
       // First handle senator data
       if (id) {
@@ -321,6 +324,8 @@ export default function AddSenator(props) {
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen("Failed to save: " + error.message, "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -370,6 +375,24 @@ export default function AddSenator(props) {
 
   return (
     <AppTheme>
+      {loading && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+        </Box>
+      )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
@@ -413,9 +436,9 @@ export default function AddSenator(props) {
                   },
                 }}
               >
-                Save
+                Save The Changes
               </Button>
-              <Button variant="outlined">Fetch Senetors from Quorum</Button>
+              {/* <Button variant="outlined">Fetch Senetors from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
