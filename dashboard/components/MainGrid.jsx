@@ -2,6 +2,7 @@ import * as React from "react";
 import { Box, Typography, Grid } from "@mui/material";
 import Copyright from "../internals/components/Copyright";
 import CustomizedDataGrid from "./CustomizedDataGrid";
+import Footer from "./Footer";
 
 export default function MainGrid({ type, data, loading, onEdit, onDelete }) {
     const title = type === "bills" ? "All Bills" : type === "senator" ? "All Senators" : "All Representatives";
@@ -20,7 +21,7 @@ export default function MainGrid({ type, data, loading, onEdit, onDelete }) {
                     />
                 </Grid>
             </Grid>
-            <Copyright sx={{ my: 4 }} />
+            <Footer/>
         </Box>
     );
 }

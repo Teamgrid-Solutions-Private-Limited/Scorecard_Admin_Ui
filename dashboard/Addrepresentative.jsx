@@ -49,6 +49,8 @@ import {
 import { getAllTerms } from "../redux/slice/termSlice";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import FixedHeader from "./components/FixedHeader";
+import Footer from "./components/Footer";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -372,13 +374,15 @@ export default function Addrepresentative(props) {
         <Box
           component="main"
           sx={(theme) => ({
+            width:"80%",
             flexGrow: 1,
             backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
+              ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
-            overflow: "auto",
+            // overflow: "auto",
           })}
         >
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{
@@ -388,19 +392,6 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            <Typography
-              variant="h4"
-              align="center"
-              sx={[
-                {
-                  paddingTop: "50px",
-                  color: "text.secondary",
-                },
-              ]}
-            >
-              SBA Scorecard Management System
-            </Typography>
-
             <Stack
               direction="row"
               spacing={2}
@@ -826,15 +817,30 @@ export default function Addrepresentative(props) {
                             <FormControl fullWidth>
                               <Select
                                 value={vote.voteId || ""}
-                                onChange={(e) =>
+                                onChange={(event) =>
                                   handleVoteChange(
                                     termIndex,
                                     voteIndex,
                                     "voteId",
-                                    e.target.value
+                                    event.target.value
                                   )
                                 }
-                                sx={{ background: "#fff" }}
+                                sx={{
+                                  background: "#fff",
+                                  
+                                }}
+                                MenuProps={{
+                                  PaperProps: {
+                                    sx: {
+                                      maxHeight: 300, 
+                                      width:400,
+                                      "& .MuiMenuItem-root": {
+                                        whiteSpace: "normal", 
+                                        minHeight: "48px", 
+                                      },
+                                    },
+                                  },
+                                }}
                               >
                                 <MenuItem value="" disabled>
                                   Select a Bill
@@ -842,11 +848,19 @@ export default function Addrepresentative(props) {
                                 {votes && votes.length > 0 ? (
                                   votes.map((voteItem) => (
                                     <MenuItem
-                                      sx={{ width: "740px", height: "50px" }}
                                       key={voteItem._id}
                                       value={voteItem._id}
+                                      sx={{
+                                        py: 1.5, 
+                                        
+                                      }}
                                     >
-                                      {voteItem.title}
+                                      <Typography
+                                        noWrap
+                                        sx={{ maxWidth: "100%" }}
+                                      >
+                                        {voteItem.title}
+                                      </Typography>
                                     </MenuItem>
                                   ))
                                 ) : (
@@ -859,7 +873,7 @@ export default function Addrepresentative(props) {
                           </Grid>
 
                           {/* Score Select - adjusted to 3 (was 5) */}
-                          <Grid size={1}>
+                          <Grid size={1.2}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
@@ -938,7 +952,7 @@ export default function Addrepresentative(props) {
                             ></TextField>
                           </FormControl>
                         </Grid>
-                        <Grid size={1}>
+                        <Grid size={1.2}>
                           <FormControl fullWidth>
                             <TextField
                               value={formData.activitiesScore}
@@ -955,8 +969,9 @@ export default function Addrepresentative(props) {
                                   },
                                 },
                               }}
-                              placeholder="Select here"
+                              placeholder="Select"
                               disabled
+                              
                             ></TextField>
                           </FormControl>
                         </Grid>
@@ -1005,7 +1020,7 @@ export default function Addrepresentative(props) {
               </MuiAlert>
             </Snackbar>
           </Stack>
-          <Copyright sx={{ my: 4 }} />
+          <Footer />
         </Box>
       </Box>
     </AppTheme>
