@@ -158,16 +158,7 @@ export default function Senator(props) {
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
           >
           
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{ justifyContent: "flex-end", alignItems: "center" }}
-            >
-              <Button variant="outlined" onClick={fetchSenatorsFromQuorum}>
-                Fetch Senators from Quorum
-              </Button>
-            </Stack>
+            
             {/* Search Input - Positioned ABOVE the table */}
             <Box
               sx={{
