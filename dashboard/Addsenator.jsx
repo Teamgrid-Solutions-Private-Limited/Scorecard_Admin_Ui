@@ -48,6 +48,8 @@ import {
   clearSenatorState,
 } from "../redux/slice/senetorSlice";
 import { getAllTerms } from "../redux/slice/termSlice";
+import FixedHeader from "./components/FixedHeader";
+import Footer from "./components/Footer";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -373,13 +375,15 @@ export default function AddSenator(props) {
         <Box
           component="main"
           sx={(theme) => ({
+            width:"80%",
             flexGrow: 1,
             backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
+              ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
-            overflow: "auto",
+            // overflow: "auto",
           })}
         >
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{
@@ -389,19 +393,6 @@ export default function AddSenator(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            <Typography
-              variant="h4"
-              align="center"
-              sx={[
-                {
-                  paddingTop: "50px",
-                  color: "text.secondary",
-                },
-              ]}
-            >
-              SBA Scorecard Management System
-            </Typography>
-
             <Stack
               direction="row"
               spacing={2}
@@ -838,7 +829,20 @@ export default function AddSenator(props) {
                                     event.target.value
                                   )
                                 }
-                                sx={{ background: "#fff" }}
+                                sx={{
+                                  background: "#fff",
+                                }}
+                                MenuProps={{
+                                  PaperProps: {
+                                    sx: {
+                                      maxHeight: 300,
+                                      width: 400,
+                                      "& .MuiMenuItem-root": {
+                                        minHeight: "48px",
+                                      },
+                                    },
+                                  },
+                                }}
                               >
                                 <MenuItem value="" disabled>
                                   Select a Bill
@@ -846,11 +850,19 @@ export default function AddSenator(props) {
                                 {votes && votes.length > 0 ? (
                                   votes.map((voteItem) => (
                                     <MenuItem
-                                    sx={{width:"740px", height:"50px"}}
                                       key={voteItem._id}
                                       value={voteItem._id}
+                                      sx={{
+                                        py: 1.5, 
+                                        
+                                      }}
                                     >
-                                      {voteItem.title}
+                                      <Typography
+                                        noWrap
+                                        sx={{ maxWidth: "100%" }}
+                                      >
+                                        {voteItem.title}
+                                      </Typography>
                                     </MenuItem>
                                   ))
                                 ) : (
@@ -861,7 +873,7 @@ export default function AddSenator(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1}>
+                          <Grid size={1.2}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
@@ -874,10 +886,11 @@ export default function AddSenator(props) {
                                   )
                                 }
                                 sx={{ background: "#fff" }}
+                                
                               >
-                                <MenuItem value="Yes">Yes</MenuItem>
+                                <MenuItem  value="Yes">Yes</MenuItem>
                                 <MenuItem value="No">No</MenuItem>
-                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem  value="Neutral">Neutral</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
@@ -957,7 +970,7 @@ export default function AddSenator(props) {
                                     },
                                   },
                                 }}
-                                placeholder="Select here"
+                                placeholder="Select"
                                 disabled
                               ></TextField>
                             </FormControl>
@@ -1026,7 +1039,7 @@ export default function AddSenator(props) {
               </MuiAlert>
             </Snackbar>
           </Stack>
-          <Copyright sx={{ my: 4 }} />
+          <Footer />
         </Box>
       </Box>
     </AppTheme>

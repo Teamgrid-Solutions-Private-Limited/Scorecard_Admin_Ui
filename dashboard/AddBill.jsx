@@ -27,6 +27,7 @@ import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
 import Copyright from "./internals/components/Copyright";
 import { InputAdornment } from "@mui/material";
+import FixedHeader from "./components/FixedHeader";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -129,11 +130,12 @@ export default function AddBill(props) {
           sx={(theme) => ({
             flexGrow: 1,
             backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
+              ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
-            overflow: "auto",
+            // overflow: "auto",
           })}
         >
+          <FixedHeader/>
           <Stack
             spacing={2}
             sx={{
@@ -143,13 +145,7 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            <Typography
-              variant="h4"
-              align="center"
-              sx={[{ paddingTop: "50px", color: "text.secondary" }]}
-            >
-              SBA Scorecard Management System
-            </Typography>
+            
 
             <Stack
               direction="row"
