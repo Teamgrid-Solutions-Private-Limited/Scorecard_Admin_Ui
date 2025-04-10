@@ -29,6 +29,7 @@ import {
   datePickersCustomizations,
   treeViewCustomizations,
 } from "./theme/customizations";
+import FixedHeader from "./components/FixedHeader";
 const xThemeComponents = {
   ...chartsCustomizations,
   ...dataGridCustomizations,
@@ -122,47 +123,43 @@ export default function Senator(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      {(loading || fetching) && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <CircularProgress sx={{ color: "black" }} />
-        </Box>
-      )}
+            {(loading || fetching) && (
+                <Box
+                  sx={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 9999
+                  }}
+                >
+                  <CircularProgress sx={{ color: 'black' }} />
+                </Box>
+              )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
 
         <Box
           sx={{
             flexGrow: 1,
-            overflow: "auto",
+            // overflow: "auto",
             filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
             pointerEvents: fetching ? "none" : "auto", // Disable interactions
           }}
         >
+          <FixedHeader/>
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
           >
-            <Typography
-              variant="h4"
-              align="center"
-              sx={{ paddingTop: "50px", paddingBottom: "70px", color: "text.secondary", mb: 6 }}
-            >
-              SBA Scorecard Management System
-            </Typography>
-
+          
+            
+            {/* Search Input - Positioned ABOVE the table */}
             <Box
               sx={{
                 width: "100%",

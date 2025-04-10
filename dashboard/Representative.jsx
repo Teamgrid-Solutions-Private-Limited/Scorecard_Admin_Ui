@@ -30,6 +30,7 @@ import {
   datePickersCustomizations,
   treeViewCustomizations,
 } from "./theme/customizations";
+import FixedHeader from "./components/FixedHeader";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -159,22 +160,23 @@ export default function Representative(props) {
         <Box
           sx={{
             flexGrow: 1,
-            overflow: "auto",
+            // overflow: "auto",
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}
         >
+          <FixedHeader/>
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
           >
-            <Typography
+            {/* <Typography
               variant="h4"
               align="center"
               sx={{ paddingTop: "50px", paddingBottom: "70px", color: "text.secondary", mb: 6 }}
             >
               SBA Scorecard Management System
-            </Typography>
+            </Typography> */}
 
             <Box
               sx={{
