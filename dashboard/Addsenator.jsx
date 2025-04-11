@@ -984,7 +984,17 @@ export default function AddSenator(props) {
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
-                        variant="contained"
+                        variant="outlined"
+                        sx={{
+                          backgroundColor: "#9150e8 !important", // Force blue color
+                          color: "white !important", // Force white text
+                          padding: "0.5rem 1rem", // px-4 py-2
+                          // borderRadius: "0.25rem", // rounded
+                          marginLeft: "0.5rem", // ml-2
+                          "&:hover": {
+                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                          },
+                        }}
                         startIcon={<AddIcon />}
                         onClick={() => handleAddVote(termIndex)}
                       >
@@ -1064,7 +1074,17 @@ export default function AddSenator(props) {
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
-                        variant="contained"
+                        variant="outlined"
+                        sx={{
+                          backgroundColor: "#9150e8 !important", // Force blue color
+                          color: "white !important", // Force white text
+                          padding: "0.5rem 1rem", // px-4 py-2
+                          // borderRadius: "0.25rem", // rounded
+                          marginLeft: "0.5rem", // ml-2
+                          "&:hover": {
+                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                          },
+                        }}
                         startIcon={<AddIcon />}
                         onClick={() =>
                           setActivity([
@@ -1088,10 +1108,21 @@ export default function AddSenator(props) {
 
             {/* Add Term Button */}
             <Button
-              variant="contained"
+              variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{ alignSelf: "flex-start" }}
+              sx={{ alignSelf: "flex-start",
+                 
+                  backgroundColor: "#9150e8 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
+                  "&:hover": {
+                    backgroundColor: "#7b1fe0 !important", // Same color on hover
+                  },
+                 
+              }}
             >
               Add Another Term
             </Button>
