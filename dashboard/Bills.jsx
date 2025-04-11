@@ -140,20 +140,30 @@ export default function Bills(props) {
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
           >
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{ justifyContent: "flex-end", alignItems: "center" }}
+            {/* <Typography
+              variant="h4"
+              align="center"
+              sx={{ paddingTop: "50px", paddingBottom: "70px", color: "text.secondary", mb: 6 }}
             >
-              {/* <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => navigate("/add-bill")}
-              >
-                Add Bills
-              </Button> */}
-              <Button
+              SBA Scorecard Management System
+            </Typography> */}
+                  <Box
+                          sx={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mt: 4,
+                            gap: 2
+                          }}
+                        >
+                          <Typography component="h2" variant="h6">
+                              All Bills
+                            </Typography>
+                          
+                          <Stack direction="row" spacing={2} alignItems="center">
+                           
+                            <Button
                 // variant="contained"
                 onClick={() => navigate("/search-bills")}
                 sx={{
