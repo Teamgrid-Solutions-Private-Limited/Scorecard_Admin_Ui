@@ -1,5 +1,7 @@
 import * as React from "react";
 import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import { useSelector } from "react-redux";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -8,9 +10,16 @@ import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
 import GavelRoundedIcon from "@mui/icons-material/GavelRounded";
 import GroupsRoundedIcon from "@mui/icons-material/GroupRounded"
-import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded"; // ✅ Added
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded"; // ✅ Added
-
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button
+} from "@mui/material"
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
@@ -24,13 +33,25 @@ const mainListItems = [
     icon: <GroupsRoundedIcon />,
     link: "/representative",
   },
-  { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" }, // Updated icon for Bills
+  { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" },
   { text: "Add Term", icon: <AddIcon/>, link: "/manage-term"},
 ];
 
 export default function MenuContent() {
-  const handleLogout = () => {
+  const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+
+  const handleLogoutClick = () => {
+    setOpenLogoutDialog(true);
+  };
+
+  const handleConfirmLogout = () => {
     localStorage.removeItem("token");
+    setOpenLogoutDialog(false);
+    window.location.href = "/scorecard/admin/login"; 
+  };
+
+  const handleCancelLogout = () => {
+    setOpenLogoutDialog(false);
   };
 
   return (
@@ -42,8 +63,8 @@ export default function MenuContent() {
             disablePadding
             sx={{
               display: "block",
-              mt: index === 0 ? 2 : 0, // Add margin-top for the first item (Senate)
-              mb: index < mainListItems.length - 1 ? 2 : 0, // Add margin-bottom between items
+              mt: index === 0 ? 2 : 0,
+              mb: index < mainListItems.length - 1 ? 2 : 0,
             }}
           >
             <ListItemButton
@@ -55,16 +76,16 @@ export default function MenuContent() {
                   "& .MuiListItemIcon-root": {
                     color: "#CC9A3A !important",
                   },
-                  borderLeft: "4px solid #CC9A3A", // Add left border on hover
-                  backgroundColor: "rgba(204, 154, 58, 0.1)", // Light background for hover
+                  borderLeft: "4px solid #CC9A3A",
+                  backgroundColor: "rgba(204, 154, 58, 0.1)",
                 },
                 "&.active": {
                   color: "#CC9A3A !important",
                   "& .MuiListItemIcon-root": {
                     color: "#CC9A3A !important",
                   },
-                  borderLeft: "4px solid #CC9A3A", // Add left border when active
-                  backgroundColor: "rgba(204, 154, 58, 0.2)", // Slightly darker background for active
+                  borderLeft: "4px solid #CC9A3A",
+                  backgroundColor: "rgba(204, 154, 58, 0.2)",
                 },
               }}
             >
@@ -77,9 +98,7 @@ export default function MenuContent() {
       <List dense>
         <ListItem disablePadding sx={{ display: "block" }}>
           <ListItemButton
-            component={NavLink}
-            to="/login"
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             sx={{
               "&:hover": {
                 "& .MuiListItemIcon-root": {
@@ -88,12 +107,6 @@ export default function MenuContent() {
                 "& .MuiListItemText-root": {
                   color: "#CC9A3A",
                 },
-              },
-              "&.active .MuiListItemIcon-root": {
-                color: "#CC9A3A",
-              },
-              "&.active .MuiListItemText-root": {
-                color: "#CC9A3A",
               },
             }}
           >
@@ -104,6 +117,60 @@ export default function MenuContent() {
           </ListItemButton>
         </ListItem>
       </List>
+      
+
+      <Dialog
+        open={openLogoutDialog}
+        onClose={handleCancelLogout}
+        PaperProps={{
+          sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: "1.4rem",
+            fontWeight: "500",
+            textAlign: "center",
+          }}
+        >
+          Confirm Logout
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText
+            sx={{
+              textAlign: "center",
+              fontSize: "1rem",
+              color: "text.secondary",
+            }}
+          >
+            Are you sure you want to logout?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+          >
+            <Button
+              onClick={handleCancelLogout}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmLogout}
+              variant="contained"
+              color="error"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+            >
+              Logout
+            </Button>
+          </Stack>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }

@@ -184,7 +184,7 @@ export default function Addrepresentative(props) {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
-
+  
         return {
           _id: term._id,
           summary: term.summary || "",
@@ -193,10 +193,24 @@ export default function Addrepresentative(props) {
           currentTerm: term.currentTerm || false,
           votesScore:
             term.votesScore?.length > 0
-              ? term.votesScore.map((vote) => ({
-                  voteId: vote.voteId || null,
-                  score: vote.score || "",
-                }))
+              ? term.votesScore.map((vote) => {
+                  let scoreValue = "";
+                  const dbScore = vote.score?.toLowerCase();
+                  if (dbScore?.includes("yea_votes")) {
+                    scoreValue = "Yes";
+                  } else if (dbScore?.includes("nay_votes")) {
+                    scoreValue = "No";
+                  } else if (dbScore?.includes("other_votes")) {
+                    scoreValue = "Neutral";
+                  } else {
+                    scoreValue = vote.score || "";
+                  }
+                  
+                  return {
+                    voteId: vote.voteId || null,
+                    score: scoreValue,
+                  };
+                })
               : [{ voteId: null, score: "" }],
         };
       });
