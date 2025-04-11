@@ -18,6 +18,7 @@ import Bill from "/dashboard/Bills";
 import SignIn from "/Authentication/components/SignIn";
 import AddBill from '../dashboard/AddBill';
 import SearchBill from '../dashboard/SearchBill';
+import ManageTerm from '../dashboard/ManageTerm';
 
 export default function App() {
   return (
@@ -91,7 +92,9 @@ export default function App() {
               <SearchBill /> 
            
       } 
+      
       />
+      <Route path='/manage-term' element={<ManageTerm/>}/>
      </Routes>
    </Router>
   );

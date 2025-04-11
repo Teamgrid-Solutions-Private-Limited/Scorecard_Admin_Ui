@@ -148,6 +148,7 @@ export default function Senator(props) {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
+            width:"80%",
             filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
             pointerEvents: fetching ? "none" : "auto", // Disable interactions
           }}
@@ -155,7 +156,7 @@ export default function Senator(props) {
           <FixedHeader/>
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
+            sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
           >
           
             

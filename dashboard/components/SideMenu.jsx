@@ -14,7 +14,7 @@ import logo from "../../src/assets/image/logo-dark.png";
 import logosm from "../../src/assets/image/logo-sm.png";
 
 
-const drawerWidth = 240;
+const drawerWidth = 270;
 
 const Drawer = styled(MuiDrawer)({
 	width: drawerWidth,

@@ -387,7 +387,7 @@ export default function Addrepresentative(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: 2,
               pb: 5,
               mt: { xs: 8, md: 0 },
             }}
@@ -675,7 +675,7 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={1}>
+                    <Grid size={1.5}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -688,7 +688,7 @@ export default function Addrepresentative(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={5}>
+                    <Grid size={4.5}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -813,7 +813,7 @@ export default function Addrepresentative(props) {
                           </Grid>
 
                           {/* Vote Select - adjusted to 5 (was 4) */}
-                          <Grid size={8}>
+                          <Grid size={7.5}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.voteId || ""}
@@ -873,7 +873,7 @@ export default function Addrepresentative(props) {
                           </Grid>
 
                           {/* Score Select - adjusted to 3 (was 5) */}
-                          <Grid size={1.2}>
+                          <Grid size={1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
@@ -940,7 +940,7 @@ export default function Addrepresentative(props) {
                             Tracked Activity
                           </InputLabel>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={7.5}>
                           <FormControl fullWidth>
                             <TextField
                               value={formData.activitiesScore}
@@ -952,7 +952,7 @@ export default function Addrepresentative(props) {
                             ></TextField>
                           </FormControl>
                         </Grid>
-                        <Grid size={1.2}>
+                        <Grid size={1.6}>
                           <FormControl fullWidth>
                             <TextField
                               value={formData.activitiesScore}

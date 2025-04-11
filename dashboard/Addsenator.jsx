@@ -388,7 +388,7 @@ export default function AddSenator(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: 2,
               pb: 5,
               mt: { xs: 8, md: 0 },
             }}
@@ -680,7 +680,7 @@ export default function AddSenator(props) {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={1}>
+                    <Grid size={1.5}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -693,7 +693,7 @@ export default function AddSenator(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={5}>
+                    <Grid size={4.5}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -817,7 +817,7 @@ export default function AddSenator(props) {
                               Scored Vote
                             </InputLabel>
                           </Grid>
-                          <Grid size={8}>
+                          <Grid size={7.5}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.voteId || ""}
@@ -873,7 +873,7 @@ export default function AddSenator(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1.2}>
+                          <Grid size={1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
@@ -941,7 +941,7 @@ export default function AddSenator(props) {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={8}>
+                          <Grid size={7.5}>
                             <FormControl fullWidth>
                               <TextField
                                 value={formData.activitiesScore}
@@ -953,7 +953,7 @@ export default function AddSenator(props) {
                               ></TextField>
                             </FormControl>
                           </Grid>
-                          <Grid size={1}>
+                          <Grid size={1.6}>
                             <FormControl fullWidth>
                               <TextField
                                 value={formData.activitiesScore}

@@ -10,6 +10,7 @@ import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import AddIcon from '@mui/icons-material/Add';
 
 const mainListItems = [
   { text: "Senate", icon: <HomeRoundedIcon />, link: "/" },
@@ -25,6 +26,7 @@ const mainListItems = [
   //   link: "/add-representative",
   // },
   { text: "Bill We Track", icon: <PeopleRoundedIcon />, link: "/bills" },
+  { text: "Add Term", icon: <AddIcon/>, link: "/manage-term"},
 ];
 
 export default function MenuContent() {

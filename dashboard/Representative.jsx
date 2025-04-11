@@ -161,6 +161,7 @@ export default function Representative(props) {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
+            width:"80%",
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}
@@ -168,7 +169,7 @@ export default function Representative(props) {
           <FixedHeader/>
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
+            sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
           >
             {/* <Typography
               variant="h4"
