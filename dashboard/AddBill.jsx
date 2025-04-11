@@ -28,6 +28,8 @@ import { Editor } from "@tinymce/tinymce-react";
 import Copyright from "./internals/components/Copyright";
 import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "./components/FixedHeader";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -109,23 +111,37 @@ export default function AddBill(props) {
   };
 
   const [loading, setLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       if (id) {
         await dispatch(updateVote({ id, updatedData: formData })).unwrap();
-        alert("Updated Successfully");
-        dispatch(getVoteById(id));
+        setSnackbarMessage("Bill updated successfully!");
+        setSnackbarSeverity("success");
       } else {
         await dispatch(createVote(formData)).unwrap();
-        alert("Created Successfully");
+        setSnackbarMessage("Bill created successfully!");
+        setSnackbarSeverity("success");
       }
+      setSnackbarOpen(true);
     } catch (error) {
       console.error("Save error:", error);
-      alert(`Operation failed: ${error.message || error}`);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     } finally {
-      setLoading(false);
+      setLoading(false); // Ensure loading stops after success or failure
     }
   };
 
@@ -149,6 +165,22 @@ export default function AddBill(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MuiAlert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          elevation={6}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
