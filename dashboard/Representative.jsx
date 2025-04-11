@@ -165,7 +165,7 @@ export default function Representative(props) {
             pointerEvents: fetching ? "none" : "auto",
           }}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
@@ -185,39 +185,43 @@ export default function Representative(props) {
                 justifyContent: "space-between",
                 alignItems: "center",
                 mt: 4,
-                gap: 2
+                gap: 2,
               }}
             >
               <Typography component="h2" variant="h6">
                 All Representatives
               </Typography>
-              
+
               <Stack direction="row" spacing={2} alignItems="center">
                 <TextField
                   placeholder="Search"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  sx={{ width: "160px",
+                  sx={{
+                    width: "160px",
                     "& .MuiInputBase-root": {
-                          "&.Mui-focused": {
-                            borderColor: "#CC9A3A !important",
-                            boxShadow: "none !important",
-                            outline: "none !important",
-                          },
-                        },
-                   }}
+                      "&.Mui-focused": {
+                        boxShadow: "none !important",
+                        outline: "none !important",
+                      },
+                    },
+                  }}
                 />
-                <Button variant="outlined"  sx={{
-                  backgroundColor: "#3b82f6 !important", // Force blue color
-                  color: "white !important", // Force white text
-                  padding: "0.5rem 1rem", // px-4 py-2
-                  // borderRadius: "0.25rem", // rounded
-                  marginLeft: "0.5rem", // ml-2
-                  '&:hover': {
-                    backgroundColor: "#3b82f6 !important" // Same color on hover
-                  }
-                }} onClick={fetchRepresentativeFromQuorum}>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor: "#9150e8 !important", // Force blue color
+                    color: "white !important", // Force white text
+                    padding: "0.5rem 1rem", // px-4 py-2
+                    // borderRadius: "0.25rem", // rounded
+                    marginLeft: "0.5rem", // ml-2
+                    "&:hover": {
+                      backgroundColor: "#7b1fe0 !important", // Same color on hover
+                    },
+                  }}
+                  onClick={fetchRepresentativeFromQuorum}
+                >
                   Fetch Representative from Quorum
                 </Button>
               </Stack>
