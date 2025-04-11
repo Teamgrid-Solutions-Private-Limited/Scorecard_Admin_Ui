@@ -6,14 +6,16 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
+import GavelRoundedIcon from "@mui/icons-material/GavelRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupRounded"
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded"; // ✅ Added
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded"; // ✅ Added
+
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
-import GavelRoundedIcon from "@mui/icons-material/GavelRounded"; // Icon for Senate
-import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded"; // Icon for Representative
-import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded"; // Icon for Bills
+import AddIcon from '@mui/icons-material/Add';
 
 const mainListItems = [
   { text: "Senate", icon: <GavelRoundedIcon />, link: "/" },
@@ -23,6 +25,7 @@ const mainListItems = [
     link: "/representative",
   },
   { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" }, // Updated icon for Bills
+  { text: "Add Term", icon: <AddIcon/>, link: "/manage-term"},
 ];
 
 export default function MenuContent() {

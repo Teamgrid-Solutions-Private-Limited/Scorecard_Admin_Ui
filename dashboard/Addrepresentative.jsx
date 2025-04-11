@@ -404,7 +404,7 @@ export default function Addrepresentative(props) {
         <Box
           component="main"
           sx={(theme) => ({
-            width: "80%",
+            width:"80%",
             flexGrow: 1,
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
@@ -417,7 +417,7 @@ export default function Addrepresentative(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: 2,
               pb: 5,
               mt: { xs: 8, md: 0 },
             }}
@@ -710,7 +710,7 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={1}>
+                    <Grid size={1.5}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -723,7 +723,7 @@ export default function Addrepresentative(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={5}>
+                    <Grid size={4.5}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -848,7 +848,7 @@ export default function Addrepresentative(props) {
                           </Grid>
 
                           {/* Vote Select - adjusted to 5 (was 4) */}
-                          <Grid size={8}>
+                          <Grid size={7.5}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.voteId || ""}
@@ -862,15 +862,16 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{
                                   background: "#fff",
+                                  
                                 }}
                                 MenuProps={{
                                   PaperProps: {
                                     sx: {
-                                      maxHeight: 300,
-                                      width: 400,
+                                      maxHeight: 300, 
+                                      width:400,
                                       "& .MuiMenuItem-root": {
-                                        whiteSpace: "normal",
-                                        minHeight: "48px",
+                                        whiteSpace: "normal", 
+                                        minHeight: "48px", 
                                       },
                                     },
                                   },
@@ -885,7 +886,8 @@ export default function Addrepresentative(props) {
                                       key={voteItem._id}
                                       value={voteItem._id}
                                       sx={{
-                                        py: 1.5,
+                                        py: 1.5, 
+                                        
                                       }}
                                     >
                                       <Typography
@@ -906,7 +908,7 @@ export default function Addrepresentative(props) {
                           </Grid>
 
                           {/* Score Select - adjusted to 3 (was 5) */}
-                          <Grid size={1.2}>
+                          <Grid size={1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
@@ -973,7 +975,7 @@ export default function Addrepresentative(props) {
                             Tracked Activity
                           </InputLabel>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={7.5}>
                           <FormControl fullWidth>
                             <TextField
                               value={formData.activitiesScore}
@@ -985,7 +987,7 @@ export default function Addrepresentative(props) {
                             ></TextField>
                           </FormControl>
                         </Grid>
-                        <Grid size={1.2}>
+                        <Grid size={1.6}>
                           <FormControl fullWidth>
                             <TextField
                               value={formData.activitiesScore}
@@ -1004,6 +1006,7 @@ export default function Addrepresentative(props) {
                               }}
                               placeholder="Select"
                               disabled
+                              
                             ></TextField>
                           </FormControl>
                         </Grid>

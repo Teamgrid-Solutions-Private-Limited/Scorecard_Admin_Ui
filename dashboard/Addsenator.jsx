@@ -398,7 +398,7 @@ export default function AddSenator(props) {
         <Box
           component="main"
           sx={(theme) => ({
-            width: "80%",
+            width:"80%",
             flexGrow: 1,
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
@@ -411,7 +411,7 @@ export default function AddSenator(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: 2,
               pb: 5,
               mt: { xs: 8, md: 0 },
             }}
@@ -708,7 +708,7 @@ export default function AddSenator(props) {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={1}>
+                    <Grid size={1.5}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -721,7 +721,7 @@ export default function AddSenator(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={5}>
+                    <Grid size={4.5}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -845,7 +845,7 @@ export default function AddSenator(props) {
                               Scored Vote
                             </InputLabel>
                           </Grid>
-                          <Grid size={8}>
+                          <Grid size={7.5}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.voteId || ""}
@@ -881,7 +881,8 @@ export default function AddSenator(props) {
                                       key={voteItem._id}
                                       value={voteItem._id}
                                       sx={{
-                                        py: 1.5,
+                                        py: 1.5, 
+                                        
                                       }}
                                     >
                                       <Typography
@@ -900,7 +901,7 @@ export default function AddSenator(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1.2}>
+                          <Grid size={1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
@@ -913,10 +914,11 @@ export default function AddSenator(props) {
                                   )
                                 }
                                 sx={{ background: "#fff" }}
+                                
                               >
-                                <MenuItem value="Yes">Yes</MenuItem>
+                                <MenuItem  value="Yes">Yes</MenuItem>
                                 <MenuItem value="No">No</MenuItem>
-                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem  value="Neutral">Neutral</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
@@ -967,7 +969,7 @@ export default function AddSenator(props) {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={8}>
+                          <Grid size={7.5}>
                             <FormControl fullWidth>
                               <TextField
                                 value={formData.activitiesScore}
@@ -979,7 +981,7 @@ export default function AddSenator(props) {
                               ></TextField>
                             </FormControl>
                           </Grid>
-                          <Grid size={1}>
+                          <Grid size={1.6}>
                             <FormControl fullWidth>
                               <TextField
                                 value={formData.activitiesScore}

@@ -191,9 +191,10 @@ export default function AddBill(props) {
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
             // overflow: "auto",
+            // overflow: "auto",
           })}
         >
-          <FixedHeader />
+          <FixedHeader/>
           <Stack
             spacing={2}
             sx={{
@@ -203,6 +204,8 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
+            
+
             <Stack
               direction="row"
               spacing={2}

@@ -14,6 +14,7 @@ import Bill from '/dashboard/Bills';
 import SignIn from '/Authentication/components/SignIn';
 import AddBill from '../dashboard/AddBill';
 import SearchBill from '../dashboard/SearchBill';
+import ManageTerm from "../dashboard/ManageTerm"
 
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/add-bill" element={<PrivateRoute element={<AddBill />} />} />
         <Route path="bills/edit-bill/:id" element={<PrivateRoute element={<AddBill />} />} />
         <Route path="/search-bills" element={<PrivateRoute element={<SearchBill />} />} />
+        <Route path="/manage-term" element={<PrivateRoute element={<ManageTerm/>}/>}/>
         
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
