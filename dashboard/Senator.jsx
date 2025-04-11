@@ -123,24 +123,24 @@ export default function Senator(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-            {(loading || fetching) && (
-                <Box
-                  sx={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 9999
-                  }}
-                >
-                  <CircularProgress sx={{ color: 'black' }} />
-                </Box>
-              )}
+      {(loading || fetching) && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+        </Box>
+      )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
 
@@ -158,8 +158,6 @@ export default function Senator(props) {
             spacing={2}
             sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
           >
-          
-            
             {/* Search Input - Positioned ABOVE the table */}
             <Box
               sx={{
@@ -168,39 +166,43 @@ export default function Senator(props) {
                 justifyContent: "space-between",
                 alignItems: "center",
                 mt: 4,
-                gap: 2
+                gap: 2,
               }}
             >
               <Typography component="h2" variant="h6">
                 All Senators
               </Typography>
-              
+
               <Stack direction="row" spacing={2} alignItems="center">
                 <TextField
-                  placeholder="Search by Senator"
+                  placeholder="Search"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  sx={{ width: "160px",
-                     "& .MuiInputBase-root": {
-                          "&.Mui-focused": {
-                            borderColor: "#CC9A3A !important",
-                            boxShadow: "none !important",
-                            outline: "none !important",
-                          },
-                        }, }}
-                />
-                <Button variant="outlined"
                   sx={{
-                  backgroundColor: "#3b82f6 !important", // Force blue color
-                  color: "white !important", // Force white text
-                  padding: "0.5rem 1rem", // px-4 py-2
-                  // borderRadius: "0.25rem", // rounded
-                  marginLeft: "0.5rem", // ml-2
-                  '&:hover': {
-                    backgroundColor: "#3b82f6 !important" // Same color on hover
-                  }
-                }} onClick={fetchSenatorsFromQuorum}>
+                    width: "160px",
+                    "& .MuiInputBase-root": {
+                      "&.Mui-focused": {
+                        boxShadow: "none !important",
+                        outline: "none !important",
+                      },
+                    },
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor: "#9150e8 !important", // Force blue color
+                    color: "white !important", // Force white text
+                    padding: "0.5rem 1rem", // px-4 py-2
+                    // borderRadius: "0.25rem", // rounded
+                    marginLeft: "0.5rem", // ml-2
+                    "&:hover": {
+                      backgroundColor: "#7b1fe0 !important", // Same color on hover
+                    },
+                  }}
+                  onClick={fetchSenatorsFromQuorum}
+                >
                   Fetch Senators from Quorum
                 </Button>
               </Stack>

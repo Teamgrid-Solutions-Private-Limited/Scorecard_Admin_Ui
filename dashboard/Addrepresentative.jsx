@@ -2,6 +2,7 @@ import * as React from "react";
 import { useRef, useCallback } from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import SideMenu from "./components/SideMenu";
@@ -283,11 +284,17 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleSave = async (e) => {
     e.preventDefault();
     let operationType = "";
+    setLoading(true);
 
     try {
+      // Reset any previous errors
+      setSnackbarMessage("");
+      setSnackbarSeverity("success");
       // First handle house data
       if (id) {
         const updatedData = new FormData();
@@ -328,7 +335,12 @@ export default function Addrepresentative(props) {
       handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
       console.error("Save failed:", error);
-      handleSnackbarOpen("Failed to save: " + error.message, "error");
+      handleSnackbarOpen(
+        "Failed to save: " + (error.message || "Unknown error occurred"),
+        "error"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -369,6 +381,24 @@ export default function Addrepresentative(props) {
 
   return (
     <AppTheme>
+      {loading && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+        </Box>
+      )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
@@ -402,19 +432,24 @@ export default function Addrepresentative(props) {
               }}
             >
               <Button
-                variant="contained"
+                variant="outlined"
                 onClick={handleSave}
                 sx={{
+                  backgroundColor: "#9150e8 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
                   "&:hover": {
-                    backgroundColor: "green",
+                    backgroundColor: "#7b1fe0 !important", // Same color on hover
                   },
                 }}
               >
-                Save
+                Save The Changes
               </Button>
-              <Button variant="outlined">
+              {/* <Button variant="outlined">
                 Fetch Representatives from Quorum
-              </Button>
+              </Button> */}
             </Stack>
             <Paper elevation={2} sx={{ width: "100%" }}>
               <Box sx={{ p: 5 }}>

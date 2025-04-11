@@ -122,7 +122,7 @@ export default function Bills(props) {
             zIndex: 9999,
           }}
         >
-          <CircularProgress sx={{ color: "black" }} />
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
       <Box sx={{ display: "flex" }}>
@@ -140,37 +140,47 @@ export default function Bills(props) {
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
           >
-          
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{ justifyContent: "flex-end", alignItems: "center" }}
+            {/* <Typography
+              variant="h4"
+              align="center"
+              sx={{ paddingTop: "50px", paddingBottom: "70px", color: "text.secondary", mb: 6 }}
             >
-              {/* <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => navigate("/add-bill")}
-              >
-                Add Bills
-              </Button> */}
-              <Button
+              SBA Scorecard Management System
+            </Typography> */}
+                  <Box
+                          sx={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mt: 4,
+                            gap: 2
+                          }}
+                        >
+                          <Typography component="h2" variant="h6">
+                              All Bills
+                            </Typography>
+                          
+                          <Stack direction="row" spacing={2} alignItems="center">
+                           
+                            <Button
                 // variant="contained"
                 onClick={() => navigate("/search-bills")}
                 sx={{
-                  backgroundColor: "#3b82f6 !important", // Force blue color
+                  backgroundColor: "#9150e8 !important", // Force blue color
                   color: "white !important", // Force white text
                   padding: "0.5rem 1rem", // px-4 py-2
                   // borderRadius: "0.25rem", // rounded
                   marginLeft: "0.5rem", // ml-2
-                  '&:hover': {
-                    backgroundColor: "#3b82f6 !important" // Same color on hover
-                  }
+                  "&:hover": {
+                    backgroundColor: "#7b1fe0 !important", // Same color on hover
+                  },
                 }}
               >
                 Add Bills
               </Button>
-            </Stack>
+                          </Stack>
+                        </Box>
             <MainGrid
               type="bills"
               data={billsData}

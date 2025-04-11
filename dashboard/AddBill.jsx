@@ -26,8 +26,10 @@ import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
 import Copyright from "./internals/components/Copyright";
-import { InputAdornment } from "@mui/material";
+import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "./components/FixedHeader";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -48,9 +50,10 @@ export default function AddBill(props) {
 
   const preFillForm = () => {
     if (selectedVote) {
-      const termId = selectedVote.termId?._id || ""; 
+      const termId = selectedVote.termId?._id || "";
       setFormData({
-        ...formData,type:
+        ...formData,
+        type:
           selectedVote.type === "senate_bill"
             ? "senate"
             : selectedVote.type === "house_bill"
@@ -107,22 +110,77 @@ export default function AddBill(props) {
     setFormData((prev) => ({ ...prev, [fieldName]: content }));
   };
 
+  const [loading, setLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   const handleSubmit = async () => {
-    if (id) {
-      try {
+    setLoading(true);
+    try {
+      if (id) {
         await dispatch(updateVote({ id, updatedData: formData })).unwrap();
-        alert("Updated Successfully");
-        dispatch(getVoteById(id)); 
-      } catch (error) {
-        alert(`Update failed: ${error}`);
+        setSnackbarMessage("Bill updated successfully!");
+        setSnackbarSeverity("success");
+      } else {
+        await dispatch(createVote(formData)).unwrap();
+        setSnackbarMessage("Bill created successfully!");
+        setSnackbarSeverity("success");
       }
-    } else {
-      dispatch(createVote(formData));
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Save error:", error);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false); // Ensure loading stops after success or failure
     }
   };
 
   return (
     <AppTheme>
+      {loading && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+        </Box>
+      )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MuiAlert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          elevation={6}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
@@ -132,6 +190,7 @@ export default function AddBill(props) {
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
+            // overflow: "auto",
             // overflow: "auto",
           })}
         >
@@ -156,8 +215,21 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="contained" onClick={handleSubmit}>
-                Save
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#9150e8 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
+                  "&:hover": {
+                    backgroundColor: "#7b1fe0 !important", // Same color on hover
+                  },
+                }}
+                onClick={handleSubmit}
+              >
+                Save The Changes
               </Button>
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>

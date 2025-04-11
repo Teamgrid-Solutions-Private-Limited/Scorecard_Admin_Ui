@@ -35,8 +35,28 @@ export default function CustomizedDataGrid({
   const columns =
     type === "bills"
       ? [
-          { field: "date", flex: 1, headerName: "Date", minWidth: 150 },
-          { field: "bill", flex: 3, headerName: "Bill", minWidth: 150 },
+          {
+            field: "date",
+            flex: 1,
+            headerName: "Date",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "bill",
+            flex: 3,
+            headerName: "Bill",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
           {
             field: "billsType",
             flex: 1,
@@ -44,6 +64,11 @@ export default function CustomizedDataGrid({
             minWidth: 150,
             headerAlign: "center",
             align: "center",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
           },
           {
             field: "action",
@@ -51,6 +76,11 @@ export default function CustomizedDataGrid({
             headerName: "Action",
             minWidth: 60,
             headerAlign: "center",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
             renderCell: (params) => (
               <div
                 style={{
@@ -83,7 +113,12 @@ export default function CustomizedDataGrid({
             headerAlign: "left",
             align: "left",
             renderHeader: (params) => (
-              <Typography sx={{ paddingLeft: "32px" }}>
+              <Typography
+                sx={{
+                  paddingLeft: "32px",
+                  fontWeight: "bold", // Make the header bold
+                }}
+              >
                 {params.colDef.headerName}
               </Typography>
             ),
@@ -145,26 +180,43 @@ export default function CustomizedDataGrid({
             ? [
                 {
                   field: "district",
-                  flex: 0.7,
+                  flex: 1, // Reduced flex to give more space to the name column
                   headerName: "District",
-                  minWidth: 150,
+                  minWidth: 120, // Adjusted minimum width
+                  renderHeader: (params) => (
+                    <Typography
+                      sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
+                    >
+                      {params.colDef.headerName}
+                    </Typography>
+                  ),
                 },
               ]
             : [
                 {
                   field: "state",
-                  flex: 0.7,
+                  flex: 1, // Reduced flex to give more space to the name column
                   headerName: "State",
-                  minWidth: 150,
+                  minWidth: 120, // Adjusted minimum width
+                  renderHeader: (params) => (
+                    <Typography
+                      sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
+                    >
+                      {params.colDef.headerName}
+                    </Typography>
+                  ),
                 },
               ]),
           {
             field: "party",
-            flex: 1,
+            flex: 1, // Reduced flex to give more space to the name column
             headerName: "Party",
-            headerAlign: "center",
-            align: "center",
-            minWidth: 60,
+            minWidth: 120, // Adjusted minimum width
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
             valueGetter: (params) => {
               if (!params) return "N/A";
               return (
@@ -177,9 +229,12 @@ export default function CustomizedDataGrid({
             flex: 0.7,
             headerName: "Rating",
             minHeight: 200,
-            minWidth: 60,
-            headerAlign: "center",
-            align: "center",
+            minWidth: 130,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
             valueGetter: (params) => {
               if (!params || !params.row) {
                 return "N/A";
@@ -191,26 +246,16 @@ export default function CustomizedDataGrid({
             field: "action",
             flex: 0.7,
             headerName: "Action",
-            minWidth: 150,
+            minWidth: 130,
             headerAlign: "right",
             align: "right",
             renderHeader: (params) => (
-              <Typography sx={{ paddingRight: "32px" }}>
+              <Typography sx={{ paddingRight: "32px", fontWeight: "bold" }}>
                 {params.colDef.headerName}
               </Typography>
             ),
             renderCell: (params) => (
               <div
-                // style={{
-                //   height: "100%",
-                //   display: "flex",
-                //   flexDirection: "row",
-                //   alignItems: "center",
-                //   // justifyContent: "flex-end", // Adjusted alignment
-                //   columnGap: "10px",
-                //   // paddingRight: "10px", // Added padding to move slightly from the right
-                // }}
-
                 style={{
                   display: "flex",
                   flexDirection: "row",

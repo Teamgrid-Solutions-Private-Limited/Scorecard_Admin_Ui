@@ -26,10 +26,11 @@ const Card = styled(MuiCard)(({ theme }) => ({
   gap: theme.spacing(2),
   margin: "auto",
   borderRadius: "10px",
-  maxWidth: "450px",
+  maxWidth: "420px",
   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
   background: "white",
   overflow: "hidden",
+  maxHeight:"460px"
 }));
 
 const SignInContainer = styled(Stack)(({ theme }) => ({
@@ -43,11 +44,11 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 
 const Header = styled(Box)(({ theme }) => ({
   textAlign: "center",
-  backgroundColor: "#F5F6FA",
+  backgroundColor: "#739ACE",
   padding: "40px 20px",
   position: "relative",
   marginBottom: "10px",
-  height: "120px",
+  height: "95px",
   "&::after": {
     content: '""',
     display: "block",
@@ -57,15 +58,17 @@ const Header = styled(Box)(({ theme }) => ({
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  background: "black",
+  background: "#CBA246",
   color: "white",
-  fontWeight: "bold",
-  fontSize: "16px",
+  fontSize: "13px",
   padding: "10px",
-  height: "40px",
+  height: "37px",
+  borderRadius: "6px",
   textTransform: "none",
   "&:hover": {
     background: "#black",
+    backgroundColor: "#B28E3D",
+    color: "white",
   },
 }));
 
@@ -89,7 +92,7 @@ export default function SignIn() {
         console.log(res.data);
 
         if (res.data.message === "Login successful" && res.data.token) {
-          sessionStorage.setItem("token", res.data.token);
+          localStorage.setItem("token", res.data.token);
 
           nav("/");
         }
@@ -108,9 +111,9 @@ export default function SignIn() {
             src={logo}
             alt="SBA Logo"
             style={{
-              width: "80px",
-              height: "80px",
-              marginBottom: "8px",
+              width: "60px",
+              height: "60px",
+              marginBottom: "4px",
               borderRadius: "50%",
               objectFit: "cover",
               overflow: "hidden",
@@ -118,10 +121,10 @@ export default function SignIn() {
             }}
           />
 
-          <Typography variant="h6" fontWeight="bold" color="black">
+          <Typography variant="h6" fontWeight="bold" color="white" fontSize={18}>
             SBA Scorecard Management System
           </Typography>
-          <Typography variant="body1" color="black" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="white" sx={{ mb: 3 , fontSize:15}}>
             Sign in to continue
           </Typography>
         </Header>
@@ -140,7 +143,7 @@ export default function SignIn() {
           }}
         >
           <FormControl>
-            <FormLabel sx={{ color: "#4b5563", pb: 1 }}>Username</FormLabel>
+            <FormLabel sx={{ color: "#656D9A", pb: 1 , fontSize:13 , fontWeight:"bold" }}>Username</FormLabel>
             <TextField
               id="email"
               type="text"
@@ -153,37 +156,19 @@ export default function SignIn() {
               variant="outlined"
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
+                  borderRadius: "6px",
                   backgroundColor: "#f9fafb",
-                  border: "1px solid #d1d5db",
-                  height: "35px",
-                  transition:
-                    "border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
-                  "&:hover": {
-                    borderColor: "#555", // Dark gray on hover
-                  },
-                  "&.Mui-focused": {
-                    borderColor: "#777", // Light grayish-black on focus
-                    boxShadow: "0 0 0 2px rgba(119, 119, 119, 0.2)", // Soft light gray glow
-                  },
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#777", // Light gray focus border
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#555",
-                },
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                  {
-                    borderColor: "#777",
-                  },
+                  border: "1 px solid grey",
+                  height: "37px",
+                
+                }
               }}
               onChange={valupd}
             />
           </FormControl>
 
           <FormControl>
-            <FormLabel sx={{ color: "#4b5563", pb: 1 }}>Password</FormLabel>
+            <FormLabel sx={{ color: "#656D9A", pb: 1 , fontSize:13 , fontWeight:"bold" }}>Password</FormLabel>
             <TextField
               name="password"
               placeholder="Enter password"
@@ -195,28 +180,12 @@ export default function SignIn() {
               variant="outlined"
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
+                  borderRadius: "6px",
                   backgroundColor: "#f9fafb",
-                  border: "1px solid #d1d5db",
-                  height: "35px",
-                  mb: 2,
-                  "&:hover": {
-                    borderColor: "#555",
-                  },
-                  "&.Mui-focused": {
-                    borderColor: "#777",
-                  },
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#777",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#555",
-                },
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                  {
-                    borderColor: "#777",
-                  },
+                  border: "1 px solid grey",
+                  height: "37px",
+                  mb: 3,
+                }
               }}
               onChange={valupd}
             />

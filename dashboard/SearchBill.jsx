@@ -178,19 +178,16 @@ export default function SearchBill(props) {
                     />
 
                     <Button
-                      // variant="contained"
                       onClick={handleSearch}
                       sx={{
                         width: { xs: "100%", md: "auto" },
                         minWidth: "110px",
-                        backgroundColor: '#3b82f6',
+                        backgroundColor: "#9150e8 !important", // Match AddSenator button color
                         color: "white !important",
-                        '&:hover': {
-                          backgroundColor: 'success.main',
-                          transform: 'scale(1.02)',
-                          boxShadow: '0 4px 8px rgba(18, 209, 63, 0.2)'
+                        "&:hover": {
+                          backgroundColor: "#7b1fe0 !important", // Match AddSenator hover color
                         },
-                        transition: 'all 0.3s ease'
+                        transition: "all 0.3s ease",
                       }}
                     >
                       Search
@@ -254,13 +251,12 @@ export default function SearchBill(props) {
                                     variant="outlined"
                                     onClick={() => handleAddBill(bill)}
                                     sx={{
-                                      backgroundColor: "#F8F8F8",
-                                      color: "#000",
-                                       '&:hover': {
-                          backgroundColor: 'success.main',
-                          transform: 'scale(1.02)',
-                          boxShadow: '0 4px 8px rgba(10, 239, 86, 0.2)'
-                        } 
+                                      backgroundColor: "#9150e8 !important", // Match AddSenator button color
+                                      color: "white !important",
+                                      "&:hover": {
+                                        backgroundColor: "#7b1fe0 !important", // Match AddSenator hover color
+                                      },
+                                      transition: "all 0.3s ease",
                                     }}
                                   >
                                     Add

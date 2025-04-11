@@ -13,48 +13,54 @@ import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AddIcon from '@mui/icons-material/Add';
 
 const mainListItems = [
-  { text: "Senate", icon: <HomeRoundedIcon />, link: "/" },
-  // { text: "Add Senator", icon: <PeopleRoundedIcon />, link: "/add-senator" },
+  { text: "Senate", icon: <GavelRoundedIcon />, link: "/" },
   {
     text: "Representative",
-    icon: <AnalyticsRoundedIcon />,
+    icon: <GroupsRoundedIcon />,
     link: "/representative",
   },
-  // {
-  //   text: "Add Representative",
-  //   icon: <AnalyticsRoundedIcon />,
-  //   link: "/add-representative",
-  // },
-  { text: "Bill We Track", icon: <PeopleRoundedIcon />, link: "/bills" },
+  { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" }, // Updated icon for Bills
   { text: "Add Term", icon: <AddIcon/>, link: "/manage-term"},
 ];
 
 export default function MenuContent() {
   const handleLogout = () => {
-    sessionStorage.removeItem("token");
+    localStorage.removeItem("token");
   };
 
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: "space-between" }}>
       <List dense>
         {mainListItems.map((item, index) => (
-          <ListItem key={index} disablePadding sx={{ display: "block" }}>
-            <ListItemButton 
-              component={NavLink} 
+          <ListItem
+            key={index}
+            disablePadding
+            sx={{
+              display: "block",
+              mt: index === 0 ? 2 : 0, // Add margin-top for the first item (Senate)
+              mb: index < mainListItems.length - 1 ? 2 : 0, // Add margin-bottom between items
+            }}
+          >
+            <ListItemButton
+              component={NavLink}
               to={item.link}
               sx={{
-                '&:hover': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
+                "&:hover": {
+                  color: "#CC9A3A !important",
+                  "& .MuiListItemIcon-root": {
+                    color: "#CC9A3A !important",
+                  },
+                  borderLeft: "4px solid #CC9A3A", // Add left border on hover
+                  backgroundColor: "rgba(204, 154, 58, 0.1)", // Light background for hover
                 },
-                '&.active': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
-                }
+                "&.active": {
+                  color: "#CC9A3A !important",
+                  "& .MuiListItemIcon-root": {
+                    color: "#CC9A3A !important",
+                  },
+                  borderLeft: "4px solid #CC9A3A", // Add left border when active
+                  backgroundColor: "rgba(204, 154, 58, 0.2)", // Slightly darker background for active
+                },
               }}
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
@@ -65,27 +71,29 @@ export default function MenuContent() {
       </List>
       <List dense>
         <ListItem disablePadding sx={{ display: "block" }}>
-            <ListItemButton
-              component={NavLink}
-              to="/login"
-              onClick={handleLogout}
-              sx={{
-                '&:hover': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
+          <ListItemButton
+            component={NavLink}
+            to="/login"
+            onClick={handleLogout}
+            sx={{
+              "&:hover": {
+                "& .MuiListItemIcon-root": {
+                  color: "#CC9A3A",
                 },
-                '&.active': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
-                }
-              }}
-            >
+                "& .MuiListItemText-root": {
+                  color: "#CC9A3A",
+                },
+              },
+              "&.active .MuiListItemIcon-root": {
+                color: "#CC9A3A",
+              },
+              "&.active .MuiListItemText-root": {
+                color: "#CC9A3A",
+              },
+            }}
+          >
             <ListItemIcon>
-              <SettingsRoundedIcon />
+              <LogoutRoundedIcon />
             </ListItemIcon>
             <ListItemText primary="Logout" />
           </ListItemButton>

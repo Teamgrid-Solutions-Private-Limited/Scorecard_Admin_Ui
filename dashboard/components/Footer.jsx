@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import digitalAlchemy from '../../src/assets/image/digital-alchemy.png'
+import digitalAlchemy from "../../src/assets/image/digital-alchemy.png";
 const Footer = () => {
   return (
     <Box
@@ -10,7 +10,7 @@ const Footer = () => {
         backgroundColor: "#fff",
         padding: "20px",
         textAlign: "center",
-        marginTop: "20px",
+        marginTop: "52px",
         borderRadius: "6px",
       }}
     >
@@ -34,17 +34,21 @@ const Footer = () => {
         <Typography
           variant="body2"
           sx={{
-            display:"flex",
-            gap:"5px",
+            display: "flex",
+            gap: "5px",
             fontSize: "13px",
             fontFamily: "'Be Vietnam Pro', sans-serif",
             color: "#7d7f87",
             mt: 1,
           }}
         >
-          Developed by <img src={digitalAlchemy} alt="Digital Alchemy" style={{ height: '20px' }} />
+          Developed by{" "}
+          <img
+            src={digitalAlchemy}
+            alt="Digital Alchemy"
+            style={{ height: "20px" }}
+          />
         </Typography>
-
       </Box>
     </Box>
   );
