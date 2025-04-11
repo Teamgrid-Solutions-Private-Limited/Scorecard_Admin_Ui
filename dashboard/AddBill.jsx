@@ -48,9 +48,10 @@ export default function AddBill(props) {
 
   const preFillForm = () => {
     if (selectedVote) {
-      const termId = selectedVote.termId?._id || ""; 
+      const termId = selectedVote.termId?._id || "";
       setFormData({
-        ...formData,type:
+        ...formData,
+        type:
           selectedVote.type === "senate_bill"
             ? "senate"
             : selectedVote.type === "house_bill"
@@ -112,7 +113,7 @@ export default function AddBill(props) {
       try {
         await dispatch(updateVote({ id, updatedData: formData })).unwrap();
         alert("Updated Successfully");
-        dispatch(getVoteById(id)); 
+        dispatch(getVoteById(id));
       } catch (error) {
         alert(`Update failed: ${error}`);
       }
@@ -135,7 +136,7 @@ export default function AddBill(props) {
             // overflow: "auto",
           })}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{
@@ -145,8 +146,6 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            
-
             <Stack
               direction="row"
               spacing={2}
@@ -156,7 +155,20 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button variant="contained" onClick={handleSubmit}>
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#9150e8 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
+                  "&:hover": {
+                    backgroundColor: "#7b1fe0 !important", // Same color on hover
+                  },
+                }}
+                onClick={handleSubmit}
+              >
                 Save
               </Button>
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}

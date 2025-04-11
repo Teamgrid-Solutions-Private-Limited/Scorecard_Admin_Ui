@@ -374,7 +374,7 @@ export default function Addrepresentative(props) {
         <Box
           component="main"
           sx={(theme) => ({
-            width:"80%",
+            width: "80%",
             flexGrow: 1,
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
@@ -402,19 +402,24 @@ export default function Addrepresentative(props) {
               }}
             >
               <Button
-                variant="contained"
+                variant="outlined"
                 onClick={handleSave}
                 sx={{
+                  backgroundColor: "#9150e8 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
                   "&:hover": {
-                    backgroundColor: "green",
+                    backgroundColor: "#7b1fe0 !important", // Same color on hover
                   },
                 }}
               >
                 Save
               </Button>
-              <Button variant="outlined">
+              {/* <Button variant="outlined">
                 Fetch Representatives from Quorum
-              </Button>
+              </Button> */}
             </Stack>
             <Paper elevation={2} sx={{ width: "100%" }}>
               <Box sx={{ p: 5 }}>
@@ -827,16 +832,15 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{
                                   background: "#fff",
-                                  
                                 }}
                                 MenuProps={{
                                   PaperProps: {
                                     sx: {
-                                      maxHeight: 300, 
-                                      width:400,
+                                      maxHeight: 300,
+                                      width: 400,
                                       "& .MuiMenuItem-root": {
-                                        whiteSpace: "normal", 
-                                        minHeight: "48px", 
+                                        whiteSpace: "normal",
+                                        minHeight: "48px",
                                       },
                                     },
                                   },
@@ -851,8 +855,7 @@ export default function Addrepresentative(props) {
                                       key={voteItem._id}
                                       value={voteItem._id}
                                       sx={{
-                                        py: 1.5, 
-                                        
+                                        py: 1.5,
                                       }}
                                     >
                                       <Typography
@@ -971,7 +974,6 @@ export default function Addrepresentative(props) {
                               }}
                               placeholder="Select"
                               disabled
-                              
                             ></TextField>
                           </FormControl>
                         </Grid>

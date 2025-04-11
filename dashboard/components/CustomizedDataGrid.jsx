@@ -180,11 +180,13 @@ export default function CustomizedDataGrid({
             ? [
                 {
                   field: "district",
-                  flex: 0.5, // Reduced flex to give more space to the name column
+                  flex: 1, // Reduced flex to give more space to the name column
                   headerName: "District",
                   minWidth: 120, // Adjusted minimum width
                   renderHeader: (params) => (
-                    <Typography sx={{ fontWeight: "bold" }}>
+                    <Typography
+                      sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
+                    >
                       {params.colDef.headerName}
                     </Typography>
                   ),
@@ -193,11 +195,13 @@ export default function CustomizedDataGrid({
             : [
                 {
                   field: "state",
-                  flex: 0.5, // Reduced flex to give more space to the name column
+                  flex: 1, // Reduced flex to give more space to the name column
                   headerName: "State",
                   minWidth: 120, // Adjusted minimum width
                   renderHeader: (params) => (
-                    <Typography sx={{ fontWeight: "bold" }}>
+                    <Typography
+                      sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
+                    >
                       {params.colDef.headerName}
                     </Typography>
                   ),
@@ -205,11 +209,11 @@ export default function CustomizedDataGrid({
               ]),
           {
             field: "party",
-            flex: 0.5, // Reduced flex to give more space to the name column
+            flex: 1, // Reduced flex to give more space to the name column
             headerName: "Party",
             minWidth: 120, // Adjusted minimum width
             renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
+              <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
                 {params.colDef.headerName}
               </Typography>
             ),
@@ -227,7 +231,7 @@ export default function CustomizedDataGrid({
             minHeight: 200,
             minWidth: 130,
             renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
+              <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
                 {params.colDef.headerName}
               </Typography>
             ),

@@ -375,7 +375,7 @@ export default function AddSenator(props) {
         <Box
           component="main"
           sx={(theme) => ({
-            width:"80%",
+            width: "80%",
             flexGrow: 1,
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
@@ -403,19 +403,24 @@ export default function AddSenator(props) {
               }}
             >
               <Button
-                variant="contained"
+                variant="outlined"
                 onClick={(e) => {
                   handleSave(e);
                 }}
                 sx={{
+                  backgroundColor: "#9150e8 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
                   "&:hover": {
-                    backgroundColor: "green",
+                    backgroundColor: "#7b1fe0 !important", // Same color on hover
                   },
                 }}
               >
                 Save
               </Button>
-              <Button variant="outlined">Fetch Senetors from Quorum</Button>
+              {/* <Button variant="outlined">Fetch Senetors from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
@@ -853,8 +858,7 @@ export default function AddSenator(props) {
                                       key={voteItem._id}
                                       value={voteItem._id}
                                       sx={{
-                                        py: 1.5, 
-                                        
+                                        py: 1.5,
                                       }}
                                     >
                                       <Typography
@@ -886,11 +890,10 @@ export default function AddSenator(props) {
                                   )
                                 }
                                 sx={{ background: "#fff" }}
-                                
                               >
-                                <MenuItem  value="Yes">Yes</MenuItem>
+                                <MenuItem value="Yes">Yes</MenuItem>
                                 <MenuItem value="No">No</MenuItem>
-                                <MenuItem  value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="Neutral">Neutral</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
