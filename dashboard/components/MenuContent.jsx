@@ -25,7 +25,7 @@ const mainListItems = [
     link: "/representative",
   },
   { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" }, // Updated icon for Bills
-  { text: "Add Term", icon: <AddIcon/>, link: "/manage-term"},
+  { text: "Add Term", icon: <AddIcon />, link: "/manage-term"},
 ];
 
 export default function MenuContent() {
@@ -55,16 +55,22 @@ export default function MenuContent() {
                   "& .MuiListItemIcon-root": {
                     color: "#CC9A3A !important",
                   },
-                  borderLeft: "4px solid #CC9A3A", // Add left border on hover
-                  backgroundColor: "rgba(204, 154, 58, 0.1)", // Light background for hover
+                  "& .MuiSvgIcon-root": {
+                    color: "#CC9A3A !important",
+                  },
+                  // borderLeft: "4px solid #CC9A3A", // Add left border on hover
+                  // backgroundColor: "rgba(204, 154, 58, 0.1)", // Light background for hover
                 },
                 "&.active": {
                   color: "#CC9A3A !important",
                   "& .MuiListItemIcon-root": {
                     color: "#CC9A3A !important",
                   },
-                  borderLeft: "4px solid #CC9A3A", // Add left border when active
-                  backgroundColor: "rgba(204, 154, 58, 0.2)", // Slightly darker background for active
+                  "& .MuiSvgIcon-root": {
+                    color: "#CC9A3A !important",
+                  },
+                  // borderLeft: "4px solid #CC9A3A", // Add left border when active
+                  // backgroundColor: "rgba(243, 241, 236, 0.98)", // Slightly darker background for active
                 },
               }}
             >
