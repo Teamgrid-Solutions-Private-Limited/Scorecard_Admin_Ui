@@ -511,24 +511,62 @@ export default function AddSenator(props) {
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
+                      sx={{
+                        "& .MuiButton-outlined": {
+                          borderColor: "#4CAF50",
+                          color: "#4CAF50",
+                          "&:hover": {
+                            backgroundColor: "rgba(76, 175, 80, 0.04)",
+                            borderColor: "#4CAF50",
+                          },
+                        },
+                      }}
                     >
                       <Button
-                        variant={
-                          formData.status === "Active"
-                            ? "contained"
-                            : "outlined"
-                        }
+                        variant={"outlined"}
                         onClick={() => handleStatusChange("Active")}
+                        sx={{
+                          backgroundColor:
+                            formData.status === "Active"
+                              ? "#4CAF50 !important"
+                              : "transparent",
+                          color:
+                            formData.status === "Active"
+                              ? "white !important"
+                              : "#4CAF50",
+                          borderColor: "#4CAF50 !important",
+                          "&:hover": {
+                            backgroundColor:
+                              formData.status === "Active"
+                                ? "#45a049 !important"
+                                : "rgba(76, 175, 80, 0.1)",
+                            borderColor: "#4CAF50 !important",
+                          },
+                        }}
                       >
                         Active
                       </Button>
                       <Button
-                        variant={
-                          formData.status === "Former"
-                            ? "contained"
-                            : "outlined"
-                        }
+                        variant={"outlined"}
                         onClick={() => handleStatusChange("Former")}
+                        sx={{
+                          backgroundColor:
+                            formData.status === "Former"
+                              ? "#4CAF50 !important"
+                              : "transparent",
+                          color:
+                            formData.status === "Former"
+                              ? "white !important"
+                              : "#4CAF50",
+                          borderColor: "#4CAF50 !important",
+                          "&:hover": {
+                            backgroundColor:
+                              formData.status === "Former"
+                                ? "#45a049 !important"
+                                : "rgba(76, 175, 80, 0.1)",
+                            borderColor: "#4CAF50 !important",
+                          },
+                        }}
                       >
                         Former
                       </Button>
@@ -620,7 +658,17 @@ export default function AddSenator(props) {
 
                       <Button
                         component="label"
-                        variant="contained"
+                        variant="outlined"
+                        sx={{
+                          backgroundColor: "#9150e8 !important", // Force blue color
+                          color: "white !important", // Force white text
+                          padding: "0.5rem 1rem", // px-4 py-2
+                          // borderRadius: "0.25rem", // rounded
+                          marginLeft: "0.5rem", // ml-2
+                          "&:hover": {
+                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                          },
+                        }}
                         startIcon={<CloudUploadIcon />}
                       >
                         Upload files
@@ -965,7 +1013,17 @@ export default function AddSenator(props) {
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
-                        variant="contained"
+                        variant="outlined"
+                        sx={{
+                          backgroundColor: "#9150e8 !important", // Force blue color
+                          color: "white !important", // Force white text
+                          padding: "0.5rem 1rem", // px-4 py-2
+                          // borderRadius: "0.25rem", // rounded
+                          marginLeft: "0.5rem", // ml-2
+                          "&:hover": {
+                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                          },
+                        }}
                         startIcon={<AddIcon />}
                         onClick={() => handleAddVote(termIndex)}
                       >
@@ -1045,7 +1103,17 @@ export default function AddSenator(props) {
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
-                        variant="contained"
+                        variant="outlined"
+                        sx={{
+                          backgroundColor: "#9150e8 !important", // Force blue color
+                          color: "white !important", // Force white text
+                          padding: "0.5rem 1rem", // px-4 py-2
+                          // borderRadius: "0.25rem", // rounded
+                          marginLeft: "0.5rem", // ml-2
+                          "&:hover": {
+                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                          },
+                        }}
                         startIcon={<AddIcon />}
                         onClick={() =>
                           setActivity([
@@ -1069,10 +1137,21 @@ export default function AddSenator(props) {
 
             {/* Add Term Button */}
             <Button
-              variant="contained"
+              variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{ alignSelf: "flex-start" }}
+              sx={{ alignSelf: "flex-start",
+                 
+                  backgroundColor: "#9150e8 !important", // Force blue color
+                  color: "white !important", // Force white text
+                  padding: "0.5rem 1rem", // px-4 py-2
+                  // borderRadius: "0.25rem", // rounded
+                  marginLeft: "0.5rem", // ml-2
+                  "&:hover": {
+                    backgroundColor: "#7b1fe0 !important", // Same color on hover
+                  },
+                 
+              }}
             >
               Add Another Term
             </Button>
