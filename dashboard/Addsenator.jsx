@@ -181,26 +181,38 @@ export default function AddSenator(props) {
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
-
-        // Fix: Properly handle voteId which might be an object or string
-        const votesScore =
-          term.votesScore?.length > 0
-            ? term.votesScore.map((vote) => ({
-                voteId: vote.voteId?._id || vote.voteId || null,
-                score: vote.score || "",
-              }))
-            : [{ voteId: null, score: "" }];
-
+  
         return {
           _id: term._id,
           summary: term.summary || "",
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
           currentTerm: term.currentTerm || false,
-          votesScore,
+          votesScore: term.votesScore?.length > 0
+            ? term.votesScore.map((vote) => {
+
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase(); 
+                
+                if (dbScore?.includes("yea")) {
+                  scoreValue = "Yes";
+                } else if (dbScore?.includes("nay")) {
+                  scoreValue = "No";
+                } else if (dbScore?.includes("other")) {
+                  scoreValue = "Neutral";
+                } else {
+                  scoreValue = vote.score || ""; 
+                }
+                
+                return {
+                  voteId: vote.voteId?._id || vote.voteId || null,
+                  score: scoreValue,
+                };
+              })
+            : [{ voteId: null, score: "" }],
         };
       });
-
+  
       setSenatorTermData(termsData);
     } else {
       setSenatorTermData([
@@ -907,6 +919,23 @@ export default function AddSenator(props) {
                                 }
                                 sx={{
                                   background: "#fff",
+                                  width: "100%", 
+                                }}
+                                renderValue={(selected) => {
+                                  const selectedVote = votes.find(
+                                    (v) => v._id === selected
+                                  );
+                                  return (
+                                    <Typography
+                                      sx={{
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {selectedVote?.title || "Select a Bill"}
+                                    </Typography>
+                                  );
                                 }}
                                 MenuProps={{
                                   PaperProps: {
@@ -928,13 +957,13 @@ export default function AddSenator(props) {
                                     <MenuItem
                                       key={voteItem._id}
                                       value={voteItem._id}
-                                      sx={{
-                                        py: 1.5,
-                                      }}
+                                      sx={{ py: 1.5 }}
                                     >
                                       <Typography
-                                        noWrap
-                                        sx={{ maxWidth: "100%" }}
+                                        sx={{
+                                          whiteSpace: "normal",
+                                          overflowWrap: "break-word",
+                                        }}
                                       >
                                         {voteItem.title}
                                       </Typography>

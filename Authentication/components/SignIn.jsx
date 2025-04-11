@@ -16,6 +16,8 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../redux/api/API";
+import MuiAlert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -84,6 +86,24 @@ export default function SignIn() {
     setInfo({ ...info, [e.target.name]: e.target.value });
   };
 
+  
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const handleSnackbarOpen = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     axios
@@ -93,18 +113,34 @@ export default function SignIn() {
 
         if (res.data.message === "Login successful" && res.data.token) {
           localStorage.setItem("token", res.data.token);
-
+          handleSnackbarOpen("logged in Successfully","success")
           nav("/");
         }
       })
       .catch((err) => {
         console.log(err);
-        alert("Invalid username or password");
+        handleSnackbarOpen("Invalid username or password","warning")
       });
   };
 
   return (
     <SignInContainer>
+      <Snackbar
+              open={openSnackbar}
+              autoHideDuration={6000}
+              onClose={handleSnackbarClose}
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+              <MuiAlert
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{ width: "100%" }}
+                elevation={6}
+                variant="filled"
+              >
+                {snackbarMessage}
+              </MuiAlert>
+            </Snackbar>
       <Card variant="outlined" sx={{ height: "500px", pb: 1 }}>
         <Header>
           <img
@@ -196,6 +232,7 @@ export default function SignIn() {
           </StyledButton>
         </Box>
       </Card>
+      
     </SignInContainer>
   );
 }
