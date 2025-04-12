@@ -174,22 +174,7 @@ export default function Senator(props) {
               </Typography>
 
               <Stack direction="row" spacing={2} alignItems="center">
-                <TextField
-                  placeholder="Search"
-                  size="small"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  sx={{
-                    width: "160px",
-                    "& .MuiInputBase-root": {
-                      "&.Mui-focused": {
-                        boxShadow: "none !important",
-                        outline: "none !important",
-                      },
-                    },
-                  }}
-                />
-                <Button
+              <Button
                   variant="outlined"
                   sx={{
                     backgroundColor: "#9150e8 !important", // Force blue color
@@ -205,6 +190,24 @@ export default function Senator(props) {
                 >
                   Fetch Senators from Quorum
                 </Button>
+                <TextField
+                  placeholder="Search"
+                  size="small"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  sx={{
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    width: "160px",
+                    "& .MuiInputBase-root": {
+                      "&.Mui-focused": {
+                        boxShadow: "none !important",
+                        outline: "none !important",
+                      },
+                    },
+                  }}
+                />
+               
               </Stack>
             </Box>
 
