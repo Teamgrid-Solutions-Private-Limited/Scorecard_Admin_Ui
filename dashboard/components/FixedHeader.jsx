@@ -1,19 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 
 const FixedHeader = () => {
+  const [elevate, setElevate] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setElevate(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <Box
       sx={{
-        display: {  xs: "none", md: "flex" },
-
+        display: { xs: "none", md: "flex" },
         justifyContent: "center",
-        // ml: { xs: 0, md: "260px" },
         backgroundColor: "#fff",
-        padding: "40px 0px",
+        padding: elevate ? "35px 0px":"40px 0px",
         position: "sticky",
         top: 0,
         zIndex: 1000,
+        boxShadow: elevate ? "0 2px 10px rgba(0, 0, 0, 0.2)" : "none",
+        borderRadius: elevate? "5px":"0px",
+        transition: " 0.2s ease-in-out",
       }}
     >
       <Typography
@@ -21,7 +33,7 @@ const FixedHeader = () => {
         align="center"
         sx={{
           fontFamily: "'Be Vietnam Pro', sans-serif",
-          fontWeight: "600",
+          fontWeight: 600,
           color: "#363837",
         }}
       >
