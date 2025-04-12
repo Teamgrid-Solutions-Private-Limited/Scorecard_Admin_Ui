@@ -507,7 +507,7 @@ export default function AddSenator(props) {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={5}>
+                  <Grid size={4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -608,7 +608,7 @@ export default function AddSenator(props) {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={5}>
+                  <Grid size={4}>
                     <TextField
                       id="party"
                       name="party"
@@ -739,7 +739,7 @@ export default function AddSenator(props) {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={4}>
+                    <Grid size={2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.termId || ""}
@@ -767,8 +767,29 @@ export default function AddSenator(props) {
                         </Select>
                       </FormControl>
                     </Grid>
+                    <Grid size={2.1} sx={{ alignContent: "center" }}>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          justifyContent: "end",
+                          fontWeight: 700,
+                          my: 0,
+                        }}
+                      >
+                        Current Term
+                      </InputLabel>
+                    </Grid>
+                    <Grid size={0}>
+                      <Switch
+                        {...label}
+                        name="currentTerm"
+                        checked={term.currentTerm}
+                        onChange={(e) => handleSwitchChange(e, termIndex)}
+                        color="warning"
+                      />
+                    </Grid>
 
-                    <Grid size={1.5}>
+                    <Grid size={2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -781,7 +802,7 @@ export default function AddSenator(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={4.5}>
+                    <Grid size={2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -816,7 +837,7 @@ export default function AddSenator(props) {
                         Term Summary
                       </InputLabel>
                     </Grid>
-                    <Grid size={10}>
+                    <Grid size={9.05}>
                       <Editor
                         apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
                         onInit={(_evt, editor) => (editorRef.current = editor)}
@@ -857,27 +878,7 @@ export default function AddSenator(props) {
                       />
                     </Grid>
 
-                    <Grid size={2} sx={{ alignContent: "center" }}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: "end",
-                          fontWeight: 700,
-                          my: 0,
-                        }}
-                      >
-                        Current Term
-                      </InputLabel>
-                    </Grid>
-                    <Grid size={10}>
-                      <Switch
-                        {...label}
-                        name="currentTerm"
-                        checked={term.currentTerm}
-                        onChange={(e) => handleSwitchChange(e, termIndex)}
-                        color="warning"
-                      />
-                    </Grid>
+                    
 
                     {/* Vote Repeater Start */}
                     {term.votesScore.map((vote, voteIndex) => (

@@ -114,7 +114,9 @@ export default function SignIn() {
         if (res.data.message === "Login successful" && res.data.token) {
           localStorage.setItem("token", res.data.token);
           handleSnackbarOpen("logged in Successfully","success")
-          nav("/");
+          setTimeout(() => {
+            nav("/");
+          }, 1500);
         }
       })
       .catch((err) => {
