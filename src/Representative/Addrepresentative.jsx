@@ -184,7 +184,7 @@ export default function Addrepresentative(props) {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
-  
+
         return {
           _id: term._id,
           summary: term.summary || "",
@@ -205,7 +205,7 @@ export default function Addrepresentative(props) {
                   } else {
                     scoreValue = vote.score || "";
                   }
-                  
+
                   return {
                     voteId: vote.voteId || null,
                     score: scoreValue,
@@ -459,7 +459,7 @@ export default function Addrepresentative(props) {
                   },
                 }}
               >
-                Save The Changes
+                Save Changes
               </Button>
               {/* <Button variant="outlined">
                 Fetch Representatives from Quorum
@@ -796,7 +796,6 @@ export default function Addrepresentative(props) {
                       />
                     </Grid>
 
-
                     <Grid size={2.39}>
                       <InputLabel
                         sx={{
@@ -843,6 +842,7 @@ export default function Addrepresentative(props) {
                     </Grid>
                     <Grid size={9.05}>
                       <Editor
+                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary}
@@ -885,7 +885,6 @@ export default function Addrepresentative(props) {
                       />
                     </Grid>
 
-                    
                     {term.votesScore.map((vote, voteIndex) => (
                       <Grid
                         rowSpacing={2}
