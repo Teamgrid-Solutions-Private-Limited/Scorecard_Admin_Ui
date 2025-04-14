@@ -6,15 +6,15 @@ import {
   Navigate,
 } from 'react-router-dom';
 
-import SaveSenetors from '/dashboard/AddSenator';
-import Senator from '/dashboard/Senator';
-import Representative from '/dashboard/Representative';
-import SaveRepresentative from '/dashboard/AddRepresentative';
-import Bill from '/dashboard/Bills';
-import SignIn from '/Authentication/components/SignIn';
-import AddBill from '../dashboard/AddBill';
-import SearchBill from '../dashboard/SearchBill';
-import ManageTerm from "../dashboard/ManageTerm"
+import SaveSenetors from '../src/Senator/Addsenator';
+import Senator from '../src/Senator/Senator';
+import Representative from '../src/Representative/Representative';
+import SaveRepresentative from '../src/Representative/Addrepresentative';
+import Bill from '../src/Bills/Bills';
+import SignIn from '../src/Authentication/components/SignIn';
+import AddBill from '../src/Bills/AddBill';
+import SearchBill from '../src/Bills/SearchBill';
+import ManageTerm from "../src/Manageterm/ManageTerm"
 
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
