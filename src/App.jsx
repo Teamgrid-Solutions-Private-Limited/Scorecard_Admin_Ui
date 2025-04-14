@@ -14,7 +14,9 @@ import Bill from '../src/Bills/Bills';
 import SignIn from '../src/Authentication/components/SignIn';
 import AddBill from '../src/Bills/AddBill';
 import SearchBill from '../src/Bills/SearchBill';
-import ManageTerm from "../src/Manageterm/ManageTerm"
+import ManageTerm from "../src/Manageterm/ManageTerm";
+import Activity from '../src/Activity/Activity';
+import AddActivity from '../src/Activity/AddActivity';
 
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
@@ -38,6 +40,9 @@ export default function App() {
         <Route path="bills/edit-bill/:id" element={<PrivateRoute element={<AddBill />} />} />
         <Route path="/search-bills" element={<PrivateRoute element={<SearchBill />} />} />
         <Route path="/manage-term" element={<PrivateRoute element={<ManageTerm/>}/>}/>
+        <Route path="/activities" element={<PrivateRoute element={<Activity />} />} />
+        <Route path="/add-activity" element={<PrivateRoute element={<AddActivity />} />} />
+        <Route path="/edit-activity/:id" element={<PrivateRoute element={<AddActivity />} />} />
         
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

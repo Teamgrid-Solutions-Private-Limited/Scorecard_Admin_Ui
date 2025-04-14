@@ -11,6 +11,7 @@ import Stack from "@mui/material/Stack";
 import GavelRoundedIcon from "@mui/icons-material/GavelRounded";
 import GroupsRoundedIcon from "@mui/icons-material/GroupRounded"
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
+import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import {
   Dialog,
@@ -34,6 +35,7 @@ const mainListItems = [
     link: "/representative",
   },
   { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" },
+  { text: "Activities", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
   { text: "Add Term", icon: <AddIcon/>, link: "/manage-term"},
 ];
 
