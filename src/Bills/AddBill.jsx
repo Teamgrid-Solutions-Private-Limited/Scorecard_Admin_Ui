@@ -194,7 +194,7 @@ export default function AddBill(props) {
             // overflow: "auto",
           })}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{
@@ -204,8 +204,6 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            
-
             <Stack
               direction="row"
               spacing={2}
@@ -229,7 +227,7 @@ export default function AddBill(props) {
                 }}
                 onClick={handleSubmit}
               >
-                Save The Changes
+                Save Changes
               </Button>
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>

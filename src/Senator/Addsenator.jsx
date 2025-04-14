@@ -181,38 +181,38 @@ export default function AddSenator(props) {
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
-  
+
         return {
           _id: term._id,
           summary: term.summary || "",
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
           currentTerm: term.currentTerm || false,
-          votesScore: term.votesScore?.length > 0
-            ? term.votesScore.map((vote) => {
+          votesScore:
+            term.votesScore?.length > 0
+              ? term.votesScore.map((vote) => {
+                  let scoreValue = "";
+                  const dbScore = vote.score?.toLowerCase();
 
-                let scoreValue = "";
-                const dbScore = vote.score?.toLowerCase(); 
-                
-                if (dbScore?.includes("yea")) {
-                  scoreValue = "Yes";
-                } else if (dbScore?.includes("nay")) {
-                  scoreValue = "No";
-                } else if (dbScore?.includes("other")) {
-                  scoreValue = "Neutral";
-                } else {
-                  scoreValue = vote.score || ""; 
-                }
-                
-                return {
-                  voteId: vote.voteId?._id || vote.voteId || null,
-                  score: scoreValue,
-                };
-              })
-            : [{ voteId: null, score: "" }],
+                  if (dbScore?.includes("yea")) {
+                    scoreValue = "Yes";
+                  } else if (dbScore?.includes("nay")) {
+                    scoreValue = "No";
+                  } else if (dbScore?.includes("other")) {
+                    scoreValue = "Neutral";
+                  } else {
+                    scoreValue = vote.score || "";
+                  }
+
+                  return {
+                    voteId: vote.voteId?._id || vote.voteId || null,
+                    score: scoreValue,
+                  };
+                })
+              : [{ voteId: null, score: "" }],
         };
       });
-  
+
       setSenatorTermData(termsData);
     } else {
       setSenatorTermData([
@@ -453,7 +453,7 @@ export default function AddSenator(props) {
                   },
                 }}
               >
-                Save The Changes
+                Save Changes
               </Button>
               {/* <Button variant="outlined">Fetch Senetors from Quorum</Button> */}
             </Stack>
@@ -839,7 +839,7 @@ export default function AddSenator(props) {
                     </Grid>
                     <Grid size={9.05}>
                       <Editor
-                        apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js" // Path to your self-hosted TinyMCE script
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary || ""}
                         onEditorChange={(content) =>
@@ -877,8 +877,6 @@ export default function AddSenator(props) {
                         }}
                       />
                     </Grid>
-
-                    
 
                     {/* Vote Repeater Start */}
                     {term.votesScore.map((vote, voteIndex) => (
@@ -920,7 +918,7 @@ export default function AddSenator(props) {
                                 }
                                 sx={{
                                   background: "#fff",
-                                  width: "100%", 
+                                  width: "100%",
                                 }}
                                 renderValue={(selected) => {
                                   const selectedVote = votes.find(
@@ -1141,17 +1139,17 @@ export default function AddSenator(props) {
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{ alignSelf: "flex-start",
-                 
-                  backgroundColor: "#9150e8 !important", // Force blue color
-                  color: "white !important", // Force white text
-                  padding: "0.5rem 1rem", // px-4 py-2
-                  // borderRadius: "0.25rem", // rounded
-                  marginLeft: "0.5rem", // ml-2
-                  "&:hover": {
-                    backgroundColor: "#7b1fe0 !important", // Same color on hover
-                  },
-                 
+              sx={{
+                alignSelf: "flex-start",
+
+                backgroundColor: "#9150e8 !important", // Force blue color
+                color: "white !important", // Force white text
+                padding: "0.5rem 1rem", // px-4 py-2
+                // borderRadius: "0.25rem", // rounded
+                marginLeft: "0.5rem", // ml-2
+                "&:hover": {
+                  backgroundColor: "#7b1fe0 !important", // Same color on hover
+                },
               }}
             >
               Add Another Term
