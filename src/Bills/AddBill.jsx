@@ -54,9 +54,9 @@ export default function AddBill(props) {
       setFormData({
         ...formData,
         type:
-          selectedVote.type === "senate_bill"
+          selectedVote.type.includes("senate") 
             ? "senate"
-            : selectedVote.type === "house_bill"
+            : selectedVote.type.includes("house")
             ? "house"
             : "",
         title: selectedVote.title || "",
@@ -123,6 +123,12 @@ export default function AddBill(props) {
   };
 
   const handleSubmit = async () => {
+    if (!formData.termId) {
+      setSnackbarMessage("Term is required!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return; 
+    }
     setLoading(true);
     try {
       if (id) {
@@ -144,6 +150,7 @@ export default function AddBill(props) {
       setLoading(false); // Ensure loading stops after success or failure
     }
   };
+  
 
   return (
     <AppTheme>
@@ -463,6 +470,7 @@ export default function AddBill(props) {
                       />
                     </FormControl>
                   </Grid>
+                  
 
                   <Grid size={2}>
                     <InputLabel

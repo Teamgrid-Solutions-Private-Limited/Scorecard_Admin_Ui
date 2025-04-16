@@ -113,16 +113,17 @@ export default function AddActivity(props) {
     }
     setSnackbarOpen(false);
   };
-
+ 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       if (id) {
         await dispatch(updateActivity({ id, updatedData: formData })).unwrap();
+        setSnackbarMessage("Activity updated successfully!");
         setSnackbarSeverity("success");
       } else {
         await dispatch(createActivity(formData)).unwrap();
-        setSnackbarMessage("Bill created successfully!");
+        setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
       }
       setSnackbarOpen(true);
