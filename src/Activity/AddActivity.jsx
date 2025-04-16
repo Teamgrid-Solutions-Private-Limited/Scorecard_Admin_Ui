@@ -185,7 +185,7 @@ export default function AddActivity(props) {
             // overflow: "auto",
           })}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{
@@ -195,8 +195,6 @@ export default function AddActivity(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            
-
             <Stack
               direction="row"
               spacing={2}
@@ -308,7 +306,9 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
+                      tinymceScriptSrc={`${
+                        import.meta.env.BASE_URL
+                      }tinymce/tinymce.min.js`}
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
