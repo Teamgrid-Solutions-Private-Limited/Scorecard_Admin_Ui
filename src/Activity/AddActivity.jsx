@@ -41,7 +41,6 @@ export default function AddActivity(props) {
     title: "",
     shortDesc: "",
     date: "",
-    congress: "",
     readMore: "",
   });
 
@@ -58,10 +57,7 @@ export default function AddActivity(props) {
             : "",
         title: selectedActivity.title || "",
         shortDesc: selectedActivity.shortDesc || "",
-
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
-        congress: selectedActivity.congress || "",
-
         readMore: selectedActivity.readMore || "",
       });
     }
