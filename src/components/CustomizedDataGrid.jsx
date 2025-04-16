@@ -103,7 +103,78 @@ export default function CustomizedDataGrid({
             ),
           },
         ]
-      : [
+      : 
+      type === "activities"?[
+        {
+          field: "date",
+          flex: 1,
+          headerName: "Date",
+          minWidth: 150,
+          renderHeader: (params) => (
+            <Typography sx={{ fontWeight: "bold" }}>
+              {params.colDef.headerName}
+            </Typography>
+          ),
+        },
+        {
+          field: "activity",
+          flex: 3,
+          headerName: "Title",
+          minWidth: 150,
+          renderHeader: (params) => (
+            <Typography sx={{ fontWeight: "bold" }}>
+              {params.colDef.headerName}
+            </Typography>
+          ),
+        },
+        {
+          field: "activityType",
+          flex: 1,
+          headerName: "Type",
+          minWidth: 150,
+          headerAlign: "center",
+          align: "center",
+          renderHeader: (params) => (
+            <Typography sx={{ fontWeight: "bold" }}>
+              {params.colDef.headerName}
+            </Typography>
+          ),
+        },
+        {
+          field: "action",
+          flex: 1,
+          headerName: "Action",
+          minWidth: 60,
+          headerAlign: "center",
+          renderHeader: (params) => (
+            <Typography sx={{ fontWeight: "bold" }}>
+              {params.colDef.headerName}
+            </Typography>
+          ),
+          renderCell: (params) => (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                height: "100%",
+                alignItems: "center",
+                columnGap: "10px",
+              }}
+            >
+              <EditIcon
+                onClick={() => onEdit(params.row)}
+                sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+              />
+              <DeleteForeverIcon
+                onClick={() => onDelete(params.row)}
+                sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+              />
+            </div>
+          ),
+        },
+      ]:
+      
+      [
           {
             field: "name",
             flex: 2,
