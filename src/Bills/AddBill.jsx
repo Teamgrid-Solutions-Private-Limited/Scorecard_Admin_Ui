@@ -315,7 +315,9 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
+                      tinymceScriptSrc={`${
+                        import.meta.env.BASE_URL
+                      }tinymce/tinymce.min.js`}
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
