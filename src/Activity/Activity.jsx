@@ -68,7 +68,7 @@ export default function Activity(props) {
   }));
 
   const handleEdit = (row) => {
-    navigate(`edit-bill/${row._id}`);
+    navigate(`/edit-activity/${row._id}`);
   };
   const handleDeleteClick = (row) => {
     setSelectedVote(row); // Store senator data
@@ -82,7 +82,7 @@ export default function Activity(props) {
       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
     }, 1000);
     try {
-      await dispatch(deleteActivity(selectedVote._id)).unwrap(); // Ensure proper dispatch
+      await dispatch(deleteActivity(selectedVote._id)).unwrap(); 
       await dispatch(getAllActivity());
       setSnackbarMessage(`This activity has been successfully deleted.`);
       setSnackbarSeverity("success");
@@ -134,13 +134,7 @@ export default function Activity(props) {
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
           >
-            {/* <Typography
-              variant="h4"
-              align="center"
-              sx={{ paddingTop: "50px", paddingBottom: "70px", color: "text.secondary", mb: 6 }}
-            >
-              SBA Scorecard Management System
-            </Typography> */}
+            
                   <Box
                           sx={{
                             width: "100%",

@@ -40,11 +40,8 @@ export default function AddActivity(props) {
     type: "",
     title: "",
     shortDesc: "",
-    longDesc: "",
     date: "",
     congress: "",
-    termId: "",
-    rollCall: "",
     readMore: "",
   });
 
@@ -61,11 +58,10 @@ export default function AddActivity(props) {
             : "",
         title: selectedActivity.title || "",
         shortDesc: selectedActivity.shortDesc || "",
-        longDesc: selectedActivity.longDesc || "",
+
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
         congress: selectedActivity.congress || "",
-        termId: termId, // Correctly set termId
-        rollCall: selectedActivity.rollCall || "",
+
         readMore: selectedActivity.readMore || "",
       });
     }
@@ -228,7 +224,7 @@ export default function AddActivity(props) {
                 }}
                 onClick={handleSubmit}
               >
-                Save The Changes
+                Save Changes
               </Button>
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
@@ -236,7 +232,7 @@ export default function AddActivity(props) {
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
-                  Bill's Information
+                  Activity Information
                 </Typography>
                 <Grid
                   container
@@ -283,7 +279,7 @@ export default function AddActivity(props) {
                         width: "100%",
                       }}
                     >
-                      Title
+                      Name
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
@@ -311,7 +307,7 @@ export default function AddActivity(props) {
                         my: 0,
                       }}
                     >
-                      Short Description
+                      Activity Details
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
@@ -320,56 +316,6 @@ export default function AddActivity(props) {
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
-                      }
-                      init={{
-                        height: 250,
-                        menubar: false,
-                        plugins: [
-                          "advlist",
-                          "autolink",
-                          "lists",
-                          "link",
-                          "image",
-                          "charmap",
-                          "preview",
-                          "anchor",
-                          "searchreplace",
-                          "visualblocks",
-                          "code",
-                          "fullscreen",
-                          "insertdatetime",
-                          "media",
-                          "table",
-                          "code",
-                          "help",
-                          "wordcount",
-                        ],
-                        toolbar:
-                          "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                        content_style:
-                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                      }}
-                    >
-                      Long Description
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={10}>
-                    <Editor
-                      apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
-                      value={formData.longDesc}
-                      onEditorChange={(content) =>
-                        handleEditorChange(content, "longDesc")
                       }
                       init={{
                         height: 250,
@@ -429,140 +375,6 @@ export default function AddActivity(props) {
                         size="small"
                         autoComplete="off"
                         variant="outlined"
-                      />
-                    </FormControl>
-                  </Grid>
-
-                  <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Congress
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={10}>
-                    <FormControl fullWidth>
-                      <TextField
-                        required
-                        id="congress"
-                        name="congress"
-                        value={formData.congress}
-                        onChange={handleChange}
-                        fullWidth
-                        size="small"
-                        autoComplete="off"
-                        variant="outlined"
-                      />
-                    </FormControl>
-                  </Grid>
-
-                  <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Term
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={10}>
-                    <FormControl fullWidth>
-                      <Select
-                        value={formData.termId || ""}
-                        id="termId"
-                        name="termId"
-                        onChange={handleChange}
-                        sx={{ background: "#fff" }}
-                      >
-                        <MenuItem value="" disabled>
-                          Select an option
-                        </MenuItem>
-                        {terms && terms.length > 0 ? (
-                          terms.map((term) => (
-                            <MenuItem key={term._id} value={term._id}>
-                              {term.name}
-                            </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem value="" disabled>
-                            No terms available
-                          </MenuItem>
-                        )}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 700,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Roll Call
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={10}>
-                    <FormControl fullWidth>
-                      <TextField
-                        sx={{
-                          fontFamily: "'Be Vietnam Pro', sans-serif",
-                          height: 38,
-                          "& .MuiOutlinedInput-root": {
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
-                            fontSize: "13px",
-                            height: 38,
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            alignItems: "center",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#CC9A3A !important",
-                              borderWidth: "1px",
-                            },
-                          },
-                        }}
-                        fullWidth
-                        variant="outlined"
-                        name="rollCall"
-                        value={formData.rollCall}
-                        onChange={handleChange}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Typography
-                                fontWeight="500"
-                                sx={{
-                                  fontSize: "13px",
-                                  backgroundColor: "#F9F9F9",
-                                }}
-                              >
-                                URL:
-                              </Typography>
-                            </InputAdornment>
-                          ),
-                        }}
                       />
                     </FormControl>
                   </Grid>
