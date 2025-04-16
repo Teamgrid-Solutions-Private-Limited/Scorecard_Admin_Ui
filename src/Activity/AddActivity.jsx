@@ -50,9 +50,9 @@ export default function AddActivity(props) {
       setFormData({
         ...formData,
         type:
-          selectedActivity.type === "senate_activity"
+          selectedActivity.type === "senate"
             ? "senate"
-            : selectedActivity.type === "house_activity"
+            : selectedActivity.type === "house"
             ? "house"
             : "",
         title: selectedActivity.title || "",
