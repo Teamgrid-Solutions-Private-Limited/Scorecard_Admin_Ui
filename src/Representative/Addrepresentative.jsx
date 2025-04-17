@@ -1263,7 +1263,7 @@ export default function Addrepresentative(props) {
               open={openSnackbar}
               autoHideDuration={6000}
               onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
               <MuiAlert
                 onClose={handleSnackbarClose}

@@ -122,6 +122,7 @@ export default function AddActivity(props) {
         setSnackbarMessage("Activity updated successfully!");
         setSnackbarSeverity("success");
       } else {
+        
         await dispatch(createActivity(formData)).unwrap();
         setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
