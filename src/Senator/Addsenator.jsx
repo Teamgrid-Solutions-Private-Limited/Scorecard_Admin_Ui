@@ -62,10 +62,10 @@ export default function AddSenator(props) {
   const { terms } = useSelector((state) => state.term);
   const { votes } = useSelector((state) => state.vote);
   const { activities } = useSelector((state) => state.activity);
-
   const senatorData = useSelector((state) => state.senatorData);
 
- 
+ let senatorActivities = activities?.filter((activity)=>activity.type==="senate")||[]
+
   const [senatorTermData, setSenatorTermData] = useState([
     {
       senateId: id,
@@ -1116,7 +1116,7 @@ export default function AddSenator(props) {
                                   width: "100%",
                                 }}
                                 renderValue={(selected) => {
-                                  const selectedActivity = activities.find(
+                                  const selectedActivity = senatorActivities.find(
                                     (a) => a._id === selected
                                   );
                                   return (
@@ -1146,8 +1146,8 @@ export default function AddSenator(props) {
                                 <MenuItem value="" disabled>
                                   Select an Activity
                                 </MenuItem>
-                                {activities && activities.length > 0 ? (
-                                  activities.map((activityItem) => (
+                                {senatorActivities && senatorActivities.length > 0 ? (
+                                  senatorActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
                                       value={activityItem._id}
