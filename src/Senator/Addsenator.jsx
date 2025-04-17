@@ -1252,7 +1252,7 @@ export default function AddSenator(props) {
               open={openSnackbar}
               autoHideDuration={6000}
               onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
               <MuiAlert
                 onClose={handleSnackbarClose}

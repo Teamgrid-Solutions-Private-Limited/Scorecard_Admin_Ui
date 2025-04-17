@@ -115,6 +115,7 @@ export default function ManageTerm(props) {
 
         <Box
           sx={{
+            width:"80%",
             flexGrow: 1,
             filter: loading ? "blur(1px)" : "none",
             pointerEvents: loading ? "none" : "auto",
@@ -135,7 +136,7 @@ export default function ManageTerm(props) {
               open={openSnackbar}
               autoHideDuration={6000}
               onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
               <MuiAlert
                 onClose={handleSnackbarClose}
