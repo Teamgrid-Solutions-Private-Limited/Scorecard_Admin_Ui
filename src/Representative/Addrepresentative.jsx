@@ -62,6 +62,7 @@ export default function Addrepresentative(props) {
   const { votes } = useSelector((state) => state.vote);
   const houseData = useSelector((state) => state.houseData);
   const { activities } = useSelector((state) => state.activity);
+  const houseActivities = activities?.filter(activity => activity.type === "house") || [];
 
   // Initialize as an array to support multiple terms
   const [houseTermData, setHouseTermData] = useState([
@@ -1125,7 +1126,7 @@ export default function Addrepresentative(props) {
                                   width: "100%",
                                 }}
                                 renderValue={(selected) => {
-                                  const selectedActivity = activities.find(
+                                  const selectedActivity = houseActivities.find(
                                     (a) => a._id === selected
                                   );
                                   return (
@@ -1156,8 +1157,8 @@ export default function Addrepresentative(props) {
                                 <MenuItem value="" disabled>
                                   Select an Activity
                                 </MenuItem>
-                                {activities && activities.length > 0 ? (
-                                  activities.map((activityItem) => (
+                                {houseActivities && houseActivities.length > 0 ? (
+                                  houseActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
                                       value={activityItem._id}
