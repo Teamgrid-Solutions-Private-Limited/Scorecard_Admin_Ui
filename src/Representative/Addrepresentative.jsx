@@ -33,6 +33,7 @@ import {
   updateHouse,
   createHouse,
 } from "../redux/reducer/houseSlice";
+import { getAllActivity } from "../redux/reducer/activitySlice";
 import {
   getHouseDataByHouseId,
   updateHouseData,
@@ -60,6 +61,7 @@ export default function Addrepresentative(props) {
   const { terms } = useSelector((state) => state.term);
   const { votes } = useSelector((state) => state.vote);
   const houseData = useSelector((state) => state.houseData);
+  const { activities } = useSelector((state) => state.activity);
 
   // Initialize as an array to support multiple terms
   const [houseTermData, setHouseTermData] = useState([
@@ -68,6 +70,7 @@ export default function Addrepresentative(props) {
       summary: "",
       rating: "",
       votesScore: [{ voteId: null, score: "" }],
+      activitiesScore: [{ activityId: null, score: "" }],
       currentTerm: false,
       termId: null,
     },
@@ -133,6 +136,51 @@ export default function Addrepresentative(props) {
       )
     );
   };
+  const handleAddActivity = (termIndex) => {
+    setHouseTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: null, score: "" },
+              ],
+            }
+          : term
+      )
+    );
+  };
+
+  const handleRemoveActivity = (termIndex, activityIndex) => {
+    setHouseTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
+            }
+          : term
+      )
+    );
+  };
+
+  const handleActivityChange = (termIndex, activityIndex, field, value) => {
+    setHouseTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              activitiesScore: term.activitiesScore.map((activity, i) =>
+                i === activityIndex ? { ...activity, [field]: value } : activity
+              ),
+            }
+          : term
+      )
+    );
+  };
 
   const contentRefs = useRef([]);
 
@@ -165,6 +213,7 @@ export default function Addrepresentative(props) {
         summary: "",
         rating: "",
         votesScore: [{ voteId: null, score: "" }],
+        activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
       },
@@ -212,6 +261,14 @@ export default function Addrepresentative(props) {
                   };
                 })
               : [{ voteId: null, score: "" }],
+          activitiesScore:
+            term.activitiesScore?.length > 0
+              ? term.activitiesScore.map((activity) => ({
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                }))
+              : [{ activityId: null, score: "" }],
         };
       });
       setHouseTermData(termsData);
@@ -222,6 +279,7 @@ export default function Addrepresentative(props) {
           summary: "",
           rating: "",
           votesScore: [{ voteId: null, score: "" }],
+          activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
         },
@@ -264,6 +322,7 @@ export default function Addrepresentative(props) {
     }
     dispatch(getAllTerms());
     dispatch(getAllVotes());
+    dispatch(getAllActivity());
 
     return () => {
       dispatch(clearHouseState());
@@ -377,10 +436,6 @@ export default function Addrepresentative(props) {
 
   const handleStatusChange = (status) => {
     setFormData((prev) => ({ ...prev, status }));
-  };
-
-  const handleRemoveActivity = (index) => {
-    setActivity((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAdd = () => {
@@ -1028,65 +1083,135 @@ export default function Addrepresentative(props) {
                     </Grid>
                     <Grid size={1}></Grid>
 
-                    <Grid rowSpacing={2} sx={{ width: "100%" }}>
+                    {term.activitiesScore.map((activity, activityIndex) => (
                       <Grid
-                        size={12}
-                        display="flex"
-                        alignItems="center"
-                        columnGap={"15px"}
+                        rowSpacing={2}
+                        sx={{ width: "100%", mt: 2 }}
+                        key={activityIndex}
                       >
-                        <Grid size={2}>
-                          <InputLabel
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "end",
-                              fontWeight: 700,
-                              my: 0,
-                            }}
-                          >
-                            Tracked Activity
-                          </InputLabel>
-                        </Grid>
-                        <Grid size={7.5}>
-                          <FormControl fullWidth>
-                            <TextField
-                              value={formData.activitiesScore}
-                              name="activitiesScore"
-                              onChange={handleChange}
-                              sx={{ background: "#fff" }}
-                              placeholder="No Activity"
-                              disabled
-                            ></TextField>
-                          </FormControl>
-                        </Grid>
-                        <Grid size={1.6}>
-                          <FormControl fullWidth>
-                            <TextField
-                              value={formData.activitiesScore}
-                              name="activitiesScore"
-                              onChange={handleChange}
+                        <Grid
+                          size={12}
+                          display="flex"
+                          alignItems="center"
+                          columnGap={"15px"}
+                        >
+                          <Grid size={2}>
+                            <InputLabel
                               sx={{
-                                background: "#fff",
-                                "& MuiOutlinedInput-root": {
-                                  "&:hover fieldset": {
-                                    borderColor: "transparent",
-                                  },
-                                  "&.Mui-disabled fieldset": {
-                                    borderColor: "transparent",
-                                  },
-                                },
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "end",
+                                fontWeight: 700,
+                                my: 0,
                               }}
-                              placeholder="Select"
-                              disabled
-                            ></TextField>
-                          </FormControl>
-                        </Grid>
-                        <Grid size={1}>
-                          <DeleteForeverIcon />
+                            >
+                              Tracked Activity
+                            </InputLabel>
+                          </Grid>
+                          <Grid size={7.5}>
+                            <FormControl fullWidth>
+                              <Select
+                                value={activity.activityId || ""}
+                                onChange={(event) =>
+                                  handleActivityChange(
+                                    termIndex,
+                                    activityIndex,
+                                    "activityId",
+                                    event.target.value
+                                  )
+                                }
+                                sx={{
+                                  background: "#fff",
+                                  width: "100%",
+                                }}
+                                renderValue={(selected) => {
+                                  const selectedActivity = activities.find(
+                                    (a) => a._id === selected
+                                  );
+                                  return (
+                                    <Typography
+                                      sx={{
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {selectedActivity?.title ||
+                                        "Select an Activity"}
+                                    </Typography>
+                                  );
+                                }}
+                                MenuProps={{
+                                  PaperProps: {
+                                    sx: {
+                                      maxHeight: 300,
+                                      width: 400,
+                                      "& .MuiMenuItem-root": {
+                                        minHeight: "48px",
+                                      },
+                                    },
+                                  },
+                                }}
+                              >
+                                <MenuItem value="" disabled>
+                                  Select an Activity
+                                </MenuItem>
+                                {activities && activities.length > 0 ? (
+                                  activities.map((activityItem) => (
+                                    <MenuItem
+                                      key={activityItem._id}
+                                      value={activityItem._id}
+                                      sx={{ py: 1.5 }}
+                                    >
+                                      <Typography
+                                        sx={{
+                                          whiteSpace: "normal",
+                                          overflowWrap: "break-word",
+                                        }}
+                                      >
+                                        {activityItem.title}
+                                      </Typography>
+                                    </MenuItem>
+                                  ))
+                                ) : (
+                                  <MenuItem value="" disabled>
+                                    No activities available
+                                  </MenuItem>
+                                )}
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid size={1.6}>
+                            <FormControl fullWidth>
+                              <Select
+                                value={activity?.score || ""}
+                                onChange={(event) =>
+                                  handleActivityChange(
+                                    termIndex,
+                                    activityIndex,
+                                    "score",
+                                    event.target.value
+                                  )
+                                }
+                                sx={{ background: "#fff" }}
+                              >
+                                <MenuItem value="Yes">Yes</MenuItem>
+                                <MenuItem value="No">No</MenuItem>
+                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="None">None</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid size={1}>
+                            <DeleteForeverIcon
+                              onClick={() =>
+                                handleRemoveActivity(termIndex, activityIndex)
+                              }
+                            />
+                          </Grid>
                         </Grid>
                       </Grid>
-                    </Grid>
+                    ))}
 
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>

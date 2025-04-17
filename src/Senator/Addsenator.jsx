@@ -37,6 +37,9 @@ import {
   createVote,
   getAllVotes,
 } from "../redux/reducer/voteSlice";
+import {
+  getAllActivity
+} from "../redux/reducer/activitySlice"
 
 import { createSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
@@ -58,15 +61,18 @@ export default function AddSenator(props) {
   const { senator } = useSelector((state) => state.senator);
   const { terms } = useSelector((state) => state.term);
   const { votes } = useSelector((state) => state.vote);
+  const { activities } = useSelector((state) => state.activity);
+
   const senatorData = useSelector((state) => state.senatorData);
 
-  // Initialize senatorTermData as an array to support multiple terms
+ 
   const [senatorTermData, setSenatorTermData] = useState([
     {
       senateId: id,
       summary: "",
       rating: "",
       votesScore: [{ voteId: null, score: "" }],
+      activitiesScore: [{ activityId: null, score: "" }],
       currentTerm: false,
       termId: null,
     },
@@ -91,6 +97,7 @@ export default function AddSenator(props) {
       )
     );
   };
+
 
   const handleAddVote = (termIndex) => {
     setSenatorTermData((prev) =>
@@ -133,6 +140,48 @@ export default function AddSenator(props) {
     );
   };
 
+
+  const handleAddActivity = (termIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              activitiesScore: [...term.activitiesScore, { activityId: null, score: "" }],
+            }
+          : term
+      )
+    );
+  };
+
+  const handleRemoveActivity = (termIndex, activityIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              activitiesScore: term.activitiesScore.filter((_, i) => i !== activityIndex),
+            }
+          : term
+      )
+    );
+  };
+
+  const handleActivityChange = (termIndex, activityIndex, field, value) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              activitiesScore: term.activitiesScore.map((activity, i) =>
+                i === activityIndex ? { ...activity, [field]: value } : activity
+              ),
+            }
+          : term
+      )
+    );
+  };
+
   const contentRefs = useRef([]);
 
   const handleEditorChange = useCallback((content, termIndex) => {
@@ -164,6 +213,7 @@ export default function AddSenator(props) {
         summary: "",
         rating: "",
         votesScore: [{ voteId: null, score: "" }],
+        activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
       },
@@ -210,6 +260,13 @@ export default function AddSenator(props) {
                   };
                 })
               : [{ voteId: null, score: "" }],
+          activitiesScore:
+            term.activitiesScore?.length > 0
+              ? term.activitiesScore.map((activity) => ({
+                  activityId: activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                }))
+              : [{ activityId: null, score: "" }],
         };
       });
 
@@ -221,6 +278,7 @@ export default function AddSenator(props) {
           summary: "",
           rating: "",
           votesScore: [{ voteId: null, score: "" }],
+          activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
         },
@@ -270,6 +328,7 @@ export default function AddSenator(props) {
     }
     dispatch(getAllTerms());
     dispatch(getAllVotes());
+    dispatch(getAllActivity());
     return () => {
       dispatch(clearSenatorState());
       dispatch(clearSenatorDataState());
@@ -354,11 +413,6 @@ export default function AddSenator(props) {
     setOpenSnackbar(false);
   };
 
-  const [age, setAge] = React.useState("");
-  const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
-  const [activity, setActivity] = React.useState([
-    { id: 1, option1: "", option2: "" },
-  ]);
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -374,13 +428,6 @@ export default function AddSenator(props) {
 
   const handleStatusChange = (status) => {
     setFormData((prev) => ({ ...prev, status }));
-  };
-
-  const handleRemoveActivity = (index) => {
-    setActivity((prev) => prev.filter((_, i) => i !== index));
-  };
-  const handleRemove = (id) => {
-    setVote(vote.filter((item) => item.id !== id));
   };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
@@ -415,7 +462,6 @@ export default function AddSenator(props) {
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
-            // overflow: "auto",
           })}
         >
           <FixedHeader />
@@ -443,19 +489,17 @@ export default function AddSenator(props) {
                   handleSave(e);
                 }}
                 sx={{
-                  backgroundColor: "#9150e8 !important", // Force blue color
-                  color: "white !important", // Force white text
-                  padding: "0.5rem 1rem", // px-4 py-2
-                  // borderRadius: "0.25rem", // rounded
-                  marginLeft: "0.5rem", // ml-2
+                  backgroundColor: "#9150e8 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#7b1fe0 !important", // Same color on hover
+                    backgroundColor: "#7b1fe0 !important",
                   },
                 }}
               >
                 Save Changes
               </Button>
-              {/* <Button variant="outlined">Fetch Senetors from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
@@ -660,13 +704,12 @@ export default function AddSenator(props) {
                         component="label"
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#9150e8 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#7b1fe0 !important",
                           },
                         }}
                         startIcon={<CloudUploadIcon />}
@@ -839,7 +882,7 @@ export default function AddSenator(props) {
                     </Grid>
                     <Grid size={9.05}>
                       <Editor
-                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js" // Path to your self-hosted TinyMCE script
+                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary || ""}
                         onEditorChange={(content) =>
@@ -1014,13 +1057,12 @@ export default function AddSenator(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#9150e8 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#7b1fe0 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -1031,9 +1073,13 @@ export default function AddSenator(props) {
                     </Grid>
                     <Grid size={1}></Grid>
 
-                    {/* Activity Repeater Start */}
-                    {activity.map((item) => (
-                      <Grid rowSpacing={2} sx={{ width: "100%" }} key={item.id}>
+                    {/* Activities Repeater Start */}
+                    {term.activitiesScore.map((activity, activityIndex) => (
+                      <Grid
+                        rowSpacing={2}
+                        sx={{ width: "100%", mt: 2 }}
+                        key={activityIndex}
+                      >
                         <Grid
                           size={12}
                           display="flex"
@@ -1055,75 +1101,124 @@ export default function AddSenator(props) {
                           </Grid>
                           <Grid size={7.5}>
                             <FormControl fullWidth>
-                              <TextField
-                                value={formData.activitiesScore}
-                                name="activitiesScore"
-                                onChange={handleChange}
-                                sx={{ background: "#fff" }}
-                                placeholder="No Activity"
-                                disabled
-                              ></TextField>
+                              <Select
+                                value={activity.activityId || ""}
+                                onChange={(event) =>
+                                  handleActivityChange(
+                                    termIndex,
+                                    activityIndex,
+                                    "activityId",
+                                    event.target.value
+                                  )
+                                }
+                                sx={{
+                                  background: "#fff",
+                                  width: "100%",
+                                }}
+                                renderValue={(selected) => {
+                                  const selectedActivity = activities.find(
+                                    (a) => a._id === selected
+                                  );
+                                  return (
+                                    <Typography
+                                      sx={{
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {selectedActivity?.title || "Select an Activity"}
+                                    </Typography>
+                                  );
+                                }}
+                                MenuProps={{
+                                  PaperProps: {
+                                    sx: {
+                                      maxHeight: 300,
+                                      width: 400,
+                                      "& .MuiMenuItem-root": {
+                                        minHeight: "48px",
+                                      },
+                                    },
+                                  },
+                                }}
+                              >
+                                <MenuItem value="" disabled>
+                                  Select an Activity
+                                </MenuItem>
+                                {activities && activities.length > 0 ? (
+                                  activities.map((activityItem) => (
+                                    <MenuItem
+                                      key={activityItem._id}
+                                      value={activityItem._id}
+                                      sx={{ py: 1.5 }}
+                                    >
+                                      <Typography
+                                        sx={{
+                                          whiteSpace: "normal",
+                                          overflowWrap: "break-word",
+                                        }}
+                                      >
+                                        {activityItem.title}
+                                      </Typography>
+                                    </MenuItem>
+                                  ))
+                                ) : (
+                                  <MenuItem value="" disabled>
+                                    No activities available
+                                  </MenuItem>
+                                )}
+                              </Select>
                             </FormControl>
                           </Grid>
                           <Grid size={1.6}>
                             <FormControl fullWidth>
-                              <TextField
-                                value={formData.activitiesScore}
-                                name="activitiesScore"
-                                onChange={handleChange}
-                                sx={{
-                                  background: "#fff",
-                                  "& MuiOutlinedInput-root": {
-                                    "&:hover fieldset": {
-                                      borderColor: "transparent",
-                                    },
-                                    "&.Mui-disabled fieldset": {
-                                      borderColor: "transparent",
-                                    },
-                                  },
-                                }}
-                                placeholder="Select"
-                                disabled
-                              ></TextField>
+                              <Select
+                                value={activity?.score || ""}
+                                onChange={(event) =>
+                                  handleActivityChange(
+                                    termIndex,
+                                    activityIndex,
+                                    "score",
+                                    event.target.value
+                                  )
+                                }
+                                sx={{ background: "#fff" }}
+                              >
+                                <MenuItem value="Yes">Yes</MenuItem>
+                                <MenuItem value="No">No</MenuItem>
+                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="None">None</MenuItem>
+                              </Select>
                             </FormControl>
                           </Grid>
                           <Grid size={1}>
                             <DeleteForeverIcon
-                              onClick={() => {
-                                handleRemoveActivity(item.id);
-                              }}
+                              onClick={() =>
+                                handleRemoveActivity(termIndex, activityIndex)
+                              }
                             />
                           </Grid>
                         </Grid>
                       </Grid>
                     ))}
-                    {/* Activity Repeater Ends */}
+                    {/* Activities Repeater Ends */}
 
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#9150e8 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#7b1fe0 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
-                        onClick={() =>
-                          setActivity([
-                            ...activity,
-                            {
-                              id: activity.length + 1,
-                              option1: "",
-                              option2: "",
-                            },
-                          ])
-                        }
+                        onClick={() => handleAddActivity(termIndex)}
                       >
                         Add Activity
                       </Button>
@@ -1141,14 +1236,12 @@ export default function AddSenator(props) {
               onClick={handleAddTerm}
               sx={{
                 alignSelf: "flex-start",
-
-                backgroundColor: "#9150e8 !important", // Force blue color
-                color: "white !important", // Force white text
-                padding: "0.5rem 1rem", // px-4 py-2
-                // borderRadius: "0.25rem", // rounded
-                marginLeft: "0.5rem", // ml-2
+                backgroundColor: "#9150e8 !important",
+                color: "white !important",
+                padding: "0.5rem 1rem",
+                marginLeft: "0.5rem",
                 "&:hover": {
-                  backgroundColor: "#7b1fe0 !important", // Same color on hover
+                  backgroundColor: "#7b1fe0 !important",
                 },
               }}
             >
