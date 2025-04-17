@@ -122,7 +122,13 @@ export default function AddActivity(props) {
         setSnackbarMessage("Activity updated successfully!");
         setSnackbarSeverity("success");
       } else {
-        
+        if(!formData.type||!formData.title||!formData.shortDesc||!formData.readMore){
+          setSnackbarMessage("please fill all fields!");
+          setSnackbarSeverity("warning");
+          setSnackbarOpen(true);
+          setLoading(false);
+          return;
+        }
         await dispatch(createActivity(formData)).unwrap();
         setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
