@@ -136,7 +136,11 @@ export default function SignIn() {
               <MuiAlert
                 onClose={handleSnackbarClose}
                 severity={snackbarSeverity}
-                sx={{ width: "100%" }}
+                sx={{
+                  width:"100%",
+                  backgroundColor: snackbarSeverity === "success" ? "#42c40c" : undefined, 
+                  color: "#000",
+                }}
                 elevation={6}
                 variant="filled"
               >
