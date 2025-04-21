@@ -32,16 +32,39 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/API";
 import axios from "axios";
 import CircularProgress from "@mui/material/CircularProgress";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState(false); // Loader state
+  const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
+  
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+    
+  
+    const handleSnackbarClose = (event, reason) => {
+      if (reason === "clickaway") {
+        return;
+      }
+      setSnackbarOpen(false);
+    };
 
   const handleSearch = async () => {
     setLoading(true);
     try {
+      if(!searchQuery){
+        setSnackbarMessage("Fill the Field!")
+        setSnackbarSeverity("warning")
+        setSnackbarOpen(true)
+        setLoading(false)
+        return
+      }
       const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
         type: "bills",
         additionalParams: {
@@ -101,6 +124,22 @@ export default function SearchBill(props) {
           <CircularProgress sx={{ color: 'black' }} />
         </Box>
       )}
+      <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={4000}
+              onClose={handleSnackbarClose}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <MuiAlert
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{ width: "100%" }}
+                elevation={6}
+                variant="filled"
+              >
+                {snackbarMessage}
+              </MuiAlert>
+            </Snackbar>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
