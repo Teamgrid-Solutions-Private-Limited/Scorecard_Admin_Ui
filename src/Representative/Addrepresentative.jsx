@@ -257,7 +257,7 @@ export default function Addrepresentative(props) {
                   }
 
                   return {
-                    voteId: vote.voteId || null,
+                    voteId: vote.voteId?._id || vote.voteId ||null,
                     score: scoreValue,
                   };
                 })
