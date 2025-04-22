@@ -6,6 +6,10 @@ import { Avatar, Box } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
 import { GridOverlay } from "@mui/x-data-grid";
+import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
+import { getAllHouseData } from "../redux/reducer/houseTermSlice";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
@@ -22,12 +26,54 @@ export default function CustomizedDataGrid({
   onEdit,
   onDelete,
 }) {
+  const dispatch = useDispatch();
+  const { senatorData } = useSelector((state) => state.senatorData);
+  const { houseData } = useSelector((state) => state.houseData);
+  const [mergedRows, setMergedRows] = useState([]);
+
+  useEffect(() => {
+    dispatch(getAllSenatorData());
+    dispatch(getAllHouseData());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (rows) {
+      if (type === "senator" && senatorData) {
+        const merged = rows.map((row) => {
+          const match = senatorData.find((data) => data.senateId === row._id);
+          return {
+            ...row,
+            rating: match?.rating || "N/A",
+          };
+        });
+        setMergedRows(merged);
+      } else if (type === "representative" && houseData) {
+        const merged = rows.map((row) => {
+          const match = houseData.find((data) => data.houseId === row._id);
+          return {
+            ...row,
+            rating: match?.rating || "N/A",
+          };
+        });
+        setMergedRows(merged);
+      } else {
+        // For bills/activities or if data isn't loaded yet
+        setMergedRows(
+          rows.map((row) => ({
+            ...row,
+            rating: row.rating || "N/A",
+          }))
+        );
+      }
+    }
+  }, [rows, senatorData, houseData, type]);
+
   const getBorderColor = (party) => {
     if (!party) return "gray";
     const lowerParty = party.toLowerCase();
     if (lowerParty === "republican") return "red";
     if (lowerParty === "democrat") return "blue";
-    return "gray"; // Default for independent or unknown
+    return "gray";
   };
 
   const navigate = useNavigate();
@@ -103,8 +149,7 @@ export default function CustomizedDataGrid({
             ),
           },
         ]
-      : 
-      type === "activities"?[
+      :  type === "activities"?[
         {
           field: "date",
           flex: 1,
@@ -140,41 +185,42 @@ export default function CustomizedDataGrid({
             </Typography>
           ),
         },
-        {
-          field: "action",
-          flex: 1,
-          headerName: "Action",
-          minWidth: 60,
-          headerAlign: "center",
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-          renderCell: (params) => (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                height: "100%",
-                alignItems: "center",
-                columnGap: "10px",
-              }}
-            >
-              <EditIcon
-                onClick={() => onEdit(params.row)}
-                sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-              />
-              <DeleteForeverIcon
-                onClick={() => onDelete(params.row)}
-                sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-              />
-            </div>
-          ),
-        },
-      ]:
-      
-      [
+          {
+            field: "action",
+            flex: 1,
+            headerName: "Action",
+            minWidth: 60,
+            headerAlign: "right",
+            align: "right",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold", paddingRight: "32px" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  height: "100%",
+                  alignItems: "center",
+                  paddingRight: "32px",
+                  columnGap: "10px",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                <DeleteForeverIcon
+                  onClick={() => onDelete(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                />
+              </div>
+            ),
+          },
+        ]
+      : [
           {
             field: "name",
             flex: 2,
@@ -187,7 +233,7 @@ export default function CustomizedDataGrid({
               <Typography
                 sx={{
                   paddingLeft: "32px",
-                  fontWeight: "bold", // Make the header bold
+                  fontWeight: "bold",
                 }}
               >
                 {params.colDef.headerName}
@@ -208,7 +254,7 @@ export default function CustomizedDataGrid({
                   },
                 }}
                 onClick={() => {
-                  if (type == "senator" && params.row._id) {
+                  if (type === "senator" && params.row._id) {
                     navigate(`edit-senator/${params.row._id}`);
                   } else {
                     navigate(`/edit-representative/${params.row._id}`);
@@ -238,7 +284,7 @@ export default function CustomizedDataGrid({
                   sx={{
                     transition: "color 0.3s ease-in-out",
                     "&:hover": {
-                      color: getBorderColor(params.row.party), // Set hover color based on photo border color
+                      color: getBorderColor(params.row.party),
                     },
                   }}
                 >
@@ -251,9 +297,9 @@ export default function CustomizedDataGrid({
             ? [
                 {
                   field: "district",
-                  flex: 1, // Reduced flex to give more space to the name column
+                  flex: 1,
                   headerName: "District",
-                  minWidth: 120, // Adjusted minimum width
+                  minWidth: 120,
                   renderHeader: (params) => (
                     <Typography
                       sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
@@ -266,9 +312,9 @@ export default function CustomizedDataGrid({
             : [
                 {
                   field: "state",
-                  flex: 1, // Reduced flex to give more space to the name column
+                  flex: 1,
                   headerName: "State",
-                  minWidth: 120, // Adjusted minimum width
+                  minWidth: 120,
                   renderHeader: (params) => (
                     <Typography
                       sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
@@ -280,9 +326,9 @@ export default function CustomizedDataGrid({
               ]),
           {
             field: "party",
-            flex: 1, // Reduced flex to give more space to the name column
+            flex: 1,
             headerName: "Party",
-            minWidth: 120, // Adjusted minimum width
+            minWidth: 120,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
                 {params.colDef.headerName}
@@ -307,10 +353,7 @@ export default function CustomizedDataGrid({
               </Typography>
             ),
             valueGetter: (params) => {
-              if (!params || !params.row) {
-                return "N/A";
-              }
-              return params.row.rating || "N/A";
+              return params || "N/A";
             },
           },
           {
@@ -333,12 +376,8 @@ export default function CustomizedDataGrid({
                   alignItems: "center",
                   justifyContent: "flex-end",
                   columnGap: "10px",
-
                   height: "100%",
                   paddingRight: "32px",
-                  "&:hover": {
-                    cursor: "pointer",
-                  },
                 }}
               >
                 <EditIcon
@@ -357,9 +396,9 @@ export default function CustomizedDataGrid({
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <DataGrid
-        rows={rows}
+        rows={mergedRows}
         columns={columns}
-        // loading={loading}
+        loading={loading}
         getRowId={(row) => row._id}
         initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
         pageSizeOptions={[10, 20, 50]}

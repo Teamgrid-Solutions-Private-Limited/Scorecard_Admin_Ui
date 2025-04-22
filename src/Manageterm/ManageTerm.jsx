@@ -125,7 +125,7 @@ export default function ManageTerm(props) {
           <Box
             sx={{
               mx: "auto",
-              mt: 10,
+              mt: 0,
               px: 3,
               maxWidth: "1200px",
               width: "100%",
