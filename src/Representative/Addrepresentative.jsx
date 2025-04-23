@@ -1229,6 +1229,7 @@ export default function Addrepresentative(props) {
                           },
                         }}
                         startIcon={<AddIcon />}
+                        onClick={()=> handleAddActivity(termIndex)}
                       >
                         Add Activity
                       </Button>
