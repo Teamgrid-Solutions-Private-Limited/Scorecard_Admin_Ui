@@ -41,6 +41,7 @@ export default function AddActivity(props) {
     title: "",
     shortDesc: "",
     date: "",
+    congress:"",
     readMore: "",
   });
 
@@ -57,6 +58,7 @@ export default function AddActivity(props) {
             : "",
         title: selectedActivity.title || "",
         shortDesc: selectedActivity.shortDesc || "",
+        congress: selectedActivity.congress || "",
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
         readMore: selectedActivity.readMore || "",
       });
@@ -350,6 +352,35 @@ export default function AddActivity(props) {
                           "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                       }}
                     />
+                  </Grid>
+                  <Grid size={2}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
+                      Congress
+                    </InputLabel>
+                  </Grid>
+                  <Grid size={10}>
+                    <FormControl fullWidth>
+                      <TextField
+                        required
+                        id="congress"
+                        name="congress"
+                        value={formData.congress}
+                        onChange={handleChange}
+                        fullWidth
+                        size="small"
+                        autoComplete="off"
+                        variant="outlined"
+                      />
+                    </FormControl>
                   </Grid>
 
                   <Grid size={2}>
