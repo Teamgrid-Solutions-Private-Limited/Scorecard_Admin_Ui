@@ -269,7 +269,7 @@ export default function CustomizedDataGrid({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: `3px solid ${getBorderColor(params.row.party)}`,
+                    border: `2px solid ${getBorderColor(params.row.party)}`,
                   }}
                 >
                   <Avatar

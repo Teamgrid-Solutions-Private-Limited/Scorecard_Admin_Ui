@@ -201,7 +201,7 @@ export default function ManageTerm(props) {
                     minWidth: 120,
                     textTransform: "none",
                     boxShadow: "none",
-                    bgcolor: "#9150e8",
+                    bgcolor: "#4a90e2",
                     color: "#fff",
                     "&:hover": { boxShadow: "none", bgcolor: "#7b1fe0" },
                   }}
