@@ -35,8 +35,8 @@ const mainListItems = [
     link: "/representative",
   },
   { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" },
-  { text: "Activities", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
-  { text: "Add Term", icon: <AddIcon/>, link: "/manage-term"},
+  { text: "Activities We Track", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
+  { text: "Manage Terms", icon: <AddIcon/>, link: "/manage-term"},
 ];
 
 export default function MenuContent() {

@@ -164,21 +164,19 @@ export default function Bills(props) {
                           <Stack direction="row" spacing={2} alignItems="center">
                            
                             <Button
-                // variant="contained"
-                onClick={() => navigate("/search-bills")}
-                sx={{
-                  backgroundColor: "#9150e8 !important", // Force blue color
-                  color: "white !important", // Force white text
-                  padding: "0.5rem 1rem", // px-4 py-2
-                  // borderRadius: "0.25rem", // rounded
-                  marginLeft: "0.5rem", // ml-2
-                  "&:hover": {
-                    backgroundColor: "#7b1fe0 !important", // Same color on hover
-                  },
-                }}
-              >
-                Add Bills
-              </Button>
+  onClick={() => navigate("/search-bills")}
+  sx={{
+    backgroundColor: "#4a90e2 !important",
+    color: "white !important",
+    padding: "0.5rem 1rem",
+    marginLeft: "0.5rem",
+    "&:hover": {
+      backgroundColor: "#357ABD !important",
+    },
+  }}
+>
+  Add Bills
+</Button>
                           </Stack>
                         </Box>
             <MainGrid

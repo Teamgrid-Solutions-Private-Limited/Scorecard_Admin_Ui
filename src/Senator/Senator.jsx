@@ -174,31 +174,16 @@ export default function Senator(props) {
               </Typography>
 
               <Stack direction="row" spacing={2} alignItems="center">
-              <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#9150e8 !important", // Force blue color
-                    color: "white !important", // Force white text
-                    padding: "0.5rem 1rem", // px-4 py-2
-                    // borderRadius: "0.25rem", // rounded
-                    marginLeft: "0.5rem", // ml-2
-                    "&:hover": {
-                      backgroundColor: "#7b1fe0 !important", // Same color on hover
-                    },
-                  }}
-                  onClick={fetchSenatorsFromQuorum}
-                >
-                  Fetch Senators from Quorum
-                </Button>
+             
                 <TextField
-                  placeholder="Search"
+                  placeholder="Search Senators"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
-                    width: "160px",
+                    width: "190px",
                     "& .MuiInputBase-root": {
                       "&.Mui-focused": {
                         boxShadow: "none !important",
@@ -207,6 +192,21 @@ export default function Senator(props) {
                     },
                   }}
                 />
+                 <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                  onClick={fetchSenatorsFromQuorum}
+                >
+                  Fetch Senators from Quorum
+                </Button>
                
               </Stack>
             </Box>
