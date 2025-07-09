@@ -117,9 +117,14 @@ export default function Senator(props) {
     }
   };
 
-  const filteredSenators = senators.filter((senator) =>
-    senator.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSenators = senators.filter((senator) => {
+    const name = senator.name.toLowerCase();
+    return searchQuery
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .every((word) => name.includes(word));
+  });
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -148,12 +153,12 @@ export default function Senator(props) {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
-            width:"80%",
+            width: "80%",
             filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
             pointerEvents: fetching ? "none" : "auto", // Disable interactions
           }}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
@@ -174,7 +179,6 @@ export default function Senator(props) {
               </Typography>
 
               <Stack direction="row" spacing={2} alignItems="center">
-             
                 <TextField
                   placeholder="Search Senators"
                   size="small"
@@ -192,7 +196,7 @@ export default function Senator(props) {
                     },
                   }}
                 />
-                 <Button
+                <Button
                   variant="outlined"
                   sx={{
                     backgroundColor: "#4a90e2 !important",
@@ -207,7 +211,6 @@ export default function Senator(props) {
                 >
                   Fetch Senators from Quorum
                 </Button>
-               
               </Stack>
             </Box>
 

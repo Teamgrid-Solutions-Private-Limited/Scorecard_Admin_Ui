@@ -62,8 +62,15 @@ export default function Representative(props) {
     district: house.district?.split(", ").pop() || "Unknown",
   }));
 
-  const filteredRepresentative = transformedHouses.filter((transformedHouses) =>
-    transformedHouses.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRepresentative = transformedHouses.filter(
+    (transformedHouses) => {
+      const name = transformedHouses.name.toLowerCase();
+      return searchQuery
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean)
+        .every((word) => name.includes(word));
+    }
   );
 
   const handleEdit = (row) => {
@@ -161,12 +168,12 @@ export default function Representative(props) {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
-            width:"80%",
+            width: "80%",
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
@@ -194,7 +201,6 @@ export default function Representative(props) {
               </Typography>
 
               <Stack direction="row" spacing={2} alignItems="center">
-             
                 <TextField
                   placeholder="Search Representatives"
                   size="small"
@@ -212,7 +218,7 @@ export default function Representative(props) {
                     },
                   }}
                 />
-                 <Button
+                <Button
                   variant="outlined"
                   sx={{
                     backgroundColor: "#4a90e2 !important",
@@ -227,7 +233,6 @@ export default function Representative(props) {
                 >
                   Fetch Representative from Quorum
                 </Button>
-               
               </Stack>
             </Box>
             {/* Representative Table */}
