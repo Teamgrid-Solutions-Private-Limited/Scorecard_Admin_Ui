@@ -71,9 +71,10 @@ export default function SearchBill(props) {
           title: searchQuery,
         },
       });
-      setSearchResults(response.data.data);
+      setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error searching bills:", error);
+      setSearchResults([]); // Defensive: clear results on error
     } finally {
       setLoading(false);
     }
@@ -244,7 +245,7 @@ export default function SearchBill(props) {
                       {/* <CircularProgress /> */}
                     </Box>
                   ) : (
-                    searchResults.length > 0 && (
+                    Array.isArray(searchResults) && searchResults.length > 0 && (
                       <TableContainer
                         component={Paper}
                         sx={{ marginTop: 6, border: "1px solid #ddd" }}
