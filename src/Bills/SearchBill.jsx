@@ -122,7 +122,7 @@ export default function SearchBill(props) {
             zIndex: 9999
           }}
         >
-          <CircularProgress sx={{ color: 'black' }} />
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
       <Snackbar
@@ -222,10 +222,12 @@ export default function SearchBill(props) {
                       sx={{
                         width: { xs: "100%", md: "auto" },
                         minWidth: "110px",
-                        backgroundColor: "#9150e8 !important", // Match AddSenator button color
+                        backgroundColor: "#4a90e2 !important",
                         color: "white !important",
+                        padding: "0.5rem 1rem",
+                        marginLeft: "0.5rem",
                         "&:hover": {
-                          backgroundColor: "#7b1fe0 !important", // Match AddSenator hover color
+                          backgroundColor: "#357ABD !important",
                         },
                         transition: "all 0.3s ease",
                       }}
@@ -291,10 +293,11 @@ export default function SearchBill(props) {
                                     variant="outlined"
                                     onClick={() => handleAddBill(bill)}
                                     sx={{
-                                      backgroundColor: "#9150e8 !important", // Match AddSenator button color
-                                      color: "white !important",
-                                      "&:hover": {
-                                        backgroundColor: "#7b1fe0 !important", // Match AddSenator hover color
+                                      backgroundColor: "#4a90e2 !important",
+                        color: "white !important",
+                         
+                        "&:hover": {
+                          backgroundColor: "#357ABD !important",
                                       },
                                       transition: "all 0.3s ease",
                                     }}

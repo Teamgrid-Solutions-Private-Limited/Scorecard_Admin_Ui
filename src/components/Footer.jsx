@@ -10,7 +10,7 @@ const Footer = () => {
         backgroundColor: "#fff",
         padding: "20px",
         textAlign: "center",
-        marginTop: "52px",
+        // marginTop: "52px",
         borderRadius: "6px",
       }}
     >
@@ -42,12 +42,14 @@ const Footer = () => {
             mt: 1,
           }}
         >
-          Developed by{" "}
-          <img
-            src={digitalAlchemy}
-            alt="Digital Alchemy"
-            style={{ height: "20px" }}
-          />
+          <a href="https://godigitalalchemy.com/" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "5px", textDecoration: "none", color: "inherit" }}>
+            Developed by{" "}
+            <img
+              src={digitalAlchemy}
+              alt="Digital Alchemy"
+              style={{ height: "20px" }}
+            />
+          </a>
         </Typography>
       </Box>
     </Box>
