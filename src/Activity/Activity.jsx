@@ -204,7 +204,7 @@ export default function Activity(props) {
         <Alert
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", bgcolor: snackbarMessage === "This activity has been successfully deleted." ? '#FF474D' : undefined }}
         >
           {snackbarMessage}
         </Alert>
@@ -236,6 +236,10 @@ export default function Activity(props) {
             }}
           >
             Are you sure you want to delete?
+            {/* {selectedVote?.activity && (
+              <> <strong>{selectedVote.activity}</strong>?</>
+            )}
+            {!selectedVote?.activity && '?'} */}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -262,13 +266,10 @@ export default function Activity(props) {
             <Button
               onClick={handleConfirmDelete}
               variant="contained"
+              color="error"
               sx={{
                 borderRadius: 2,
                 paddingX: 3,
-                backgroundColor: "#4a90e2 !important",
-                "&:hover": {
-                  backgroundColor: "#357ABD !important",
-                },
               }}
             >
               Delete

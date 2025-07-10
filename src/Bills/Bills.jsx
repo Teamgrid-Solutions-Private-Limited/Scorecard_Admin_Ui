@@ -216,7 +216,7 @@ export default function Bills(props) {
         <Alert
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", bgcolor: snackbarMessage === "This bill has been successfully deleted." ? '#FF474D' : undefined }}
         >
           {snackbarMessage}
         </Alert>
@@ -248,6 +248,10 @@ export default function Bills(props) {
             }}
           >
             Are you sure you want to delete?
+            {/* {selectedVote?.bill && (
+              <> <strong>{selectedVote.bill}</strong>?</>
+            )}
+            {!selectedVote?.bill && '?'} */}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

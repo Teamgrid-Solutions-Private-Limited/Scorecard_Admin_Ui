@@ -254,7 +254,7 @@ export default function Representative(props) {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%" }}
+            sx={{ width: "100%", bgcolor: snackbarMessage === "Representative deleted successfully." ? '#FF474D' : undefined }}
           >
             {snackbarMessage}
           </Alert>

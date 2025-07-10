@@ -197,13 +197,21 @@ export default function SignIn() {
               fullWidth
               variant="outlined"
               sx={{
+                maxWidth: { xs: "110%", md: "800px" },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "6px",
-                  backgroundColor: "#f9fafb",
-                  border: "1 px solid grey",
                   height: "37px",
-                  overflow: "hidden"
-                }
+                  overflow: "hidden",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#bdbdbd",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "gray !important",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#CC9A3A !important",
+                  },
+                },
               }}
               onChange={valupd}
             />
@@ -221,14 +229,22 @@ export default function SignIn() {
               fullWidth
               variant="outlined"
               sx={{
+                maxWidth: { xs: "110%", md: "800px" },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "6px",
-                  backgroundColor: "#f9fafb",
-                  border: "1 px solid grey",
                   height: "37px",
                   overflow: "hidden",
                   mb: 3,
-                }
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#bdbdbd",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "gray !important",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#CC9A3A !important",
+                  },
+                },
               }}
               onChange={valupd}
             />
