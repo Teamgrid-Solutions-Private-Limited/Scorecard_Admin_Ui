@@ -234,7 +234,7 @@ export default function Senator(props) {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%" }}
+            sx={{ width: "100%",bgcolor:'#FF474D' }}
           >
             {snackbarMessage}
           </Alert>
