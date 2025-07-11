@@ -39,6 +39,7 @@ export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false); 
+  const [searchAttempted, setSearchAttempted] = useState(false); // Track if search was attempted
   const navigate = useNavigate();
   
 
@@ -57,6 +58,7 @@ export default function SearchBill(props) {
 
   const handleSearch = async () => {
     setLoading(true);
+    setSearchAttempted(true); // Mark that a search was attempted
     try {
       if(!searchQuery){
         setSnackbarMessage("Fill the Field!")
@@ -311,6 +313,14 @@ export default function SearchBill(props) {
                         </Table>
                       </TableContainer>
                     )
+                  )}
+                  {/* Show 'No results found' message if search was attempted, not loading, and no results */}
+                  {searchAttempted && !loading && Array.isArray(searchResults) && searchResults.length === 0 && (
+                    <Box sx={{ width: '100%', textAlign: 'center', mt: 4 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        No bills found for your search.
+                      </Typography>
+                    </Box>
                   )}
                 </Grid>
               </Box>

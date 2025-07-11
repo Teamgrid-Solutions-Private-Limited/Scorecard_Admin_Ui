@@ -28,9 +28,9 @@ import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AddIcon from '@mui/icons-material/Add';
 
 const mainListItems = [
-  { text: "Senate", icon: <GavelRoundedIcon />, link: "/" },
+  { text: "Senators", icon: <GavelRoundedIcon />, link: "/" },
   {
-    text: "Representative",
+    text: "Representatives",
     icon: <GroupsRoundedIcon />,
     link: "/representative",
   },

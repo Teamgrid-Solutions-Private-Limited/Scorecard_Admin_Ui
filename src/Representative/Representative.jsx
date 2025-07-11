@@ -230,7 +230,7 @@ export default function Representative(props) {
                   }}
                   onClick={fetchRepresentativeFromQuorum}
                 >
-                  Fetch Representative from Quorum
+                  Fetch Representatives from Quorum
                 </Button>
               </Stack>
             </Box>
