@@ -152,17 +152,19 @@ export default function SearchBill(props) {
           component="main"
           sx={(theme) => ({
             flexGrow: 1,
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
               : alpha(theme.palette.background.default, 1),
-            overflow: "auto",
           })}
         >
-          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
+          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 0, mt: { xs: 8, md: 0 }, flex: 1 }}>
             
 
-            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
-              <Box sx={{ padding: 5 }}>
+            <Paper elevation={2} sx={{ width: "100%" }}>
+              <Box sx={{ padding: 5, pb: 10 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Search For Bills In Quorum
                 </Typography>
