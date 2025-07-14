@@ -152,7 +152,7 @@ export default function SearchBill(props) {
           component="main"
           sx={(theme) => ({
             flexGrow: 1,
-            minHeight: '100vh',
+            minHeight: '80vh',
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: theme.vars
