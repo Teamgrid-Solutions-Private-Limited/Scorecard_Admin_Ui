@@ -34,6 +34,8 @@ import axios from "axios";
 import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import FixedHeader from "../components/FixedHeader";
+import Footer from "../components/Footer";
 
 export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -143,6 +145,7 @@ export default function SearchBill(props) {
                 {snackbarMessage}
               </MuiAlert>
             </Snackbar>
+      <FixedHeader />
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
@@ -156,9 +159,7 @@ export default function SearchBill(props) {
           })}
         >
           <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
-            <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
-              SBA Scorecard Management System
-            </Typography>
+            
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
               <Box sx={{ padding: 5 }}>
@@ -252,7 +253,7 @@ export default function SearchBill(props) {
                     Array.isArray(searchResults) && searchResults.length > 0 && (
                       <TableContainer
                         component={Paper}
-                        sx={{ marginTop: 6, border: "1px solid #ddd" }}
+                        sx={{ marginTop: 6, border: "1px solid #ddd", backgroundColor: '#fff' }}
                       >
                         <Table size="large" >
                           
@@ -326,6 +327,7 @@ export default function SearchBill(props) {
               </Box>
             </Paper>
           </Stack>
+          <Footer />
         </Box>
       </Box>
     </AppTheme>
