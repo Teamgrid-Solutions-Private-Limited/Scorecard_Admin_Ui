@@ -204,6 +204,7 @@ export default function SearchBill(props) {
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                       fullWidth
                       sx={{
                         maxWidth: { xs: "110%", md: "800px" },
