@@ -22,7 +22,9 @@ export const getAllSenatorData = createAsyncThunk(
   'senatorData/getAllSenatorData',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewAll/`);
+      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewAll/`,{
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -34,7 +36,9 @@ export const getSenatorDataById = createAsyncThunk(
   'senatorData/getSenatorDataById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewID/${id}`);
+      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewID/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -46,7 +50,9 @@ export const getSenatorDataBySenetorId = createAsyncThunk(
   'senatorData/getSenatorDataBySenetorId',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewbysenator/${id}`);
+      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewbysenator/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data.info;
     } catch (error) {
       return rejectWithValue(error.response.data);
