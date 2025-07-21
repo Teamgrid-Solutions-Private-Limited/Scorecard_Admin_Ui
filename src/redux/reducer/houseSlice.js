@@ -29,7 +29,9 @@ export const getAllHouses = createAsyncThunk(
   "house/getAllHouses",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/house/house/view`);
+      const response = await axios.get(`${API_URL}/house/house/view`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
     console.log(response);
     
       return response.data;
@@ -44,7 +46,9 @@ export const getHouseById = createAsyncThunk(
   "house/getHouseById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/house/house/viewId/${id}`);
+      const response = await axios.get(`${API_URL}/house/house/viewId/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

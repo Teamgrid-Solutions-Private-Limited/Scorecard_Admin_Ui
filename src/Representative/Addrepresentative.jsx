@@ -505,13 +505,12 @@ export default function Addrepresentative(props) {
                 variant="outlined"
                 onClick={handleSave}
                 sx={{
-                  backgroundColor: "#9150e8 !important", // Force blue color
-                  color: "white !important", // Force white text
-                  padding: "0.5rem 1rem", // px-4 py-2
-                  // borderRadius: "0.25rem", // rounded
-                  marginLeft: "0.5rem", // ml-2
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#7b1fe0 !important", // Same color on hover
+                    backgroundColor: "#357ABD !important",
                   },
                 }}
               >
@@ -725,13 +724,12 @@ export default function Addrepresentative(props) {
                         variant="outlined"
                         sx={{
                           alignSelf: "flex-start",
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#4a90e2 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#357ABD !important",
                           },
                         }}
                         startIcon={<CloudUploadIcon />}
@@ -1067,13 +1065,12 @@ export default function Addrepresentative(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#4a90e2 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#357ABD !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -1219,17 +1216,16 @@ export default function Addrepresentative(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#4a90e2 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#357ABD !important",
                           },
                         }}
                         startIcon={<AddIcon />}
-                        onClick={()=> handleAddActivity(termIndex)}
+                        onClick={() => handleAddActivity(termIndex)}
                       >
                         Add Activity
                       </Button>
@@ -1245,13 +1241,12 @@ export default function Addrepresentative(props) {
               variant="outlined"
               sx={{
                 alignSelf: "flex-start",
-                backgroundColor: "#9150e8 !important", // Force blue color
-                color: "white !important", // Force white text
-                padding: "0.5rem 1rem", // px-4 py-2
-                // borderRadius: "0.25rem", // rounded
-                marginLeft: "0.5rem", // ml-2
+                backgroundColor: "#4a90e2 !important",
+                color: "white !important",
+                padding: "0.5rem 1rem",
+                marginLeft: "0.5rem",
                 "&:hover": {
-                  backgroundColor: "#7b1fe0 !important", // Same color on hover
+                  backgroundColor: "#357ABD !important",
                 },
               }}
               startIcon={<AddIcon />}

@@ -29,7 +29,9 @@ export const getAllSenators = createAsyncThunk(
   "senators/getAllSenators",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senator/senators/view`);
+      const response = await axios.get(`${API_URL}/senator/senators/view`,{
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
     console.log(response);
     
       return response.data.info;
@@ -44,7 +46,9 @@ export const getSenatorById = createAsyncThunk(
   "senators/getSenatorById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senator/senators/viewId/${id}`);
+      const response = await axios.get(`${API_URL}/senator/senators/viewId/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

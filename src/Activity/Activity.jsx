@@ -108,8 +108,7 @@ export default function Activity(props) {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.05)",
-            backdropFilter: "blur(1px)",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -152,19 +151,19 @@ export default function Activity(props) {
                           <Stack direction="row" spacing={2} alignItems="center">
                            
                             <Button
-                onClick={() => navigate("/add-activity")} // Correct route for adding activity
-                sx={{
-                  backgroundColor: "#9150e8 !important", // Force blue color
-                  color: "white !important", // Force white text
-                  padding: "0.5rem 1rem", // px-4 py-2
-                  marginLeft: "0.5rem", // ml-2
-                  "&:hover": {
-                    backgroundColor: "#7b1fe0 !important", // Same color on hover
-                  },
-                }}
-              >
-                Add Activity
-              </Button>
+  onClick={() => navigate("/add-activity")}
+  sx={{
+    backgroundColor: "#4a90e2 !important",
+    color: "white !important",
+    padding: "0.5rem 1rem",
+    marginLeft: "0.5rem",
+    "&:hover": {
+      backgroundColor: "#357ABD !important",
+    },
+  }}
+>
+  Add Activity
+</Button>
                           </Stack>
                         </Box>
             <MainGrid
@@ -205,7 +204,7 @@ export default function Activity(props) {
         <Alert
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", bgcolor: snackbarMessage === "This activity has been successfully deleted." ? '#FF474D' : undefined }}
         >
           {snackbarMessage}
         </Alert>
@@ -237,6 +236,10 @@ export default function Activity(props) {
             }}
           >
             Are you sure you want to delete?
+            {/* {selectedVote?.activity && (
+              <> <strong>{selectedVote.activity}</strong>?</>
+            )}
+            {!selectedVote?.activity && '?'} */}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -248,8 +251,15 @@ export default function Activity(props) {
             <Button
               onClick={() => setOpenDeleteDialog(false)}
               variant="outlined"
-              color="secondary"
-              sx={{ borderRadius: 2, paddingX: 3 }}
+              sx={{
+                borderRadius: 2,
+                paddingX: 3,
+                color: "#4a90e2 !important",
+                borderColor: "#4a90e2 !important",
+                "&:hover": {
+                  backgroundColor: "rgba(74, 144, 226, 0.1)",
+                },
+              }}
             >
               Cancel
             </Button>
@@ -257,7 +267,10 @@ export default function Activity(props) {
               onClick={handleConfirmDelete}
               variant="contained"
               color="error"
-              sx={{ borderRadius: 2, paddingX: 3 }}
+              sx={{
+                borderRadius: 2,
+                paddingX: 3,
+              }}
             >
               Delete
             </Button>

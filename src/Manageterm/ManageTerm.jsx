@@ -99,7 +99,7 @@ export default function ManageTerm(props) {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.6)",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -201,7 +201,7 @@ export default function ManageTerm(props) {
                     minWidth: 120,
                     textTransform: "none",
                     boxShadow: "none",
-                    bgcolor: "#9150e8",
+                    bgcolor: "#4a90e2",
                     color: "#fff",
                     "&:hover": { boxShadow: "none", bgcolor: "#7b1fe0" },
                   }}
