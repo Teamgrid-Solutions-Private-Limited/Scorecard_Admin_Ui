@@ -62,7 +62,8 @@ export default function Addrepresentative(props) {
   const { votes } = useSelector((state) => state.vote);
   const houseData = useSelector((state) => state.houseData);
   const { activities } = useSelector((state) => state.activity);
-  const houseActivities = activities?.filter(activity => activity.type === "house") || [];
+  const houseActivities =
+    activities?.filter((activity) => activity.type === "house") || [];
 
   // Initialize as an array to support multiple terms
   const [houseTermData, setHouseTermData] = useState([
@@ -257,7 +258,7 @@ export default function Addrepresentative(props) {
                   }
 
                   return {
-                    voteId: vote.voteId?._id || vote.voteId ||null,
+                    voteId: vote.voteId?._id || vote.voteId || null,
                     score: scoreValue,
                   };
                 })
@@ -1039,9 +1040,9 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yes</MenuItem>
-                                <MenuItem value="No">No</MenuItem>
-                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="Yes">Yea</MenuItem>
+                                <MenuItem value="No">Nay</MenuItem>
+                                <MenuItem value="Neutral">Other</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
@@ -1154,7 +1155,8 @@ export default function Addrepresentative(props) {
                                 <MenuItem value="" disabled>
                                   Select an Activity
                                 </MenuItem>
-                                {houseActivities && houseActivities.length > 0 ? (
+                                {houseActivities &&
+                                houseActivities.length > 0 ? (
                                   houseActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
@@ -1193,9 +1195,9 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yes</MenuItem>
-                                <MenuItem value="No">No</MenuItem>
-                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="Yes">Yea</MenuItem>
+                                <MenuItem value="No">Nay</MenuItem>
+                                <MenuItem value="Neutral">Other</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
