@@ -22,7 +22,9 @@ export const getAllHouseData = createAsyncThunk(
   'houseData/getAllHouseData',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/houseData/house-data/viewAll/`);
+      const response = await axios.get(`${API_URL}/houseData/house-data/viewAll/`,{
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -34,7 +36,9 @@ export const getHouseDataById = createAsyncThunk(
   'houseData/getHouseDataById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/houseData/house-data/viewID/${id}`);
+      const response = await axios.get(`${API_URL}/houseData/house-data/viewID/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -46,7 +50,9 @@ export const getHouseDataByHouseId = createAsyncThunk(
   'houseData/getHouseDataByHouseId',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/houseData/house-data/viewbyhouse/${id}`);
+      const response = await axios.get(`${API_URL}/houseData/house-data/viewbyhouse/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       console.log("house tERM",response.data.info)
       return response.data.info;
     } catch (error) {

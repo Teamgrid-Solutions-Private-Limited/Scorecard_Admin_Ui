@@ -62,8 +62,15 @@ export default function Representative(props) {
     district: house.district?.split(", ").pop() || "Unknown",
   }));
 
-  const filteredRepresentative = transformedHouses.filter((transformedHouses) =>
-    transformedHouses.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRepresentative = transformedHouses.filter(
+    (transformedHouses) => {
+      const name = transformedHouses.name.toLowerCase();
+      return searchQuery
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean)
+        .every((word) => name.includes(word));
+    }
   );
 
   const handleEdit = (row) => {
@@ -144,8 +151,7 @@ export default function Representative(props) {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.05)", // More transparent background
-            backdropFilter: "blur(1px)", // Slight blur effect
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -161,12 +167,12 @@ export default function Representative(props) {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
-            width:"80%",
+            width: "80%",
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
@@ -194,31 +200,15 @@ export default function Representative(props) {
               </Typography>
 
               <Stack direction="row" spacing={2} alignItems="center">
-              <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#9150e8 !important", // Force blue color
-                    color: "white !important", // Force white text
-                    padding: "0.5rem 1rem", // px-4 py-2
-                    // borderRadius: "0.25rem", // rounded
-                    marginLeft: "0.5rem", // ml-2
-                    "&:hover": {
-                      backgroundColor: "#7b1fe0 !important", // Same color on hover
-                    },
-                  }}
-                  onClick={fetchRepresentativeFromQuorum}
-                >
-                  Fetch Representative from Quorum
-                </Button>
                 <TextField
-                  placeholder="Search"
+                  placeholder="Search Representatives"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
-                    width: "160px",
+                    width: "190px",
                     "& .MuiInputBase-root": {
                       "&.Mui-focused": {
                         boxShadow: "none !important",
@@ -227,7 +217,21 @@ export default function Representative(props) {
                     },
                   }}
                 />
-               
+                <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                  onClick={fetchRepresentativeFromQuorum}
+                >
+                  Fetch Representatives from Quorum
+                </Button>
               </Stack>
             </Box>
             {/* Representative Table */}
@@ -250,7 +254,7 @@ export default function Representative(props) {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%" }}
+            sx={{ width: "100%", bgcolor: snackbarMessage === "Representative deleted successfully." ? '#FF474D' : undefined }}
           >
             {snackbarMessage}
           </Alert>

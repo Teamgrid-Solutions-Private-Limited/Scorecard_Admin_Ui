@@ -26,7 +26,9 @@ export const getAllVotes = createAsyncThunk(
   'votes/getAllVotes',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/vote/votes/viewAll/`);
+      const response = await axios.get(`${API_URL}/vote/votes/viewAll/`,{
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -39,7 +41,9 @@ export const getVoteById = createAsyncThunk(
   'votes/getVoteById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/vote/votes/viewId/${id}`);
+      const response = await axios.get(`${API_URL}/vote/votes/viewId/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

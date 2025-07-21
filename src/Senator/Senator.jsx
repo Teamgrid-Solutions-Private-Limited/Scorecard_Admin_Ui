@@ -117,9 +117,14 @@ export default function Senator(props) {
     }
   };
 
-  const filteredSenators = senators.filter((senator) =>
-    senator.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSenators = senators.filter((senator) => {
+    const name = senator.name.toLowerCase();
+    return searchQuery
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .every((word) => name.includes(word));
+  });
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -148,12 +153,12 @@ export default function Senator(props) {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
-            width:"80%",
+            width: "80%",
             filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
             pointerEvents: fetching ? "none" : "auto", // Disable interactions
           }}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
@@ -174,31 +179,15 @@ export default function Senator(props) {
               </Typography>
 
               <Stack direction="row" spacing={2} alignItems="center">
-              <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#9150e8 !important", // Force blue color
-                    color: "white !important", // Force white text
-                    padding: "0.5rem 1rem", // px-4 py-2
-                    // borderRadius: "0.25rem", // rounded
-                    marginLeft: "0.5rem", // ml-2
-                    "&:hover": {
-                      backgroundColor: "#7b1fe0 !important", // Same color on hover
-                    },
-                  }}
-                  onClick={fetchSenatorsFromQuorum}
-                >
-                  Fetch Senators from Quorum
-                </Button>
                 <TextField
-                  placeholder="Search"
+                  placeholder="Search Senators"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
-                    width: "160px",
+                    width: "190px",
                     "& .MuiInputBase-root": {
                       "&.Mui-focused": {
                         boxShadow: "none !important",
@@ -207,7 +196,21 @@ export default function Senator(props) {
                     },
                   }}
                 />
-               
+                <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                  onClick={fetchSenatorsFromQuorum}
+                >
+                  Fetch Senators from Quorum
+                </Button>
               </Stack>
             </Box>
 
@@ -231,7 +234,7 @@ export default function Senator(props) {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%" }}
+            sx={{ width: "100%",bgcolor:'#FF474D' }}
           >
             {snackbarMessage}
           </Alert>

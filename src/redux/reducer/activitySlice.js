@@ -22,7 +22,9 @@ export const getAllActivity = createAsyncThunk(
   'activity/getAllActivity',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/activity/activity/viewAll/`);
+      const response = await axios.get(`${API_URL}/activity/activity/viewAll/`,{
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -35,7 +37,9 @@ export const getActivityById = createAsyncThunk(
   'activity/getActivityById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/activity/activity/viewId/${id}`);
+      const response = await axios.get(`${API_URL}/activity/activity/viewId/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
