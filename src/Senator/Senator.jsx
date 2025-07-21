@@ -2,6 +2,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteSenator, getAllSenators } from "../redux/reducer/senetorSlice"; // Import actions
+import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
   Box,
   Stack,
@@ -16,6 +17,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+   Menu,
+  MenuItem,
+  Chip,
+  Divider,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "../shared-theme/AppTheme";
@@ -30,6 +35,7 @@ import {
   treeViewCustomizations,
 } from "../Themes/customizations";
 import FixedHeader from "../components/FixedHeader";
+import FilterListIcon from "@mui/icons-material/FilterList";
 const xThemeComponents = {
   ...chartsCustomizations,
   ...dataGridCustomizations,
@@ -41,6 +47,7 @@ export default function Senator(props) {
   const dispatch = useDispatch();
   // Fetch senators from Redux store
   const { senators, loading } = useSelector((state) => state.senator);
+  const { senatorData } = useSelector((state) => state.senatorData);
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,9 +57,42 @@ export default function Senator(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedSenator, setSelectedSenator] = useState(null);
 
+
+   const [partyFilter, setPartyFilter] = useState([]);
+  const [stateFilter, setStateFilter] = useState([]);
+  const [ratingFilter, setRatingFilter] = useState([]);
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [partyMenuAnchorEl, setPartyMenuAnchorEl] = useState(null);
+  const [stateMenuAnchorEl, setStateMenuAnchorEl] = useState(null);
+  const [ratingMenuAnchorEl, setRatingMenuAnchorEl] = useState(null);
+  const [mergedSenators, setMergedSenators] = useState([]);
+
+
+   const ratingOptions = ["A+", "B", "C", "D", "F"];
+
   useEffect(() => {
     dispatch(getAllSenators());
+     dispatch(getAllSenatorData());
   }, [dispatch]);
+
+  // Merge senator data with ratings
+  useEffect(() => {
+    if (senatorData && senators) {
+      const merged = senators
+        .map((senator) => {
+          const match = senatorData.find((data) => data.senateId === senator._id);
+          return {
+            ...senator,
+            rating: match ? match.rating : "N/A",
+          };
+        });
+      setMergedSenators(merged);
+    }
+  }, [senators, senatorData]);
+
+  // Get unique parties and states for filter options
+  const partyOptions = [...new Set(senators.map(senator => senator.party))].filter(Boolean);
+  const stateOptions = [...new Set(senators.map(senator => senator.state))].filter(Boolean);
 
   const handleEdit = (row) => {
     navigate(`/edit-senator/${row._id}`);
@@ -117,14 +157,86 @@ export default function Senator(props) {
     }
   };
 
-  const filteredSenators = senators.filter((senator) => {
-    const name = senator.name.toLowerCase();
-    return searchQuery
+
+   // Filter handlers
+  const handleFilterClick = (event) => {
+    setFilterAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+  };
+
+  const handlePartyMenuOpen = (event) => {
+    setPartyMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleStateMenuOpen = (event) => {
+    setStateMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleRatingMenuOpen = (event) => {
+    setRatingMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setPartyMenuAnchorEl(null);
+    setStateMenuAnchorEl(null);
+    setRatingMenuAnchorEl(null);
+  };
+
+  const handlePartyFilter = (party) => {
+    setPartyFilter(prev =>
+      prev.includes(party) 
+        ? prev.filter(p => p !== party) 
+        : [...prev, party]
+    );
+  };
+
+  const handleStateFilter = (state) => {
+    setStateFilter(prev =>
+      prev.includes(state) 
+        ? prev.filter(s => s !== state) 
+        : [...prev, state]
+    );
+  };
+
+  const handleRatingFilter = (rating) => {
+    setRatingFilter(prev =>
+      prev.includes(rating)
+        ? prev.filter(r => r !== rating)
+        : [...prev, rating]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setPartyFilter([]);
+    setStateFilter([]);
+    setRatingFilter([]);
+    setSearchQuery("");
+  };
+
+  const filteredSenators = mergedSenators.filter((senator) => {
+    
+     const nameMatch = searchQuery
       .toLowerCase()
       .split(/\s+/)
       .filter(Boolean)
-      .every((word) => name.includes(word));
+      .every(word => senator.name.toLowerCase().includes(word));
+
+       const partyMatch = partyFilter.length === 0 || partyFilter.includes(senator.party);
+    
+    // State filter
+    const stateMatch = stateFilter.length === 0 || stateFilter.includes(senator.state);
+    
+    // Rating filter
+    const ratingMatch = ratingFilter.length === 0 || 
+      (senator.rating && ratingFilter.includes(senator.rating));
+      
+    
+    return nameMatch && partyMatch && stateMatch && ratingMatch;
   });
+
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -196,6 +308,57 @@ export default function Senator(props) {
                     },
                   }}
                 />
+
+<Button
+                    variant="outlined"
+                    startIcon={<FilterListIcon />}
+                    onClick={handleFilterClick}
+                    sx={{
+                      height: '40px',
+                      minWidth: '40px',
+                      padding: '0 8px',
+                    }}
+                  >
+                    Filters
+                  </Button>
+                
+
+                {/* Active filters chips */}
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {partyFilter.map(party => (
+                    <Chip 
+                      key={party}
+                      label={`Party: ${party}`}
+                      onDelete={() => handlePartyFilter(party)}
+                      size="small"
+                    />
+                  ))}
+                  {stateFilter.map(state => (
+                    <Chip 
+                      key={state}
+                      label={`State: ${state}`}
+                      onDelete={() => handleStateFilter(state)}
+                      size="small"
+                    />
+                  ))}
+                  {ratingFilter.map(rating => (
+                    <Chip 
+                      key={rating}
+                      label={`Rating: ${rating}`}
+                      onDelete={() => handleRatingFilter(rating)}
+                      size="small"
+                    />
+                  ))}
+                  {(partyFilter.length > 0 || stateFilter.length > 0 || ratingFilter.length > 0) && (
+                    <Chip 
+                      label="Clear all"
+                      onClick={clearAllFilters}
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
+                </Box>
+                
                 <Button
                   variant="outlined"
                   sx={{
@@ -223,6 +386,85 @@ export default function Senator(props) {
             />
           </Stack>
         </Box>
+
+        <Menu
+          anchorEl={filterAnchorEl}
+          open={Boolean(filterAnchorEl)}
+          onClose={handleFilterClose}
+        >
+          <MenuItem onClick={handlePartyMenuOpen}>Filter by Party</MenuItem>
+          <MenuItem onClick={handleStateMenuOpen}>Filter by State</MenuItem>
+          <MenuItem onClick={handleRatingMenuOpen}>Filter by Rating</MenuItem>
+          <Divider />
+          <MenuItem onClick={clearAllFilters}>Clear all filters</MenuItem>
+        </Menu>
+
+        {/* Party Filter Menu */}
+        <Menu
+          anchorEl={partyMenuAnchorEl}
+          open={Boolean(partyMenuAnchorEl)}
+          onClose={handleMenuClose}
+        >
+          {partyOptions.map(party => (
+            <MenuItem 
+              key={party}
+              onClick={() => {
+                handlePartyFilter(party);
+                handleMenuClose();
+              }}
+              sx={{
+                backgroundColor: partyFilter.includes(party) ? '#f0f0f0' : 'transparent',
+              }}
+            >
+              {party}
+            </MenuItem>
+          ))}
+        </Menu>
+
+        {/* State Filter Menu */}
+        <Menu
+          anchorEl={stateMenuAnchorEl}
+          open={Boolean(stateMenuAnchorEl)}
+          onClose={handleMenuClose}
+        >
+          {stateOptions.map(state => (
+            <MenuItem 
+              key={state}
+              onClick={() => {
+                handleStateFilter(state);
+                handleMenuClose();
+              }}
+              sx={{
+                backgroundColor: stateFilter.includes(state) ? '#f0f0f0' : 'transparent',
+              }}
+            >
+              {state}
+            </MenuItem>
+          ))}
+        </Menu>
+
+        {/* Rating Filter Menu */}
+        <Menu
+          anchorEl={ratingMenuAnchorEl}
+          open={Boolean(ratingMenuAnchorEl)}
+          onClose={handleMenuClose}
+        >
+          {ratingOptions.map(rating => (
+            <MenuItem 
+              key={rating}
+              onClick={() => {
+                handleRatingFilter(rating);
+                handleMenuClose();
+              }}
+              sx={{
+                backgroundColor: ratingFilter.includes(rating) ? '#f0f0f0' : 'transparent',
+              }}
+            >
+              {rating}
+            </MenuItem>
+          ))}
+        </Menu>
+
 
         {/* Snackbar for success/error messages */}
         <Snackbar
