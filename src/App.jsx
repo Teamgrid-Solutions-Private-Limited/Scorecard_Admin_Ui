@@ -6,14 +6,17 @@ import {
   Navigate,
 } from 'react-router-dom';
 
-import SaveSenetors from '/dashboard/AddSenator';
-import Senator from '/dashboard/Senator';
-import Representative from '/dashboard/Representative';
-import SaveRepresentative from '/dashboard/AddRepresentative';
-import Bill from '/dashboard/Bills';
-import SignIn from '/Authentication/components/SignIn';
-import AddBill from '../dashboard/AddBill';
-import SearchBill from '../dashboard/SearchBill';
+import SaveSenetors from '../src/Senator/Addsenator';
+import Senator from '../src/Senator/Senator';
+import Representative from '../src/Representative/Representative';
+import SaveRepresentative from '../src/Representative/Addrepresentative';
+import Bill from '../src/Bills/Bills';
+import SignIn from '../src/Authentication/components/SignIn';
+import AddBill from '../src/Bills/AddBill';
+import SearchBill from '../src/Bills/SearchBill';
+import ManageTerm from "../src/Manageterm/ManageTerm";
+import Activity from '../src/Activity/Activity';
+import AddActivity from '../src/Activity/AddActivity';
 
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
@@ -25,7 +28,6 @@ export default function App() {
     <Router basename="/scorecard/admin">
       <Routes>
         <Route path="/login" element={<SignIn />} />
-
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />
         <Route path="add-senator" element={<PrivateRoute element={<SaveSenetors />} />} />
         <Route path="edit-senator/:id" element={<PrivateRoute element={<SaveSenetors />} />} />
@@ -36,7 +38,10 @@ export default function App() {
         <Route path="/add-bill" element={<PrivateRoute element={<AddBill />} />} />
         <Route path="bills/edit-bill/:id" element={<PrivateRoute element={<AddBill />} />} />
         <Route path="/search-bills" element={<PrivateRoute element={<SearchBill />} />} />
-        
+        <Route path="/manage-term" element={<PrivateRoute element={<ManageTerm />} />} />
+        <Route path="/activities" element={<PrivateRoute element={<Activity />} />} />
+        <Route path="/add-activity" element={<PrivateRoute element={<AddActivity />} />} />
+        <Route path="/edit-activity/:id" element={<PrivateRoute element={<AddActivity />} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
