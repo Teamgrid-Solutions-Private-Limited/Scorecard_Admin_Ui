@@ -17,7 +17,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-   Menu,
+  Menu,
   MenuItem,
   Chip,
   Divider,
@@ -42,6 +42,10 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
+import { getAllTerms } from "../redux/reducer/termSlice";
+import { FormControl, InputLabel, Select } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+
 export default function Senator(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -56,9 +60,10 @@ export default function Senator(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedSenator, setSelectedSenator] = useState(null);
+  const [selectedYear, setSelectedYear] = useState("");
+  const { terms } = useSelector((state) => state.term);
 
-
-   const [partyFilter, setPartyFilter] = useState([]);
+  const [partyFilter, setPartyFilter] = useState([]);
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
@@ -66,29 +71,56 @@ export default function Senator(props) {
   const [stateMenuAnchorEl, setStateMenuAnchorEl] = useState(null);
   const [ratingMenuAnchorEl, setRatingMenuAnchorEl] = useState(null);
   const [mergedSenators, setMergedSenators] = useState([]);
+  const [yearMenuAnchorEl, setYearMenuAnchorEl] = useState(null);
 
 
-   const ratingOptions = ["A+", "B", "C", "D", "F"];
+  const ratingOptions = ["A+", "B", "C", "D", "F"];
 
   useEffect(() => {
     dispatch(getAllSenators());
-     dispatch(getAllSenatorData());
+    dispatch(getAllSenatorData());
+    dispatch(getAllTerms());
   }, [dispatch]);
 
-  // Merge senator data with ratings
   useEffect(() => {
-    if (senatorData && senators) {
-      const merged = senators
-        .map((senator) => {
-          const match = senatorData.find((data) => data.senateId === senator._id);
-          return {
-            ...senator,
-            rating: match ? match.rating : "N/A",
-          };
-        });
+    if (senatorData && senators && terms) {
+      const merged = senators.map((senator) => {
+        const match = senatorData.find((data) => data.senateId === senator._id);
+        const termId = match ? match.termId : senator.termId;
+        const termObj = terms.find(t => t._id === termId);
+        return {
+          ...senator,
+          rating: match ? match.rating : "N/A",
+          termId: termId,
+          votesScore: match ? match.votesScore : [],
+          termName: termObj ? termObj.name : "",
+        };
+      });
       setMergedSenators(merged);
+      console.log("Merged Senators with termname:", merged);
     }
-  }, [senators, senatorData]);
+  }, [senators, senatorData, terms]);
+
+  // Build list of years from 2015 to current year
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear; y >= 2015; y--) {
+    years.push(y);
+  }
+  // Merge senator data with ratings
+  // useEffect(() => {
+  //   if (senatorData && senators) {
+  //     const merged = senators
+  //       .map((senator) => {
+  //         const match = senatorData.find((data) => data.senateId === senator._id);
+  //         return {
+  //           ...senator,
+  //           rating: match ? match.rating : "N/A",
+  //         };
+  //       });
+  //     setMergedSenators(merged);
+  //   }
+  // }, [senators, senatorData]);
 
   // Get unique parties and states for filter options
   const partyOptions = [...new Set(senators.map(senator => senator.party))].filter(Boolean);
@@ -158,7 +190,7 @@ export default function Senator(props) {
   };
 
 
-   // Filter handlers
+  // Filter handlers
   const handleFilterClick = (event) => {
     setFilterAnchorEl(event.currentTarget);
   };
@@ -179,24 +211,34 @@ export default function Senator(props) {
     setRatingMenuAnchorEl(event.currentTarget);
   };
 
+  const handleYearMenuOpen = (event) => {
+    setYearMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleYearFilter = (year) => {
+    setSelectedYear((prev) => (prev === year ? "" : year)); // toggle
+  };
+
+
   const handleMenuClose = () => {
     setPartyMenuAnchorEl(null);
     setStateMenuAnchorEl(null);
     setRatingMenuAnchorEl(null);
+      setYearMenuAnchorEl(null);
   };
 
   const handlePartyFilter = (party) => {
     setPartyFilter(prev =>
-      prev.includes(party) 
-        ? prev.filter(p => p !== party) 
+      prev.includes(party)
+        ? prev.filter(p => p !== party)
         : [...prev, party]
     );
   };
 
   const handleStateFilter = (state) => {
     setStateFilter(prev =>
-      prev.includes(state) 
-        ? prev.filter(s => s !== state) 
+      prev.includes(state)
+        ? prev.filter(s => s !== state)
         : [...prev, state]
     );
   };
@@ -213,27 +255,39 @@ export default function Senator(props) {
     setPartyFilter([]);
     setStateFilter([]);
     setRatingFilter([]);
+    setSelectedYear("");
     setSearchQuery("");
   };
 
   const filteredSenators = mergedSenators.filter((senator) => {
-    
-     const nameMatch = searchQuery
+    // Year filter
+    if (selectedYear) {
+      if (senator.termName && senator.termName.includes("-")) {
+        const [start, end] = senator.termName.split('-').map(Number);
+        if (!(start && end && Number(selectedYear) >= start && Number(selectedYear) <= end)) {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    const nameMatch = searchQuery
       .toLowerCase()
       .split(/\s+/)
       .filter(Boolean)
       .every(word => senator.name.toLowerCase().includes(word));
 
-       const partyMatch = partyFilter.length === 0 || partyFilter.includes(senator.party);
-    
+    const partyMatch = partyFilter.length === 0 || partyFilter.includes(senator.party);
+
     // State filter
     const stateMatch = stateFilter.length === 0 || stateFilter.includes(senator.state);
-    
+
     // Rating filter
-    const ratingMatch = ratingFilter.length === 0 || 
+    const ratingMatch = ratingFilter.length === 0 ||
       (senator.rating && ratingFilter.includes(senator.rating));
-      
-    
+
+
     return nameMatch && partyMatch && stateMatch && ratingMatch;
   });
 
@@ -309,24 +363,24 @@ export default function Senator(props) {
                   }}
                 />
 
-<Button
-                    variant="outlined"
-                    startIcon={<FilterListIcon />}
-                    onClick={handleFilterClick}
-                    sx={{
-                      height: '40px',
-                      minWidth: '40px',
-                      padding: '0 8px',
-                    }}
-                  >
-                    Filters
-                  </Button>
-                
+                <Button
+                  variant="outlined"
+                  startIcon={<FilterListIcon />}
+                  onClick={handleFilterClick}
+                  sx={{
+                    height: '40px',
+                    minWidth: '40px',
+                    padding: '0 8px',
+                  }}
+                >
+                  Filters
+                </Button>
+
 
                 {/* Active filters chips */}
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {partyFilter.map(party => (
-                    <Chip 
+                    <Chip
                       key={party}
                       label={`Party: ${party}`}
                       onDelete={() => handlePartyFilter(party)}
@@ -334,7 +388,7 @@ export default function Senator(props) {
                     />
                   ))}
                   {stateFilter.map(state => (
-                    <Chip 
+                    <Chip
                       key={state}
                       label={`State: ${state}`}
                       onDelete={() => handleStateFilter(state)}
@@ -342,7 +396,7 @@ export default function Senator(props) {
                     />
                   ))}
                   {ratingFilter.map(rating => (
-                    <Chip 
+                    <Chip
                       key={rating}
                       label={`Rating: ${rating}`}
                       onDelete={() => handleRatingFilter(rating)}
@@ -350,15 +404,22 @@ export default function Senator(props) {
                     />
                   ))}
                   {(partyFilter.length > 0 || stateFilter.length > 0 || ratingFilter.length > 0) && (
-                    <Chip 
+                    <Chip
                       label="Clear all"
                       onClick={clearAllFilters}
                       variant="outlined"
                       size="small"
                     />
                   )}
+                  {selectedYear && (
+                    <Chip
+                      label={`Year: ${selectedYear}`}
+                      onDelete={() => setSelectedYear("")}
+                      size="small"
+                    />
+                  )}
                 </Box>
-                
+
                 <Button
                   variant="outlined"
                   sx={{
@@ -395,6 +456,8 @@ export default function Senator(props) {
           <MenuItem onClick={handlePartyMenuOpen}>Filter by Party</MenuItem>
           <MenuItem onClick={handleStateMenuOpen}>Filter by State</MenuItem>
           <MenuItem onClick={handleRatingMenuOpen}>Filter by Rating</MenuItem>
+         <MenuItem onClick={handleYearMenuOpen}>Filter by Year</MenuItem>
+
           <Divider />
           <MenuItem onClick={clearAllFilters}>Clear all filters</MenuItem>
         </Menu>
@@ -406,7 +469,7 @@ export default function Senator(props) {
           onClose={handleMenuClose}
         >
           {partyOptions.map(party => (
-            <MenuItem 
+            <MenuItem
               key={party}
               onClick={() => {
                 handlePartyFilter(party);
@@ -428,7 +491,7 @@ export default function Senator(props) {
           onClose={handleMenuClose}
         >
           {stateOptions.map(state => (
-            <MenuItem 
+            <MenuItem
               key={state}
               onClick={() => {
                 handleStateFilter(state);
@@ -450,7 +513,7 @@ export default function Senator(props) {
           onClose={handleMenuClose}
         >
           {ratingOptions.map(rating => (
-            <MenuItem 
+            <MenuItem
               key={rating}
               onClick={() => {
                 handleRatingFilter(rating);
@@ -464,6 +527,27 @@ export default function Senator(props) {
             </MenuItem>
           ))}
         </Menu>
+        <Menu
+  anchorEl={yearMenuAnchorEl}
+  open={Boolean(yearMenuAnchorEl)}
+  onClose={handleMenuClose}
+>
+  {years.map(year => (
+    <MenuItem
+      key={year}
+      onClick={() => {
+        handleYearFilter(year.toString());
+        handleMenuClose();
+      }}
+      sx={{
+        backgroundColor: selectedYear === year.toString() ? '#f0f0f0' : 'transparent',
+      }}
+    >
+      {year}
+    </MenuItem>
+  ))}
+</Menu>
+
 
 
         {/* Snackbar for success/error messages */}
@@ -476,7 +560,7 @@ export default function Senator(props) {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%",bgcolor:'#FF474D' }}
+            sx={{ width: "100%", bgcolor: '#FF474D' }}
           >
             {snackbarMessage}
           </Alert>
