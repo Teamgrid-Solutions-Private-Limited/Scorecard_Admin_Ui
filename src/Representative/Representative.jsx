@@ -16,6 +16,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+   Menu,
+  MenuItem,
+  Chip,
+  Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +35,7 @@ import {
   treeViewCustomizations,
 } from "../../src/Themes/customizations";
 import FixedHeader from "../../src/components/FixedHeader";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -53,6 +58,17 @@ export default function Representative(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRepresentative, setSelectedRepresentative] = useState(null);
 
+  const [partyFilter, setPartyFilter] = useState([]);
+  const [districtFilter, setDistrictFilter] = useState([]);
+  const [ratingFilter, setRatingFilter] = useState([]);
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [partyMenuAnchorEl, setPartyMenuAnchorEl] = useState(null);
+  const [districtMenuAnchorEl, setDistrictMenuAnchorEl] = useState(null);
+  const [ratingMenuAnchorEl, setRatingMenuAnchorEl] = useState(null);
+
+
+   const ratingOptions = ["A+", "B", "C", "D", "F"];
+
   useEffect(() => {
     dispatch(getAllHouses());
   }, [dispatch]);
@@ -62,16 +78,85 @@ export default function Representative(props) {
     district: house.district?.split(", ").pop() || "Unknown",
   }));
 
+  const partyOptions = [...new Set(transformedHouses.map(rep => rep.party))].filter(Boolean);
+  const districtOptions = [...new Set(transformedHouses.map(rep => rep.district))].filter(Boolean);
+
   const filteredRepresentative = transformedHouses.filter(
-    (transformedHouses) => {
-      const name = transformedHouses.name.toLowerCase();
-      return searchQuery
-        .toLowerCase()
-        .split(/\s+/)
-        .filter(Boolean)
-        .every((word) => name.includes(word));
+    (transformedHouse) => {
+      const nameMatch = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
+      .every((word) => transformedHouse.name.toLowerCase().includes(word));
+
+       // Party filter
+    const partyMatch = partyFilter.length === 0 || partyFilter.includes(transformedHouse.party);
+    
+    // District filter
+    const districtMatch = districtFilter.length === 0 || districtFilter.includes(transformedHouse.district);
+    
+    // Rating filter
+    const ratingMatch = ratingFilter.length === 0 || 
+      (transformedHouse.rating && ratingFilter.includes(transformedHouse.rating));
+    
+    return nameMatch && partyMatch && districtMatch && ratingMatch;
     }
   );
+
+    // Filter handlers
+  const handleFilterClick = (event) => {
+    setFilterAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+  };
+
+  const handlePartyMenuOpen = (event) => {
+    setPartyMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleDistrictMenuOpen = (event) => {
+    setDistrictMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleRatingMenuOpen = (event) => {
+    setRatingMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setPartyMenuAnchorEl(null);
+    setDistrictMenuAnchorEl(null);
+    setRatingMenuAnchorEl(null);
+  };
+
+  const handlePartyFilter = (party) => {
+    setPartyFilter(prev =>
+      prev.includes(party) 
+        ? prev.filter(p => p !== party) 
+        : [...prev, party]
+    );
+  };
+
+  const handleDistrictFilter = (district) => {
+    setDistrictFilter(prev =>
+      prev.includes(district) 
+        ? prev.filter(s => s !== district) 
+        : [...prev, district]
+    );
+  };
+
+  const handleRatingFilter = (rating) => {
+    setRatingFilter(prev =>
+      prev.includes(rating)
+        ? prev.filter(r => r !== rating)
+        : [...prev, rating]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setPartyFilter([]);
+    setDistrictFilter([]);
+    setRatingFilter([]);
+    setSearchQuery("");
+  };
 
   const handleEdit = (row) => {
     navigate(`/edit-representative/${row._id}`);
@@ -217,6 +302,59 @@ export default function Representative(props) {
                     },
                   }}
                 />
+
+
+                <Button
+                    variant="outlined"
+                    startIcon={<FilterListIcon />}
+                    onClick={handleFilterClick}
+                    sx={{
+                      height: '40px',
+                      minWidth: '40px',
+                      padding: '0 8px',
+                    }}
+                  >
+                    Filters
+                  </Button>
+              
+
+                {/* Active filters chips */}
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {partyFilter.map(party => (
+                    <Chip 
+                      key={party}
+                      label={`Party: ${party}`}
+                      onDelete={() => handlePartyFilter(party)}
+                      size="small"
+                    />
+                  ))}
+                  {districtFilter.map(district => (
+                    <Chip 
+                      key={district}
+                      label={`District: ${district}`}
+                      onDelete={() => handleDistrictFilter(district)}
+                      size="small"
+                    />
+                  ))}
+                  {ratingFilter.map(rating => (
+                    <Chip 
+                      key={rating}
+                      label={`Rating: ${rating}`}
+                      onDelete={() => handleRatingFilter(rating)}
+                      size="small"
+                    />
+                  ))}
+                  {(partyFilter.length > 0 || districtFilter.length > 0 || ratingFilter.length > 0) && (
+                    <Chip 
+                      label="Clear all"
+                      onClick={clearAllFilters}
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
+                </Box>
+
+
                 <Button
                   variant="outlined"
                   sx={{
@@ -244,6 +382,84 @@ export default function Representative(props) {
             />
           </Stack>
         </Box>
+
+         <Menu
+          anchorEl={filterAnchorEl}
+          open={Boolean(filterAnchorEl)}
+          onClose={handleFilterClose}
+        >
+          <MenuItem onClick={handlePartyMenuOpen}>Filter by Party</MenuItem>
+          <MenuItem onClick={handleDistrictMenuOpen}>Filter by District</MenuItem>
+          <MenuItem onClick={handleRatingMenuOpen}>Filter by Rating</MenuItem>
+          <Divider />
+          <MenuItem onClick={clearAllFilters}>Clear all filters</MenuItem>
+        </Menu>
+
+        {/* Party Filter Menu */}
+        <Menu
+          anchorEl={partyMenuAnchorEl}
+          open={Boolean(partyMenuAnchorEl)}
+          onClose={handleMenuClose}
+        >
+          {partyOptions.map(party => (
+            <MenuItem 
+              key={party}
+              onClick={() => {
+                handlePartyFilter(party);
+                handleMenuClose();
+              }}
+              sx={{
+                backgroundColor: partyFilter.includes(party) ? '#f0f0f0' : 'transparent',
+              }}
+            >
+              {party}
+            </MenuItem>
+          ))}
+        </Menu>
+
+        {/* District Filter Menu */}
+        <Menu
+          anchorEl={districtMenuAnchorEl}
+          open={Boolean(districtMenuAnchorEl)}
+          onClose={handleMenuClose}
+        >
+          {districtOptions.map(district => (
+            <MenuItem 
+              key={district}
+              onClick={() => {
+                handleDistrictFilter(district);
+                handleMenuClose();
+              }}
+              sx={{
+                backgroundColor: districtFilter.includes(district) ? '#f0f0f0' : 'transparent',
+              }}
+            >
+              {district}
+            </MenuItem>
+          ))}
+        </Menu>
+
+        {/* Rating Filter Menu */}
+        <Menu
+          anchorEl={ratingMenuAnchorEl}
+          open={Boolean(ratingMenuAnchorEl)}
+          onClose={handleMenuClose}
+        >
+          {ratingOptions.map(rating => (
+            <MenuItem 
+              key={rating}
+              onClick={() => {
+                handleRatingFilter(rating);
+                handleMenuClose();
+              }}
+              sx={{
+                backgroundColor: ratingFilter.includes(rating) ? '#f0f0f0' : 'transparent',
+              }}
+            >
+              {rating}
+            </MenuItem>
+          ))}
+        </Menu>
 
         <Snackbar
           open={snackbarOpen}
