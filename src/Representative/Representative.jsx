@@ -71,7 +71,8 @@ export default function Representative(props) {
   const [mergedHouses, setMergedHouses] = useState([]);
   const [yearMenuAnchorEl, setYearMenuAnchorEl] = useState(null);
   const [yearFilter, setYearFilter] = useState([]);
-
+  const [termFilterAnchorEl, setTermFilterAnchorEl] = useState(null);
+  const [termFilter, setTermFilter] = useState(null); // 'current' or 'past'
   const { terms } = useSelector((state) => state.term);
 
 
@@ -116,6 +117,7 @@ export default function Representative(props) {
           rating: match ? match.rating : "N/A",
           termId: termId,
           termName: termObj ? termObj.name : "",
+           currentTerm: match ? match.currentTerm : false // Add currentTerm from houseData
         };
       });
 
@@ -128,6 +130,7 @@ export default function Representative(props) {
   const transformedHouses = mergedHouses.map((house) => ({
     ...house,
     district: house.district?.split(", ").pop() || "Unknown",
+     currentTerm: house.currentTerm || false // Ensure currentTerm exists
   }));
 
   const partyOptions = [...new Set(transformedHouses.map(rep => rep.party))].filter(Boolean);
@@ -135,6 +138,12 @@ export default function Representative(props) {
 
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
+     // Term filter logic - now properly checking currentTerm field
+    if (termFilter === 'current') {
+      if (transformedHouse.currentTerm !== true) return false;
+    } else if (termFilter === 'past') {
+      if (transformedHouse.currentTerm === true) return false;
+    }
       // const nameMatch = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
       // .every((word) => transformedHouse.name.toLowerCase().includes(word));
       if (yearFilter.length > 0) {
@@ -222,15 +231,19 @@ export default function Representative(props) {
         ? prev.filter(y => y !== year)
         : [...prev, year]
     );
-      setYearMenuAnchorEl(null); //  closes the menu
+    setYearMenuAnchorEl(null); //  closes the menu
   };
-
+  // Add this handler
+  const handleTermMenuOpen = (event) => {
+    setTermFilterAnchorEl(event.currentTarget);
+  };
 
   const clearAllFilters = () => {
     setPartyFilter([]);
     setDistrictFilter([]);
     setRatingFilter([]);
     setYearFilter([]);
+    setTermFilter(null);
     setSearchQuery("");
   };
 
@@ -439,6 +452,15 @@ export default function Representative(props) {
                     />
                   ))}
 
+                  {/* Term filter chip */}
+                  {termFilter && (
+                    <Chip
+                      label={`Term: ${termFilter === 'current' ? 'Current' : 'Past'}`}
+                      onDelete={() => setTermFilter(null)}
+                      size="small"
+                    />
+                  )}
+
 
                 </Box>
 
@@ -480,7 +502,7 @@ export default function Representative(props) {
           <MenuItem onClick={handleDistrictMenuOpen}>Filter by District</MenuItem>
           <MenuItem onClick={handleRatingMenuOpen}>Filter by Rating</MenuItem>
           <MenuItem onClick={(e) => setYearMenuAnchorEl(e.currentTarget)}>Filter by Year</MenuItem>
-
+          <MenuItem onClick={handleTermMenuOpen}>Filter by Term</MenuItem>
           <Divider />
           <MenuItem onClick={clearAllFilters}>Clear all filters</MenuItem>
         </Menu>
@@ -568,7 +590,37 @@ export default function Representative(props) {
             </MenuItem>
           ))}
         </Menu>
-
+        {/* Term Filter Submenu */}
+        <Menu
+          anchorEl={termFilterAnchorEl}
+          open={Boolean(termFilterAnchorEl)}
+          onClose={() => setTermFilterAnchorEl(null)}
+        >
+          <MenuItem
+            onClick={() => {
+              setTermFilter('current');
+              setTermFilterAnchorEl(null);
+              handleFilterClose();
+            }}
+            sx={{
+              backgroundColor: termFilter === 'current' ? '#f0f0f0' : 'transparent',
+            }}
+          >
+            Current Term
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setTermFilter('past');
+              setTermFilterAnchorEl(null);
+              handleFilterClose();
+            }}
+            sx={{
+              backgroundColor: termFilter === 'past' ? '#f0f0f0' : 'transparent',
+            }}
+          >
+            Past Terms
+          </MenuItem>
+        </Menu>
 
 
         <Snackbar
