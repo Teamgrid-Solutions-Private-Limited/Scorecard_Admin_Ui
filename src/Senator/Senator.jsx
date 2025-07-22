@@ -60,7 +60,7 @@ export default function Senator(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedSenator, setSelectedSenator] = useState(null);
-  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedYears, setSelectedYears] = useState([]);
   const { terms } = useSelector((state) => state.term);
 
   const [partyFilter, setPartyFilter] = useState([]);
@@ -216,7 +216,9 @@ export default function Senator(props) {
   };
 
   const handleYearFilter = (year) => {
-    setSelectedYear((prev) => (prev === year ? "" : year)); // toggle
+    setSelectedYears((prev) =>
+      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
+    );
   };
 
 
@@ -224,7 +226,7 @@ export default function Senator(props) {
     setPartyMenuAnchorEl(null);
     setStateMenuAnchorEl(null);
     setRatingMenuAnchorEl(null);
-      setYearMenuAnchorEl(null);
+    setYearMenuAnchorEl(null);
   };
 
   const handlePartyFilter = (party) => {
@@ -255,22 +257,24 @@ export default function Senator(props) {
     setPartyFilter([]);
     setStateFilter([]);
     setRatingFilter([]);
-    setSelectedYear("");
+    setSelectedYears([]);
     setSearchQuery("");
   };
 
   const filteredSenators = mergedSenators.filter((senator) => {
     // Year filter
-    if (selectedYear) {
+    if (selectedYears.length > 0) {
       if (senator.termName && senator.termName.includes("-")) {
         const [start, end] = senator.termName.split('-').map(Number);
-        if (!(start && end && Number(selectedYear) >= start && Number(selectedYear) <= end)) {
-          return false;
-        }
+        const matches = selectedYears.some(
+          (year) => start && end && year >= start && year <= end
+        );
+        if (!matches) return false;
       } else {
         return false;
       }
     }
+
 
     const nameMatch = searchQuery
       .toLowerCase()
@@ -411,13 +415,15 @@ export default function Senator(props) {
                       size="small"
                     />
                   )}
-                  {selectedYear && (
+                  {selectedYears.map((year) => (
                     <Chip
-                      label={`Year: ${selectedYear}`}
-                      onDelete={() => setSelectedYear("")}
+                      key={year}
+                      label={`Year: ${year}`}
+                      onDelete={() => setSelectedYears((prev) => prev.filter((y) => y !== year))}
                       size="small"
                     />
-                  )}
+                  ))}
+
                 </Box>
 
                 <Button
@@ -456,7 +462,7 @@ export default function Senator(props) {
           <MenuItem onClick={handlePartyMenuOpen}>Filter by Party</MenuItem>
           <MenuItem onClick={handleStateMenuOpen}>Filter by State</MenuItem>
           <MenuItem onClick={handleRatingMenuOpen}>Filter by Rating</MenuItem>
-         <MenuItem onClick={handleYearMenuOpen}>Filter by Year</MenuItem>
+          <MenuItem onClick={handleYearMenuOpen}>Filter by Year</MenuItem>
 
           <Divider />
           <MenuItem onClick={clearAllFilters}>Clear all filters</MenuItem>
@@ -527,26 +533,28 @@ export default function Senator(props) {
             </MenuItem>
           ))}
         </Menu>
+        {/* Year Filter Menu */}
         <Menu
-  anchorEl={yearMenuAnchorEl}
-  open={Boolean(yearMenuAnchorEl)}
-  onClose={handleMenuClose}
->
-  {years.map(year => (
-    <MenuItem
-      key={year}
-      onClick={() => {
-        handleYearFilter(year.toString());
-        handleMenuClose();
-      }}
-      sx={{
-        backgroundColor: selectedYear === year.toString() ? '#f0f0f0' : 'transparent',
-      }}
-    >
-      {year}
-    </MenuItem>
-  ))}
-</Menu>
+          anchorEl={yearMenuAnchorEl}
+          open={Boolean(yearMenuAnchorEl)}
+          onClose={handleMenuClose}
+        >
+          {years.map((year) => (
+            <MenuItem
+              key={year}
+              onClick={() => {
+                handleYearFilter(year);
+                handleMenuClose();
+              }}
+              sx={{
+                backgroundColor: selectedYears.includes(year) ? "#f0f0f0" : "transparent",
+              }}
+            >
+              {year}
+            </MenuItem>
+          ))}
+        </Menu>
+
 
 
 

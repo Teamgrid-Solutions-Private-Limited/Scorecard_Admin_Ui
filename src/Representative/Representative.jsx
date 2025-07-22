@@ -16,7 +16,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-   Menu,
+  Menu,
   MenuItem,
   Chip,
   Divider,
@@ -43,6 +43,8 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
+import { getAllHouseData } from "../redux/reducer/houseTermSlice";
+import { getAllTerms } from "../redux/reducer/termSlice";
 
 export default function Representative(props) {
   const navigate = useNavigate();
@@ -65,15 +67,65 @@ export default function Representative(props) {
   const [partyMenuAnchorEl, setPartyMenuAnchorEl] = useState(null);
   const [districtMenuAnchorEl, setDistrictMenuAnchorEl] = useState(null);
   const [ratingMenuAnchorEl, setRatingMenuAnchorEl] = useState(null);
+  const { houseData } = useSelector((state) => state.houseData)
+  const [mergedHouses, setMergedHouses] = useState([]);
+  const [yearMenuAnchorEl, setYearMenuAnchorEl] = useState(null);
+  const [yearFilter, setYearFilter] = useState([]);
+
+  const { terms } = useSelector((state) => state.term);
 
 
-   const ratingOptions = ["A+", "B", "C", "D", "F"];
+  const ratingOptions = ["A+", "B", "C", "D", "F"];
+
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear; y >= 2015; y--) {
+    years.push(y);
+  }
+
 
   useEffect(() => {
     dispatch(getAllHouses());
+    dispatch(getAllHouseData());
+    dispatch(getAllTerms());
   }, [dispatch]);
 
-  const transformedHouses = houses.map((house) => ({
+  //  useEffect(() => {
+  //     if (houses && houseData) {
+  //       const merged = houses
+  //         .map((house) => {
+  //           const match = houseData.find((data) => data.houseId === house._id);
+  //           return {
+  //             ...house,
+  //             rating: match ? match.rating : "N/A",
+  //           };
+  //         });
+  //   console.log("Merged Houses:", merged);
+  //       setMergedHouses(merged);
+  //     }
+  //   }, [houses, houseData]);
+  useEffect(() => {
+    if (houses && houseData && terms) {
+      const merged = houses.map((house) => {
+        const match = houseData.find((data) => data.houseId === house._id);
+        const termId = match ? match.termId : house.termId;
+        const termObj = terms.find(t => t._id === termId);
+
+        return {
+          ...house,
+          rating: match ? match.rating : "N/A",
+          termId: termId,
+          termName: termObj ? termObj.name : "",
+        };
+      });
+
+      console.log("Merged Houses with termName:", merged);
+      setMergedHouses(merged);
+    }
+  }, [houses, houseData, terms]);
+
+
+  const transformedHouses = mergedHouses.map((house) => ({
     ...house,
     district: house.district?.split(", ").pop() || "Unknown",
   }));
@@ -83,24 +135,38 @@ export default function Representative(props) {
 
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
-      const nameMatch = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
-      .every((word) => transformedHouse.name.toLowerCase().includes(word));
+      // const nameMatch = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
+      // .every((word) => transformedHouse.name.toLowerCase().includes(word));
+      if (yearFilter.length > 0) {
+        const [start, end] = transformedHouse.termName?.split("-").map(Number) || [];
+        const matchesYear = yearFilter.some(year => start && end && year >= start && year <= end);
+        if (!matchesYear) return false;
+      }
 
-       // Party filter
-    const partyMatch = partyFilter.length === 0 || partyFilter.includes(transformedHouse.party);
-    
-    // District filter
-    const districtMatch = districtFilter.length === 0 || districtFilter.includes(transformedHouse.district);
-    
-    // Rating filter
-    const ratingMatch = ratingFilter.length === 0 || 
-      (transformedHouse.rating && ratingFilter.includes(transformedHouse.rating));
-    
-    return nameMatch && partyMatch && districtMatch && ratingMatch;
+      // Name search filter
+      const nameMatch = searchQuery
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean)
+        .every(word => transformedHouse.name.toLowerCase().includes(word));
+
+      // Rating filter
+      const ratingMatch = ratingFilter.length === 0 ||
+        (transformedHouse.rating && ratingFilter.includes(transformedHouse.rating));
+
+      // Party filter
+      const partyMatch = partyFilter.length === 0 || partyFilter.includes(transformedHouse.party);
+
+      // District filter
+      const districtMatch = districtFilter.length === 0 || districtFilter.includes(transformedHouse.district);
+
+
+
+      return nameMatch && partyMatch && districtMatch && ratingMatch;
     }
   );
 
-    // Filter handlers
+  // Filter handlers
   const handleFilterClick = (event) => {
     setFilterAnchorEl(event.currentTarget);
   };
@@ -129,16 +195,16 @@ export default function Representative(props) {
 
   const handlePartyFilter = (party) => {
     setPartyFilter(prev =>
-      prev.includes(party) 
-        ? prev.filter(p => p !== party) 
+      prev.includes(party)
+        ? prev.filter(p => p !== party)
         : [...prev, party]
     );
   };
 
   const handleDistrictFilter = (district) => {
     setDistrictFilter(prev =>
-      prev.includes(district) 
-        ? prev.filter(s => s !== district) 
+      prev.includes(district)
+        ? prev.filter(s => s !== district)
         : [...prev, district]
     );
   };
@@ -150,11 +216,21 @@ export default function Representative(props) {
         : [...prev, rating]
     );
   };
+  const handleYearFilter = (year) => {
+    setYearFilter(prev =>
+      prev.includes(year)
+        ? prev.filter(y => y !== year)
+        : [...prev, year]
+    );
+      setYearMenuAnchorEl(null); //  closes the menu
+  };
+
 
   const clearAllFilters = () => {
     setPartyFilter([]);
     setDistrictFilter([]);
     setRatingFilter([]);
+    setYearFilter([]);
     setSearchQuery("");
   };
 
@@ -305,23 +381,23 @@ export default function Representative(props) {
 
 
                 <Button
-                    variant="outlined"
-                    startIcon={<FilterListIcon />}
-                    onClick={handleFilterClick}
-                    sx={{
-                      height: '40px',
-                      minWidth: '40px',
-                      padding: '0 8px',
-                    }}
-                  >
-                    Filters
-                  </Button>
-              
+                  variant="outlined"
+                  startIcon={<FilterListIcon />}
+                  onClick={handleFilterClick}
+                  sx={{
+                    height: '40px',
+                    minWidth: '40px',
+                    padding: '0 8px',
+                  }}
+                >
+                  Filters
+                </Button>
+
 
                 {/* Active filters chips */}
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {partyFilter.map(party => (
-                    <Chip 
+                    <Chip
                       key={party}
                       label={`Party: ${party}`}
                       onDelete={() => handlePartyFilter(party)}
@@ -329,7 +405,7 @@ export default function Representative(props) {
                     />
                   ))}
                   {districtFilter.map(district => (
-                    <Chip 
+                    <Chip
                       key={district}
                       label={`District: ${district}`}
                       onDelete={() => handleDistrictFilter(district)}
@@ -337,7 +413,7 @@ export default function Representative(props) {
                     />
                   ))}
                   {ratingFilter.map(rating => (
-                    <Chip 
+                    <Chip
                       key={rating}
                       label={`Rating: ${rating}`}
                       onDelete={() => handleRatingFilter(rating)}
@@ -345,13 +421,25 @@ export default function Representative(props) {
                     />
                   ))}
                   {(partyFilter.length > 0 || districtFilter.length > 0 || ratingFilter.length > 0) && (
-                    <Chip 
+                    <Chip
                       label="Clear all"
                       onClick={clearAllFilters}
                       variant="outlined"
                       size="small"
                     />
                   )}
+                  {yearFilter.map((year) => (
+                    <Chip
+                      key={year}
+                      label={`Year: ${year}`}
+                      onDelete={() =>
+                        setYearFilter((prev) => prev.filter((y) => y !== year))
+                      }
+                      size="small"
+                    />
+                  ))}
+
+
                 </Box>
 
 
@@ -383,7 +471,7 @@ export default function Representative(props) {
           </Stack>
         </Box>
 
-         <Menu
+        <Menu
           anchorEl={filterAnchorEl}
           open={Boolean(filterAnchorEl)}
           onClose={handleFilterClose}
@@ -391,6 +479,8 @@ export default function Representative(props) {
           <MenuItem onClick={handlePartyMenuOpen}>Filter by Party</MenuItem>
           <MenuItem onClick={handleDistrictMenuOpen}>Filter by District</MenuItem>
           <MenuItem onClick={handleRatingMenuOpen}>Filter by Rating</MenuItem>
+          <MenuItem onClick={(e) => setYearMenuAnchorEl(e.currentTarget)}>Filter by Year</MenuItem>
+
           <Divider />
           <MenuItem onClick={clearAllFilters}>Clear all filters</MenuItem>
         </Menu>
@@ -402,7 +492,7 @@ export default function Representative(props) {
           onClose={handleMenuClose}
         >
           {partyOptions.map(party => (
-            <MenuItem 
+            <MenuItem
               key={party}
               onClick={() => {
                 handlePartyFilter(party);
@@ -424,7 +514,7 @@ export default function Representative(props) {
           onClose={handleMenuClose}
         >
           {districtOptions.map(district => (
-            <MenuItem 
+            <MenuItem
               key={district}
               onClick={() => {
                 handleDistrictFilter(district);
@@ -446,7 +536,7 @@ export default function Representative(props) {
           onClose={handleMenuClose}
         >
           {ratingOptions.map(rating => (
-            <MenuItem 
+            <MenuItem
               key={rating}
               onClick={() => {
                 handleRatingFilter(rating);
@@ -460,6 +550,26 @@ export default function Representative(props) {
             </MenuItem>
           ))}
         </Menu>
+        {/* Filter by Year */}
+        <Menu
+          anchorEl={yearMenuAnchorEl}
+          open={Boolean(yearMenuAnchorEl)}
+          onClose={() => setYearMenuAnchorEl(null)}
+        >
+          {years.map((year) => (
+            <MenuItem
+              key={year}
+              onClick={() => handleYearFilter(year)}
+              sx={{
+                backgroundColor: yearFilter.includes(year) ? "#e0e0e0" : "transparent",
+              }}
+            >
+              {year}
+            </MenuItem>
+          ))}
+        </Menu>
+
+
 
         <Snackbar
           open={snackbarOpen}
