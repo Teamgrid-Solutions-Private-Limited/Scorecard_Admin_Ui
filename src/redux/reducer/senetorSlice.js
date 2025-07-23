@@ -32,9 +32,9 @@ export const getAllSenators = createAsyncThunk(
       const response = await axios.get(`${API_URL}/senator/senators/view`,{
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-    console.log(response.data);
+    console.log(response.data.info);
     
-      return response.data;
+      return response.data.info;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
