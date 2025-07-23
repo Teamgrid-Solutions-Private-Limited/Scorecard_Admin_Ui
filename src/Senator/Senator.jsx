@@ -1073,7 +1073,7 @@ export default function Senator(props) {
                               !partyFilter.length &&
                               !stateFilter.length &&
                               !ratingFilter.length &&
-                              !selectedYear &&
+                              !selectedYears.length &&
                               !termFilter
                             }
                           >
