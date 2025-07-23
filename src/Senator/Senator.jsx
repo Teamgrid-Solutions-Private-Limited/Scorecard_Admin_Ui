@@ -40,7 +40,12 @@ export default function Senator(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // Fetch senators from Redux store
-  const { senators, loading } = useSelector((state) => state.senator);
+  const {
+    senators = [],
+    loading,
+    error,
+  } = useSelector((state) => state.senator || {});
+  // console.log("Redux State:", { senators, loading, error });
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,20 +73,27 @@ export default function Senator(props) {
     const interval = setInterval(() => {
       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
     }, 1000);
+
     try {
-      await dispatch(deleteSenator(selectedSenator._id));
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No auth token found");
+
+      const result = await dispatch(deleteSenator(selectedSenator._id));
+      if (result.error) {
+        throw new Error(result.payload.message || "Failed to delete senator");
+      }
       await dispatch(getAllSenators());
       setSnackbarMessage(`${selectedSenator.name} deleted successfully.`);
       setSnackbarSeverity("success");
     } catch (error) {
-      setSnackbarMessage("Failed to delete senator.");
+      setSnackbarMessage(error.message || "Failed to delete senator.");
       setSnackbarSeverity("error");
     } finally {
       clearInterval(interval);
       setFetching(false);
       setSnackbarOpen(true);
       setProgress(100);
-      setTimeout(() => setProgress(0), 500); // Re
+      setTimeout(() => setProgress(0), 500);
     }
   };
 
@@ -117,14 +129,16 @@ export default function Senator(props) {
     }
   };
 
-  const filteredSenators = senators.filter((senator) => {
-    const name = senator.name.toLowerCase();
-    return searchQuery
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean)
-      .every((word) => name.includes(word));
-  });
+  const filteredSenators = senators
+    ? senators.filter((senator) => {
+        const name = senator.name?.toLowerCase() || "";
+        return searchQuery
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean)
+          .every((word) => name.includes(word));
+      })
+    : [];
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -234,7 +248,7 @@ export default function Senator(props) {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%",bgcolor:'#FF474D' }}
+            sx={{ width: "100%", bgcolor: "#FF474D" }}
           >
             {snackbarMessage}
           </Alert>

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../API";
+import { jwtDecode } from "jwt-decode";
 
 // Async thunks for CRUD operations
 
@@ -29,14 +30,34 @@ export const getAllSenators = createAsyncThunk(
   "senators/getAllSenators",
   async (_, { rejectWithValue }) => {
     try {
+    //  console.log('Making API request to:', `${API_URL}/senator/senators/view`);
       const response = await axios.get(`${API_URL}/senator/senators/view`,{
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-    console.log(response);
-    
-      return response.data.info;
+      //console.log('Full API Response:', response);
+      //console.log('Response Data:', response.data);
+      //console.log('Response Info:', response.data?.info);
+      
+      if (!response.data) {
+        throw new Error('No data received from API');
+      }
+      
+      const senators = response.data;
+      //console.log('Processed Senators Data:', senators);
+      
+      if (!Array.isArray(senators)) {
+        throw new Error('Received data is not an array');
+      }
+      
+      return senators;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      console.error('Error in getAllSenators:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -72,19 +93,43 @@ export const updateSenator = createAsyncThunk(
     }
   }
 );
-
-// Delete senator
 export const deleteSenator = createAsyncThunk(
   "senators/deleteSenator",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${API_URL}/senator/senators/delete/${id}`);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return rejectWithValue({
+          message: "Authentication token not found",
+        });
+      }
+
+      // Decode the JWT token to get user information
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role; // Make sure this matches your JWT payload structure
+
+      if (userRole !== "admin") {
+        return rejectWithValue({
+          message: "You are not authorized to delete senators.",
+        });
+      }
+
+      const response = await axios.delete(
+        `${API_URL}/senator/senators/delete/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || "Delete failed");
     }
   }
 );
+
 
 // Initial state
 const initialState = {
@@ -134,11 +179,15 @@ const senatorSlice = createSlice({
       })
       .addCase(getAllSenators.fulfilled, (state, action) => {
         state.loading = false;
-        state.senators = action.payload;
+        state.error = null;
+       // console.log('Reducer: Setting senators with payload:', action.payload);
+        state.senators = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(getAllSenators.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.senators = [];
+        console.error('Reducer: Error fetching senators:', action.payload);
       });
 
     // Get senator by ID
@@ -174,19 +223,22 @@ const senatorSlice = createSlice({
         state.error = action.payload;
       });
 
-    // Delete senator
+  
     builder
       .addCase(deleteSenator.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.successMessage = null;
       })
       .addCase(deleteSenator.fulfilled, (state, action) => {
         state.loading = false;
-        // state.senators = state.senators.filter((s) => s.id !== action.payload.id);
+        const deletedId = action.payload.id;
+        state.senators = state.senators.filter((s) => s._id !== deletedId);
+        state.successMessage = "Senator deleted successfully.";
       })
       .addCase(deleteSenator.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message || "Error deleting senator";
       });
   },
 });
