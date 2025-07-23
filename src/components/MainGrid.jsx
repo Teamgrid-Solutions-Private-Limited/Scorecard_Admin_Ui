@@ -11,7 +11,9 @@ export default function MainGrid({
   onEdit,
   onDelete,
   onToggleStatus ,
-  handleToggleStatusAct
+  handleToggleStatusAct,
+  handleToggleStatusSenator,
+  handleToggleStatusHouse
 }) {
   const title =
     type === "bills"
@@ -32,6 +34,8 @@ export default function MainGrid({
             onDelete={onDelete}
             onToggleStatus={onToggleStatus}
             handleToggleStatusAct={handleToggleStatusAct}
+            handleToggleStatusSenator={handleToggleStatusSenator}
+            handleToggleStatusHouse={handleToggleStatusHouse}
           />
         </Grid>
       </Grid>

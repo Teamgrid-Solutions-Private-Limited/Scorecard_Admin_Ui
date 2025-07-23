@@ -8,15 +8,19 @@ import { API_URL } from "../API";
 export const createHouse = createAsyncThunk(
   "house/createHouse",
   async (formData, { rejectWithValue }) => {
-    console.log("createHouse",formData);
-    
+    console.log("createHouse", formData);
+
     try {
-      const response = await axios.post(`${API_URL}/house/house/create`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log(response);     
+      const response = await axios.post(
+        `${API_URL}/house/house/create`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -30,10 +34,10 @@ export const getAllHouses = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/house/house/view`, {
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+        headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
-    console.log(response);
-    
+      console.log(response);
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -47,7 +51,7 @@ export const getHouseById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/house/house/viewId/${id}`, {
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+        headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
       return response.data;
     } catch (error) {
@@ -61,11 +65,15 @@ export const updateHouse = createAsyncThunk(
   "house/updateHouse",
   async ({ id, formData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/house/house/update/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.put(
+        `${API_URL}/house/house/update/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -78,10 +86,30 @@ export const deleteHouse = createAsyncThunk(
   "house/deleteHouse",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${API_URL}/house/house/delete/${id}`);
+      const response = await axios.delete(
+        `${API_URL}/house/house/delete/${id}`
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Thunk to update representative status
+export const updateRepresentativeStatus = createAsyncThunk(
+  "representatives/updateStatus",
+  async ({ id, publishStatus }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/house/representatives/status/${id}`,
+        { publishStatus }
+      );
+      return response.data.representative;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Error updating status"
+      );
     }
   }
 );
@@ -103,7 +131,7 @@ const houseSlice = createSlice({
       state.house = null;
       state.loading = false;
       state.error = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     // Create house
@@ -183,9 +211,28 @@ const houseSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
+
+    // Update representative status
+    builder
+      .addCase(updateRepresentativeStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateRepresentativeStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload;
+        const index = state.houses.findIndex((r) => r._id === updated._id);
+        if (index !== -1) {
+          state.houses[index] = updated;
+        }
+      })
+      .addCase(updateRepresentativeStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
 export default houseSlice.reducer;
 
-export const {clearHouseState} = houseSlice.actions
+export const { clearHouseState } = houseSlice.actions;

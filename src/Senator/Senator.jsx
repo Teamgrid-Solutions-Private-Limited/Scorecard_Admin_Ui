@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteSenator, getAllSenators } from "../redux/reducer/senetorSlice"; // Import actions
+import { deleteSenator, getAllSenators ,updateSenatorStatus} from "../redux/reducer/senetorSlice"; // Import actions
 import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
   Box,
@@ -387,6 +387,22 @@ export default function Senator(props) {
     ratingFilter.length +
      selectedYears.length +
     (termFilter ? 1 : 0);
+   const handleToggleStatusSenator = (senator) => {
+    const newStatus = senator.publishStatus === "published" ? "draft" : "published";
+    console.log("Toggling status:", senator.publishStatus, "→", newStatus);
+
+    dispatch(updateSenatorStatus({ id: senator._id, publishStatus: newStatus }))
+      .then(() => {
+        dispatch(getAllSenators());
+      })
+      .catch((error) => {
+        console.error("Status update failed:", error);
+        setSnackbarMessage("Failed to update status.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      });
+  };
+
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       {(loading || fetching) && (
@@ -1110,6 +1126,8 @@ export default function Senator(props) {
               loading={fetching ? false : loading}
               onDelete={handleDeleteClick}
               onEdit={handleEdit}
+              handleToggleStatusSenator={handleToggleStatusSenator}
+
             />
           </Stack>
         </Box>

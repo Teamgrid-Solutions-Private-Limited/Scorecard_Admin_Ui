@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllHouses, deleteHouse } from "../redux/reducer/houseSlice";
+import {
+  getAllHouses,
+  deleteHouse,
+  updateRepresentativeStatus,
+} from "../redux/reducer/houseSlice";
 import {
   Box,
   Stack,
@@ -340,6 +344,29 @@ const handleTermFilter = (term) => {
       setFetching(false);
       setSnackbarOpen(true);
       setOpenDeleteDialog(false);
+    }
+  };
+
+  const handleToggleStatusHouse = async (house) => {
+    const newStatus =
+      house.publishStatus === "published" ? "draft" : "published";
+    try {
+      await dispatch(
+        updateRepresentativeStatus({ id: house._id, publishStatus: newStatus })
+      ).unwrap();
+
+      // Optimistically update local UI without waiting for getAllHouses
+      const updated = houses.map((h) =>
+        h._id === house._id ? { ...h, publishStatus: newStatus } : h
+      );
+      // You may set local state with setHouses(updated) if you're maintaining local state
+      // Or let redux update on re-fetch:
+      dispatch(getAllHouses());
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      setSnackbarMessage("Failed to update status.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -961,6 +988,7 @@ const handleTermFilter = (term) => {
               loading={fetching ? false : loading}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
+              handleToggleStatusHouse={handleToggleStatusHouse}
             />
           </Stack>
         </Box>
@@ -974,7 +1002,13 @@ const handleTermFilter = (term) => {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%", bgcolor: snackbarMessage === "Representative deleted successfully." ? '#FF474D' : undefined }}
+            sx={{
+              width: "100%",
+              bgcolor:
+                snackbarMessage === "Representative deleted successfully."
+                  ? "#FF474D"
+                  : undefined,
+            }}
           >
             {snackbarMessage}
           </Alert>

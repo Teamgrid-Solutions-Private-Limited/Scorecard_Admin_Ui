@@ -27,6 +27,8 @@ export default function CustomizedDataGrid({
   onDelete,
   onToggleStatus,
   handleToggleStatusAct,
+  handleToggleStatusSenator,
+  handleToggleStatusHouse,
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
@@ -227,7 +229,9 @@ export default function CustomizedDataGrid({
             ),
             renderCell: (params) => (
               <button
-                onClick={() => handleToggleStatusAct && handleToggleStatusAct(params.row)}
+                onClick={() =>
+                  handleToggleStatusAct && handleToggleStatusAct(params.row)
+                }
                 style={{
                   backgroundColor:
                     params.row.status === "published" ? "#FFA726" : "#66BB6A",
@@ -413,6 +417,79 @@ export default function CustomizedDataGrid({
               return params || "N/A";
             },
           },
+          ...(type === "representative"
+            ? [
+                {
+                  field: "handleToggleStatusHouse",
+                  headerName: "Publish/Draft",
+                  flex: 1,
+                  minWidth: 130,
+                  renderHeader: (params) => (
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      {params.colDef.headerName}
+                    </Typography>
+                  ),
+                  renderCell: (params) => (
+                    <button
+                      onClick={() =>
+                        handleToggleStatusHouse &&
+                        handleToggleStatusHouse(params.row)
+                      }
+                      style={{
+                        backgroundColor:
+                          params.row.publishStatus === "published"
+                            ? "#FFA726"
+                            : "#66BB6A",
+                        border: "none",
+                        color: "white",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {params.row.publishStatus === "published"
+                        ? "Unpublish"
+                        : "Publish"}
+                    </button>
+                  ),
+                },
+              ]
+            : [
+                {
+                  field: "handleToggleStatusSenator",
+                  headerName: "Publish/Draft",
+                  flex: 1,
+                  minWidth: 130,
+                  renderHeader: (params) => (
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      {params.colDef.headerName}
+                    </Typography>
+                  ),
+                  renderCell: (params) => (
+                    <button
+                      onClick={() =>
+                        handleToggleStatusSenator &&
+                        handleToggleStatusSenator(params.row)
+                      }
+                      style={{
+                        backgroundColor:
+                          params.row.publishStatus === "published"
+                            ? "#FFA726"
+                            : "#66BB6A",
+                        border: "none",
+                        color: "white",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {params.row.publishStatus === "published"
+                        ? "Unpublish"
+                        : "Publish"}
+                    </button>
+                  ),
+                },
+              ]),
 
           {
             field: "action",
