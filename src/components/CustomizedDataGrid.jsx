@@ -25,6 +25,8 @@ export default function CustomizedDataGrid({
   loading,
   onEdit,
   onDelete,
+  onToggleStatus,
+  handleToggleStatusAct,
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
@@ -117,6 +119,33 @@ export default function CustomizedDataGrid({
             ),
           },
           {
+            field: "toggleStatus",
+            headerName: "Publish/Draft",
+            flex: 1,
+            minWidth: 130,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <button
+                onClick={() => onToggleStatus && onToggleStatus(params.row)}
+                style={{
+                  backgroundColor:
+                    params.row.status === "published" ? "#FFA726" : "#66BB6A",
+                  border: "none",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {params.row.status === "published" ? "Unpublish" : "Publish"}
+              </button>
+            ),
+          },
+          {
             field: "action",
             flex: 1,
             headerName: "Action",
@@ -149,42 +178,70 @@ export default function CustomizedDataGrid({
             ),
           },
         ]
-      :  type === "activities"?[
-        {
-          field: "date",
-          flex: 1,
-          headerName: "Date",
-          minWidth: 150,
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
-        {
-          field: "activity",
-          flex: 3,
-          headerName: "Title",
-          minWidth: 150,
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
-        {
-          field: "activityType",
-          flex: 1,
-          headerName: "Type",
-          minWidth: 150,
-          headerAlign: "center",
-          align: "center",
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
+      : type === "activities"
+      ? [
+          {
+            field: "date",
+            flex: 1,
+            headerName: "Date",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "activity",
+            flex: 3,
+            headerName: "Title",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "activityType",
+            flex: 1,
+            headerName: "Type",
+            minWidth: 150,
+            headerAlign: "center",
+            align: "center",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "toggleStatus",
+            headerName: "Publish/Draft",
+            flex: 1,
+            minWidth: 130,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <button
+                onClick={() => handleToggleStatusAct && handleToggleStatusAct(params.row)}
+                style={{
+                  backgroundColor:
+                    params.row.status === "published" ? "#FFA726" : "#66BB6A",
+                  border: "none",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {params.row.status === "published" ? "Unpublish" : "Publish"}
+              </button>
+            ),
+          },
           {
             field: "action",
             flex: 1,
@@ -356,6 +413,7 @@ export default function CustomizedDataGrid({
               return params || "N/A";
             },
           },
+
           {
             field: "action",
             flex: 0.7,

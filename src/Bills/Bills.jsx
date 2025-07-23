@@ -33,6 +33,7 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
+import { updateVoteStatus } from "../redux/reducer/voteSlice";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -46,6 +47,8 @@ export default function Bills(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all"); // 'all', 'published', 'draft'
+
   useEffect(() => {
     dispatch(getAllVotes());
   }, [dispatch]);
@@ -54,7 +57,12 @@ export default function Bills(props) {
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
-  const billsData = votes.map((vote, index) => ({
+  const filteredVotes = votes.filter((vote) => {
+    if (statusFilter === "all") return true;
+    return vote.status === statusFilter;
+  });
+
+  const billsData = filteredVotes.map((vote, index) => ({
     _id: vote._id || index,
     date: formatDate(vote.date),
     bill: vote.billName || vote.title,
@@ -65,6 +73,7 @@ export default function Bills(props) {
         ? "House"
         : "Other"
       : "Other",
+    status: vote.status || "draft", // <== ADD THI
   }));
 
   const handleEdit = (row) => {
@@ -96,6 +105,17 @@ export default function Bills(props) {
       setProgress(100);
       setTimeout(() => setProgress(0), 500); // Re
     }
+  };
+
+  const handleToggleStatus = (vote) => {
+    const newStatus = vote.status === "published" ? "draft" : "published";
+    dispatch(updateVoteStatus({ id: vote._id, status: newStatus }))
+      .then(() => dispatch(getAllVotes()))
+      .catch(() => {
+        setSnackbarMessage("Failed to update status.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      });
   };
   // const handleDelete = async (row) => {
   //   if (window.confirm("Are you sure you want to delete this bill?")) {
@@ -134,7 +154,7 @@ export default function Bills(props) {
             pointerEvents: fetching ? "none" : "auto",
           }}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
@@ -146,44 +166,74 @@ export default function Bills(props) {
             >
               SBA Scorecard Management System
             </Typography> */}
-                  <Box
-                          sx={{
-                            width: "100%",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            mt: 4,
-                            gap: 2
-                          }}
-                        >
-                          <Typography component="h2" variant="h6">
-                              All Bills
-                            </Typography>
-                          
-                          <Stack direction="row" spacing={2} alignItems="center">
-                           
-                            <Button
-  onClick={() => navigate("/search-bills")}
-  sx={{
-    backgroundColor: "#4a90e2 !important",
-    color: "white !important",
-    padding: "0.5rem 1rem",
-    marginLeft: "0.5rem",
-    "&:hover": {
-      backgroundColor: "#357ABD !important",
-    },
-  }}
->
-  Add Bills
-</Button>
-                          </Stack>
-                        </Box>
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mt: 4,
+                gap: 2,
+              }}
+            >
+              <Typography component="h2" variant="h6">
+                All Bills
+              </Typography>
+
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                sx={{ ml: "auto" }}
+              >
+                <TextField
+                  select
+                  variant="outlined"
+                  // label="Filter by Status"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  SelectProps={{ native: true }}
+                  size="small"
+                  sx={{
+                    minWidth: 180,
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "primary.light",
+                      },
+                    },
+                  }}
+                >
+                  <option value="all">All</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </TextField>
+              </Stack>
+
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button
+                  onClick={() => navigate("/search-bills")}
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                >
+                  Add Bills
+                </Button>
+              </Stack>
+            </Box>
+
             <MainGrid
               type="bills"
               data={billsData}
               loading={fetching ? false : loading}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
+              onToggleStatus={handleToggleStatus}
             />
           </Stack>
         </Box>
@@ -216,7 +266,13 @@ export default function Bills(props) {
         <Alert
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          sx={{ width: "100%", bgcolor: snackbarMessage === "This bill has been successfully deleted." ? '#FF474D' : undefined }}
+          sx={{
+            width: "100%",
+            bgcolor:
+              snackbarMessage === "This bill has been successfully deleted."
+                ? "#FF474D"
+                : undefined,
+          }}
         >
           {snackbarMessage}
         </Alert>

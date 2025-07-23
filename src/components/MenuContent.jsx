@@ -34,7 +34,7 @@ const mainListItems = [
     icon: <GroupsRoundedIcon />,
     link: "/representative",
   },
-  { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" },
+  { text: "Votes We Scored", icon: <DescriptionRoundedIcon />, link: "/bills" },
   { text: "Activities We Track", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
   { text: "Manage Terms", icon: <AddIcon/>, link: "/manage-term"},
 ];
