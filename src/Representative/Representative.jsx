@@ -20,6 +20,11 @@ import {
   MenuItem,
   Chip,
   Divider,
+  Badge,
+  InputAdornment,
+  IconButton,
+  ClickAwayListener,
+  Paper
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +41,11 @@ import {
 } from "../../src/Themes/customizations";
 import FixedHeader from "../../src/components/FixedHeader";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import CloseIcon from "@mui/icons-material/Close";
+import CheckIcon from "@mui/icons-material/Check";
+import SearchIcon from "@mui/icons-material/Search";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -72,7 +82,15 @@ export default function Representative(props) {
   const [yearMenuAnchorEl, setYearMenuAnchorEl] = useState(null);
   const [yearFilter, setYearFilter] = useState([]);
   const [termFilterAnchorEl, setTermFilterAnchorEl] = useState(null);
-  const [termFilter, setTermFilter] = useState(null); // 'current' or 'past'
+  const [termFilter, setTermFilter] = useState(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [expandedFilter, setExpandedFilter] = useState(null);
+  const [searchTerms, setSearchTerms] = useState({
+    party: "",
+    district: "",
+    rating: "",
+    year: "",
+  });
   const { terms } = useSelector((state) => state.term);
 
 
@@ -136,6 +154,23 @@ export default function Representative(props) {
   const partyOptions = [...new Set(transformedHouses.map(rep => rep.party))].filter(Boolean);
   const districtOptions = [...new Set(transformedHouses.map(rep => rep.district))].filter(Boolean);
 
+  const filteredPartyOptions = partyOptions.filter((party) =>
+    party.toLowerCase().includes(searchTerms.party)
+  );
+
+  const filteredDistrictOptions = districtOptions.filter((district) =>
+    district.toLowerCase().includes(searchTerms.district)
+  );
+
+  const filteredRatingOptions = ratingOptions.filter((rating) =>
+    rating.toLowerCase().includes(searchTerms.rating)
+  );
+
+  const filteredYearOptions = years.filter((year) =>
+    year.toString().includes(searchTerms.year)
+  );
+
+  
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
      // Term filter logic - now properly checking currentTerm field
@@ -174,6 +209,25 @@ export default function Representative(props) {
       return nameMatch && partyMatch && districtMatch && ratingMatch;
     }
   );
+
+    // Filter handlers
+  const toggleFilter = () => {
+    setFilterOpen(!filterOpen);
+    if (!filterOpen) {
+      setExpandedFilter(null);
+    }
+  };
+
+  const toggleFilterSection = (section) => {
+    setExpandedFilter(expandedFilter === section ? null : section);
+  };
+
+  const handleSearchChange = (filterType, value) => {
+    setSearchTerms((prev) => ({
+      ...prev,
+      [filterType]: value.toLowerCase(),
+    }));
+  }
 
   // Filter handlers
   const handleFilterClick = (event) => {
@@ -226,13 +280,16 @@ export default function Representative(props) {
     );
   };
   const handleYearFilter = (year) => {
-    setYearFilter(prev =>
-      prev.includes(year)
-        ? prev.filter(y => y !== year)
-        : [...prev, year]
-    );
-    setYearMenuAnchorEl(null); //  closes the menu
-  };
+  setYearFilter(prev =>
+    prev.includes(year)
+      ? prev.filter(y => y !== year)
+      : [...prev, year]
+  );
+};
+
+const handleTermFilter = (term) => {
+  setTermFilter((prev) => (prev === term ? null : term));
+};
   // Add this handler
   const handleTermMenuOpen = (event) => {
     setTermFilterAnchorEl(event.currentTarget);
@@ -393,77 +450,521 @@ export default function Representative(props) {
                 />
 
 
-                <Button
-                  variant="outlined"
-                  startIcon={<FilterListIcon />}
-                  onClick={handleFilterClick}
-                  sx={{
-                    height: '40px',
-                    minWidth: '40px',
-                    padding: '0 8px',
-                  }}
-                >
-                  Filters
-                </Button>
-
-
-                {/* Active filters chips */}
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {partyFilter.map(party => (
-                    <Chip
-                      key={party}
-                      label={`Party: ${party}`}
-                      onDelete={() => handlePartyFilter(party)}
-                      size="small"
-                    />
-                  ))}
-                  {districtFilter.map(district => (
-                    <Chip
-                      key={district}
-                      label={`District: ${district}`}
-                      onDelete={() => handleDistrictFilter(district)}
-                      size="small"
-                    />
-                  ))}
-                  {ratingFilter.map(rating => (
-                    <Chip
-                      key={rating}
-                      label={`Rating: ${rating}`}
-                      onDelete={() => handleRatingFilter(rating)}
-                      size="small"
-                    />
-                  ))}
-                  {(partyFilter.length > 0 || districtFilter.length > 0 || ratingFilter.length > 0) && (
-                    <Chip
-                      label="Clear all"
-                      onClick={clearAllFilters}
+               <Box sx={{ position: "relative", display: "inline-block" }}>
+                  <Badge
+                    badgeContent={
+                      partyFilter.length +
+                      districtFilter.length +
+                      ratingFilter.length +
+                       yearFilter.length +
+                      (termFilter ? 1 : 0)
+                    }
+                    color="primary"
+                  >
+                    <Button
                       variant="outlined"
-                      size="small"
-                    />
-                  )}
-                  {yearFilter.map((year) => (
-                    <Chip
-                      key={year}
-                      label={`Year: ${year}`}
-                      onDelete={() =>
-                        setYearFilter((prev) => prev.filter((y) => y !== year))
+                      startIcon={<FilterListIcon />}
+                      endIcon={
+                        filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
                       }
-                      size="small"
-                    />
-                  ))}
+                      onClick={toggleFilter}
+                      sx={{
+                        height: "40px",
+                        minWidth: "120px",
+                        borderColor: filterOpen ? "primary.main" : "divider",
+                        backgroundColor: filterOpen
+                          ? "primary.light"
+                          : "background.paper",
+                        "&:hover": {
+                          backgroundColor: filterOpen
+                            ? "primary.light"
+                            : "action.hover",
+                        },
+                      }}
+                    >
+                      Filters
+                    </Button>
+                  </Badge>
 
-                  {/* Term filter chip */}
-                  {termFilter && (
-                    <Chip
-                      label={`Term: ${termFilter === 'current' ? 'Current' : 'Past'}`}
-                      onDelete={() => setTermFilter(null)}
-                      size="small"
-                    />
+                  {filterOpen && (
+                    <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
+                      <Paper
+                        sx={{
+                          position: "absolute",
+                          right: 0,
+                          top: "100%",
+                          mt: 1,
+                          width: 320,
+                          zIndex: 1200,
+                          boxShadow: 3,
+                          borderRadius: 2,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Typography variant="subtitle1" fontWeight="bold">
+                              Filters
+                            </Typography>
+                            <IconButton size="small" onClick={toggleFilter}>
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+
+                        {/* Party Filter */}
+                        <Box
+                          sx={{
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                            bgcolor:
+                              expandedFilter === "party"
+                                ? "action.hover"
+                                : "background.paper",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ p: 2, cursor: "pointer" }}
+                            onClick={() => toggleFilterSection("party")}
+                          >
+                            <Typography variant="body1">Party</Typography>
+                            {expandedFilter === "party" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "party" && (
+                            <Box sx={{ p: 2, pt: 0 }}>
+                              <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Search parties..."
+                                value={searchTerms.party}
+                                onChange={(e) =>
+                                  handleSearchChange("party", e.target.value)
+                                }
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                sx={{ mb: 2 }}
+                              />
+                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                                {filteredPartyOptions.length > 0 ? (
+                                  filteredPartyOptions.map((party) => (
+                                    <Box
+                                      key={party}
+                                      onClick={() => handlePartyFilter(party)}
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        p: 1,
+                                        borderRadius: 1,
+                                        cursor: "pointer",
+                                        "&:hover": {
+                                          bgcolor: "action.hover",
+                                        },
+                                      }}
+                                    >
+                                      {partyFilter.includes(party) ? (
+                                        <CheckIcon
+                                          color="primary"
+                                          fontSize="small"
+                                        />
+                                      ) : (
+                                        <Box sx={{ width: 24, height: 24 }} />
+                                      )}
+                                      <Typography variant="body2" sx={{ ml: 1 }}>
+                                        {party}
+                                      </Typography>
+                                    </Box>
+                                  ))
+                                ) : (
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    sx={{ p: 1 }}
+                                  >
+                                    No parties found
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* District Filter */}
+                        <Box
+                          sx={{
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                            bgcolor:
+                              expandedFilter === "district"
+                                ? "action.hover"
+                                : "background.paper",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ p: 2, cursor: "pointer" }}
+                            onClick={() => toggleFilterSection("district")}
+                          >
+                            <Typography variant="body1">District</Typography>
+                            {expandedFilter === "district" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "district" && (
+                            <Box sx={{ p: 2, pt: 0 }}>
+                              <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Search districts..."
+                                value={searchTerms.district}
+                                onChange={(e) =>
+                                  handleSearchChange("district", e.target.value)
+                                }
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                sx={{ mb: 2 }}
+                              />
+                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                                {filteredDistrictOptions.length > 0 ? (
+                                  filteredDistrictOptions.map((district) => (
+                                    <Box
+                                      key={district}
+                                      onClick={() => handleDistrictFilter(district)}
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        p: 1,
+                                        borderRadius: 1,
+                                        cursor: "pointer",
+                                        "&:hover": {
+                                          bgcolor: "action.hover",
+                                        },
+                                      }}
+                                    >
+                                      {districtFilter.includes(district) ? (
+                                        <CheckIcon
+                                          color="primary"
+                                          fontSize="small"
+                                        />
+                                      ) : (
+                                        <Box sx={{ width: 24, height: 24 }} />
+                                      )}
+                                      <Typography variant="body2" sx={{ ml: 1 }}>
+                                        {district}
+                                      </Typography>
+                                    </Box>
+                                  ))
+                                ) : (
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    sx={{ p: 1 }}
+                                  >
+                                    No districts found
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Rating Filter */}
+                        <Box
+                          sx={{
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                            bgcolor:
+                              expandedFilter === "rating"
+                                ? "action.hover"
+                                : "background.paper",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ p: 2, cursor: "pointer" }}
+                            onClick={() => toggleFilterSection("rating")}
+                          >
+                            <Typography variant="body1">Rating</Typography>
+                            {expandedFilter === "rating" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "rating" && (
+                            <Box sx={{ p: 2, pt: 0 }}>
+                              <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Search ratings..."
+                                value={searchTerms.rating}
+                                onChange={(e) =>
+                                  handleSearchChange("rating", e.target.value)
+                                }
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                sx={{ mb: 2 }}
+                              />
+                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                                {filteredRatingOptions.length > 0 ? (
+                                  filteredRatingOptions.map((rating) => (
+                                    <Box
+                                      key={rating}
+                                      onClick={() => handleRatingFilter(rating)}
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        p: 1,
+                                        borderRadius: 1,
+                                        cursor: "pointer",
+                                        "&:hover": {
+                                          bgcolor: "action.hover",
+                                        },
+                                      }}
+                                    >
+                                      {ratingFilter.includes(rating) ? (
+                                        <CheckIcon
+                                          color="primary"
+                                          fontSize="small"
+                                        />
+                                      ) : (
+                                        <Box sx={{ width: 24, height: 24 }} />
+                                      )}
+                                      <Typography variant="body2" sx={{ ml: 1 }}>
+                                        {rating}
+                                      </Typography>
+                                    </Box>
+                                  ))
+                                ) : (
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    sx={{ p: 1 }}
+                                  >
+                                    No ratings found
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Year Filter */}
+                        <Box
+                          sx={{
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                            bgcolor:
+                              expandedFilter === "year"
+                                ? "action.hover"
+                                : "background.paper",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ p: 2, cursor: "pointer" }}
+                            onClick={() => toggleFilterSection("year")}
+                          >
+                            <Typography variant="body1">Year</Typography>
+                            {expandedFilter === "year" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "year" && (
+                            <Box sx={{ p: 2, pt: 0 }}>
+                              <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Search years..."
+                                value={searchTerms.year}
+                                onChange={(e) =>
+                                  handleSearchChange("year", e.target.value)
+                                }
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                sx={{ mb: 2 }}
+                              />
+                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                                {filteredYearOptions.length > 0 ? (
+                                  filteredYearOptions.map((year) => (
+                                    <Box
+                                      key={year}
+                                      onClick={() =>
+                                        handleYearFilter(year)
+                                      }
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        p: 1,
+                                        borderRadius: 1,
+                                        cursor: "pointer",
+                                        "&:hover": {
+                                          bgcolor: "action.hover",
+                                        },
+                                      }}
+                                    >
+                                      {yearFilter.includes(year) ? (
+                                        <CheckIcon
+                                          color="primary"
+                                          fontSize="small"
+                                        />
+                                      ) : (
+                                        <Box sx={{ width: 24, height: 24 }} />
+                                      )}
+                                      <Typography variant="body2" sx={{ ml: 1 }}>
+                                        {year}
+                                      </Typography>
+                                    </Box>
+                                  ))
+                                ) : (
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    sx={{ p: 1 }}
+                                  >
+                                    No years found
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Term Filter */}
+                        <Box
+                          sx={{
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                            bgcolor:
+                              expandedFilter === "term"
+                                ? "action.hover"
+                                : "background.paper",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ p: 2, cursor: "pointer" }}
+                            onClick={() => toggleFilterSection("term")}
+                          >
+                            <Typography variant="body1">Term</Typography>
+                            {expandedFilter === "term" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "term" && (
+                            <Box sx={{ p: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                                {["current", "past"].map((term) => (
+                                  <Box
+                                    key={term}
+                                    onClick={() => handleTermFilter(term)}
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 1,
+                                      borderRadius: 1,
+                                      cursor: "pointer",
+                                      "&:hover": {
+                                        bgcolor: "action.hover",
+                                      },
+                                    }}
+                                  >
+                                    {termFilter === term ? (
+                                      <CheckIcon
+                                        color="primary"
+                                        fontSize="small"
+                                      />
+                                    ) : (
+                                      <Box sx={{ width: 24, height: 24 }} />
+                                    )}
+                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                      {term === "current" ? "Current Term" : "Past Terms"}
+                                    </Typography>
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Clear All Button */}
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderTop: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            color="secondary"
+                            onClick={clearAllFilters}
+                            disabled={
+                              !partyFilter.length &&
+                              !districtFilter.length &&
+                              !ratingFilter.length &&
+                              !yearFilter.length && 
+                              !termFilter
+                            }
+                          >
+                            Clear All Filters
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </ClickAwayListener>
                   )}
-
-
                 </Box>
-
 
                 <Button
                   variant="outlined"
