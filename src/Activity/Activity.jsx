@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllActivity, deleteActivity } from "../redux/reducer/activitySlice";
+import {
+  getAllActivity,
+  deleteActivity,
+  updateActivityStatus,
+} from "../redux/reducer/activitySlice";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import { Box, Stack, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -46,6 +50,7 @@ export default function Activity(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
   useEffect(() => {
     dispatch(getAllActivity());
   }, [dispatch]);
@@ -54,7 +59,12 @@ export default function Activity(props) {
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
-  const activitiesData = activities.map((activity, index) => ({
+  const filteredActivities = activities.filter((activity) => {
+    if (statusFilter === "all") return true;
+    return activity.status === statusFilter;
+  });
+
+  const activitiesData = filteredActivities.map((activity, index) => ({
     _id: activity._id || index,
     date: formatDate(activity.date),
     activity: activity.title,
@@ -65,6 +75,7 @@ export default function Activity(props) {
         ? "House"
         : "Other"
       : "Other",
+    status: activity.status,
   }));
 
   const handleEdit = (row) => {
@@ -82,7 +93,7 @@ export default function Activity(props) {
       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
     }, 1000);
     try {
-      await dispatch(deleteActivity(selectedVote._id)).unwrap(); 
+      await dispatch(deleteActivity(selectedVote._id)).unwrap();
       await dispatch(getAllActivity());
       setSnackbarMessage(`This activity has been successfully deleted.`);
       setSnackbarSeverity("success");
@@ -96,6 +107,22 @@ export default function Activity(props) {
       setProgress(100);
       setTimeout(() => setProgress(0), 500);
     }
+  };
+
+  const handleToggleStatusAct = (activity) => {
+    const newStatus = activity.status === "published" ? "draft" : "published";
+    console.log("Toggling status:", activity.status, "→", newStatus);
+
+    dispatch(updateActivityStatus({ id: activity._id, status: newStatus }))
+      .then(() => {
+        dispatch(getAllActivity());
+      })
+      .catch((error) => {
+        console.error("Status update failed:", error);
+        setSnackbarMessage("Failed to update status.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      });
   };
 
   return (
@@ -128,50 +155,77 @@ export default function Activity(props) {
             pointerEvents: fetching ? "none" : "auto",
           }}
         >
-          <FixedHeader/>
+          <FixedHeader />
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
           >
-            
-                  <Box
-                          sx={{
-                            width: "100%",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            mt: 4,
-                            gap: 2
-                          }}
-                        >
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mt: 4,
+                gap: 2,
+              }}
+            >
               <Typography component="h2" variant="h6">
-                              All Activities
-                            </Typography>
-                          
-                          <Stack direction="row" spacing={2} alignItems="center">
-                           
-                            <Button
-  onClick={() => navigate("/add-activity")}
-  sx={{
-    backgroundColor: "#4a90e2 !important",
-    color: "white !important",
-    padding: "0.5rem 1rem",
-    marginLeft: "0.5rem",
-    "&:hover": {
-      backgroundColor: "#357ABD !important",
-    },
-  }}
->
-  Add Activity
-</Button>
-                          </Stack>
-                        </Box>
+                All Activities
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                sx={{ ml: "auto" }}
+              >
+                <TextField
+                  select
+                  variant="outlined"
+                  // label="Filter by Status"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  SelectProps={{ native: true }}
+                  size="small"
+                  sx={{
+                    minWidth: 180,
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "primary.light",
+                      },
+                    },
+                  }}
+                >
+                  <option value="all">All</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </TextField>
+              </Stack>
+
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button
+                  onClick={() => navigate("/add-activity")}
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                >
+                  Add Activity
+                </Button>
+              </Stack>
+            </Box>
             <MainGrid
               type="activities"
               data={activitiesData}
               loading={fetching ? false : loading}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
+              handleToggleStatusAct={handleToggleStatusAct}
             />
           </Stack>
         </Box>
@@ -204,7 +258,13 @@ export default function Activity(props) {
         <Alert
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          sx={{ width: "100%", bgcolor: snackbarMessage === "This activity has been successfully deleted." ? '#FF474D' : undefined }}
+          sx={{
+            width: "100%",
+            bgcolor:
+              snackbarMessage === "This activity has been successfully deleted."
+                ? "#FF474D"
+                : undefined,
+          }}
         >
           {snackbarMessage}
         </Alert>

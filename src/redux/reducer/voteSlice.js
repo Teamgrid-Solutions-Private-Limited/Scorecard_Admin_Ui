@@ -1,19 +1,23 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { API_URL } from '../API';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+import { API_URL } from "../API";
 
 // Create a vote with file upload
 export const createVote = createAsyncThunk(
-  'votes/createVote',
+  "votes/createVote",
   async (formData, { rejectWithValue }) => {
-    console.log("CreateVote",formData);
-    
+    console.log("CreateVote", formData);
+
     try {
-      const response = await axios.post(`${API_URL}/vote/votes/create/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await axios.post(
+        `${API_URL}/vote/votes/create/`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       console.log(response);
-      
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -23,11 +27,11 @@ export const createVote = createAsyncThunk(
 
 // Get all votes
 export const getAllVotes = createAsyncThunk(
-  'votes/getAllVotes',
+  "votes/getAllVotes",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/vote/votes/viewAll/`,{
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      const response = await axios.get(`${API_URL}/vote/votes/viewAll/`, {
+        headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
       return response.data;
     } catch (error) {
@@ -38,11 +42,11 @@ export const getAllVotes = createAsyncThunk(
 
 // Get a vote by ID
 export const getVoteById = createAsyncThunk(
-  'votes/getVoteById',
+  "votes/getVoteById",
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/vote/votes/viewId/${id}`, {
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+        headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
       return response.data;
     } catch (error) {
@@ -53,14 +57,17 @@ export const getVoteById = createAsyncThunk(
 
 // Update a vote by ID
 export const updateVote = createAsyncThunk(
-  'votes/updateVote',
+  "votes/updateVote",
   async ({ id, updatedData }, { rejectWithValue }) => {
-    console.log("UpdateVote",id, updatedData);
-    
+    console.log("UpdateVote", id, updatedData);
+
     try {
-      const response = await axios.put(`${API_URL}/vote/votes/update/${id}`, updatedData);
+      const response = await axios.put(
+        `${API_URL}/vote/votes/update/${id}`,
+        updatedData
+      );
       console.log(response);
-      
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -70,7 +77,7 @@ export const updateVote = createAsyncThunk(
 
 // Delete a vote by ID
 export const deleteVote = createAsyncThunk(
-  'votes/deleteVote',
+  "votes/deleteVote",
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`${API_URL}/vote/votes/delete/${id}`);
@@ -81,9 +88,24 @@ export const deleteVote = createAsyncThunk(
   }
 );
 
+// Update vote status (publish/draft)
+export const updateVoteStatus = createAsyncThunk(
+  "votes/updateStatus",
+  async ({ id, status }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(`${API_URL}/vote/votes/status/${id}`, {
+        status,
+      });
+      return response.data.vote; // return updated vote object
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 // Slice
 const voteSlice = createSlice({
-  name: 'votes',
+  name: "votes",
   initialState: {
     votes: [],
     vote: null,
@@ -132,8 +154,7 @@ const voteSlice = createSlice({
       state.error = null;
     });
     builder.addCase(getVoteById.fulfilled, (state, action) => {
-      
-      state.vote = action.payload; 
+      state.vote = action.payload;
     });
     builder.addCase(getVoteById.rejected, (state, action) => {
       state.loading = false;
@@ -163,6 +184,18 @@ const voteSlice = createSlice({
     });
     builder.addCase(deleteVote.rejected, (state, action) => {
       state.loading = false;
+      state.error = action.payload;
+    });
+
+    // Update Vote Status (Publish/Draft)
+    builder.addCase(updateVoteStatus.fulfilled, (state, action) => {
+      const updatedVote = action.payload;
+      const index = state.votes.findIndex((v) => v._id === updatedVote._id);
+      if (index !== -1) {
+        state.votes[index] = updatedVote;
+      }
+    });
+    builder.addCase(updateVoteStatus.rejected, (state, action) => {
       state.error = action.payload;
     });
   },

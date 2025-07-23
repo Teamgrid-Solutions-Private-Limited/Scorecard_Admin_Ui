@@ -51,7 +51,7 @@ export default function AddActivity(props) {
     date: "",
     congress: "",
     readMore: "",
-    status: "",
+    trackActivities: "",
   });
 
   const preFillForm = () => {
@@ -70,7 +70,7 @@ export default function AddActivity(props) {
         congress: selectedActivity.congress || "",
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
         readMore: selectedActivity.readMore || "",
-        status: selectedActivity.status || "",
+        trackActivities: selectedActivity.trackActivities || "",
       });
     }
   };
@@ -523,8 +523,8 @@ export default function AddActivity(props) {
                       >
                         <RadioGroup
                           row
-                          name="status"
-                          value={formData.status}
+                          name="trackActivities"
+                          value={formData.trackActivities}
                           onChange={handleChange}
                         >
                           <FormControlLabel
