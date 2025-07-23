@@ -26,6 +26,7 @@ import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AddIcon from '@mui/icons-material/Add';
+import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
 
 const mainListItems = [
   { text: "Senators", icon: <GavelRoundedIcon />, link: "/" },
@@ -37,6 +38,7 @@ const mainListItems = [
   { text: "Votes We Scored", icon: <DescriptionRoundedIcon />, link: "/bills" },
   { text: "Activities We Track", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
   { text: "Manage Terms", icon: <AddIcon/>, link: "/manage-term"},
+  { text: "Manage Users", icon: <PersonAddAltRoundedIcon />, link: "/add-user" },
 ];
 
 export default function MenuContent() {
