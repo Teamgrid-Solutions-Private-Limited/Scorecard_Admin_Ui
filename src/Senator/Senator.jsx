@@ -139,7 +139,7 @@ export default function Senator(props) {
       console.log("Merged Senators with termname:", merged);
     }
   }, [senators, senatorData, terms]);
-
+console.log(" Senators:", senators);
   // Build list of years from 2015 to current year
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -304,12 +304,12 @@ export default function Senator(props) {
     );
   };
   const handleYearFilter = (year) => {
-  setSelectedYears(prev => 
-    prev.includes(year) 
-      ? prev.filter(y => y !== year) 
-      : [...prev, year]
-  );
-};
+    setSelectedYears(prev =>
+      prev.includes(year)
+        ? prev.filter(y => y !== year)
+        : [...prev, year]
+    );
+  };
   const handleTermMenuOpen = (event) => {
     setTermFilterAnchorEl(event.currentTarget);
   };
@@ -330,19 +330,19 @@ export default function Senator(props) {
       if (senator.currentTerm === true) return false;
     }
     // Year filter
-      if (selectedYears.length > 0) {
-    if (senator.termName && senator.termName.includes("-")) {
-      const [start, end] = senator.termName.split("-").map(Number);
-      const hasMatchingYear = selectedYears.some(year => {
-        const yearNum = Number(year);
-        return yearNum >= start && yearNum <= end;
-      });
-      if (!hasMatchingYear) return false;
-    } else {
-      return false;
+    if (selectedYears.length > 0) {
+      if (senator.termName && senator.termName.includes("-")) {
+        const [start, end] = senator.termName.split("-").map(Number);
+        const hasMatchingYear = selectedYears.some(year => {
+          const yearNum = Number(year);
+          return yearNum >= start && yearNum <= end;
+        });
+        if (!hasMatchingYear) return false;
+      } else {
+        return false;
+      }
     }
-  }
-  
+
     // if (selectedYear) {
     //   if (senator.termName && senator.termName.includes("-")) {
     //     const [start, end] = senator.termName.split("-").map(Number);
@@ -385,7 +385,7 @@ export default function Senator(props) {
     partyFilter.length +
     stateFilter.length +
     ratingFilter.length +
-     selectedYears.length +
+    selectedYears.length +
     (termFilter ? 1 : 0);
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -859,57 +859,57 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "year" && (
-  <Box sx={{ p: 2, pt: 0 }}>
-    <TextField
-      fullWidth
-      size="small"
-      placeholder="Search years..."
-      value={searchTerms.year}
-      onChange={(e) => handleSearchChange("year", e.target.value)}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <SearchIcon fontSize="small" />
-          </InputAdornment>
-        ),
-      }}
-      sx={{ mb: 2 }}
-    />
-    <Box sx={{ maxHeight: 200, overflow: "auto" }}>
-      {filteredYearOptions.length > 0 ? (
-        filteredYearOptions.map((year) => (
-          <Box
-            key={year}
-            onClick={() => handleYearFilter(year.toString())}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              p: 1,
-              borderRadius: 1,
-              cursor: "pointer",
-              "&:hover": {
-                bgcolor: "action.hover",
-              },
-            }}
-          >
-            {selectedYears.includes(year.toString()) ? (
-              <CheckIcon color="primary" fontSize="small" />
-            ) : (
-              <Box sx={{ width: 24, height: 24 }} />
-            )}
-            <Typography variant="body2" sx={{ ml: 1 }}>
-              {year}
-            </Typography>
-          </Box>
-        ))
-      ) : (
-        <Typography variant="body2" color="textSecondary" sx={{ p: 1 }}>
-          No years found
-        </Typography>
-      )}
-    </Box>
-  </Box>
-)}
+                            <Box sx={{ p: 2, pt: 0 }}>
+                              <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Search years..."
+                                value={searchTerms.year}
+                                onChange={(e) => handleSearchChange("year", e.target.value)}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                sx={{ mb: 2 }}
+                              />
+                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                                {filteredYearOptions.length > 0 ? (
+                                  filteredYearOptions.map((year) => (
+                                    <Box
+                                      key={year}
+                                      onClick={() => handleYearFilter(year.toString())}
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        p: 1,
+                                        borderRadius: 1,
+                                        cursor: "pointer",
+                                        "&:hover": {
+                                          bgcolor: "action.hover",
+                                        },
+                                      }}
+                                    >
+                                      {selectedYears.includes(year.toString()) ? (
+                                        <CheckIcon color="primary" fontSize="small" />
+                                      ) : (
+                                        <Box sx={{ width: 24, height: 24 }} />
+                                      )}
+                                      <Typography variant="body2" sx={{ ml: 1 }}>
+                                        {year}
+                                      </Typography>
+                                    </Box>
+                                  ))
+                                ) : (
+                                  <Typography variant="body2" color="textSecondary" sx={{ p: 1 }}>
+                                    No years found
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          )}
                           {/* {expandedFilter === "year" && (
                             <Box sx={{ p: 2, pt: 0 }}>
                               <TextField
