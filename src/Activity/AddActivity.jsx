@@ -30,6 +30,14 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import CancelIcon from '@mui/icons-material/Cancel';
+import {
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from '@mui/material';
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -41,8 +49,9 @@ export default function AddActivity(props) {
     title: "",
     shortDesc: "",
     date: "",
-    congress:"",
+    congress: "",
     readMore: "",
+    trackActivities: "",
   });
 
   const preFillForm = () => {
@@ -61,6 +70,7 @@ export default function AddActivity(props) {
         congress: selectedActivity.congress || "",
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
         readMore: selectedActivity.readMore || "",
+        trackActivities: selectedActivity.trackActivities || "",
       });
     }
   };
@@ -115,7 +125,7 @@ export default function AddActivity(props) {
     }
     setSnackbarOpen(false);
   };
- 
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -124,7 +134,12 @@ export default function AddActivity(props) {
         setSnackbarMessage("Activity updated successfully!");
         setSnackbarSeverity("success");
       } else {
-        if(!formData.type||!formData.title||!formData.shortDesc||!formData.readMore){
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.readMore
+        ) {
           setSnackbarMessage("please fill all fields!");
           setSnackbarSeverity("warning");
           setSnackbarOpen(true);
@@ -474,6 +489,91 @@ export default function AddActivity(props) {
                         }}
                       />
                     </FormControl>
+                  </Grid>
+                  <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+                    sx={{ ml: { xs: 0, sm: 6 } }}
+                  >
+                    <Grid item xs={12} sm={2}>
+                      <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                      }}
+                    >
+                      Tracked Activities
+                    </InputLabel>
+                    </Grid>
+
+                    <Grid item xs={12} sm={10}>
+                      <FormControl
+                        sx={{
+                          fontFamily: "'Be Vietnam Pro', sans-serif",
+                          "& .MuiFormControlLabel-label": {
+                            fontSize: "13px",
+                            fontFamily: "'Be Vietnam Pro', sans-serif",
+                          },
+                        }}
+                      >
+                        <RadioGroup
+                          row
+                          name="trackActivities"
+                          value={formData.trackActivities}
+                          onChange={handleChange}
+                        >
+                          <FormControlLabel
+                            value="Completed"
+                            control={
+                              <Radio
+                                icon={
+                                  <CheckCircleIcon sx={{ color: "#D3D3D3" }} />
+                                }
+                                checkedIcon={
+                                  <CheckCircleIcon sx={{ color: "green" }} />
+                                }
+                              />
+                            }
+                            label="Completed"
+                          />
+                          <FormControlLabel
+                            value="Pending"
+                            control={
+                              <Radio
+                                icon={
+                                  <RadioButtonUncheckedIcon
+                                    sx={{ color: "#D3D3D3" }}
+                                  />
+                                }
+                                checkedIcon={
+                                  <RadioButtonUncheckedIcon
+                                    sx={{ color: "#b4af4bff" }}
+                                  />
+                                }
+                              />
+                            }
+                            label="Pending"
+                          />
+                          <FormControlLabel
+                            value="Failed"
+                            control={
+                              <Radio
+                                icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
+                                checkedIcon={
+                                  <CancelIcon sx={{ color: "red" }} />
+                                }
+                              />
+                            }
+                            label="Failed"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+                    </Grid>
                   </Grid>
                 </Grid>
               </Box>

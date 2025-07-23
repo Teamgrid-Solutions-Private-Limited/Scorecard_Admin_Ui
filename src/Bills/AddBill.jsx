@@ -30,6 +30,9 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -46,6 +49,7 @@ export default function AddBill(props) {
     termId: "",
     rollCall: "",
     readMore: "",
+    sbaPosition: "",
   });
 
   const preFillForm = () => {
@@ -53,12 +57,11 @@ export default function AddBill(props) {
       const termId = selectedVote.termId?._id || "";
       setFormData({
         ...formData,
-        type:
-          selectedVote.type.includes("senate") 
-            ? "senate"
-            : selectedVote.type.includes("house")
-            ? "house"
-            : "",
+        type: selectedVote.type.includes("senate")
+          ? "senate"
+          : selectedVote.type.includes("house")
+          ? "house"
+          : "",
         title: selectedVote.title || "",
         shortDesc: selectedVote.shortDesc || "",
         longDesc: selectedVote.longDesc || "",
@@ -67,6 +70,7 @@ export default function AddBill(props) {
         termId: termId, // Correctly set termId
         rollCall: selectedVote.rollCall || "",
         readMore: selectedVote.readMore || "",
+        sbaPosition: selectedVote.sbaPosition || "",
       });
     }
   };
@@ -127,7 +131,7 @@ export default function AddBill(props) {
       setSnackbarMessage("Term is required!");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
-      return; 
+      return;
     }
     setLoading(true);
     try {
@@ -150,7 +154,6 @@ export default function AddBill(props) {
       setLoading(false); // Ensure loading stops after success or failure
     }
   };
-  
 
   return (
     <AppTheme>
@@ -469,7 +472,6 @@ export default function AddBill(props) {
                       />
                     </FormControl>
                   </Grid>
-                  
 
                   <Grid size={2}>
                     <InputLabel
@@ -636,6 +638,75 @@ export default function AddBill(props) {
                         }}
                       />
                     </FormControl>
+                  </Grid>
+                  <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+                    sx={{ ml: { xs: 0, sm: 10.2 } }}
+                  >
+                    <Grid item xs={12} sm={2}>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "end",
+                          fontWeight: 700,
+                          my: 0,
+                          width: "100%",
+                          fontFamily: "'Be Vietnam Pro', sans-serif",
+                          fontSize: "13px",
+                        }}
+                      >
+                        SBA Position
+                      </InputLabel>
+                    </Grid>
+
+                    <Grid item xs={12} sm={10}>
+                      <FormControl
+                        sx={{
+                          fontFamily: "'Be Vietnam Pro', sans-serif",
+                          "& .MuiFormControlLabel-label": {
+                            fontSize: "13px",
+                            fontFamily: "'Be Vietnam Pro', sans-serif",
+                          },
+                        }}
+                      >
+                        <RadioGroup
+                          row
+                          name="sbaPosition"
+                          value={formData.sbaPosition}
+                          onChange={handleChange}
+                        >
+                          <FormControlLabel
+                            value="Yes"
+                            control={
+                              <Radio
+                                icon={
+                                  <CheckCircleIcon sx={{ color: "#D3D3D3" }} />
+                                }
+                                checkedIcon={
+                                  <CheckCircleIcon sx={{ color: "green" }} />
+                                }
+                              />
+                            }
+                            label="Yes"
+                          />
+                          <FormControlLabel
+                            value="No"
+                            control={
+                              <Radio
+                                icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
+                                checkedIcon={
+                                  <CancelIcon sx={{ color: "red" }} />
+                                }
+                              />
+                            }
+                            label="No"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+                    </Grid>
                   </Grid>
                 </Grid>
               </Box>

@@ -42,6 +42,7 @@ export default function SearchBill(props) {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false); 
   const [searchAttempted, setSearchAttempted] = useState(false); // Track if search was attempted
+  const [draftBills, setDraftBills] = useState([]);
   const navigate = useNavigate();
   
 
