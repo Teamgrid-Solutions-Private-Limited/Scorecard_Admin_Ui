@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllVotes, deleteVote } from "../redux/reducer/voteSlice";
+import { getAllVotes, deleteVote, updateVoteStatus, bulkUpdateSbaPosition } from "../redux/reducer/voteSlice";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import { Box, Stack, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -24,6 +24,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  MenuItem,
 } from "@mui/material";
 import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
@@ -33,7 +34,6 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-import { updateVoteStatus } from "../redux/reducer/voteSlice";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -48,6 +48,37 @@ export default function Bills(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all"); // 'all', 'published', 'draft'
+
+  const [selectedBills, setSelectedBills] = useState([]); // Store selected bill IDs
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
+  const [bulkSbaPosition, setBulkSbaPosition] = useState(""); // Store bulk SBA position value
+
+  const handleBulkUpdate = async () => {
+    if (!selectedBills.length || !bulkSbaPosition) return;
+
+    setFetching(true);
+    try {
+      await dispatch(bulkUpdateSbaPosition({
+        ids: selectedBills,
+        sbaPosition: bulkSbaPosition // Already capitalized from dropdown
+      }));
+
+      await dispatch(getAllVotes());
+      setSnackbarMessage(`Updated SBA position for ${selectedBills.length} bill(s)`);
+      setSnackbarSeverity("success");
+
+      // Reset selection
+      setSelectedBills([]);
+      setBulkSbaPosition("");
+      setIsBulkEditMode(false);
+    } catch (error) {
+      setSnackbarMessage("Failed to update bills");
+      setSnackbarSeverity("error");
+    } finally {
+      setFetching(false);
+      setSnackbarOpen(true);
+    }
+  };
 
   useEffect(() => {
     dispatch(getAllVotes());
@@ -70,11 +101,13 @@ export default function Bills(props) {
       ? vote.type.toLowerCase().includes("senate")
         ? "Senate"
         : vote.type.toLowerCase().includes("house")
-        ? "House"
-        : "Other"
+          ? "House"
+          : "Other"
       : "Other",
     status: vote.status || "draft", // <== ADD THI
   }));
+
+  console.log("bills:", billsData)
 
   const handleEdit = (row) => {
     navigate(`edit-bill/${row._id}`);
@@ -209,7 +242,23 @@ export default function Bills(props) {
                 </TextField>
               </Stack>
 
+
+
               <Stack direction="row" spacing={2} alignItems="center">
+                <Button
+                  onClick={() => setIsBulkEditMode(!isBulkEditMode)}
+                  sx={{
+                    backgroundColor: isBulkEditMode ? "#CC9A3A" : "#4a90e2",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: isBulkEditMode ? "#B38935" : "#357ABD",
+                    },
+                  }}
+                >
+                  {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
+                </Button>
                 <Button
                   onClick={() => navigate("/search-bills")}
                   sx={{
@@ -227,6 +276,51 @@ export default function Bills(props) {
               </Stack>
             </Box>
 
+            {isBulkEditMode && (
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 2,
+                  backgroundColor: "action.hover",
+                  borderRadius: 1,
+                  mb: 2,
+                }}
+              >
+                <Typography variant="subtitle1">
+                  {selectedBills.length} bill(s) selected
+                </Typography>
+
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <TextField
+                    select
+                    label="Set SBA Position"
+                    value={bulkSbaPosition}
+                    onChange={(e) => setBulkSbaPosition(e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                  >
+                    <MenuItem value="Yes">Yes</MenuItem>
+                    <MenuItem value="No">No</MenuItem>
+                  </TextField>
+
+                  <Button
+                    // variant="contained"
+                    disabled={!selectedBills.length || !bulkSbaPosition}
+                    onClick={handleBulkUpdate}
+                    sx={{
+                      backgroundColor: "#68e24aff",
+                      "&:hover": { backgroundColor: "#357ABD" },
+                    }}
+                  >
+                    Apply
+                  </Button>
+                </Stack>
+              </Box>
+            )}
+
             <MainGrid
               type="bills"
               data={billsData}
@@ -234,6 +328,9 @@ export default function Bills(props) {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               onToggleStatus={handleToggleStatus}
+              isSelectable={isBulkEditMode} // Pass this prop to enable selection
+              onSelectionChange={setSelectedBills}
+              selectedItems={selectedBills}
             />
           </Stack>
         </Box>

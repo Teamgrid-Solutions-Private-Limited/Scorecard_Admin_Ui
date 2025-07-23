@@ -48,6 +48,7 @@ export const getVoteById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/vote/votes/viewId/${id}`, {
         headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
+      console.log("GetVoteById", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -99,6 +100,32 @@ export const updateVoteStatus = createAsyncThunk(
       return response.data.vote; // return updated vote object
     } catch (error) {
       return rejectWithValue(error.response.data);
+    }
+  }
+);
+// Add this to your existing voteSlice.js
+export const bulkUpdateSbaPosition = createAsyncThunk(
+  'votes/bulkUpdateSbaPosition',
+  async ({ ids, sbaPosition }, { rejectWithValue }) => {
+    try {
+      // Ensure sbaPosition is capitalized as expected by backend
+      const formattedSbaPosition =
+        sbaPosition && typeof sbaPosition === 'string'
+          ? sbaPosition.charAt(0).toUpperCase() + sbaPosition.slice(1).toLowerCase()
+          : sbaPosition;
+      const response = await axios.patch(
+        'http://localhost:4000/vote/update/bulk-update-sbaPosition',
+        { ids, sbaPosition: formattedSbaPosition },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-protected-key': 'MySuperSecretApiKey123',
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -197,6 +224,28 @@ const voteSlice = createSlice({
     });
     builder.addCase(updateVoteStatus.rejected, (state, action) => {
       state.error = action.payload;
+    });
+    // Add these cases to your existing extraReducers builder
+    builder.addCase(bulkUpdateSbaPosition.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+
+    builder.addCase(bulkUpdateSbaPosition.fulfilled, (state, action) => {
+      state.loading = false;
+      // Update the local state with the modified bills
+      const updatedBills = action.payload.updatedBills;
+      updatedBills.forEach(updatedBill => {
+        const index = state.votes.findIndex(v => v._id === updatedBill._id);
+        if (index !== -1) {
+          state.votes[index] = updatedBill;
+        }
+      });
+    });
+
+    builder.addCase(bulkUpdateSbaPosition.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || 'Failed to update bills';
     });
   },
 });

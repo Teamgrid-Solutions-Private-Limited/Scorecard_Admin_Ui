@@ -11,7 +11,10 @@ export default function MainGrid({
   onEdit,
   onDelete,
   onToggleStatus ,
-  handleToggleStatusAct
+  handleToggleStatusAct,
+  isSelectable = false, // New prop for bulk edit mode
+  onSelectionChange, // New prop to handle selection changes
+  selectedItems = []
 }) {
   const title =
     type === "bills"
@@ -32,7 +35,10 @@ export default function MainGrid({
             onDelete={onDelete}
             onToggleStatus={onToggleStatus}
             handleToggleStatusAct={handleToggleStatusAct}
-          />
+             isSelectable={isSelectable} // Pass to CustomizedDataGrid
+            onSelectionChange={onSelectionChange} // Pass to CustomizedDataGrid
+            selectedItems={selectedItems}
+         />
         </Grid>
       </Grid>
       <Footer />

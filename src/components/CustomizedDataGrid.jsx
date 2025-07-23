@@ -27,6 +27,9 @@ export default function CustomizedDataGrid({
   onDelete,
   onToggleStatus,
   handleToggleStatusAct,
+  isSelectable = false,
+  onSelectionChange,
+  selectedItems = [],
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
@@ -469,6 +472,9 @@ export default function CustomizedDataGrid({
         slots={{
           noRowsOverlay: CustomNoRowsOverlay,
         }}
+        checkboxSelection={isSelectable}
+        onRowSelectionModelChange={isSelectable ? (ids) => onSelectionChange && onSelectionChange(ids) : undefined}
+        selectionModel={isSelectable ? selectedItems : []}
         sx={{
           "& .MuiDataGrid-row": {
             maxHeight: "70px !important",
