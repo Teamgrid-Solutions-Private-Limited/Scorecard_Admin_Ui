@@ -62,7 +62,8 @@ export default function Addrepresentative(props) {
   const { votes } = useSelector((state) => state.vote);
   const houseData = useSelector((state) => state.houseData);
   const { activities } = useSelector((state) => state.activity);
-  const houseActivities = activities?.filter(activity => activity.type === "house") || [];
+  const houseActivities =
+    activities?.filter((activity) => activity.type === "house") || [];
 
   // Initialize as an array to support multiple terms
   const [houseTermData, setHouseTermData] = useState([
@@ -257,7 +258,7 @@ export default function Addrepresentative(props) {
                   }
 
                   return {
-                    voteId: vote.voteId?._id || vote.voteId ||null,
+                    voteId: vote.voteId?._id || vote.voteId || null,
                     score: scoreValue,
                   };
                 })
@@ -505,13 +506,12 @@ export default function Addrepresentative(props) {
                 variant="outlined"
                 onClick={handleSave}
                 sx={{
-                  backgroundColor: "#9150e8 !important", // Force blue color
-                  color: "white !important", // Force white text
-                  padding: "0.5rem 1rem", // px-4 py-2
-                  // borderRadius: "0.25rem", // rounded
-                  marginLeft: "0.5rem", // ml-2
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#7b1fe0 !important", // Same color on hover
+                    backgroundColor: "#357ABD !important",
                   },
                 }}
               >
@@ -725,13 +725,12 @@ export default function Addrepresentative(props) {
                         variant="outlined"
                         sx={{
                           alignSelf: "flex-start",
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#4a90e2 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#357ABD !important",
                           },
                         }}
                         startIcon={<CloudUploadIcon />}
@@ -1041,9 +1040,9 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yes</MenuItem>
-                                <MenuItem value="No">No</MenuItem>
-                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="Yes">Yea</MenuItem>
+                                <MenuItem value="No">Nay</MenuItem>
+                                <MenuItem value="Neutral">Other</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
@@ -1067,13 +1066,12 @@ export default function Addrepresentative(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#4a90e2 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#357ABD !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -1157,7 +1155,8 @@ export default function Addrepresentative(props) {
                                 <MenuItem value="" disabled>
                                   Select an Activity
                                 </MenuItem>
-                                {houseActivities && houseActivities.length > 0 ? (
+                                {houseActivities &&
+                                houseActivities.length > 0 ? (
                                   houseActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
@@ -1196,9 +1195,9 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yes</MenuItem>
-                                <MenuItem value="No">No</MenuItem>
-                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="Yes">Yea</MenuItem>
+                                <MenuItem value="No">Nay</MenuItem>
+                                <MenuItem value="Neutral">Other</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
@@ -1219,17 +1218,16 @@ export default function Addrepresentative(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important", // Force blue color
-                          color: "white !important", // Force white text
-                          padding: "0.5rem 1rem", // px-4 py-2
-                          // borderRadius: "0.25rem", // rounded
-                          marginLeft: "0.5rem", // ml-2
+                          backgroundColor: "#4a90e2 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important", // Same color on hover
+                            backgroundColor: "#357ABD !important",
                           },
                         }}
                         startIcon={<AddIcon />}
-                        onClick={()=> handleAddActivity(termIndex)}
+                        onClick={() => handleAddActivity(termIndex)}
                       >
                         Add Activity
                       </Button>
@@ -1245,13 +1243,12 @@ export default function Addrepresentative(props) {
               variant="outlined"
               sx={{
                 alignSelf: "flex-start",
-                backgroundColor: "#9150e8 !important", // Force blue color
-                color: "white !important", // Force white text
-                padding: "0.5rem 1rem", // px-4 py-2
-                // borderRadius: "0.25rem", // rounded
-                marginLeft: "0.5rem", // ml-2
+                backgroundColor: "#4a90e2 !important",
+                color: "white !important",
+                padding: "0.5rem 1rem",
+                marginLeft: "0.5rem",
                 "&:hover": {
-                  backgroundColor: "#7b1fe0 !important", // Same color on hover
+                  backgroundColor: "#357ABD !important",
                 },
               }}
               startIcon={<AddIcon />}

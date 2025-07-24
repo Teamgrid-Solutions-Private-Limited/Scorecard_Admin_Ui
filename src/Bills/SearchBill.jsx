@@ -34,13 +34,18 @@ import axios from "axios";
 import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import FixedHeader from "../components/FixedHeader";
+import Footer from "../components/Footer";
 
 export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false); 
+  const [searchAttempted, setSearchAttempted] = useState(false); // Track if search was attempted
+  const [draftBills, setDraftBills] = useState([]);
   const navigate = useNavigate();
-  
+    const token = localStorage.getItem("token");
+
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -57,6 +62,7 @@ export default function SearchBill(props) {
 
   const handleSearch = async () => {
     setLoading(true);
+    setSearchAttempted(true); // Mark that a search was attempted
     try {
       if(!searchQuery){
         setSnackbarMessage("Fill the Field!")
@@ -71,9 +77,10 @@ export default function SearchBill(props) {
           title: searchQuery,
         },
       });
-      setSearchResults(response.data.data);
+      setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error searching bills:", error);
+      setSearchResults([]); // Defensive: clear results on error
     } finally {
       setLoading(false);
     }
@@ -84,6 +91,7 @@ export default function SearchBill(props) {
     try {
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [bill],
+        
       });
       // console.log("Bill saved successfully:", response.data);
 
@@ -121,7 +129,7 @@ export default function SearchBill(props) {
             zIndex: 9999
           }}
         >
-          <CircularProgress sx={{ color: 'black' }} />
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
       <Snackbar
@@ -140,25 +148,26 @@ export default function SearchBill(props) {
                 {snackbarMessage}
               </MuiAlert>
             </Snackbar>
+      <FixedHeader />
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box
           component="main"
           sx={(theme) => ({
             flexGrow: 1,
+            minHeight: '80vh',
+            display: 'flex',
+            flexDirection: 'column',
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
               : alpha(theme.palette.background.default, 1),
-            overflow: "auto",
           })}
         >
-          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}>
-            <Typography variant="h4" align="center" sx={{ paddingTop: "50px", color: "text.secondary" }}>
-              SBA Scorecard Management System
-            </Typography>
+          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 0, mt: { xs: 8, md: 0 }, flex: 1 }}>
+            
 
-            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
-              <Box sx={{ padding: 5 }}>
+            <Paper elevation={2} sx={{ width: "100%" }}>
+              <Box sx={{ padding: 5, pb: 10 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Search For Bills In Quorum
                 </Typography>
@@ -198,6 +207,7 @@ export default function SearchBill(props) {
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                       fullWidth
                       sx={{
                         maxWidth: { xs: "110%", md: "800px" },
@@ -221,10 +231,12 @@ export default function SearchBill(props) {
                       sx={{
                         width: { xs: "100%", md: "auto" },
                         minWidth: "110px",
-                        backgroundColor: "#9150e8 !important", // Match AddSenator button color
+                        backgroundColor: "#4a90e2 !important",
                         color: "white !important",
+                        padding: "0.5rem 1rem",
+                        marginLeft: "0.5rem",
                         "&:hover": {
-                          backgroundColor: "#7b1fe0 !important", // Match AddSenator hover color
+                          backgroundColor: "#357ABD !important",
                         },
                         transition: "all 0.3s ease",
                       }}
@@ -244,10 +256,10 @@ export default function SearchBill(props) {
                       {/* <CircularProgress /> */}
                     </Box>
                   ) : (
-                    searchResults.length > 0 && (
+                    Array.isArray(searchResults) && searchResults.length > 0 && (
                       <TableContainer
                         component={Paper}
-                        sx={{ marginTop: 6, border: "1px solid #ddd" }}
+                        sx={{ marginTop: 6, border: "1px solid #ddd", backgroundColor: '#fff' }}
                       >
                         <Table size="large" >
                           
@@ -290,10 +302,11 @@ export default function SearchBill(props) {
                                     variant="outlined"
                                     onClick={() => handleAddBill(bill)}
                                     sx={{
-                                      backgroundColor: "#9150e8 !important", // Match AddSenator button color
-                                      color: "white !important",
-                                      "&:hover": {
-                                        backgroundColor: "#7b1fe0 !important", // Match AddSenator hover color
+                                      backgroundColor: "#4a90e2 !important",
+                        color: "white !important",
+                         
+                        "&:hover": {
+                          backgroundColor: "#357ABD !important",
                                       },
                                       transition: "all 0.3s ease",
                                     }}
@@ -308,10 +321,19 @@ export default function SearchBill(props) {
                       </TableContainer>
                     )
                   )}
+                  {/* Show 'No results found' message if search was attempted, not loading, and no results */}
+                  {searchAttempted && !loading && Array.isArray(searchResults) && searchResults.length === 0 && (
+                    <Box sx={{ width: '100%', textAlign: 'center', mt: 4 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        No bills found for your search.
+                      </Typography>
+                    </Box>
+                  )}
                 </Grid>
               </Box>
             </Paper>
           </Stack>
+          <Footer />
         </Box>
       </Box>
     </AppTheme>

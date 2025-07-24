@@ -26,17 +26,19 @@ import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AddIcon from '@mui/icons-material/Add';
+import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
 
 const mainListItems = [
-  { text: "Senate", icon: <GavelRoundedIcon />, link: "/" },
+  { text: "Senators", icon: <GavelRoundedIcon />, link: "/" },
   {
-    text: "Representative",
+    text: "Representatives",
     icon: <GroupsRoundedIcon />,
     link: "/representative",
   },
-  { text: "Bill We Track", icon: <DescriptionRoundedIcon />, link: "/bills" },
-  { text: "Activities", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
-  { text: "Add Term", icon: <AddIcon/>, link: "/manage-term"},
+  { text: "Votes We Scored", icon: <DescriptionRoundedIcon />, link: "/bills" },
+  { text: "Activities We Track", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
+  { text: "Manage Terms", icon: <AddIcon/>, link: "/manage-term"},
+  { text: "Manage Users", icon: <PersonAddAltRoundedIcon />, link: "/manage-user" },
 ];
 
 export default function MenuContent() {
@@ -65,8 +67,8 @@ export default function MenuContent() {
             disablePadding
             sx={{
               display: "block",
-              mt: index === 0 ? 2 : 0,
-              mb: index < mainListItems.length - 1 ? 2 : 0,
+              mt: index === 0 ? 1 : 0, // Reduced top margin for the first item
+              mb: index < mainListItems.length - 1 ? 1 : 0, // Reduced bottom margin for all items except the last
             }}
           >
             <ListItemButton
@@ -81,8 +83,7 @@ export default function MenuContent() {
                   "& .MuiSvgIcon-root": {
                     color: "#CC9A3A !important",
                   },
-                  // borderLeft: "4px solid #CC9A3A", // Add left border on hover
-                  // backgroundColor: "rgba(204, 154, 58, 0.1)", // Light background for hover
+                  backgroundColor: "rgba(240, 240, 240, 0.2)", // Even lighter gray background on hover
                 },
                 "&.active": {
                   color: "#CC9A3A !important",
@@ -92,8 +93,7 @@ export default function MenuContent() {
                   "& .MuiSvgIcon-root": {
                     color: "#CC9A3A !important",
                   },
-                  // borderLeft: "4px solid #CC9A3A", // Add left border when active
-                  // backgroundColor: "rgba(243, 241, 236, 0.98)", // Slightly darker background for active
+                  backgroundColor: "rgba(240, 240, 240, 0.2)", // Even lighter gray background for active
                 },
               }}
             >

@@ -25,6 +25,13 @@ export default function CustomizedDataGrid({
   loading,
   onEdit,
   onDelete,
+  onToggleStatus,
+  handleToggleStatusAct,
+  isSelectable = false,
+  onSelectionChange,
+  selectedItems = [],
+  handleToggleStatusSenator,
+  handleToggleStatusHouse,
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
@@ -117,6 +124,33 @@ export default function CustomizedDataGrid({
             ),
           },
           {
+            field: "toggleStatus",
+            headerName: "Publish/Draft",
+            flex: 1,
+            minWidth: 130,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <button
+                onClick={() => onToggleStatus && onToggleStatus(params.row)}
+                style={{
+                  backgroundColor:
+                    params.row.status === "published" ? "#FFA726" : "#66BB6A",
+                  border: "none",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {params.row.status === "published" ? "Unpublish" : "Publish"}
+              </button>
+            ),
+          },
+          {
             field: "action",
             flex: 1,
             headerName: "Action",
@@ -149,42 +183,72 @@ export default function CustomizedDataGrid({
             ),
           },
         ]
-      :  type === "activities"?[
-        {
-          field: "date",
-          flex: 1,
-          headerName: "Date",
-          minWidth: 150,
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
-        {
-          field: "activity",
-          flex: 3,
-          headerName: "Title",
-          minWidth: 150,
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
-        {
-          field: "activityType",
-          flex: 1,
-          headerName: "Type",
-          minWidth: 150,
-          headerAlign: "center",
-          align: "center",
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
+      : type === "activities"
+      ? [
+          {
+            field: "date",
+            flex: 1,
+            headerName: "Date",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "activity",
+            flex: 3,
+            headerName: "Title",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "activityType",
+            flex: 1,
+            headerName: "Type",
+            minWidth: 150,
+            headerAlign: "center",
+            align: "center",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "toggleStatus",
+            headerName: "Publish/Draft",
+            flex: 1,
+            minWidth: 130,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <button
+                onClick={() =>
+                  handleToggleStatusAct && handleToggleStatusAct(params.row)
+                }
+                style={{
+                  backgroundColor:
+                    params.row.status === "published" ? "#FFA726" : "#66BB6A",
+                  border: "none",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {params.row.status === "published" ? "Unpublish" : "Publish"}
+              </button>
+            ),
+          },
           {
             field: "action",
             flex: 1,
@@ -214,6 +278,90 @@ export default function CustomizedDataGrid({
                 />
                 <DeleteForeverIcon
                   onClick={() => onDelete(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                />
+              </div>
+            ),
+          },
+        ]
+      : type === "user"
+      ? [
+          {
+            field: "fullName",
+            flex: 2,
+            headerName: "Name",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "nickName",
+            flex: 1,
+            headerName: "Nick Name",
+            minWidth: 120,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "email",
+            flex: 2,
+            headerName: "Email",
+            minWidth: 180,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "role",
+            flex: 1,
+            headerName: "Role",
+            minWidth: 100,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            valueGetter: (params) =>
+              params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
+          },
+          {
+            field: "action",
+            flex: 1,
+            headerName: "Action",
+            minWidth: 100,
+            headerAlign: "right",
+            align: "right",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  columnGap: "10px",
+                  height: "100%",
+                  paddingRight: "16px",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit && onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                <DeleteForeverIcon
+                  onClick={() => onDelete && onDelete(params.row)}
                   sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
                 />
               </div>
@@ -269,7 +417,7 @@ export default function CustomizedDataGrid({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: `3px solid ${getBorderColor(params.row.party)}`,
+                    border: `2px solid ${getBorderColor(params.row.party)}`,
                   }}
                 >
                   <Avatar
@@ -356,6 +504,80 @@ export default function CustomizedDataGrid({
               return params || "N/A";
             },
           },
+          ...(type === "representative"
+            ? [
+                {
+                  field: "handleToggleStatusHouse",
+                  headerName: "Publish/Draft",
+                  flex: 1,
+                  minWidth: 130,
+                  renderHeader: (params) => (
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      {params.colDef.headerName}
+                    </Typography>
+                  ),
+                  renderCell: (params) => (
+                    <button
+                      onClick={() =>
+                        handleToggleStatusHouse &&
+                        handleToggleStatusHouse(params.row)
+                      }
+                      style={{
+                        backgroundColor:
+                          params.row.publishStatus === "published"
+                            ? "#FFA726"
+                            : "#66BB6A",
+                        border: "none",
+                        color: "white",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {params.row.publishStatus === "published"
+                        ? "Unpublish"
+                        : "Publish"}
+                    </button>
+                  ),
+                },
+              ]
+            : [
+                {
+                  field: "handleToggleStatusSenator",
+                  headerName: "Publish/Draft",
+                  flex: 1,
+                  minWidth: 130,
+                  renderHeader: (params) => (
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      {params.colDef.headerName}
+                    </Typography>
+                  ),
+                  renderCell: (params) => (
+                    <button
+                      onClick={() =>
+                        handleToggleStatusSenator &&
+                        handleToggleStatusSenator(params.row)
+                      }
+                      style={{
+                        backgroundColor:
+                          params.row.publishStatus === "published"
+                            ? "#FFA726"
+                            : "#66BB6A",
+                        border: "none",
+                        color: "white",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {params.row.publishStatus === "published"
+                        ? "Unpublish"
+                        : "Publish"}
+                    </button>
+                  ),
+                },
+              ]),
+
           {
             field: "action",
             flex: 0.7,
@@ -411,6 +633,9 @@ export default function CustomizedDataGrid({
         slots={{
           noRowsOverlay: CustomNoRowsOverlay,
         }}
+        checkboxSelection={isSelectable}
+        onRowSelectionModelChange={isSelectable ? (ids) => onSelectionChange && onSelectionChange(ids) : undefined}
+        selectionModel={isSelectable ? selectedItems : []}
         sx={{
           "& .MuiDataGrid-row": {
             maxHeight: "70px !important",

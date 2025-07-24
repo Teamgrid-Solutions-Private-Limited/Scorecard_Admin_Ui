@@ -21,7 +21,9 @@ export const getAllTerms = createAsyncThunk(
   'terms/getAllTerms',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/term/terms/viewAll/`);
+      const response = await axios.get(`${API_URL}/term/terms/viewAll/`,{
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -34,7 +36,9 @@ export const getTermById = createAsyncThunk(
   'terms/getTermById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/term/terms/viewId/${id}`);
+      const response = await axios.get(`${API_URL}/term/terms/viewId/${id}`, {
+        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

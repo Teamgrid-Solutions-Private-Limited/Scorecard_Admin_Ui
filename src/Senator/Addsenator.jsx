@@ -37,9 +37,7 @@ import {
   createVote,
   getAllVotes,
 } from "../redux/reducer/voteSlice";
-import {
-  getAllActivity
-} from "../redux/reducer/activitySlice"
+import { getAllActivity } from "../redux/reducer/activitySlice";
 
 import { createSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
@@ -64,7 +62,8 @@ export default function AddSenator(props) {
   const { activities } = useSelector((state) => state.activity);
   const senatorData = useSelector((state) => state.senatorData);
 
- let senatorActivities = activities?.filter((activity)=>activity.type==="senate")||[]
+  let senatorActivities =
+    activities?.filter((activity) => activity.type === "senate") || [];
 
   const [senatorTermData, setSenatorTermData] = useState([
     {
@@ -97,7 +96,6 @@ export default function AddSenator(props) {
       )
     );
   };
-
 
   const handleAddVote = (termIndex) => {
     setSenatorTermData((prev) =>
@@ -140,14 +138,16 @@ export default function AddSenator(props) {
     );
   };
 
-
   const handleAddActivity = (termIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
           ? {
               ...term,
-              activitiesScore: [...term.activitiesScore, { activityId: null, score: "" }],
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: null, score: "" },
+              ],
             }
           : term
       )
@@ -160,7 +160,9 @@ export default function AddSenator(props) {
         index === termIndex
           ? {
               ...term,
-              activitiesScore: term.activitiesScore.filter((_, i) => i !== activityIndex),
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
             }
           : term
       )
@@ -263,7 +265,8 @@ export default function AddSenator(props) {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId: activity.activityId?._id || activity.activityId || null,
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
                   score: activity.score || "",
                 }))
               : [{ activityId: null, score: "" }],
@@ -489,12 +492,12 @@ export default function AddSenator(props) {
                   handleSave(e);
                 }}
                 sx={{
-                  backgroundColor: "#9150e8 !important",
+                  backgroundColor: "#4a90e2 !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#7b1fe0 !important",
+                    backgroundColor: "#357ABD !important",
                   },
                 }}
               >
@@ -704,7 +707,7 @@ export default function AddSenator(props) {
                         component="label"
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important",
+                          backgroundColor: "#4a90e2 !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
@@ -1033,9 +1036,9 @@ export default function AddSenator(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yes</MenuItem>
-                                <MenuItem value="No">No</MenuItem>
-                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="Yes">Yea</MenuItem>
+                                <MenuItem value="No">Nay</MenuItem>
+                                <MenuItem value="Neutral">Other</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
@@ -1057,12 +1060,12 @@ export default function AddSenator(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important",
+                          backgroundColor: "#4a90e2 !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important",
+                            backgroundColor: "#357ABD !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -1116,9 +1119,10 @@ export default function AddSenator(props) {
                                   width: "100%",
                                 }}
                                 renderValue={(selected) => {
-                                  const selectedActivity = senatorActivities.find(
-                                    (a) => a._id === selected
-                                  );
+                                  const selectedActivity =
+                                    senatorActivities.find(
+                                      (a) => a._id === selected
+                                    );
                                   return (
                                     <Typography
                                       sx={{
@@ -1127,7 +1131,8 @@ export default function AddSenator(props) {
                                         textOverflow: "ellipsis",
                                       }}
                                     >
-                                      {selectedActivity?.title || "Select an Activity"}
+                                      {selectedActivity?.title ||
+                                        "Select an Activity"}
                                     </Typography>
                                   );
                                 }}
@@ -1146,7 +1151,8 @@ export default function AddSenator(props) {
                                 <MenuItem value="" disabled>
                                   Select an Activity
                                 </MenuItem>
-                                {senatorActivities && senatorActivities.length > 0 ? (
+                                {senatorActivities &&
+                                senatorActivities.length > 0 ? (
                                   senatorActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
@@ -1185,9 +1191,9 @@ export default function AddSenator(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yes</MenuItem>
-                                <MenuItem value="No">No</MenuItem>
-                                <MenuItem value="Neutral">Neutral</MenuItem>
+                                <MenuItem value="Yes">Yea</MenuItem>
+                                <MenuItem value="No">Nay</MenuItem>
+                                <MenuItem value="Neutral">Other</MenuItem>
                                 <MenuItem value="None">None</MenuItem>
                               </Select>
                             </FormControl>
@@ -1209,12 +1215,12 @@ export default function AddSenator(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#9150e8 !important",
+                          backgroundColor: "#4a90e2 !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important",
+                            backgroundColor: "#357ABD !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -1236,12 +1242,12 @@ export default function AddSenator(props) {
               onClick={handleAddTerm}
               sx={{
                 alignSelf: "flex-start",
-                backgroundColor: "#9150e8 !important",
+                backgroundColor: "#4a90e2 !important",
                 color: "white !important",
                 padding: "0.5rem 1rem",
                 marginLeft: "0.5rem",
                 "&:hover": {
-                  backgroundColor: "#7b1fe0 !important",
+                  backgroundColor: "#357ABD !important",
                 },
               }}
             >

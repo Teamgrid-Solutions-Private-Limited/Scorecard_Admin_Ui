@@ -17,6 +17,8 @@ import SearchBill from '../src/Bills/SearchBill';
 import ManageTerm from "../src/Manageterm/ManageTerm";
 import Activity from '../src/Activity/Activity';
 import AddActivity from '../src/Activity/AddActivity';
+import AddUser from "../src/Authentication/components/AddUser";
+import ManageUser from "../src/Authentication/components/ManageUser";
 
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
@@ -28,7 +30,6 @@ export default function App() {
     <Router basename="/scorecard/admin">
       <Routes>
         <Route path="/login" element={<SignIn />} />
-
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />
         <Route path="add-senator" element={<PrivateRoute element={<SaveSenetors />} />} />
         <Route path="edit-senator/:id" element={<PrivateRoute element={<SaveSenetors />} />} />
@@ -39,11 +40,12 @@ export default function App() {
         <Route path="/add-bill" element={<PrivateRoute element={<AddBill />} />} />
         <Route path="bills/edit-bill/:id" element={<PrivateRoute element={<AddBill />} />} />
         <Route path="/search-bills" element={<PrivateRoute element={<SearchBill />} />} />
-        <Route path="/manage-term" element={<PrivateRoute element={<ManageTerm/>}/>}/>
+        <Route path="/manage-term" element={<PrivateRoute element={<ManageTerm />} />} />
         <Route path="/activities" element={<PrivateRoute element={<Activity />} />} />
         <Route path="/add-activity" element={<PrivateRoute element={<AddActivity />} />} />
         <Route path="/edit-activity/:id" element={<PrivateRoute element={<AddActivity />} />} />
-        
+        <Route path="/add-user" element={<PrivateRoute element={<AddUser />} />} />
+        <Route path="/manage-user" element={<PrivateRoute element={<ManageUser />} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
