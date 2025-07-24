@@ -8,6 +8,7 @@ import {
   clearVoteState,
   updateVote,
   createVote,
+  updateVoteStatus,
 } from "../redux/reducer/voteSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
@@ -133,17 +134,22 @@ export default function AddBill(props) {
       setSnackbarOpen(true);
       return;
     }
+
     setLoading(true);
     try {
+      const updatedFormData = { ...formData, status: "published" };
+
       if (id) {
-        await dispatch(updateVote({ id, updatedData: formData })).unwrap();
+        await dispatch(
+          updateVote({ id, updatedData: updatedFormData })
+        ).unwrap();
         setSnackbarMessage("Bill updated successfully!");
-        setSnackbarSeverity("success");
       } else {
-        await dispatch(createVote(formData)).unwrap();
+        await dispatch(createVote(updatedFormData)).unwrap();
         setSnackbarMessage("Bill created successfully!");
-        setSnackbarSeverity("success");
       }
+
+      setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
       console.error("Save error:", error);
@@ -151,7 +157,41 @@ export default function AddBill(props) {
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
-      setLoading(false); // Ensure loading stops after success or failure
+      setLoading(false);
+    }
+  };
+
+  const handleReview = async () => {
+    if (!formData.termId) {
+      setSnackbarMessage("Term is required!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const updatedFormData = { ...formData, status: "reviewed" };
+
+      if (id) {
+        await dispatch(
+          updateVote({ id, updatedData: updatedFormData })
+        ).unwrap();
+        setSnackbarMessage("Bill Reviewed successfully!");
+      } else {
+        await dispatch(createVote(updatedFormData)).unwrap();
+        setSnackbarMessage("Bill Reviewed successfully!");
+      }
+
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Save error:", error);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -226,6 +266,23 @@ export default function AddBill(props) {
               <Button
                 variant="outlined"
                 sx={{
+
+                  backgroundColor: "#CC9A3A !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#c38f2fff !important",
+                  },
+                }}
+                onClick={handleReview}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
+
                   backgroundColor: "#4a90e2 !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
@@ -645,7 +702,9 @@ export default function AddBill(props) {
                     alignItems="center"
                     sx={{ ml: { xs: 0, sm: 10.2 } }}
                   >
-                    <Grid item xs={12} sm={2}>
+
+                    <Grid item xs={12} sm={2} sx={{ mr: 0.5 }}>
+
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -654,8 +713,12 @@ export default function AddBill(props) {
                           fontWeight: 700,
                           my: 0,
                           width: "100%",
+
+                          
+
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           fontSize: "13px",
+
                         }}
                       >
                         SBA Position
@@ -667,7 +730,11 @@ export default function AddBill(props) {
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
-                            fontSize: "13px",
+
+                            fontSize: "15px",
+
+                          
+
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
                         }}

@@ -124,8 +124,11 @@ export default function CustomizedDataGrid({
             ),
           },
           {
-            field: "toggleStatus",
-            headerName: "Publish/Draft",
+
+            field: "status",
+            headerName: "Status",
+
+
             flex: 1,
             minWidth: 130,
             renderHeader: (params) => (
@@ -133,22 +136,26 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
-            renderCell: (params) => (
-              <button
-                onClick={() => onToggleStatus && onToggleStatus(params.row)}
-                style={{
-                  backgroundColor:
-                    params.row.status === "published" ? "#FFA726" : "#66BB6A",
-                  border: "none",
-                  color: "white",
-                  padding: "6px 12px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                {params.row.status === "published" ? "Unpublish" : "Publish"}
-              </button>
-            ),
+
+            renderCell: (params) => {
+              const status = params?.row?.status;
+              const displayStatus = status
+                ? status.charAt(0).toUpperCase() + status.slice(1)
+                : "N/A";
+
+              return (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%",
+                  }}
+                >
+                  <Typography>{displayStatus}</Typography>
+                </Box>
+              );
+            },
+
           },
           {
             field: "action",
@@ -221,8 +228,11 @@ export default function CustomizedDataGrid({
             ),
           },
           {
-            field: "toggleStatus",
-            headerName: "Publish/Draft",
+
+            field: "status",
+            headerName: "Status",
+
+        
             flex: 1,
             minWidth: 130,
             renderHeader: (params) => (
@@ -230,25 +240,28 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
-            renderCell: (params) => (
-              <button
-                onClick={() =>
-                  handleToggleStatusAct && handleToggleStatusAct(params.row)
-                }
-                style={{
-                  backgroundColor:
-                    params.row.status === "published" ? "#FFA726" : "#66BB6A",
-                  border: "none",
-                  color: "white",
-                  padding: "6px 12px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                {params.row.status === "published" ? "Unpublish" : "Publish"}
-              </button>
-            ),
+
+            renderCell: (params) => {
+              const status = params?.row?.status;
+              const capitalized = status
+                ? status.charAt(0).toUpperCase() + status.slice(1)
+                : "N/A";
+
+              return (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%", // Ensures it fills the row's height
+                  }}
+                >
+                  <Typography>{capitalized}</Typography>
+                </Box>
+              );
+            },
           },
+
+
           {
             field: "action",
             flex: 1,
@@ -361,7 +374,9 @@ export default function CustomizedDataGrid({
                   sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                 />
                 <DeleteForeverIcon
-                  onClick={() => onDelete && onDelete(params.row)}
+
+                  onClick={() => onDelete && onDelete(params.row._id)}
+
                   sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
                 />
               </div>
@@ -507,8 +522,11 @@ export default function CustomizedDataGrid({
           ...(type === "representative"
             ? [
                 {
-                  field: "handleToggleStatusHouse",
-                  headerName: "Publish/Draft",
+
+                  field: "publishStatus",
+                  headerName: "Status",
+
+
                   flex: 1,
                   minWidth: 130,
                   renderHeader: (params) => (
@@ -516,35 +534,33 @@ export default function CustomizedDataGrid({
                       {params.colDef.headerName}
                     </Typography>
                   ),
-                  renderCell: (params) => (
-                    <button
-                      onClick={() =>
-                        handleToggleStatusHouse &&
-                        handleToggleStatusHouse(params.row)
-                      }
-                      style={{
-                        backgroundColor:
-                          params.row.publishStatus === "published"
-                            ? "#FFA726"
-                            : "#66BB6A",
-                        border: "none",
-                        color: "white",
-                        padding: "6px 12px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {params.row.publishStatus === "published"
-                        ? "Unpublish"
-                        : "Publish"}
-                    </button>
-                  ),
+
+                  renderCell: (params) => {
+                    const status = params?.row?.publishStatus;
+
+                    const displayStatus = status
+                      ? status.charAt(0).toUpperCase() + status.slice(1)
+                      : "N/A";
+
+                    return (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          height: "100%",
+                        }}
+                      >
+                        <Typography>{displayStatus}</Typography>
+                      </Box>
+                    );
+                  },
                 },
               ]
             : [
                 {
-                  field: "handleToggleStatusSenator",
-                  headerName: "Publish/Draft",
+                  field: "publishStatus",
+                  headerName: "Status",
+
                   flex: 1,
                   minWidth: 130,
                   renderHeader: (params) => (
@@ -552,29 +568,28 @@ export default function CustomizedDataGrid({
                       {params.colDef.headerName}
                     </Typography>
                   ),
-                  renderCell: (params) => (
-                    <button
-                      onClick={() =>
-                        handleToggleStatusSenator &&
-                        handleToggleStatusSenator(params.row)
-                      }
-                      style={{
-                        backgroundColor:
-                          params.row.publishStatus === "published"
-                            ? "#FFA726"
-                            : "#66BB6A",
-                        border: "none",
-                        color: "white",
-                        padding: "6px 12px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {params.row.publishStatus === "published"
-                        ? "Unpublish"
-                        : "Publish"}
-                    </button>
-                  ),
+
+                  renderCell: (params) => {
+                    const status = params?.row?.publishStatus;
+                    const displayStatus = status
+                      ? status.charAt(0).toUpperCase() + status.slice(1)
+                      : "N/A";
+
+                    return (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          height: "100%",
+                        }}
+                      >
+                        <Typography>{displayStatus}</Typography>
+                      </Box>
+                    );
+                  },
+
+      
+
                 },
               ]),
 
