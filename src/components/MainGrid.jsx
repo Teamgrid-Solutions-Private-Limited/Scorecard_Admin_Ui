@@ -12,6 +12,8 @@ export default function MainGrid({
   onDelete,
   onToggleStatus ,
   handleToggleStatusAct,
+  handleToggleStatusSenator,
+  handleToggleStatusHouse,
   isSelectable = false, // New prop for bulk edit mode
   onSelectionChange, // New prop to handle selection changes
   selectedItems = []
@@ -38,6 +40,8 @@ export default function MainGrid({
              isSelectable={isSelectable} // Pass to CustomizedDataGrid
             onSelectionChange={onSelectionChange} // Pass to CustomizedDataGrid
             selectedItems={selectedItems}
+            handleToggleStatusSenator={handleToggleStatusSenator}
+            handleToggleStatusHouse={handleToggleStatusHouse}
          />
         </Grid>
       </Grid>

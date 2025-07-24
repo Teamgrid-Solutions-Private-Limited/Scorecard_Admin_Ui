@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllHouses } from "../redux/reducer/houseSlice";
+import {
+  getAllHouses,
+  deleteHouse,
+  updateRepresentativeStatus,
+} from "../redux/reducer/houseSlice";
 import {
   Box,
   Stack,
@@ -16,10 +20,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Menu,
-  MenuItem,
-  Chip,
-  Divider,
   Badge,
   InputAdornment,
   IconButton,
@@ -46,7 +46,6 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
 import SearchIcon from "@mui/icons-material/Search";
-import { deleteHouse } from "../redux/reducer/houseSlice";
 const xThemeComponents = {
   ...chartsCustomizations,
   ...dataGridCustomizations,
@@ -73,15 +72,9 @@ export default function Representative(props) {
   const [partyFilter, setPartyFilter] = useState([]);
   const [districtFilter, setDistrictFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
-  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const [partyMenuAnchorEl, setPartyMenuAnchorEl] = useState(null);
-  const [districtMenuAnchorEl, setDistrictMenuAnchorEl] = useState(null);
-  const [ratingMenuAnchorEl, setRatingMenuAnchorEl] = useState(null);
   const { houseData } = useSelector((state) => state.houseData)
   const [mergedHouses, setMergedHouses] = useState([]);
-  const [yearMenuAnchorEl, setYearMenuAnchorEl] = useState(null);
   const [yearFilter, setYearFilter] = useState([]);
-  const [termFilterAnchorEl, setTermFilterAnchorEl] = useState(null);
   const [termFilter, setTermFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedFilter, setExpandedFilter] = useState(null);
@@ -230,31 +223,12 @@ export default function Representative(props) {
   }
 
   // Filter handlers
-  const handleFilterClick = (event) => {
-    setFilterAnchorEl(event.currentTarget);
-  };
+
 
   const handleFilterClose = () => {
     setFilterAnchorEl(null);
   };
 
-  const handlePartyMenuOpen = (event) => {
-    setPartyMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleDistrictMenuOpen = (event) => {
-    setDistrictMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleRatingMenuOpen = (event) => {
-    setRatingMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setPartyMenuAnchorEl(null);
-    setDistrictMenuAnchorEl(null);
-    setRatingMenuAnchorEl(null);
-  };
 
   const handlePartyFilter = (party) => {
     setPartyFilter(prev =>
@@ -375,6 +349,29 @@ export default function Representative(props) {
       setFetching(false);
       setSnackbarOpen(true);
       setOpenDeleteDialog(false);
+    }
+  };
+
+  const handleToggleStatusHouse = async (house) => {
+    const newStatus =
+      house.publishStatus === "published" ? "draft" : "published";
+    try {
+      await dispatch(
+        updateRepresentativeStatus({ id: house._id, publishStatus: newStatus })
+      ).unwrap();
+
+      // Optimistically update local UI without waiting for getAllHouses
+      const updated = houses.map((h) =>
+        h._id === house._id ? { ...h, publishStatus: newStatus } : h
+      );
+      // You may set local state with setHouses(updated) if you're maintaining local state
+      // Or let redux update on re-fetch:
+      dispatch(getAllHouses());
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      setSnackbarMessage("Failed to update status.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -996,139 +993,10 @@ export default function Representative(props) {
               loading={fetching ? false : loading}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
+              handleToggleStatusHouse={handleToggleStatusHouse}
             />
           </Stack>
         </Box>
-
-        <Menu
-          anchorEl={filterAnchorEl}
-          open={Boolean(filterAnchorEl)}
-          onClose={handleFilterClose}
-        >
-          <MenuItem onClick={handlePartyMenuOpen}>Filter by Party</MenuItem>
-          <MenuItem onClick={handleDistrictMenuOpen}>Filter by District</MenuItem>
-          <MenuItem onClick={handleRatingMenuOpen}>Filter by Rating</MenuItem>
-          <MenuItem onClick={(e) => setYearMenuAnchorEl(e.currentTarget)}>Filter by Year</MenuItem>
-          <MenuItem onClick={handleTermMenuOpen}>Filter by Term</MenuItem>
-          <Divider />
-          <MenuItem onClick={clearAllFilters}>Clear all filters</MenuItem>
-        </Menu>
-
-        {/* Party Filter Menu */}
-        <Menu
-          anchorEl={partyMenuAnchorEl}
-          open={Boolean(partyMenuAnchorEl)}
-          onClose={handleMenuClose}
-        >
-          {partyOptions.map(party => (
-            <MenuItem
-              key={party}
-              onClick={() => {
-                handlePartyFilter(party);
-                handleMenuClose();
-              }}
-              sx={{
-                backgroundColor: partyFilter.includes(party) ? '#f0f0f0' : 'transparent',
-              }}
-            >
-              {party}
-            </MenuItem>
-          ))}
-        </Menu>
-
-        {/* District Filter Menu */}
-        <Menu
-          anchorEl={districtMenuAnchorEl}
-          open={Boolean(districtMenuAnchorEl)}
-          onClose={handleMenuClose}
-        >
-          {districtOptions.map(district => (
-            <MenuItem
-              key={district}
-              onClick={() => {
-                handleDistrictFilter(district);
-                handleMenuClose();
-              }}
-              sx={{
-                backgroundColor: districtFilter.includes(district) ? '#f0f0f0' : 'transparent',
-              }}
-            >
-              {district}
-            </MenuItem>
-          ))}
-        </Menu>
-
-        {/* Rating Filter Menu */}
-        <Menu
-          anchorEl={ratingMenuAnchorEl}
-          open={Boolean(ratingMenuAnchorEl)}
-          onClose={handleMenuClose}
-        >
-          {ratingOptions.map(rating => (
-            <MenuItem
-              key={rating}
-              onClick={() => {
-                handleRatingFilter(rating);
-                handleMenuClose();
-              }}
-              sx={{
-                backgroundColor: ratingFilter.includes(rating) ? '#f0f0f0' : 'transparent',
-              }}
-            >
-              {rating}
-            </MenuItem>
-          ))}
-        </Menu>
-        {/* Filter by Year */}
-        <Menu
-          anchorEl={yearMenuAnchorEl}
-          open={Boolean(yearMenuAnchorEl)}
-          onClose={() => setYearMenuAnchorEl(null)}
-        >
-          {years.map((year) => (
-            <MenuItem
-              key={year}
-              onClick={() => handleYearFilter(year)}
-              sx={{
-                backgroundColor: yearFilter.includes(year) ? "#e0e0e0" : "transparent",
-              }}
-            >
-              {year}
-            </MenuItem>
-          ))}
-        </Menu>
-        {/* Term Filter Submenu */}
-        <Menu
-          anchorEl={termFilterAnchorEl}
-          open={Boolean(termFilterAnchorEl)}
-          onClose={() => setTermFilterAnchorEl(null)}
-        >
-          <MenuItem
-            onClick={() => {
-              setTermFilter('current');
-              setTermFilterAnchorEl(null);
-              handleFilterClose();
-            }}
-            sx={{
-              backgroundColor: termFilter === 'current' ? '#f0f0f0' : 'transparent',
-            }}
-          >
-            Current Term
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setTermFilter('past');
-              setTermFilterAnchorEl(null);
-              handleFilterClose();
-            }}
-            sx={{
-              backgroundColor: termFilter === 'past' ? '#f0f0f0' : 'transparent',
-            }}
-          >
-            Past Terms
-          </MenuItem>
-        </Menu>
-
 
         <Snackbar
           open={snackbarOpen}
