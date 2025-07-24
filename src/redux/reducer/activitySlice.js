@@ -50,6 +50,7 @@ export const getActivityById = createAsyncThunk(
           headers: { "x-protected-key": "MySuperSecretApiKey123" },
         }
       );
+      console.log("GetActivityById", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -102,6 +103,44 @@ export const updateActivityStatus = createAsyncThunk(
     }
   }
 );
+// Bulk update trackActivities
+export const bulkUpdateTrackActivities = createAsyncThunk(
+  "activity/bulkUpdateTrackActivities",
+  async ({ ids, trackActivities }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/activity/update/bulk-update-track-activities`,
+        { ids, trackActivities },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-protected-key": "MySuperSecretApiKey123" // Add if needed
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+// export const bulkUpdateTrackActivities = createAsyncThunk(
+//   "activity/bulkUpdateTrackActivities",
+//   async ({ ids, trackActivities }, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.patch(
+//         `${API_URL}/activity/update/bulk-update-track-activities`,
+//         { ids, trackActivities }
+//       );
+//       console.log("BulkUpdateTrackActivities", response.data);
+//       return response.data;
+//     } catch (error) {
+//       console.error("BulkUpdateTrackActivities Error:", error);
+//       return rejectWithValue(error.response?.data || "Server error");
+//     }
+//   }
+// );
+
 
 // Slice
 const activitySlice = createSlice({
@@ -193,7 +232,7 @@ const activitySlice = createSlice({
       state.error = null;
     });
     builder.addCase(updateActivityStatus.fulfilled, (state, action) => {
-      console.log("Payload:", action.payload); 
+      console.log("Payload:", action.payload);
       state.loading = false;
       const updated = action.payload.activity;
 
@@ -209,6 +248,29 @@ const activitySlice = createSlice({
           ...state.activities[index],
           status: updated.status,
         };
+       
+        builder
+          .addCase(bulkUpdateTrackActivities.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+          })
+          .addCase(bulkUpdateTrackActivities.fulfilled, (state, action) => {
+            state.loading = false;
+            // Update the state with the modified activities
+            if (action.payload.updatedActivities) {
+              action.payload.updatedActivities.forEach(updated => {
+                const index = state.activities.findIndex(a => a._id === updated._id);
+                if (index !== -1) {
+                  state.activities[index] = updated;
+                }
+              });
+            }
+          })
+          .addCase(bulkUpdateTrackActivities.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload?.message || 'Bulk update failed';
+          });
+
       }
     });
 

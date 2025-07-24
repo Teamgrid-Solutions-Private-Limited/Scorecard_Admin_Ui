@@ -5,6 +5,7 @@ import {
   getAllActivity,
   deleteActivity,
   updateActivityStatus,
+  bulkUpdateTrackActivities,
 } from "../redux/reducer/activitySlice";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import { Box, Stack, Typography, Button } from "@mui/material";
@@ -28,6 +29,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  MenuItem
 } from "@mui/material";
 import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
@@ -37,7 +39,6 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-
 export default function Activity(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -51,6 +52,10 @@ export default function Activity(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); // Store selected activity IDs
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
+  const [bulkTrackActivity, setBulkTrackActivity] = useState(""); // Store bulk track activity value
   useEffect(() => {
     dispatch(getAllActivity());
   }, [dispatch]);
@@ -72,8 +77,8 @@ export default function Activity(props) {
       ? activity.type.toLowerCase().includes("senate")
         ? "Senate"
         : activity.type.toLowerCase().includes("house")
-        ? "House"
-        : "Other"
+          ? "House"
+          : "Other"
       : "Other",
     status: activity.status,
   }));
@@ -124,7 +129,74 @@ export default function Activity(props) {
         setSnackbarOpen(true);
       });
   };
+// In your Activity component, update the handleBulkUpdate function:
+const handleBulkUpdate = async () => {
+  if (!selectedTrackActivity.length || !bulkTrackActivity) {
+    setSnackbarMessage("Please select activities and a status");
+    setSnackbarSeverity("warning");
+    setSnackbarOpen(true);
+    return;
+  }
 
+  setFetching(true);
+  try {
+    // Dispatch and unwrap the result to properly catch errors
+    const result = await dispatch(
+      bulkUpdateTrackActivities({
+        ids: selectedTrackActivity,
+        trackActivities: bulkTrackActivity
+      })
+    ).unwrap(); // This is crucial for proper error handling
+
+    setSnackbarMessage(
+      `Successfully updated ${result.updatedActivities?.length || selectedTrackActivity.length} activities`
+    );
+    setSnackbarSeverity("success");
+    
+    // Reset selection
+    setSelectedTrackActivity([]);
+    setBulkTrackActivity("");
+    setIsBulkEditMode(false);
+    
+    // Refresh the data
+    dispatch(getAllActivity());
+  } catch (error) {
+    console.error("Bulk update failed:", error);
+    setSnackbarMessage(
+      error.message || "Failed to update activities"
+    );
+    setSnackbarSeverity("error");
+  } finally {
+    setFetching(false);
+    setSnackbarOpen(true);
+  }
+};
+  // const handleBulkUpdate = async () => {
+  //   if (!selectedTrackActivity.length || !bulkTrackActivity) return;
+
+  //   setFetching(true);
+  //   try {
+  //     await dispatch(bulkUpdateTrackActivities({
+  //       ids: selectedTrackActivity,
+  //       trackActivities: bulkTrackActivity
+  //     }));
+
+  //     await dispatch(getAllActivity());
+  //     setSnackbarMessage(`Updated trackActivities for ${selectedTrackActivity.length} activity(ies)`);
+  //     setSnackbarSeverity("success");
+
+  //     // Reset selection
+  //     setSelectedTrackActivity([]);
+  //     setBulkTrackActivity("");
+  //     setIsBulkEditMode(false);
+  //   } catch (error) {
+  //     setSnackbarMessage("Failed to update activities");
+  //     setSnackbarSeverity("error");
+  //   } finally {
+  //     setFetching(false);
+  //     setSnackbarOpen(true);
+  //   }
+  // };
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       {(loading || fetching) && (
@@ -204,6 +276,20 @@ export default function Activity(props) {
 
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button
+                  onClick={() => setIsBulkEditMode(!isBulkEditMode)}
+                  sx={{
+                    backgroundColor: isBulkEditMode ? "#CC9A3A" : "#4a90e2",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: isBulkEditMode ? "#B38935" : "#357ABD",
+                    },
+                  }}
+                >
+                  {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
+                </Button>
+                <Button
                   onClick={() => navigate("/add-activity")}
                   sx={{
                     backgroundColor: "#4a90e2 !important",
@@ -219,6 +305,51 @@ export default function Activity(props) {
                 </Button>
               </Stack>
             </Box>
+            {isBulkEditMode && (
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 2,
+                  backgroundColor: "action.hover",
+                  borderRadius: 1,
+                  mb: 2,
+                }}
+              >
+                <Typography variant="subtitle1">
+                  {selectedTrackActivity.length} activity(ies) selected
+                </Typography>
+
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <TextField
+                    select
+                    label="Set Track Activity"
+                    value={bulkTrackActivity}
+                    onChange={(e) => setBulkTrackActivity(e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                  >
+                    <MenuItem value="Pending">Pending</MenuItem>
+                    <MenuItem value="Completed">Completed</MenuItem>
+                    <MenuItem value="Failed">Failed</MenuItem>
+                  </TextField>
+
+                  <Button
+                    disabled={!selectedTrackActivity.length || !bulkTrackActivity}
+                    onClick={handleBulkUpdate}
+                    sx={{
+                      backgroundColor: "#68e24aff",
+                      "&:hover": { backgroundColor: "#357ABD" },
+                    }}
+                  >
+                    Apply
+                  </Button>
+                </Stack>
+              </Box>
+            )}
+
             <MainGrid
               type="activities"
               data={activitiesData}
@@ -226,6 +357,9 @@ export default function Activity(props) {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               handleToggleStatusAct={handleToggleStatusAct}
+              isSelectable={isBulkEditMode}
+              onSelectionChange={setSelectedTrackActivity}
+              selectedItems={selectedTrackActivity}
             />
           </Stack>
         </Box>
