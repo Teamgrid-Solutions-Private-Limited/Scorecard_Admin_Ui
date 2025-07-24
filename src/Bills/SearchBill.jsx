@@ -44,7 +44,8 @@ export default function SearchBill(props) {
   const [searchAttempted, setSearchAttempted] = useState(false); // Track if search was attempted
   const [draftBills, setDraftBills] = useState([]);
   const navigate = useNavigate();
-  
+    const token = localStorage.getItem("token");
+
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -90,6 +91,7 @@ export default function SearchBill(props) {
     try {
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [bill],
+        
       });
       // console.log("Bill saved successfully:", response.data);
 

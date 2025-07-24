@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../API";
 import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 // Async thunks for CRUD operations
 
