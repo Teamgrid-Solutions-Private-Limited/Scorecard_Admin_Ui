@@ -26,6 +26,18 @@ import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AddIcon from '@mui/icons-material/Add';
+import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
+import { jwtDecode } from "jwt-decode";
+
+const getRole = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    return jwtDecode(token).role;
+  } catch {
+    return null;
+  }
+};
 
 const mainListItems = [
   { text: "Senators", icon: <GavelRoundedIcon />, link: "/" },
@@ -37,10 +49,15 @@ const mainListItems = [
   { text: "Votes We Scored", icon: <DescriptionRoundedIcon />, link: "/bills" },
   { text: "Activities We Track", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
   { text: "Manage Terms", icon: <AddIcon/>, link: "/manage-term"},
+  // 'Manage Users' will be conditionally added below
 ];
 
 export default function MenuContent() {
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+  const role = getRole();
+  const menuItems = role === 'admin'
+    ? [...mainListItems, { text: "Manage Users", icon: <PersonAddAltRoundedIcon />, link: "/manage-user" }]
+    : mainListItems;
 
   const handleLogoutClick = () => {
     setOpenLogoutDialog(true);
@@ -59,14 +76,14 @@ export default function MenuContent() {
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: "space-between" }}>
       <List dense>
-        {mainListItems.map((item, index) => (
+        {menuItems.map((item, index) => (
           <ListItem
             key={index}
             disablePadding
             sx={{
               display: "block",
               mt: index === 0 ? 1 : 0, // Reduced top margin for the first item
-              mb: index < mainListItems.length - 1 ? 1 : 0, // Reduced bottom margin for all items except the last
+              mb: index < menuItems.length - 1 ? 1 : 0, // Reduced bottom margin for all items except the last
             }}
           >
             <ListItemButton

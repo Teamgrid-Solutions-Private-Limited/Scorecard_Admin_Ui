@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../API";
+import { jwtDecode } from "jwt-decode";
 
 // Create a vote with file upload
 export const createVote = createAsyncThunk(
@@ -77,17 +78,54 @@ export const updateVote = createAsyncThunk(
 );
 
 // Delete a vote by ID
+// Delete a vote by ID
 export const deleteVote = createAsyncThunk(
   "votes/deleteVote",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${API_URL}/vote/votes/delete/${id}`);
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        return rejectWithValue({
+          message: "Authentication token not found",
+        });
+      }
+
+      // Optional: Check role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
+      if (userRole !== "admin") {
+        return rejectWithValue({
+          message: "You are not authorized to delete votes.",
+        });
+      }
+
+      const response = await axios.delete(
+        `${API_URL}/vote/votes/delete/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || "Delete failed");
     }
   }
 );
+// export const deleteVote = createAsyncThunk(
+//   "votes/deleteVote",
+//   async (id, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.delete(`${API_URL}/vote/votes/delete/${id}`);
+//       return response.data;
+//     } catch (error) {
+//       return rejectWithValue(error.response.data);
+//     }
+//   }
+// );
 
 // Update vote status (publish/draft)
 export const updateVoteStatus = createAsyncThunk(
