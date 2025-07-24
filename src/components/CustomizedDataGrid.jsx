@@ -358,7 +358,7 @@ export default function CustomizedDataGrid({
                   sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                 />
                 <DeleteForeverIcon
-                  onClick={() => onDelete && onDelete(params.row)}
+                  onClick={() => onDelete && onDelete(params.row._id)}
                   sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
                 />
               </div>

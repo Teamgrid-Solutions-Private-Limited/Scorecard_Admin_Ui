@@ -22,16 +22,17 @@
     "@mui/x-date-pickers-pro": "latest",
     "@mui/x-tree-view": "latest",
     "@reduxjs/toolkit": "^2.6.1",
-     "tinymce": "^6.7.0",
     "@tinymce/tinymce-react": "^6.0.0",
     "axios": "^1.8.4",
     "clsx": "latest",
     "dayjs": "latest",
     "fs-extra": "^11.3.0",
+    "jwt-decode": "^4.0.0",
     "react": "latest",
     "react-dom": "latest",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.4.0"
+    "react-router-dom": "^7.4.0",
+    "tinymce": "^6.7.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "latest",
