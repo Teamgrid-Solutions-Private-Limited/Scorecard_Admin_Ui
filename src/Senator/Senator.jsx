@@ -61,9 +61,16 @@ import { useTheme } from "@mui/material/styles";
 export default function Senator(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const token = localStorage.getItem("token");
   // Fetch senators from Redux store
-  const { senators, loading } = useSelector((state) => state.senator);
+  // const { senators, loading } = useSelector((state) => state.senator);
   const { senatorData } = useSelector((state) => state.senatorData);
+  const {
+    senators = [],
+    loading,
+    error,
+  } = useSelector((state) => state.senator || {});
+  // console.log("Redux State:", { senators, loading, error });
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -139,7 +146,7 @@ export default function Senator(props) {
       console.log("Merged Senators with termname:", merged);
     }
   }, [senators, senatorData, terms]);
-console.log(" Senators:", senators);
+  console.log(" Senators:", senators);
   // Build list of years from 2015 to current year
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -199,20 +206,27 @@ console.log(" Senators:", senators);
     const interval = setInterval(() => {
       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
     }, 1000);
+
     try {
-      await dispatch(deleteSenator(selectedSenator._id));
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No auth token found");
+
+      const result = await dispatch(deleteSenator(selectedSenator._id));
+      if (result.error) {
+        throw new Error(result.payload.message || "Failed to delete senator");
+      }
       await dispatch(getAllSenators());
       setSnackbarMessage(`${selectedSenator.name} deleted successfully.`);
       setSnackbarSeverity("success");
     } catch (error) {
-      setSnackbarMessage("Failed to delete senator.");
+      setSnackbarMessage(error.message || "Failed to delete senator.");
       setSnackbarSeverity("error");
     } finally {
       clearInterval(interval);
       setFetching(false);
       setSnackbarOpen(true);
       setProgress(100);
-      setTimeout(() => setProgress(0), 500); // Re
+      setTimeout(() => setProgress(0), 500);
     }
   };
 
@@ -223,9 +237,15 @@ console.log(" Senators:", senators);
       setProgress((prev) => (prev >= 100 ? 0 : prev + 25)); // Increase progress in steps
     }, 1000); // Change progress every second
     try {
-      const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
-        type: "senator",
-      });
+      const response = await axios.post(
+        `${API_URL}/fetch-quorum/store-data`,
+        { type: "senator" },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.status === 200) {
         setSnackbarMessage("Success: Senators fetched successfully!");
         setSnackbarSeverity("success");
@@ -366,6 +386,16 @@ console.log(" Senators:", senators);
       .split(/\s+/)
       .filter(Boolean)
       .every((word) => senator.name.toLowerCase().includes(word));
+    const filteredSenators = senators
+      ? senators.filter((senator) => {
+        const name = senator.name?.toLowerCase() || "";
+        return searchQuery
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean)
+          .every((word) => name.includes(word));
+      })
+      : [];
 
     const partyMatch =
       partyFilter.length === 0 || partyFilter.includes(senator.party);
@@ -1124,7 +1154,10 @@ console.log(" Senators:", senators);
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%", bgcolor: "#FF474D" }}
+            sx={{ width: "100%",
+              //  bgcolor: "#FF474D"
+               bgcolor: snackbarMessage === `${selectedSenator?.name} deleted successfully.` ? '#FF474D' : undefined
+               }}
           >
             {snackbarMessage}
           </Alert>

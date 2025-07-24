@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllHouses, deleteHouse } from "../redux/reducer/houseSlice";
+import { getAllHouses } from "../redux/reducer/houseSlice";
 import {
   Box,
   Stack,
@@ -46,7 +46,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
 import SearchIcon from "@mui/icons-material/Search";
-
+import { deleteHouse } from "../redux/reducer/houseSlice";
 const xThemeComponents = {
   ...chartsCustomizations,
   ...dataGridCustomizations,
@@ -92,7 +92,7 @@ export default function Representative(props) {
     year: "",
   });
   const { terms } = useSelector((state) => state.term);
-
+  const token = localStorage.getItem("token");
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
 
@@ -135,7 +135,7 @@ export default function Representative(props) {
           rating: match ? match.rating : "N/A",
           termId: termId,
           termName: termObj ? termObj.name : "",
-           currentTerm: match ? match.currentTerm : false // Add currentTerm from houseData
+          currentTerm: match ? match.currentTerm : false // Add currentTerm from houseData
         };
       });
 
@@ -148,7 +148,7 @@ export default function Representative(props) {
   const transformedHouses = mergedHouses.map((house) => ({
     ...house,
     district: house.district?.split(", ").pop() || "Unknown",
-     currentTerm: house.currentTerm || false // Ensure currentTerm exists
+    currentTerm: house.currentTerm || false // Ensure currentTerm exists
   }));
 
   const partyOptions = [...new Set(transformedHouses.map(rep => rep.party))].filter(Boolean);
@@ -170,15 +170,15 @@ export default function Representative(props) {
     year.toString().includes(searchTerms.year)
   );
 
-  
+
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
-     // Term filter logic - now properly checking currentTerm field
-    if (termFilter === 'current') {
-      if (transformedHouse.currentTerm !== true) return false;
-    } else if (termFilter === 'past') {
-      if (transformedHouse.currentTerm === true) return false;
-    }
+      // Term filter logic - now properly checking currentTerm field
+      if (termFilter === 'current') {
+        if (transformedHouse.currentTerm !== true) return false;
+      } else if (termFilter === 'past') {
+        if (transformedHouse.currentTerm === true) return false;
+      }
       // const nameMatch = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
       // .every((word) => transformedHouse.name.toLowerCase().includes(word));
       if (yearFilter.length > 0) {
@@ -210,7 +210,7 @@ export default function Representative(props) {
     }
   );
 
-    // Filter handlers
+  // Filter handlers
   const toggleFilter = () => {
     setFilterOpen(!filterOpen);
     if (!filterOpen) {
@@ -280,16 +280,16 @@ export default function Representative(props) {
     );
   };
   const handleYearFilter = (year) => {
-  setYearFilter(prev =>
-    prev.includes(year)
-      ? prev.filter(y => y !== year)
-      : [...prev, year]
-  );
-};
+    setYearFilter(prev =>
+      prev.includes(year)
+        ? prev.filter(y => y !== year)
+        : [...prev, year]
+    );
+  };
 
-const handleTermFilter = (term) => {
-  setTermFilter((prev) => (prev === term ? null : term));
-};
+  const handleTermFilter = (term) => {
+    setTermFilter((prev) => (prev === term ? null : term));
+  };
   // Add this handler
   const handleTermMenuOpen = (event) => {
     setTermFilterAnchorEl(event.currentTarget);
@@ -316,9 +316,15 @@ const handleTermFilter = (term) => {
     }, 1000);
 
     try {
-      const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
-        type: "representative",
-      });
+      const response = await axios.post(
+        `${API_URL}/fetch-quorum/store-data`,
+        { type: "representative" },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.status === 200) {
         setSnackbarMessage("Success: Representatives fetched successfully!");
@@ -356,7 +362,7 @@ const handleTermFilter = (term) => {
     try {
       await dispatch(deleteHouse(selectedRepresentative._id));
       await dispatch(getAllHouses());
-      setSnackbarMessage("Representative deleted successfully.");
+      setSnackbarMessage(`${selectedRepresentative?.name} deleted successfully.`);
       setSnackbarSeverity("success");
     } catch (error) {
       setSnackbarMessage("Error deleting representative.");
@@ -450,13 +456,13 @@ const handleTermFilter = (term) => {
                 />
 
 
-               <Box sx={{ position: "relative", display: "inline-block" }}>
+                <Box sx={{ position: "relative", display: "inline-block" }}>
                   <Badge
                     badgeContent={
                       partyFilter.length +
                       districtFilter.length +
                       ratingFilter.length +
-                       yearFilter.length +
+                      yearFilter.length +
                       (termFilter ? 1 : 0)
                     }
                     color="primary"
@@ -954,7 +960,7 @@ const handleTermFilter = (term) => {
                               !partyFilter.length &&
                               !districtFilter.length &&
                               !ratingFilter.length &&
-                              !yearFilter.length && 
+                              !yearFilter.length &&
                               !termFilter
                             }
                           >
@@ -1133,7 +1139,7 @@ const handleTermFilter = (term) => {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%", bgcolor: snackbarMessage === "Representative deleted successfully." ? '#FF474D' : undefined }}
+            sx={{ width: "100%", bgcolor: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? '#FF474D' : undefined }}
           >
             {snackbarMessage}
           </Alert>

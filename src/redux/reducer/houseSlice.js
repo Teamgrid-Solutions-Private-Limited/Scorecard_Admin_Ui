@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../API";
+import { jwtDecode } from "jwt-decode";
 
 // Async thunks for CRUD operations
 
@@ -49,6 +50,7 @@ export const getHouseById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/house/house/viewId/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
+      console.log("GetHouseById", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -78,13 +80,51 @@ export const deleteHouse = createAsyncThunk(
   "house/deleteHouse",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${API_URL}/house/house/delete/${id}`);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return rejectWithValue({
+          message: "Authentication token not found",
+        });
+      }
+
+      // Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
+
+      if (userRole !== "admin") {
+        return rejectWithValue({
+          message: "You are not authorized to delete houses.",
+        });
+      }
+
+      const response = await axios.delete(
+        `${API_URL}/house/house/delete/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+console.log("DeleteHouse", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      console.error("DeleteHouseError", error);
+      return rejectWithValue(error.response?.data || "Delete failed");
     }
   }
 );
+// export const deleteHouse = createAsyncThunk(
+//   "house/deleteHouse",
+//   async (id, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.delete(`${API_URL}/house/house/delete/${id}`);
+//       console.log("DeleteHouse", response.data);
+//       return response.data;
+//     } catch (error) {
+//       return rejectWithValue(error.response.data);
+//     }
+//   }
+// );
 
 // Initial state
 const initialState = {
@@ -178,6 +218,7 @@ const houseSlice = createSlice({
       .addCase(deleteHouse.fulfilled, (state, action) => {
         state.loading = false;
         // state.house = state.house.filter((s) => s.id !== action.payload.id);
+        // state.successMessage = "Representative deleted successfully.";
       })
       .addCase(deleteHouse.rejected, (state, action) => {
         state.loading = false;
