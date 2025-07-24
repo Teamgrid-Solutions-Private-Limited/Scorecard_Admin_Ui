@@ -281,6 +281,90 @@ export default function CustomizedDataGrid({
             ),
           },
         ]
+      : type === "user"
+      ? [
+          {
+            field: "fullName",
+            flex: 2,
+            headerName: "Name",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "nickName",
+            flex: 1,
+            headerName: "Nick Name",
+            minWidth: 120,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "email",
+            flex: 2,
+            headerName: "Email",
+            minWidth: 180,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "role",
+            flex: 1,
+            headerName: "Role",
+            minWidth: 100,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            valueGetter: (params) =>
+              params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
+          },
+          {
+            field: "action",
+            flex: 1,
+            headerName: "Action",
+            minWidth: 100,
+            headerAlign: "right",
+            align: "right",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  columnGap: "10px",
+                  height: "100%",
+                  paddingRight: "16px",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit && onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                <DeleteForeverIcon
+                  onClick={() => onDelete && onDelete(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                />
+              </div>
+            ),
+          },
+        ]
       : [
           {
             field: "name",

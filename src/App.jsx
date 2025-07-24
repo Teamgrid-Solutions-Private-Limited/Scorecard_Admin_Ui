@@ -18,6 +18,7 @@ import ManageTerm from "../src/Manageterm/ManageTerm";
 import Activity from '../src/Activity/Activity';
 import AddActivity from '../src/Activity/AddActivity';
 import AddUser from "../src/Authentication/components/AddUser";
+import ManageUser from "../src/Authentication/components/ManageUser";
 
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="/add-activity" element={<PrivateRoute element={<AddActivity />} />} />
         <Route path="/edit-activity/:id" element={<PrivateRoute element={<AddActivity />} />} />
         <Route path="/add-user" element={<PrivateRoute element={<AddUser />} />} />
+        <Route path="/manage-user" element={<PrivateRoute element={<ManageUser />} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

@@ -38,7 +38,7 @@ const mainListItems = [
   { text: "Votes We Scored", icon: <DescriptionRoundedIcon />, link: "/bills" },
   { text: "Activities We Track", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
   { text: "Manage Terms", icon: <AddIcon/>, link: "/manage-term"},
-  { text: "Manage Users", icon: <PersonAddAltRoundedIcon />, link: "/add-user" },
+  { text: "Manage Users", icon: <PersonAddAltRoundedIcon />, link: "/manage-user" },
 ];
 
 export default function MenuContent() {

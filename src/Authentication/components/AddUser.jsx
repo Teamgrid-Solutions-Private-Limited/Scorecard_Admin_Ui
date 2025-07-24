@@ -11,7 +11,9 @@ import {
   MenuItem,
   Card as MuiCard,
   Snackbar,
-  Alert as MuiAlert
+  Alert as MuiAlert,
+  Dialog,
+  DialogTitle
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
@@ -19,6 +21,8 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
+import axios from 'axios';
+import { API_URL } from '../../redux/API';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -67,7 +71,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-function AddUser() {
+function AddUser({ open = false, onClose }) {
   const [form, setForm] = useState({
     fullName: '',
     nickName: '',
@@ -92,11 +96,12 @@ function AddUser() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: Connect to backend API
+    axios.post(`${API_URL}/api/invite`,form)
     setSnackbarMessage('User form submitted!');
     setSnackbarSeverity('success');
     setOpenSnackbar(true);
     console.log('Form submitted:', form);
+    if (onClose) onClose();
   };
 
   const handleSnackbarClose = (event, reason) => {
@@ -105,7 +110,7 @@ function AddUser() {
   };
 
   return (
-    <AddUserContainer>
+    <>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
@@ -122,16 +127,18 @@ function AddUser() {
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-      <Card variant="outlined">
-        <Header>
-          <PersonAddAltRoundedIcon sx={{ fontSize: 48, color: 'white', mb: 1 }} />
-          <Typography variant="h6" fontWeight="bold" color="white" fontSize={18}>
-            Add New User
-          </Typography>
-          <Typography variant="body1" color="white" sx={{ mb: 1, fontSize: 15 }}>
-            Fill in the details below
-          </Typography>
-        </Header>
+      <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth scroll="body">
+        <DialogTitle sx={{ p: 0 }}>
+          <Header>
+            <PersonAddAltRoundedIcon sx={{ fontSize: 48, color: 'white', mb: 1 }} />
+            <Typography variant="h6" fontWeight="bold" color="white" fontSize={18}>
+              Add New User
+            </Typography>
+            <Typography variant="body1" color="white" sx={{ mb: 1, fontSize: 15 }}>
+              Fill in the details below
+            </Typography>
+          </Header>
+        </DialogTitle>
         <Box
           component="form"
           noValidate
@@ -142,6 +149,7 @@ function AddUser() {
             gap: 2,
             paddingX: 3,
             pt: 0,
+            pb: 3,
           }}
         >
           <FormControl>
@@ -304,8 +312,8 @@ function AddUser() {
             Add User
           </StyledButton>
         </Box>
-      </Card>
-    </AddUserContainer>
+      </Dialog>
+    </>
   );
 }
 
