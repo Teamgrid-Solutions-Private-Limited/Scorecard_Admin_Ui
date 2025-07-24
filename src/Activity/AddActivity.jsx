@@ -30,10 +30,12 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
+
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -122,6 +124,7 @@ export default function AddActivity(props) {
     setSnackbarOpen(false);
   };
 
+
 const handleSubmit = async () => {
   setLoading(true);
   try {
@@ -164,41 +167,9 @@ const handleSubmit = async () => {
   }
 };
 
-  const handleReview = async () => {
-    setLoading(true);
-    try {
-      const updatedFormData = { ...formData, status: "reviewed" };
-      if (id) {
-        await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
-        setSnackbarMessage("Activity Reviewed successfully!");
-        setSnackbarSeverity("success");
-      } else {
-        if (
-          !formData.type ||
-          !formData.title ||
-          !formData.shortDesc ||
-          !formData.readMore
-        ) {
-          setSnackbarMessage("please fill all fields!");
-          setSnackbarSeverity("warning");
-          setSnackbarOpen(true);
-          setLoading(false);
-          return;
-        }
-        await dispatch(createActivity(formData)).unwrap();
-        setSnackbarMessage("Activity created and Reviewed successfully!");
-        setSnackbarSeverity("success");
-      }
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Save error:", error);
-      setSnackbarMessage(`Operation failed: ${error.message || error}`);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    } finally {
-      setLoading(false); // Ensure loading stops after success or failure
-    }
-  };
+
+
+  
 
   return (
     <AppTheme>
@@ -271,11 +242,14 @@ const handleSubmit = async () => {
               <Button
                 variant="outlined"
                 sx={{
+
                   backgroundColor: "#CC9A3A !important",
+
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
+
                     backgroundColor: "#c38f2fff !important",
                   },
                 }}
@@ -291,6 +265,7 @@ const handleSubmit = async () => {
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
+
                     backgroundColor: "#357ABD !important",
                   },
                 }}
@@ -548,6 +523,7 @@ const handleSubmit = async () => {
                     container
                     spacing={2}
                     alignItems="center"
+
                     sx={{ ml: { xs: 0, sm: 5.6 } }}
                   >
                     <Grid item xs={12} sm={2}>
@@ -563,6 +539,7 @@ const handleSubmit = async () => {
                       >
                         Tracked Activities
                       </InputLabel>
+
                     </Grid>
 
                     <Grid item xs={12} sm={10}>
@@ -570,7 +547,10 @@ const handleSubmit = async () => {
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
+
                             fontSize: "15px",
+
+
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
                         }}

@@ -1,4 +1,8 @@
+
 import React, { useState, useEffect ,} from 'react';
+
+
+
 import {
   Box,
   Typography,
@@ -18,6 +22,8 @@ import {
 } from '@mui/material';
 import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
 import CloseIcon from '@mui/icons-material/Close';
+
+
 import AddUser from './AddUser';
 import SideMenu from '../../components/SideMenu';
 import FixedHeader from '../../components/FixedHeader';
@@ -29,6 +35,7 @@ import {
   treeViewCustomizations,
 } from '../../Themes/customizations';
 import MainGrid from '../../components/MainGrid';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllUsers, deleteUser, updateUser } from '../../redux/reducer/loginSlice';
 import Dialog from '@mui/material/Dialog';
@@ -38,12 +45,14 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 
+
 const xThemeComponents = {
   ...chartsCustomizations,
   ...dataGridCustomizations,
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
+
 
 export default function ManageUser(props) {
   const dispatch = useDispatch();
@@ -70,8 +79,21 @@ export default function ManageUser(props) {
     }
   }, [error]);
 
+// Mock user data
+const mockUsers = [
+  { _id: 1, fullName: 'John Doe', nickName: 'Johnny', email: 'john@example.com', role: 'admin' },
+  { _id: 2, fullName: 'Jane Smith', nickName: 'Janey', email: 'jane@example.com', role: 'editor' },
+  { _id: 3, fullName: 'Bob Brown', nickName: 'Bobby', email: 'bob@example.com', role: 'contributor' },
+];
+
+export default function ManageUser(props) {
+  const [openAddUser, setOpenAddUser] = useState(false);
+  const [users, setUsers] = useState(mockUsers);
+
+
   const handleAddUserOpen = () => setOpenAddUser(true);
   const handleAddUserClose = () => setOpenAddUser(false);
+
 
   const handleEditUser = (user) => {
     // Find the latest user data from Redux state by _id
@@ -127,6 +149,18 @@ export default function ManageUser(props) {
 
   const roleOptions = ["admin", "editor", "contributor"];
 
+
+  // Placeholder handlers for edit/delete
+  const handleEditUser = (user) => {
+    // Implement edit logic or open edit dialog
+    alert(`Edit user: ${user.fullName}`);
+  };
+  const handleDeleteUser = (user) => {
+    // Implement delete logic
+    alert(`Delete user: ${user.fullName}`);
+  };
+
+
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <Box sx={{ display: 'flex' }}>
@@ -137,6 +171,7 @@ export default function ManageUser(props) {
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
               <Typography variant="h5" fontWeight="bold">Manage Users</Typography>
               <Button
+
                 startIcon={<PersonAddAltRoundedIcon />}
                 onClick={handleAddUserOpen}
                 sx={{
@@ -148,10 +183,12 @@ export default function ManageUser(props) {
                     backgroundColor: "#357ABD !important",
                   },
                 }}
+
               >
                 Add User
               </Button>
             </Stack>
+
 
             {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -248,9 +285,21 @@ export default function ManageUser(props) {
                 {snackbarMessage}
               </Alert>
             </Snackbar>
+
+            <MainGrid
+              type="user"
+              data={users}
+              onEdit={handleEditUser}
+              onDelete={handleDeleteUser}
+            />
+            <AddUser open={openAddUser} onClose={handleAddUserClose} />
+
           </Box>
         </Box>
       </Box>
     </AppTheme>
   );
+
 }
+
+

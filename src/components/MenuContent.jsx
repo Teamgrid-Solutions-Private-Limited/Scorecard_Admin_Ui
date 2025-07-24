@@ -27,6 +27,7 @@ import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AddIcon from '@mui/icons-material/Add';
 import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
+
 import { jwtDecode } from "jwt-decode";
 
 const getRole = () => {
@@ -39,6 +40,7 @@ const getRole = () => {
   }
 };
 
+
 const mainListItems = [
   { text: "Senators", icon: <GavelRoundedIcon />, link: "/" },
   {
@@ -49,7 +51,11 @@ const mainListItems = [
   { text: "Votes We Scored", icon: <DescriptionRoundedIcon />, link: "/bills" },
   { text: "Activities We Track", icon: <CalendarTodayRoundedIcon />, link: "/activities" },
   { text: "Manage Terms", icon: <AddIcon/>, link: "/manage-term"},
+
   // 'Manage Users' will be conditionally added below
+
+  { text: "Manage Users", icon: <PersonAddAltRoundedIcon />, link: "/manage-user" },
+
 ];
 
 export default function MenuContent() {
@@ -83,7 +89,11 @@ export default function MenuContent() {
             sx={{
               display: "block",
               mt: index === 0 ? 1 : 0, // Reduced top margin for the first item
+
               mb: index < menuItems.length - 1 ? 1 : 0, // Reduced bottom margin for all items except the last
+
+             
+
             }}
           >
             <ListItemButton
