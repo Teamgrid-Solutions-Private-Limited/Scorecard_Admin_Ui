@@ -26,7 +26,10 @@ import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { rating } from "../Dashboard/global/common";
-import { clearHouseState } from "../redux/reducer/houseSlice";
+import {
+  clearHouseState,
+  updateRepresentativeStatus,
+} from "../redux/reducer/houseSlice";
 
 import {
   getHouseById,
@@ -405,9 +408,78 @@ export default function Addrepresentative(props) {
       });
 
       await Promise.all(termPromises);
+
+        await dispatch(
+        updateRepresentativeStatus({ id, publishStatus: "published" })
+      ).unwrap();
       await dispatch(getHouseDataByHouseId(id)).unwrap();
 
       handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
+    } catch (error) {
+      console.error("Save failed:", error);
+      handleSnackbarOpen(
+        "Failed to save: " + (error.message || "Unknown error occurred"),
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReview = async (e) => {
+    e.preventDefault();
+    let operationType = "";
+    setLoading(true);
+
+    try {
+      // Reset any previous errors
+      setSnackbarMessage("");
+      setSnackbarSeverity("success");
+
+      // ✅ 1. Update house data
+      if (id) {
+        const updatedData = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value) updatedData.append(key, value);
+        });
+
+        await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
+        operationType = "Updated";
+      }
+
+      // ✅ 2. Save house term data (filter out completely empty entries if needed)
+      const termPromises = houseTermData.map((termData) => {
+        const termPayload = {
+          ...termData,
+          houseId: id,
+        };
+
+        if (termData._id) {
+          operationType = "reviewed";
+          return dispatch(
+            updateHouseData({ id: termData._id, data: termPayload })
+          ).unwrap();
+        } else {
+          operationType = "Reviewed";
+          return dispatch(createHouseData(termPayload)).unwrap();
+        }
+      });
+
+      await Promise.all(termPromises);
+
+      // ✅ 3. Update status to "review"
+      await dispatch(
+        updateRepresentativeStatus({ id, publishStatus: "reviewed" })
+      ).unwrap();
+
+      // ✅ 4. Refresh data
+      await dispatch(getHouseDataByHouseId(id)).unwrap();
+
+      // ✅ 5. Success message
+      handleSnackbarOpen(
+        `Data ${operationType} successfully!`,
+        "success"
+      );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(
@@ -502,6 +574,21 @@ export default function Addrepresentative(props) {
                 alignItems: "center",
               }}
             >
+              <Button
+                variant="outlined"
+                onClick={handleReview}
+                sx={{
+                  backgroundColor: "#CC9A3A !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#c38f2fff !important",
+                  },
+                }}
+              >
+                Review
+              </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}

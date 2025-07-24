@@ -48,6 +48,7 @@ import {
   getSenatorById,
   updateSenator,
   clearSenatorState,
+  updateSenatorStatus,
 } from "../redux/reducer/senetorSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
@@ -392,6 +393,77 @@ export default function AddSenator(props) {
       });
 
       await Promise.all(termPromises);
+
+      // 🔄 Update Status to "review"
+      await dispatch(
+        updateSenatorStatus({
+          id,
+          publishStatus: "published", // ✅ valid value
+        })
+      ).unwrap();
+
+      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+
+      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
+    } catch (error) {
+      console.error("Save failed:", error);
+      handleSnackbarOpen("Failed to save: " + error.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReview = async (e) => {
+    e.preventDefault();
+    let operationType = "";
+    setLoading(true);
+
+    try {
+      // First handle senator data
+      if (id) {
+        const updatedData = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value) updatedData.append(key, value);
+        });
+        await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
+        operationType = "Updated";
+      }
+
+      // Handle senator term data
+      const termPromises = senatorTermData.map((termData) => {
+        if (termData._id) {
+          operationType = "Reviewed";
+          return dispatch(
+            updateSenatorData({
+              id: termData._id,
+              data: {
+                ...termData,
+                senateId: id,
+              },
+            })
+          ).unwrap();
+        } else {
+          operationType = "Reviewed";
+          return dispatch(
+            createSenatorData({
+              ...termData,
+              senateId: id,
+            })
+          ).unwrap();
+        }
+      });
+
+      await Promise.all(termPromises);
+
+      // 🔄 Update Status to "review"
+      await dispatch(
+        updateSenatorStatus({
+          id,
+          publishStatus: "reviewed", // ✅ valid value
+        })
+      ).unwrap();
+
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
 
       handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
@@ -489,13 +561,29 @@ export default function AddSenator(props) {
               <Button
                 variant="outlined"
                 onClick={(e) => {
-                  handleSave(e);
+                  handleReview(e, "review");
+                }}
+                sx={{
+                  backgroundColor: "#CC9A3A !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  "&:hover": {
+                    backgroundColor: "#c38f2fff !important",
+                  },
+                }}
+              >
+                Review
+              </Button>
+
+              <Button
+                variant="outlined"
+                onClick={(e) => {
+                  handleSave(e, "save");
                 }}
                 sx={{
                   backgroundColor: "#4a90e2 !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
                   "&:hover": {
                     backgroundColor: "#357ABD !important",
                   },
