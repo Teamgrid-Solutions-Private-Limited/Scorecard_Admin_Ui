@@ -985,7 +985,8 @@ export default function Addrepresentative(props) {
                     <Grid size={9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                        apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                        //apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                        licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary}
                         name="summary"
