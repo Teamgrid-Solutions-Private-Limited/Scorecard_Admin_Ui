@@ -54,6 +54,7 @@ const xThemeComponents = {
 };
 import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { jwtDecode } from "jwt-decode";
 
 export default function Representative(props) {
   const navigate = useNavigate();
@@ -68,7 +69,12 @@ export default function Representative(props) {
   const [progressStep, setProgressStep] = useState(0);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRepresentative, setSelectedRepresentative] = useState(null);
+  const token = localStorage.getItem("token");
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   const [partyFilter, setPartyFilter] = useState([]);
   const [districtFilter, setDistrictFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
@@ -85,7 +91,6 @@ export default function Representative(props) {
     year: "",
   });
   const { terms } = useSelector((state) => state.term);
-  const token = localStorage.getItem("token");
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
 
@@ -969,7 +974,7 @@ export default function Representative(props) {
                   )}
                 </Box>
 
-                <Button
+        {userRole === "admin" && (  <Button
                   variant="outlined"
                   sx={{
                     backgroundColor: "#4a90e2 !important",
@@ -984,6 +989,7 @@ export default function Representative(props) {
                 >
                   Fetch Representatives from Quorum
                 </Button>
+        )}
               </Stack>
             </Box>
             {/* Representative Table */}

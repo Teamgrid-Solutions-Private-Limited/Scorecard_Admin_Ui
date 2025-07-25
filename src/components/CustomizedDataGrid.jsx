@@ -124,12 +124,9 @@ export default function CustomizedDataGrid({
             ),
           },
           {
-
             field: "status",
             headerName: "Status",
-
-
-            flex: 1,
+            // flex: 1,
             minWidth: 130,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
@@ -157,8 +154,6 @@ export default function CustomizedDataGrid({
             },
 
           },
-          
-        
           {
             field: "action",
             flex: 1,
@@ -235,7 +230,7 @@ export default function CustomizedDataGrid({
             headerName: "Status",
 
         
-            flex: 1,
+            // flex: 1,
             minWidth: 130,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
@@ -262,8 +257,6 @@ export default function CustomizedDataGrid({
               );
             },
           },
-
-
           {
             field: "action",
             flex: 1,
@@ -527,9 +520,7 @@ export default function CustomizedDataGrid({
 
                   field: "publishStatus",
                   headerName: "Status",
-
-
-                  flex: 1,
+                  // flex: 1,
                   minWidth: 130,
                   renderHeader: (params) => (
                     <Typography sx={{ fontWeight: "bold" }}>
@@ -563,7 +554,7 @@ export default function CustomizedDataGrid({
                   field: "publishStatus",
                   headerName: "Status",
 
-                  flex: 1,
+                  // flex: 1,
                   minWidth: 130,
                   renderHeader: (params) => (
                     <Typography sx={{ fontWeight: "bold" }}>

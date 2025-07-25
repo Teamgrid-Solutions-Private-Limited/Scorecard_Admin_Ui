@@ -34,6 +34,7 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
+import { jwtDecode } from "jwt-decode";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -48,7 +49,12 @@ export default function Bills(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all"); // 'all', 'published', 'draft'
+ const token = localStorage.getItem("token");
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   const [selectedBills, setSelectedBills] = useState([]); // Store selected bill IDs
   const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
   const [bulkSbaPosition, setBulkSbaPosition] = useState(""); // Store bulk SBA position value
@@ -264,12 +270,14 @@ export default function Bills(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
-                <Button
-                  onClick={() => navigate("/search-bills")}
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
+
+                {userRole === "admin" && (
+                  <Button
+                    onClick={() => navigate("/search-bills")}
+                    sx={{
+                      backgroundColor: "#4a90e2 !important",
+                      color: "white !important",
+                      padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
                     "&:hover": {
                       backgroundColor: "#357ABD !important",
@@ -278,6 +286,7 @@ export default function Bills(props) {
                 >
                   Add Bills
                 </Button>
+                )}
               </Stack>
             </Box>
 

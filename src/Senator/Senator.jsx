@@ -57,6 +57,7 @@ const xThemeComponents = {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { FormControl, InputLabel, Select } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { jwtDecode } from "jwt-decode";
 
 export default function Senator(props) {
   const navigate = useNavigate();
@@ -81,7 +82,11 @@ export default function Senator(props) {
   const [selectedSenator, setSelectedSenator] = useState(null);
   const [selectedYear, setSelectedYear] = useState("");
   const { terms } = useSelector((state) => state.term);
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   const [partyFilter, setPartyFilter] = useState([]);
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
@@ -535,41 +540,7 @@ export default function Senator(props) {
                       Filters
                     </Button>
                   </Badge>
-                  {/* <Badge
-                    badgeContent={
-                      partyFilter.length +
-                      stateFilter.length +
-                      ratingFilter.length +
-                      (selectedYear ? 1 : 0) || null +
-                      (termFilter ? 1 : 0) || null
-                    }
-                    color="primary"
-                  >
-                    <Button
-                      variant="outlined"
-                      startIcon={<FilterListIcon />}
-                      endIcon={
-                        filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
-                      }
-                      onClick={toggleFilter}
-                      sx={{
-                        height: "40px",
-                        minWidth: "120px",
-                        borderColor: filterOpen ? "primary.main" : "divider",
-                        backgroundColor: filterOpen
-                          ? "primary.light"
-                          : "background.paper",
-                        "&:hover": {
-                          backgroundColor: filterOpen
-                            ? "primary.light"
-                            : "action.hover",
-                        },
-                      }}
-                    >
-                      Filters
-                    </Button>
-                  </Badge> */}
-
+                
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
                       <Paper
@@ -1132,7 +1103,7 @@ export default function Senator(props) {
                 </Box>
 
 
-                <Button
+             {userRole === "admin" && (  <Button
                   variant="outlined"
                   sx={{
                     backgroundColor: "#4a90e2 !important",
@@ -1147,8 +1118,9 @@ export default function Senator(props) {
                 >
                   Fetch Senators from Quorum
                 </Button>
-              </Stack>
-            </Box>
+              )}
+            </Stack>
+          </Box>
 
             <MainGrid
               type="senator"

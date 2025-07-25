@@ -39,6 +39,8 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
+import { jwtDecode } from "jwt-decode";
+
 export default function Activity(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -52,7 +54,12 @@ export default function Activity(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
+ const token = localStorage.getItem("token");
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); // Store selected activity IDs
   const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
   const [bulkTrackActivity, setBulkTrackActivity] = useState(""); // Store bulk track activity value
@@ -293,11 +300,12 @@ export default function Activity(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
-                <Button
-                  onClick={() => navigate("/add-activity")}
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
+                {userRole === "admin" && (
+                  <Button
+                    onClick={() => navigate("/add-activity")}
+                    sx={{
+                      backgroundColor: "#4a90e2 !important",
+                      color: "white !important",
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
                     "&:hover": {
@@ -307,6 +315,7 @@ export default function Activity(props) {
                 >
                   Add Activity
                 </Button>
+                )}
               </Stack>
             </Box>
             {isBulkEditMode && (
@@ -335,9 +344,9 @@ export default function Activity(props) {
                     size="small"
                     sx={{ minWidth: 150 }}
                   >
-                    <MenuItem value="Pending">Pending</MenuItem>
-                    <MenuItem value="Completed">Completed</MenuItem>
-                    <MenuItem value="Failed">Failed</MenuItem>
+                    <MenuItem value="pending">Pending</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="failed">Failed</MenuItem>
                   </TextField>
 
                   <Button

@@ -53,6 +53,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+import { jwtDecode } from "jwt-decode";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -62,7 +63,12 @@ export default function AddSenator(props) {
   const { votes } = useSelector((state) => state.vote);
   const { activities } = useSelector((state) => state.activity);
   const senatorData = useSelector((state) => state.senatorData);
+ const token = localStorage.getItem("token");
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   let senatorActivities =
     activities?.filter((activity) => activity.type === "senate") || [];
 
@@ -575,12 +581,13 @@ export default function AddSenator(props) {
                 Review
               </Button>
 
-              <Button
-                variant="outlined"
-                onClick={(e) => {
-                  handleSave(e, "save");
-                }}
-                sx={{
+          {userRole === "admin" && (
+            <Button
+              variant="outlined"
+              onClick={(e) => {
+                handleSave(e, "save");
+              }}
+              sx={{
                   backgroundColor: "#4a90e2 !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
@@ -591,6 +598,7 @@ export default function AddSenator(props) {
               >
                 Save Changes
               </Button>
+          )}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>

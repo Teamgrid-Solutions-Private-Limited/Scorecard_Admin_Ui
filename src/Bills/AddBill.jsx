@@ -34,7 +34,7 @@ import MuiAlert from "@mui/material/Alert";
 import { FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-
+import { jwtDecode } from "jwt-decode";
 export default function AddBill(props) {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -52,7 +52,12 @@ export default function AddBill(props) {
     readMore: "",
     sbaPosition: "",
   });
+ const token = localStorage.getItem("token");
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   const preFillForm = () => {
     if (selectedVote) {
       const termId = selectedVote.termId?._id || "";
@@ -279,12 +284,12 @@ export default function AddBill(props) {
               >
                 Review
               </Button>
-              <Button
-                variant="outlined"
-                sx={{
-
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
+              {userRole === "admin" && (
+                <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
@@ -295,6 +300,7 @@ export default function AddBill(props) {
               >
                 Save Changes
               </Button>
+              )}
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
