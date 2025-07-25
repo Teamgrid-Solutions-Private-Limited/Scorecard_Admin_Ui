@@ -13,7 +13,8 @@ import {
   Snackbar,
   Alert as MuiAlert,
   Dialog,
-  DialogTitle
+  DialogTitle,
+  CircularProgress
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
@@ -23,6 +24,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import axios from 'axios';
 import { API_URL } from '../../redux/API';
+import { useDispatch } from 'react-redux';
+import { addUser } from '../../redux/reducer/loginSlice';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -83,6 +86,9 @@ function AddUser({ open = false, onClose }) {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,15 +100,57 @@ function AddUser({ open = false, onClose }) {
     event.preventDefault();
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    axios.post(`${API_URL}/api/invite`,form)
-    setSnackbarMessage('User form submitted!');
+  // Validation function
+  const validate = () => {
+    const newErrors = {};
+    if (!form.fullName || form.fullName.trim().length < 3) {
+      newErrors.fullName = "Full name is required (min 3 characters)";
+    }
+    if (!form.email) {
+      newErrors.email = "Email is required";
+    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(form.email)) {
+      newErrors.email = "Invalid email address";
+    }
+    if (!form.password || form.password.length < 6) {
+      newErrors.password = "Password is required (min 6 characters)";
+    }
+    if (!form.role || !['admin', 'editor', 'contributor'].includes(form.role)) {
+      newErrors.role = "Role is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+  setLoading(true);
+
+  try {
+    await dispatch(addUser(form)).unwrap();
+    
+    setSnackbarMessage('Invite sent successfully!');
     setSnackbarSeverity('success');
     setOpenSnackbar(true);
-    console.log('Form submitted:', form);
+
     if (onClose) onClose();
-  };
+  } catch (error) {
+    let message = "Failed to send invite. Please try again.";
+    if (typeof error === "string") {
+      message = error;
+    } else if (error && error.message) {
+      message = error.message;
+    } else if (error && error.data && error.data.message) {
+      message = error.data.message;
+    }
+    setSnackbarMessage(message);
+    setSnackbarSeverity('error');
+    setOpenSnackbar(true);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -162,6 +210,8 @@ function AddUser({ open = false, onClose }) {
               required
               fullWidth
               variant="outlined"
+              error={!!errors.fullName}
+              helperText={errors.fullName}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '6px',
@@ -218,6 +268,8 @@ function AddUser({ open = false, onClose }) {
               required
               fullWidth
               variant="outlined"
+              error={!!errors.email}
+              helperText={errors.email}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '6px',
@@ -247,6 +299,8 @@ function AddUser({ open = false, onClose }) {
               required
               fullWidth
               variant="outlined"
+              error={!!errors.password}
+              helperText={errors.password}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '6px',
@@ -289,6 +343,7 @@ function AddUser({ open = false, onClose }) {
               required
               fullWidth
               variant="outlined"
+              error={!!errors.role}
               sx={{
                 borderRadius: '6px',
                 height: '37px',
@@ -307,9 +362,17 @@ function AddUser({ open = false, onClose }) {
               <MenuItem value="editor">Editor</MenuItem>
               <MenuItem value="contributor">Contributor</MenuItem>
             </Select>
+            {errors.role && (
+              <Typography color="error" variant="caption">{errors.role}</Typography>
+            )}
           </FormControl>
-          <StyledButton type="submit" fullWidth endIcon={<PersonAddAltRoundedIcon />}>
-            Add User
+          <StyledButton
+            type="submit"
+            fullWidth
+            endIcon={<PersonAddAltRoundedIcon />}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={20} color="inherit" /> : "Add User"}
           </StyledButton>
         </Box>
       </Dialog>
