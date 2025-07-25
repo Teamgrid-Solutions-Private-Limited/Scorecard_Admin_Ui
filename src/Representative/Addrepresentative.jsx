@@ -56,6 +56,11 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+import { Chip } from "@mui/material";
+import HourglassTop from "@mui/icons-material/HourglassTop";
+import Verified from "@mui/icons-material/Verified";
+import { Drafts } from "@mui/icons-material";
+import CheckCircle from "@mui/icons-material/CheckCircle";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -67,6 +72,7 @@ export default function Addrepresentative(props) {
   const { activities } = useSelector((state) => state.activity);
   const houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
+ 
 
   // Initialize as an array to support multiple terms
   const [houseTermData, setHouseTermData] = useState([
@@ -302,6 +308,7 @@ export default function Addrepresentative(props) {
     party: "",
     photo: null,
     status: "",
+    publishStatus: "", // Default status
   });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -316,6 +323,7 @@ export default function Addrepresentative(props) {
         party: house.party || "",
         photo: house.photo || "",
         status: house.status || "Active",
+        publishStatus: house.publishStatus || "",
       });
     }
   };
@@ -409,10 +417,11 @@ export default function Addrepresentative(props) {
 
       await Promise.all(termPromises);
 
-        await dispatch(
+      await dispatch(
         updateRepresentativeStatus({ id, publishStatus: "published" })
       ).unwrap();
       await dispatch(getHouseDataByHouseId(id)).unwrap();
+      await dispatch(getHouseById(id)).unwrap();
 
       handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
@@ -474,12 +483,10 @@ export default function Addrepresentative(props) {
 
       // ✅ 4. Refresh data
       await dispatch(getHouseDataByHouseId(id)).unwrap();
+      await dispatch(getHouseById(id)).unwrap();
 
       // ✅ 5. Success message
-      handleSnackbarOpen(
-        `Data ${operationType} successfully!`,
-        "success"
-      );
+      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(
@@ -522,6 +529,42 @@ export default function Addrepresentative(props) {
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
+  const statusConfig = {
+    draft: {
+      backgroundColor: "rgba(66, 165, 245, 0.12)",
+      borderColor: "#2196F3",
+      iconColor: "#1565C0",
+      icon: <Drafts sx={{ fontSize: "20px" }} />,
+      title: "Draft Version",
+      description: "Unpublished draft - changes pending",
+      titleColor: "#0D47A1",
+      descColor: "#1976D2",
+    },
+    reviewed: {
+      backgroundColor: "rgba(255, 193, 7, 0.12)",
+      borderColor: "#FFC107",
+      iconColor: "#FFA000",
+      icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+      title: "Under Review",
+      description: "Being reviewed by the team",
+      titleColor: "#5D4037",
+      descColor: "#795548",
+    },
+    // published: {
+    //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+    //   borderColor: "#4CAF50",
+    //   iconColor: "#2E7D32",
+    //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+    //   title: "Published",
+    //   description: "This document is live",
+    //   titleColor: "#2E7D32",
+    //   descColor: "#388E3C",
+    // },
+  };
+
+  const currentStatus = formData.publishStatus || ""; // Fallback to draft if undefined
+  const statusData = statusConfig[currentStatus];
+
   return (
     <AppTheme>
       {loading && (
@@ -544,6 +587,7 @@ export default function Addrepresentative(props) {
       )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
+
         <Box
           component="main"
           sx={(theme) => ({
@@ -556,6 +600,7 @@ export default function Addrepresentative(props) {
           })}
         >
           <FixedHeader />
+
           <Stack
             spacing={2}
             sx={{
@@ -565,6 +610,74 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
+            {statusData && (
+              <Box
+                sx={{
+                  width: "98%",
+                  py: 1.2,
+                  px: 3,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `3px solid ${statusData.borderColor}`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  borderRadius: "0 4px 4px 0",
+                }}
+              >
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: "50%",
+                    backgroundColor: `rgba(${
+                      currentStatus === "draft"
+                        ? "66, 165, 245"
+                        : currentStatus === "review"
+                        ? "255, 193, 7"
+                        : currentStatus === "published"
+                        ? "76, 175, 80"
+                        : "244, 67, 54"
+                    }, 0.2)`,
+                    display: "grid",
+                    placeItems: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {React.cloneElement(statusData.icon, {
+                    color: statusData.iconColor,
+                  })}
+                </Box>
+
+                <Box sx={{ overflow: "hidden" }}>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="600"
+                    sx={{
+                      color: statusData.titleColor,
+                      lineHeight: 1.3,
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {statusData.title}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: statusData.descColor,
+                      opacity: 0.8,
+                      display: "block",
+                      lineHeight: 1.2,
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {statusData.description}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
             <Stack
               direction="row"
               spacing={2}

@@ -34,6 +34,11 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
+import { Chip } from "@mui/material";
+import HourglassTop from "@mui/icons-material/HourglassTop";
+import Verified from "@mui/icons-material/Verified";
+import { Drafts } from "@mui/icons-material";
+import CheckCircle from "@mui/icons-material/CheckCircle";
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -48,6 +53,7 @@ export default function AddActivity(props) {
     congress: "",
     readMore: "",
     trackActivities: "",
+    status: "",
   });
 
   const preFillForm = () => {
@@ -67,6 +73,7 @@ export default function AddActivity(props) {
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
         readMore: selectedActivity.readMore || "",
         trackActivities: selectedActivity.trackActivities || "",
+        status: selectedActivity.status || "", // Default to draft if not set
       });
     }
   };
@@ -122,56 +129,62 @@ export default function AddActivity(props) {
     setSnackbarOpen(false);
   };
 
-const handleSubmit = async () => {
-  setLoading(true);
-  try {
-    const updatedFormData = { ...formData, status: "published" };
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const updatedFormData = { ...formData, status: "published" };
 
-    if (id) {
-      // Update existing activity with publishStatus
-      await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
-      setSnackbarMessage("Activity updated successfully!");
-      setSnackbarSeverity("success");
-    } else {
-      // Validate required fields
-      if (
-        !formData.type ||
-        !formData.title ||
-        !formData.shortDesc ||
-        !formData.readMore
-      ) {
-        setSnackbarMessage("Please fill all fields!");
-        setSnackbarSeverity("warning");
-        setSnackbarOpen(true);
-        setLoading(false);
-        return;
+      if (id) {
+        // Update existing activity with publishStatus
+        await dispatch(
+          updateActivity({ id, updatedData: updatedFormData })
+        ).unwrap();
+        setSnackbarMessage("Activity updated successfully!");
+        setSnackbarSeverity("success");
+        await dispatch(getActivityById(id)).unwrap();
+      } else {
+        // Validate required fields
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.readMore
+        ) {
+          setSnackbarMessage("Please fill all fields!");
+          setSnackbarSeverity("warning");
+          setSnackbarOpen(true);
+          setLoading(false);
+          return;
+        }
+
+        // Create new activity with publishStatus
+        await dispatch(createActivity(updatedFormData)).unwrap();
+        setSnackbarMessage("Activity created successfully!");
+        setSnackbarSeverity("success");
       }
 
-      // Create new activity with publishStatus
-      await dispatch(createActivity(updatedFormData)).unwrap();
-      setSnackbarMessage("Activity created successfully!");
-      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Save error:", error);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false); // Ensure loading stops after success or failure
     }
-
-    setSnackbarOpen(true);
-  } catch (error) {
-    console.error("Save error:", error);
-    setSnackbarMessage(`Operation failed: ${error.message || error}`);
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  } finally {
-    setLoading(false); // Ensure loading stops after success or failure
-  }
-};
+  };
 
   const handleReview = async () => {
     setLoading(true);
     try {
       const updatedFormData = { ...formData, status: "reviewed" };
       if (id) {
-        await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
+        await dispatch(
+          updateActivity({ id, updatedData: updatedFormData })
+        ).unwrap();
         setSnackbarMessage("Activity Reviewed successfully!");
         setSnackbarSeverity("success");
+        await dispatch(getActivityById(id)).unwrap();
       } else {
         if (
           !formData.type ||
@@ -199,6 +212,42 @@ const handleSubmit = async () => {
       setLoading(false); // Ensure loading stops after success or failure
     }
   };
+
+  const statusConfig = {
+    draft: {
+      backgroundColor: "rgba(66, 165, 245, 0.12)",
+      borderColor: "#2196F3",
+      iconColor: "#1565C0",
+      icon: <Drafts sx={{ fontSize: "20px" }} />,
+      title: "Draft Version",
+      description: "Unpublished draft - changes pending",
+      titleColor: "#0D47A1",
+      descColor: "#1976D2",
+    },
+    reviewed: {
+      backgroundColor: "rgba(255, 193, 7, 0.12)",
+      borderColor: "#FFC107",
+      iconColor: "#FFA000",
+      icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+      title: "Under Review",
+      description: "Being reviewed by the team",
+      titleColor: "#5D4037",
+      descColor: "#795548",
+    },
+    // published: {
+    //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+    //   borderColor: "#4CAF50",
+    //   iconColor: "#2E7D32",
+    //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+    //   title: "Published",
+    //   description: "This document is live",
+    //   titleColor: "#2E7D32",
+    //   descColor: "#388E3C",
+    // },
+  };
+
+  const currentStatus = formData.status || ""; // Fallback to draft if undefined
+  const statusData = statusConfig[currentStatus];
 
   return (
     <AppTheme>
@@ -259,6 +308,74 @@ const handleSubmit = async () => {
               mt: { xs: 8, md: 0 },
             }}
           >
+            {statusData && (
+              <Box
+                sx={{
+                  width: "98%",
+                  py: 1.2,
+                  px: 3,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `3px solid ${statusData.borderColor}`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  borderRadius: "0 4px 4px 0",
+                }}
+              >
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: "50%",
+                    backgroundColor: `rgba(${
+                      currentStatus === "draft"
+                        ? "66, 165, 245"
+                        : currentStatus === "review"
+                        ? "255, 193, 7"
+                        : currentStatus === "published"
+                        ? "76, 175, 80"
+                        : "244, 67, 54"
+                    }, 0.2)`,
+                    display: "grid",
+                    placeItems: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {React.cloneElement(statusData.icon, {
+                    color: statusData.iconColor,
+                  })}
+                </Box>
+
+                <Box sx={{ overflow: "hidden" }}>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="600"
+                    sx={{
+                      color: statusData.titleColor,
+                      lineHeight: 1.3,
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {statusData.title}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: statusData.descColor,
+                      opacity: 0.8,
+                      display: "block",
+                      lineHeight: 1.2,
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {statusData.description}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
             <Stack
               direction="row"
               spacing={2}
