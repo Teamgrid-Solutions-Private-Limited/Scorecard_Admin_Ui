@@ -974,6 +974,7 @@ export default function AddSenator(props) {
                     <Grid size={9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary || ""}
                         onEditorChange={(content) =>

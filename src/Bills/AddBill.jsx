@@ -380,6 +380,7 @@ export default function AddBill(props) {
                   <Grid size={10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")

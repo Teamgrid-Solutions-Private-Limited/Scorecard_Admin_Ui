@@ -406,6 +406,8 @@ export default function AddActivity(props) {
                   <Grid size={10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
+                      //apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
