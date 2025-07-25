@@ -326,6 +326,7 @@ function AddUser({ open = false, onClose }) {
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
                       size="small"
+                      sx={{border:'none'}}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>

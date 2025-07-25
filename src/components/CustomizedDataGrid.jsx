@@ -296,7 +296,7 @@ export default function CustomizedDataGrid({
       ? [
           {
             field: "fullName",
-            flex: 2,
+            flex: 1.5,
             headerName: "Name",
             minWidth: 150,
             renderHeader: (params) => (
@@ -307,7 +307,7 @@ export default function CustomizedDataGrid({
           },
           {
             field: "nickName",
-            flex: 1,
+            flex: 1.5,
             headerName: "Nick Name",
             minWidth: 120,
             renderHeader: (params) => (
@@ -342,11 +342,11 @@ export default function CustomizedDataGrid({
           },
           {
             field: "action",
-            flex: 1,
+            flex: 0,
             headerName: "Action",
             minWidth: 100,
-            headerAlign: "right",
-            align: "right",
+            headerAlign: "center",
+            align: "center",
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
                 {params.colDef.headerName}
