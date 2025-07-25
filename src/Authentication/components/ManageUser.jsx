@@ -60,11 +60,8 @@ export default function ManageUser(props) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [editUser, setEditUser] = useState(null);
-  const [editForm, setEditForm] = useState({
-    fullName: "",
-    email: "",
-    role: "",
-  });
+  const [editForm, setEditForm] = useState({ fullName: '', email: '', role: '' });
+  const [editErrors, setEditErrors] = useState({});
 
   // Fetch users on component mount
   useEffect(() => {
@@ -74,9 +71,15 @@ export default function ManageUser(props) {
   // Handle API errors
   useEffect(() => {
     if (error) {
-      setSnackbarMessage(error);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      if (error === "Access denied: Admins only") {
+        setSnackbarMessage("You do not have permission to view users.");
+        setSnackbarSeverity('error');
+        setOpenSnackbar(true);
+      } else {
+        setSnackbarMessage(error);
+        setSnackbarSeverity('error');
+        setOpenSnackbar(true);
+      }
     }
   }, [error]);
 
@@ -93,7 +96,25 @@ export default function ManageUser(props) {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
   };
 
+  const validateEditForm = () => {
+    const newErrors = {};
+    if (!editForm.fullName || editForm.fullName.trim().length < 3) {
+      newErrors.fullName = "Full name is required (min 3 characters)";
+    }
+    if (!editForm.email) {
+      newErrors.email = "Email is required";
+    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(editForm.email)) {
+      newErrors.email = "Invalid email address";
+    }
+    if (!editForm.role || !['admin', 'editor', 'contributor'].includes(editForm.role)) {
+      newErrors.role = "Role is required";
+    }
+    setEditErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleEditUserSave = async () => {
+    if (!validateEditForm()) return;
     try {
       await dispatch(
         updateUser({ userId: editUser._id, userData: editForm })
@@ -170,8 +191,10 @@ export default function ManageUser(props) {
               </Button>
             </Stack>
 
-            {loading ? (
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            {error === "Access denied: Admins only" ? (
+              <Alert severity="error">You do not have permission to view users.</Alert>
+            ) : loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <CircularProgress />
               </Box>
             ) : error ? (
@@ -196,6 +219,8 @@ export default function ManageUser(props) {
                   value={editForm.fullName}
                   onChange={handleEditFormChange}
                   fullWidth
+                  error={!!editErrors.fullName}
+                  helperText={editErrors.fullName}
                 />
                 <TextField
                   margin="dense"
@@ -204,6 +229,8 @@ export default function ManageUser(props) {
                   value={editForm.email}
                   onChange={handleEditFormChange}
                   fullWidth
+                  error={!!editErrors.email}
+                  helperText={editErrors.email}
                 />
                 <TextField
                   margin="dense"
@@ -213,6 +240,7 @@ export default function ManageUser(props) {
                   onChange={handleEditFormChange}
                   select
                   fullWidth
+                  error={!!editErrors.role}
                 >
                   {roleOptions.map((role) => (
                     <MenuItem key={role} value={role}>
@@ -220,6 +248,9 @@ export default function ManageUser(props) {
                     </MenuItem>
                   ))}
                 </TextField>
+                {editErrors.role && (
+                  <Typography color="error" variant="caption">{editErrors.role}</Typography>
+                )}
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleEditUserClose}>Cancel</Button>

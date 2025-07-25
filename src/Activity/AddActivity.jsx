@@ -186,14 +186,14 @@ const handleSubmit = async () => {
           !formData.shortDesc ||
           !formData.readMore
         ) {
-          setSnackbarMessage("please fill all fields!");
+          setSnackbarMessage("Please fill all fields!");
           setSnackbarSeverity("warning");
           setSnackbarOpen(true);
           setLoading(false);
           return;
         }
         await dispatch(createActivity(formData)).unwrap();
-        setSnackbarMessage("Activity created and Reviewed successfully!");
+        setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
       }
       setSnackbarOpen(true);

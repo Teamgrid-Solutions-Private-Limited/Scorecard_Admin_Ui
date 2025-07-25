@@ -90,6 +90,7 @@ export default function Senator(props) {
   const [partyFilter, setPartyFilter] = useState([]);
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
+  const [statusFilter, setStatusFilter] = useState([]);
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [partyMenuAnchorEl, setPartyMenuAnchorEl] = useState(null);
   const [stateMenuAnchorEl, setStateMenuAnchorEl] = useState(null);
@@ -125,6 +126,7 @@ export default function Senator(props) {
   };
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
+  const statusOptions = ["published", "reviewed", "draft"];
 
   useEffect(() => {
     dispatch(getAllSenators());
@@ -335,6 +337,11 @@ export default function Senator(props) {
         : [...prev, year]
     );
   };
+  const handleStatusFilter = (status) => {
+    setStatusFilter((prev) =>
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
+    );
+  };
   const handleTermMenuOpen = (event) => {
     setTermFilterAnchorEl(event.currentTarget);
   };
@@ -344,6 +351,7 @@ export default function Senator(props) {
     setRatingFilter([]);
     setSelectedYears([]);
     setTermFilter(null);
+    setStatusFilter([]);
     setSearchQuery("");
   };
 
@@ -414,14 +422,20 @@ export default function Senator(props) {
       ratingFilter.length === 0 ||
       (senator.rating && ratingFilter.includes(senator.rating));
 
-    return nameMatch && partyMatch && stateMatch && ratingMatch;
+    // Status filter
+    const statusMatch =
+      statusFilter.length === 0 ||
+      (senator.publishStatus && statusFilter.includes(senator.publishStatus));
+
+    return nameMatch && partyMatch && stateMatch && ratingMatch && statusMatch;
   });
   const activeFilterCount =
     partyFilter.length +
     stateFilter.length +
     ratingFilter.length +
     selectedYears.length +
-    (termFilter ? 1 : 0);
+    (termFilter ? 1 : 0) +
+    statusFilter.length;
    const handleToggleStatusSenator = (senator) => {
     const newStatus = senator.publishStatus === "published" ? "draft" : "published";
     console.log("Toggling status:", senator.publishStatus, "→", newStatus);
@@ -550,7 +564,7 @@ export default function Senator(props) {
                           top: "100%",
                           mt: 1,
                           width: 320,
-                          zIndex: 1200,
+                          zIndex: 1,
                           boxShadow: 3,
                           borderRadius: 2,
                           overflow: "hidden",
@@ -604,7 +618,7 @@ export default function Senator(props) {
                           </Box>
                           {expandedFilter === "party" && (
                             <Box sx={{ p: 2, pt: 0 }}>
-                              <TextField
+                              {/* <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search parties..."
@@ -620,7 +634,7 @@ export default function Senator(props) {
                                   ),
                                 }}
                                 sx={{ mb: 2 }}
-                              />
+                              /> */}
                               <Box sx={{ maxHeight: 200, overflow: "auto" }}>
                                 {filteredPartyOptions.length > 0 ? (
                                   filteredPartyOptions.map((party) => (
@@ -650,7 +664,7 @@ export default function Senator(props) {
                                         variant="body2"
                                         sx={{ ml: 1 }}
                                       >
-                                        {party}
+                                        {party.charAt(0).toUpperCase()+party.slice(1)}
                                       </Typography>
                                     </Box>
                                   ))
@@ -786,7 +800,7 @@ export default function Senator(props) {
                           </Box>
                           {expandedFilter === "rating" && (
                             <Box sx={{ p: 2, pt: 0 }}>
-                              <TextField
+                              {/* <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search ratings..."
@@ -802,7 +816,7 @@ export default function Senator(props) {
                                   ),
                                 }}
                                 sx={{ mb: 2 }}
-                              />
+                              /> */}
                               <Box sx={{ maxHeight: 200, overflow: "auto" }}>
                                 {filteredRatingOptions.length > 0 ? (
                                   filteredRatingOptions.map((rating) => (
@@ -1073,6 +1087,64 @@ export default function Senator(props) {
                           )}
                         </Box>
 
+                        {/* Status Filter */}
+                        <Box
+                          sx={{
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                            bgcolor:
+                              expandedFilter === "status"
+                                ? "action.hover"
+                                : "background.paper",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ p: 2, cursor: "pointer" }}
+                            onClick={() => toggleFilterSection("status")}
+                          >
+                            <Typography variant="body1">Status</Typography>
+                            {expandedFilter === "status" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "status" && (
+                            <Box sx={{ p: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                                {statusOptions.map((status) => (
+                                  <Box
+                                    key={status}
+                                    onClick={() => handleStatusFilter(status)}
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 1,
+                                      borderRadius: 1,
+                                      cursor: "pointer",
+                                      "&:hover": {
+                                        bgcolor: "action.hover",
+                                      },
+                                    }}
+                                  >
+                                    {statusFilter.includes(status) ? (
+                                      <CheckIcon color="primary" fontSize="small" />
+                                    ) : (
+                                      <Box sx={{ width: 24, height: 24 }} />
+                                    )}
+                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </Typography>
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
                         {/* Clear All Button */}
                         <Box
                           sx={{
@@ -1091,7 +1163,8 @@ export default function Senator(props) {
                               !stateFilter.length &&
                               !ratingFilter.length &&
                               !selectedYears.length &&
-                              !termFilter
+                              !termFilter &&
+                              !statusFilter.length
                             }
                           >
                             Clear All Filters

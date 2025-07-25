@@ -93,6 +93,8 @@ export default function Representative(props) {
   const { terms } = useSelector((state) => state.term);
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
+  const [statusFilter, setStatusFilter] = useState([]);
+  const statusOptions = ["published", "reviewed", "draft"];
 
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -202,9 +204,13 @@ export default function Representative(props) {
       // District filter
       const districtMatch = districtFilter.length === 0 || districtFilter.includes(transformedHouse.district);
 
+      // Status filter
+      const statusMatch =
+        statusFilter.length === 0 ||
+        (transformedHouse.publishStatus && statusFilter.includes(transformedHouse.publishStatus));
 
 
-      return nameMatch && partyMatch && districtMatch && ratingMatch;
+      return nameMatch && partyMatch && districtMatch && ratingMatch && statusMatch;
     }
   );
 
@@ -274,12 +280,21 @@ export default function Representative(props) {
     setTermFilterAnchorEl(event.currentTarget);
   };
 
+  const handleStatusFilter = (status) => {
+    setStatusFilter(prev =>
+      prev.includes(status)
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
   const clearAllFilters = () => {
     setPartyFilter([]);
     setDistrictFilter([]);
     setRatingFilter([]);
     setYearFilter([]);
     setTermFilter(null);
+    setStatusFilter([]);
     setSearchQuery("");
   };
 
@@ -380,6 +395,14 @@ export default function Representative(props) {
     }
   };
 
+  const activeFilterCount =
+    partyFilter.length +
+    districtFilter.length +
+    ratingFilter.length +
+    yearFilter.length +
+    (termFilter ? 1 : 0) +
+    statusFilter.length;
+
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       {(loading || fetching) && (
@@ -460,13 +483,7 @@ export default function Representative(props) {
 
                 <Box sx={{ position: "relative", display: "inline-block" }}>
                   <Badge
-                    badgeContent={
-                      partyFilter.length +
-                      districtFilter.length +
-                      ratingFilter.length +
-                      yearFilter.length +
-                      (termFilter ? 1 : 0)
-                    }
+                    badgeContent={activeFilterCount}
                     color="primary"
                   >
                     <Button
@@ -503,7 +520,7 @@ export default function Representative(props) {
                           top: "100%",
                           mt: 1,
                           width: 320,
-                          zIndex: 1200,
+                          zIndex: 1,
                           boxShadow: 3,
                           borderRadius: 2,
                           overflow: "hidden",
@@ -557,7 +574,7 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "party" && (
                             <Box sx={{ p: 2, pt: 0 }}>
-                              <TextField
+                              {/* <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search parties..."
@@ -573,7 +590,7 @@ export default function Representative(props) {
                                   ),
                                 }}
                                 sx={{ mb: 2 }}
-                              />
+                              /> */}
                               <Box sx={{ maxHeight: 200, overflow: "auto" }}>
                                 {filteredPartyOptions.length > 0 ? (
                                   filteredPartyOptions.map((party) => (
@@ -600,7 +617,7 @@ export default function Representative(props) {
                                         <Box sx={{ width: 24, height: 24 }} />
                                       )}
                                       <Typography variant="body2" sx={{ ml: 1 }}>
-                                        {party}
+                                        {party.charAt(0).toUpperCase() + party.slice(1)}
                                       </Typography>
                                     </Box>
                                   ))
@@ -733,7 +750,7 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "rating" && (
                             <Box sx={{ p: 2, pt: 0 }}>
-                              <TextField
+                              {/* <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search ratings..."
@@ -749,7 +766,7 @@ export default function Representative(props) {
                                   ),
                                 }}
                                 sx={{ mb: 2 }}
-                              />
+                              /> */}
                               <Box sx={{ maxHeight: 200, overflow: "auto" }}>
                                 {filteredRatingOptions.length > 0 ? (
                                   filteredRatingOptions.map((rating) => (
@@ -945,6 +962,64 @@ export default function Representative(props) {
                           )}
                         </Box>
 
+                        {/* Status Filter */}
+                        <Box
+                          sx={{
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                            bgcolor:
+                              expandedFilter === "status"
+                                ? "action.hover"
+                                : "background.paper",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ p: 2, cursor: "pointer" }}
+                            onClick={() => toggleFilterSection("status")}
+                          >
+                            <Typography variant="body1">Status</Typography>
+                            {expandedFilter === "status" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "status" && (
+                            <Box sx={{ p: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                                {statusOptions.map((status) => (
+                                  <Box
+                                    key={status}
+                                    onClick={() => handleStatusFilter(status)}
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 1,
+                                      borderRadius: 1,
+                                      cursor: "pointer",
+                                      "&:hover": {
+                                        bgcolor: "action.hover",
+                                      },
+                                    }}
+                                  >
+                                    {statusFilter.includes(status) ? (
+                                      <CheckIcon color="primary" fontSize="small" />
+                                    ) : (
+                                      <Box sx={{ width: 24, height: 24 }} />
+                                    )}
+                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </Typography>
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
                         {/* Clear All Button */}
                         <Box
                           sx={{
@@ -963,7 +1038,8 @@ export default function Representative(props) {
                               !districtFilter.length &&
                               !ratingFilter.length &&
                               !yearFilter.length &&
-                              !termFilter
+                              !termFilter &&
+                              !statusFilter.length
                             }
                           >
                             Clear All Filters
