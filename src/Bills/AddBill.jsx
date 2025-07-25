@@ -8,6 +8,7 @@ import {
   clearVoteState,
   updateVote,
   createVote,
+  updateVoteStatus,
 } from "../redux/reducer/voteSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
@@ -30,6 +31,9 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -46,6 +50,7 @@ export default function AddBill(props) {
     termId: "",
     rollCall: "",
     readMore: "",
+    sbaPosition: "",
   });
 
   const preFillForm = () => {
@@ -53,12 +58,11 @@ export default function AddBill(props) {
       const termId = selectedVote.termId?._id || "";
       setFormData({
         ...formData,
-        type:
-          selectedVote.type.includes("senate") 
-            ? "senate"
-            : selectedVote.type.includes("house")
-            ? "house"
-            : "",
+        type: selectedVote.type.includes("senate")
+          ? "senate"
+          : selectedVote.type.includes("house")
+          ? "house"
+          : "",
         title: selectedVote.title || "",
         shortDesc: selectedVote.shortDesc || "",
         longDesc: selectedVote.longDesc || "",
@@ -67,6 +71,7 @@ export default function AddBill(props) {
         termId: termId, // Correctly set termId
         rollCall: selectedVote.rollCall || "",
         readMore: selectedVote.readMore || "",
+        sbaPosition: selectedVote.sbaPosition || "",
       });
     }
   };
@@ -127,19 +132,24 @@ export default function AddBill(props) {
       setSnackbarMessage("Term is required!");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
-      return; 
+      return;
     }
+
     setLoading(true);
     try {
+      const updatedFormData = { ...formData, status: "published" };
+
       if (id) {
-        await dispatch(updateVote({ id, updatedData: formData })).unwrap();
+        await dispatch(
+          updateVote({ id, updatedData: updatedFormData })
+        ).unwrap();
         setSnackbarMessage("Bill updated successfully!");
-        setSnackbarSeverity("success");
       } else {
-        await dispatch(createVote(formData)).unwrap();
+        await dispatch(createVote(updatedFormData)).unwrap();
         setSnackbarMessage("Bill created successfully!");
-        setSnackbarSeverity("success");
       }
+
+      setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
       console.error("Save error:", error);
@@ -147,10 +157,43 @@ export default function AddBill(props) {
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
-      setLoading(false); // Ensure loading stops after success or failure
+      setLoading(false);
     }
   };
-  
+
+  const handleReview = async () => {
+    if (!formData.termId) {
+      setSnackbarMessage("Term is required!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const updatedFormData = { ...formData, status: "reviewed" };
+
+      if (id) {
+        await dispatch(
+          updateVote({ id, updatedData: updatedFormData })
+        ).unwrap();
+        setSnackbarMessage("Bill Reviewed successfully!");
+      } else {
+        await dispatch(createVote(updatedFormData)).unwrap();
+        setSnackbarMessage("Bill Reviewed successfully!");
+      }
+
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Save error:", error);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AppTheme>
@@ -223,6 +266,23 @@ export default function AddBill(props) {
               <Button
                 variant="outlined"
                 sx={{
+
+                  backgroundColor: "#CC9A3A !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#c38f2fff !important",
+                  },
+                }}
+                onClick={handleReview}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
+
                   backgroundColor: "#4a90e2 !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
@@ -469,7 +529,6 @@ export default function AddBill(props) {
                       />
                     </FormControl>
                   </Grid>
-                  
 
                   <Grid size={2}>
                     <InputLabel
@@ -636,6 +695,85 @@ export default function AddBill(props) {
                         }}
                       />
                     </FormControl>
+                  </Grid>
+                  <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+                    sx={{ ml: { xs: 0, sm: 10.2 } }}
+                  >
+
+                    <Grid item xs={12} sm={2} sx={{ mr: 0.5 }}>
+
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "end",
+                          fontWeight: 700,
+                          my: 0,
+                          width: "100%",
+
+                          
+
+                          fontFamily: "'Be Vietnam Pro', sans-serif",
+                          fontSize: "13px",
+
+                        }}
+                      >
+                        SBA Position
+                      </InputLabel>
+                    </Grid>
+
+                    <Grid item xs={12} sm={10}>
+                      <FormControl
+                        sx={{
+                          fontFamily: "'Be Vietnam Pro', sans-serif",
+                          "& .MuiFormControlLabel-label": {
+
+                            fontSize: "15px",
+
+                          
+
+                            fontFamily: "'Be Vietnam Pro', sans-serif",
+                          },
+                        }}
+                      >
+                        <RadioGroup
+                          row
+                          name="sbaPosition"
+                          value={formData.sbaPosition}
+                          onChange={handleChange}
+                        >
+                          <FormControlLabel
+                            value="Yes"
+                            control={
+                              <Radio
+                                icon={
+                                  <CheckCircleIcon sx={{ color: "#D3D3D3" }} />
+                                }
+                                checkedIcon={
+                                  <CheckCircleIcon sx={{ color: "green" }} />
+                                }
+                              />
+                            }
+                            label="Yes"
+                          />
+                          <FormControlLabel
+                            value="No"
+                            control={
+                              <Radio
+                                icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
+                                checkedIcon={
+                                  <CancelIcon sx={{ color: "red" }} />
+                                }
+                              />
+                            }
+                            label="No"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+                    </Grid>
                   </Grid>
                 </Grid>
               </Box>

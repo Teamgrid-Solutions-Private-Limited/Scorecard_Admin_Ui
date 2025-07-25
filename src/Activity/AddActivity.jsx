@@ -31,6 +31,12 @@ import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+import CancelIcon from "@mui/icons-material/Cancel";
+import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
+
+
 export default function AddActivity(props) {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -41,8 +47,9 @@ export default function AddActivity(props) {
     title: "",
     shortDesc: "",
     date: "",
-    congress:"",
+    congress: "",
     readMore: "",
+    trackActivities: "",
   });
 
   const preFillForm = () => {
@@ -61,6 +68,7 @@ export default function AddActivity(props) {
         congress: selectedActivity.congress || "",
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
         readMore: selectedActivity.readMore || "",
+        trackActivities: selectedActivity.trackActivities || "",
       });
     }
   };
@@ -115,16 +123,64 @@ export default function AddActivity(props) {
     }
     setSnackbarOpen(false);
   };
- 
-  const handleSubmit = async () => {
+
+const handleSubmit = async () => {
+  setLoading(true);
+  try {
+    const updatedFormData = { ...formData, status: "published" };
+
+    if (id) {
+      // Update existing activity with publishStatus
+      await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
+      setSnackbarMessage("Activity updated successfully!");
+      setSnackbarSeverity("success");
+    } else {
+      // Validate required fields
+      if (
+        !formData.type ||
+        !formData.title ||
+        !formData.shortDesc ||
+        !formData.readMore
+      ) {
+        setSnackbarMessage("Please fill all fields!");
+        setSnackbarSeverity("warning");
+        setSnackbarOpen(true);
+        setLoading(false);
+        return;
+      }
+
+      // Create new activity with publishStatus
+      await dispatch(createActivity(updatedFormData)).unwrap();
+      setSnackbarMessage("Activity created successfully!");
+      setSnackbarSeverity("success");
+    }
+
+    setSnackbarOpen(true);
+  } catch (error) {
+    console.error("Save error:", error);
+    setSnackbarMessage(`Operation failed: ${error.message || error}`);
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  } finally {
+    setLoading(false); // Ensure loading stops after success or failure
+  }
+};
+
+  const handleReview = async () => {
     setLoading(true);
     try {
+      const updatedFormData = { ...formData, status: "reviewed" };
       if (id) {
-        await dispatch(updateActivity({ id, updatedData: formData })).unwrap();
-        setSnackbarMessage("Activity updated successfully!");
+        await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
+        setSnackbarMessage("Activity Reviewed successfully!");
         setSnackbarSeverity("success");
       } else {
-        if(!formData.type||!formData.title||!formData.shortDesc||!formData.readMore){
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.readMore
+        ) {
           setSnackbarMessage("please fill all fields!");
           setSnackbarSeverity("warning");
           setSnackbarOpen(true);
@@ -132,7 +188,7 @@ export default function AddActivity(props) {
           return;
         }
         await dispatch(createActivity(formData)).unwrap();
-        setSnackbarMessage("Activity created successfully!");
+        setSnackbarMessage("Activity created and Reviewed successfully!");
         setSnackbarSeverity("success");
       }
       setSnackbarOpen(true);
@@ -217,11 +273,50 @@ export default function AddActivity(props) {
               <Button
                 variant="outlined"
                 sx={{
+
+                  backgroundColor: "#CC9A3A !important",
+
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+
+                    backgroundColor: "#c38f2fff !important",
+                  },
+                }}
+                onClick={handleReview}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  backgroundColor: "#CC9A3A !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#c38f2fff !important",
+                  },
+                }}
+                onClick={handleReview}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
                   backgroundColor: "#4a90e2 !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
+
+
                     backgroundColor: "#357ABD !important",
                   },
                 }}
@@ -474,6 +569,96 @@ export default function AddActivity(props) {
                         }}
                       />
                     </FormControl>
+                  </Grid>
+                  <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+
+                    sx={{ ml: { xs: 0, sm: 5.6 } }}
+                  >
+                    <Grid item xs={12} sm={2}>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "end",
+                          fontWeight: 700,
+                          my: 0,
+                          width: "100%",
+                        }}
+                      >
+                        Tracked Activities
+                      </InputLabel>
+
+                    </Grid>
+
+                    <Grid item xs={12} sm={10}>
+                      <FormControl
+                        sx={{
+                          fontFamily: "'Be Vietnam Pro', sans-serif",
+                          "& .MuiFormControlLabel-label": {
+
+                            fontSize: "15px",
+
+
+                            fontFamily: "'Be Vietnam Pro', sans-serif",
+                          },
+                        }}
+                      >
+                        <RadioGroup
+                          row
+                          name="trackActivities"
+                          value={formData.trackActivities}
+                          onChange={handleChange}
+                        >
+                          <FormControlLabel
+                            value="Completed"
+                            control={
+                              <Radio
+                                icon={
+                                  <CheckCircleIcon sx={{ color: "#D3D3D3" }} />
+                                }
+                                checkedIcon={
+                                  <CheckCircleIcon sx={{ color: "green" }} />
+                                }
+                              />
+                            }
+                            label="Completed"
+                          />
+                          <FormControlLabel
+                            value="Pending"
+                            control={
+                              <Radio
+                                icon={
+                                  <RadioButtonUncheckedIcon
+                                    sx={{ color: "#D3D3D3" }}
+                                  />
+                                }
+                                checkedIcon={
+                                  <RadioButtonUncheckedIcon
+                                    sx={{ color: "#b4af4bff" }}
+                                  />
+                                }
+                              />
+                            }
+                            label="Pending"
+                          />
+                          <FormControlLabel
+                            value="Failed"
+                            control={
+                              <Radio
+                                icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
+                                checkedIcon={
+                                  <CancelIcon sx={{ color: "red" }} />
+                                }
+                              />
+                            }
+                            label="Failed"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+                    </Grid>
                   </Grid>
                 </Grid>
               </Box>

@@ -9,15 +9,19 @@ import { jwtDecode } from "jwt-decode";
 export const createSenator = createAsyncThunk(
   "senators/createSenator",
   async (formData, { rejectWithValue }) => {
-    console.log("slice",formData);
-    
+    console.log("slice", formData);
+
     try {
-      const response = await axios.post(`${API_URL}/senator/senators/create/`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log(response);     
+      const response = await axios.post(
+        `${API_URL}/senator/senators/create/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -67,9 +71,12 @@ export const getSenatorById = createAsyncThunk(
   "senators/getSenatorById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senator/senators/viewId/${id}`, {
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
-      });
+      const response = await axios.get(
+        `${API_URL}/senator/senators/viewId/${id}`,
+        {
+          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -82,11 +89,15 @@ export const updateSenator = createAsyncThunk(
   "senators/updateSenator",
   async ({ id, formData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/senator/senators/update/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.put(
+        `${API_URL}/senator/senators/update/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -126,6 +137,22 @@ export const deleteSenator = createAsyncThunk(
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Delete failed");
+    }
+  }
+);
+
+// Thunk to update senator status
+export const updateSenatorStatus = createAsyncThunk(
+  "senators/updateStatus",
+  async ({ id, publishStatus }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/senator/senators/status/${id}`,
+        { publishStatus }
+      );
+      return response.data.senator;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -240,8 +267,49 @@ const senatorSlice = createSlice({
         state.loading = false;
         state.error = action.payload?.message || "Error deleting senator";
       });
+    // Update senator status
+    builder
+      .addCase(updateSenatorStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateSenatorStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload;
+        const index = state.senators.findIndex((s) => s._id === updated._id);
+        if (index !== -1) {
+          state.senators[index] = updated;
+        }
+      })
+
+      .addCase(updateSenatorStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Error deleting senator";
+      });
+    // Update senator status
+    // builder
+    //   .addCase(updateSenatorStatus.pending, (state) => {
+    //     state.loading = true;
+    //     state.error = null;
+    //   })
+    //   .addCase(updateSenatorStatus.fulfilled, (state, action) => {
+    //     state.loading = false;
+    //     const updated = action.payload;
+    //     const index = state.senators.findIndex((s) => s._id === updated._id);
+    //     if (index !== -1) {
+    //       state.senators[index] = updated;
+    //     }
+    //   })
+
+    //   .addCase(updateSenatorStatus.rejected, (state, action) => {
+    //     state.loading = false;
+    //     state.error = action.payload;
+    //   });
   },
 });
 
 export default senatorSlice.reducer;
-export const { clearSenatorState } = senatorSlice.actions; 
+
+export const { clearSenatorState } = senatorSlice.actions;
+
+

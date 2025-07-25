@@ -1,15 +1,19 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { API_URL } from '../API';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+import { API_URL } from "../API";
 
 // Create an activity with file upload
 export const createActivity = createAsyncThunk(
-  'activity/createActivity',
+  "activity/createActivity",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/activity/activity/create/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await axios.post(
+        `${API_URL}/activity/activity/create/`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -19,12 +23,15 @@ export const createActivity = createAsyncThunk(
 
 // Get all activities
 export const getAllActivity = createAsyncThunk(
-  'activity/getAllActivity',
+  "activity/getAllActivity",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/activity/activity/viewAll/`,{
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
-      });
+      const response = await axios.get(
+        `${API_URL}/activity/activity/viewAll/`,
+        {
+          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -34,12 +41,16 @@ export const getAllActivity = createAsyncThunk(
 
 // Get an activity by ID
 export const getActivityById = createAsyncThunk(
-  'activity/getActivityById',
+  "activity/getActivityById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/activity/activity/viewId/${id}`, {
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
-      });
+      const response = await axios.get(
+        `${API_URL}/activity/activity/viewId/${id}`,
+        {
+          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        }
+      );
+      console.log("GetActivityById", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -49,10 +60,13 @@ export const getActivityById = createAsyncThunk(
 
 // Update an activity by ID
 export const updateActivity = createAsyncThunk(
-  'activity/updateActivity',
+  "activity/updateActivity",
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/activity/activity/update/${id}`, updatedData);
+      const response = await axios.put(
+        `${API_URL}/activity/activity/update/${id}`,
+        updatedData
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -62,10 +76,12 @@ export const updateActivity = createAsyncThunk(
 
 // Delete an activity by ID
 export const deleteActivity = createAsyncThunk(
-  'activity/deleteActivity',
+  "activity/deleteActivity",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${API_URL}/activity/activity/delete/${id}`);
+      const response = await axios.delete(
+        `${API_URL}/activity/activity/delete/${id}`
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -73,9 +89,62 @@ export const deleteActivity = createAsyncThunk(
   }
 );
 
+export const updateActivityStatus = createAsyncThunk(
+  "activity/updateActivityStatus",
+  async ({ id, status }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/activity/activity/status/${id}`,
+        { status }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+// Bulk update trackActivities
+export const bulkUpdateTrackActivities = createAsyncThunk(
+  "activity/bulkUpdateTrackActivities",
+  async ({ ids, trackActivities }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/activity/update/bulk-update-track-activities`,
+        { ids, trackActivities },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-protected-key": "MySuperSecretApiKey123" // Add if needed
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+// export const bulkUpdateTrackActivities = createAsyncThunk(
+//   "activity/bulkUpdateTrackActivities",
+//   async ({ ids, trackActivities }, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.patch(
+//         `${API_URL}/activity/update/bulk-update-track-activities`,
+//         { ids, trackActivities }
+//       );
+//       console.log("BulkUpdateTrackActivities", response.data);
+//       return response.data;
+//     } catch (error) {
+//       console.error("BulkUpdateTrackActivities Error:", error);
+//       return rejectWithValue(error.response?.data || "Server error");
+//     }
+//   }
+// );
+
+
 // Slice
 const activitySlice = createSlice({
-  name: 'activity',
+  name: "activity",
   initialState: {
     activities: [],
     activity: null,
@@ -154,6 +223,58 @@ const activitySlice = createSlice({
       state.loading = false;
     });
     builder.addCase(deleteActivity.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+    // Update Activity Status
+    builder.addCase(updateActivityStatus.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(updateActivityStatus.fulfilled, (state, action) => {
+      console.log("Payload:", action.payload);
+      state.loading = false;
+      const updated = action.payload.activity;
+
+      // update single activity if it's being viewed
+      if (state.activity && state.activity._id === updated._id) {
+        state.activity.status = updated.status;
+      }
+
+      // update the activity in the list
+      const index = state.activities.findIndex((a) => a._id === updated._id);
+      if (index !== -1) {
+        state.activities[index] = {
+          ...state.activities[index],
+          status: updated.status,
+        };
+       
+        builder
+          .addCase(bulkUpdateTrackActivities.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+          })
+          .addCase(bulkUpdateTrackActivities.fulfilled, (state, action) => {
+            state.loading = false;
+            // Update the state with the modified activities
+            if (action.payload.updatedActivities) {
+              action.payload.updatedActivities.forEach(updated => {
+                const index = state.activities.findIndex(a => a._id === updated._id);
+                if (index !== -1) {
+                  state.activities[index] = updated;
+                }
+              });
+            }
+          })
+          .addCase(bulkUpdateTrackActivities.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload?.message || 'Bulk update failed';
+          });
+
+      }
+    });
+
+    builder.addCase(updateActivityStatus.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload;
     });
