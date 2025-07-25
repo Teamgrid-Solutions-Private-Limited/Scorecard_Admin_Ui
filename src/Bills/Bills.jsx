@@ -183,6 +183,7 @@ export default function Bills(props) {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
+            width: "80%",
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}
@@ -239,7 +240,10 @@ export default function Bills(props) {
                   <option value="all">All</option>
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
+
                   <option value="reviewed">Reviewed</option>
+
+
                 </TextField>
               </Stack>
 

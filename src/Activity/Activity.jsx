@@ -129,48 +129,48 @@ export default function Activity(props) {
         setSnackbarOpen(true);
       });
   };
-// In your Activity component, update the handleBulkUpdate function:
-const handleBulkUpdate = async () => {
-  if (!selectedTrackActivity.length || !bulkTrackActivity) {
-    setSnackbarMessage("Please select activities and a status");
-    setSnackbarSeverity("warning");
-    setSnackbarOpen(true);
-    return;
-  }
+  // In your Activity component, update the handleBulkUpdate function:
+  const handleBulkUpdate = async () => {
+    if (!selectedTrackActivity.length || !bulkTrackActivity) {
+      setSnackbarMessage("Please select activities and a status");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      return;
+    }
 
-  setFetching(true);
-  try {
-    // Dispatch and unwrap the result to properly catch errors
-    const result = await dispatch(
-      bulkUpdateTrackActivities({
-        ids: selectedTrackActivity,
-        trackActivities: bulkTrackActivity
-      })
-    ).unwrap(); // This is crucial for proper error handling
+    setFetching(true);
+    try {
+      // Dispatch and unwrap the result to properly catch errors
+      const result = await dispatch(
+        bulkUpdateTrackActivities({
+          ids: selectedTrackActivity,
+          trackActivities: bulkTrackActivity
+        })
+      ).unwrap(); // This is crucial for proper error handling
 
-    setSnackbarMessage(
-      `Successfully updated ${result.updatedActivities?.length || selectedTrackActivity.length} activities`
-    );
-    setSnackbarSeverity("success");
-    
-    // Reset selection
-    setSelectedTrackActivity([]);
-    setBulkTrackActivity("");
-    setIsBulkEditMode(false);
-    
-    // Refresh the data
-    dispatch(getAllActivity());
-  } catch (error) {
-    console.error("Bulk update failed:", error);
-    setSnackbarMessage(
-      error.message || "Failed to update activities"
-    );
-    setSnackbarSeverity("error");
-  } finally {
-    setFetching(false);
-    setSnackbarOpen(true);
-  }
-};
+      setSnackbarMessage(
+        `Successfully updated ${result.updatedActivities?.length || selectedTrackActivity.length} activities`
+      );
+      setSnackbarSeverity("success");
+
+      // Reset selection
+      setSelectedTrackActivity([]);
+      setBulkTrackActivity("");
+      setIsBulkEditMode(false);
+
+      // Refresh the data
+      dispatch(getAllActivity());
+    } catch (error) {
+      console.error("Bulk update failed:", error);
+      setSnackbarMessage(
+        error.message || "Failed to update activities"
+      );
+      setSnackbarSeverity("error");
+    } finally {
+      setFetching(false);
+      setSnackbarOpen(true);
+    }
+  };
   // const handleBulkUpdate = async () => {
   //   if (!selectedTrackActivity.length || !bulkTrackActivity) return;
 
@@ -223,6 +223,7 @@ const handleBulkUpdate = async () => {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
+            width: "80%",
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}
@@ -272,6 +273,8 @@ const handleBulkUpdate = async () => {
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
                   <option value="reviewed">Reviewed</option>
+
+
                 </TextField>
               </Stack>
 

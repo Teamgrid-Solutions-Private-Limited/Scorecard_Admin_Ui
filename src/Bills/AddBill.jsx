@@ -266,6 +266,7 @@ export default function AddBill(props) {
               <Button
                 variant="outlined"
                 sx={{
+
                   backgroundColor: "#CC9A3A !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
@@ -281,6 +282,7 @@ export default function AddBill(props) {
               <Button
                 variant="outlined"
                 sx={{
+
                   backgroundColor: "#4a90e2 !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
@@ -700,7 +702,9 @@ export default function AddBill(props) {
                     alignItems="center"
                     sx={{ ml: { xs: 0, sm: 10.2 } }}
                   >
+
                     <Grid item xs={12} sm={2} sx={{ mr: 0.5 }}>
+
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -709,7 +713,12 @@ export default function AddBill(props) {
                           fontWeight: 700,
                           my: 0,
                           width: "100%",
+
                           
+
+                          fontFamily: "'Be Vietnam Pro', sans-serif",
+                          fontSize: "13px",
+
                         }}
                       >
                         SBA Position
@@ -721,7 +730,11 @@ export default function AddBill(props) {
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
+
                             fontSize: "15px",
+
+                          
+
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
                         }}

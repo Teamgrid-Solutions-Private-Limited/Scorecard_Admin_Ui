@@ -30,10 +30,12 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
+
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -271,6 +273,28 @@ const handleSubmit = async () => {
               <Button
                 variant="outlined"
                 sx={{
+
+                  backgroundColor: "#CC9A3A !important",
+
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+
+                    backgroundColor: "#c38f2fff !important",
+                  },
+                }}
+                onClick={handleReview}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
                   backgroundColor: "#CC9A3A !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
@@ -291,6 +315,7 @@ const handleSubmit = async () => {
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
+
                     backgroundColor: "#357ABD !important",
                   },
                 }}
@@ -548,6 +573,7 @@ const handleSubmit = async () => {
                     container
                     spacing={2}
                     alignItems="center"
+
                     sx={{ ml: { xs: 0, sm: 5.6 } }}
                   >
                     <Grid item xs={12} sm={2}>
@@ -563,6 +589,7 @@ const handleSubmit = async () => {
                       >
                         Tracked Activities
                       </InputLabel>
+
                     </Grid>
 
                     <Grid item xs={12} sm={10}>
@@ -570,7 +597,10 @@ const handleSubmit = async () => {
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
+
                             fontSize: "15px",
+
+
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
                         }}

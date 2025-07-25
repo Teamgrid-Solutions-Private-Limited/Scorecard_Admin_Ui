@@ -124,6 +124,40 @@ export default function CustomizedDataGrid({
             ),
           },
           {
+
+            field: "status",
+            headerName: "Status",
+
+
+            flex: 1,
+            minWidth: 130,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+
+            renderCell: (params) => {
+              const status = params?.row?.status;
+              const displayStatus = status
+                ? status.charAt(0).toUpperCase() + status.slice(1)
+                : "N/A";
+
+              return (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%",
+                  }}
+                >
+                  <Typography>{displayStatus}</Typography>
+                </Box>
+              );
+            },
+
+          },
+          {
             field: "status",
             headerName: "Status",
             flex: 1,
@@ -152,6 +186,7 @@ export default function CustomizedDataGrid({
               );
             },
           },
+        
           {
             field: "action",
             flex: 1,
@@ -223,8 +258,11 @@ export default function CustomizedDataGrid({
             ),
           },
           {
+
             field: "status",
             headerName: "Status",
+
+        
             flex: 1,
             minWidth: 130,
             renderHeader: (params) => (
@@ -232,6 +270,7 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
+
             renderCell: (params) => {
               const status = params?.row?.status;
               const capitalized = status
@@ -251,6 +290,7 @@ export default function CustomizedDataGrid({
               );
             },
           },
+
 
           {
             field: "action",
@@ -364,7 +404,9 @@ export default function CustomizedDataGrid({
                   sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                 />
                 <DeleteForeverIcon
+
                   onClick={() => onDelete && onDelete(params.row._id)}
+
                   sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
                 />
               </div>
@@ -510,8 +552,11 @@ export default function CustomizedDataGrid({
           ...(type === "representative"
             ? [
                 {
+
                   field: "publishStatus",
                   headerName: "Status",
+
+
                   flex: 1,
                   minWidth: 130,
                   renderHeader: (params) => (
@@ -519,6 +564,7 @@ export default function CustomizedDataGrid({
                       {params.colDef.headerName}
                     </Typography>
                   ),
+
                   renderCell: (params) => {
                     const status = params?.row?.publishStatus;
 
@@ -544,6 +590,7 @@ export default function CustomizedDataGrid({
                 {
                   field: "publishStatus",
                   headerName: "Status",
+
                   flex: 1,
                   minWidth: 130,
                   renderHeader: (params) => (
@@ -551,6 +598,7 @@ export default function CustomizedDataGrid({
                       {params.colDef.headerName}
                     </Typography>
                   ),
+
                   renderCell: (params) => {
                     const status = params?.row?.publishStatus;
                     const displayStatus = status
@@ -569,6 +617,9 @@ export default function CustomizedDataGrid({
                       </Box>
                     );
                   },
+
+      
+
                 },
               ]),
 

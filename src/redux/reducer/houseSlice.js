@@ -266,4 +266,7 @@ const houseSlice = createSlice({
 
 export default houseSlice.reducer;
 
+
 export const { clearHouseState } = houseSlice.actions
+
+
