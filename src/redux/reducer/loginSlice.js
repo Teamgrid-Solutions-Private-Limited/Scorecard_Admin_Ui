@@ -100,6 +100,36 @@ export const deleteUser = createAsyncThunk(
   }
 );
 
+export const addUser = createAsyncThunk(
+  "users/addUser",
+  async (userData, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return rejectWithValue("Authentication token not found");
+      }
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
+      if (userRole !== "admin") {
+        return rejectWithValue("You are not authorized to add users.");
+      }
+      const response = await axios.post(`${API_URL}/api/invite`, userData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        "Failed to add user"
+      );
+    }
+  }
+);
+
 
 const authSlice = createSlice({
   name: "auth",
@@ -162,37 +192,42 @@ const authSlice = createSlice({
 
       // Update User
       .addCase(updateUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        // Do not set state.loading here
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        state.loading = false;
-        // Update the specific user in the users array
+        // Do not set state.loading here
         state.users = state.users.map(user => 
           user._id === action.payload.user._id ? action.payload.user : user
         );
-        // If the updated user is the current user, update that too
         if (state.user && state.user._id === action.payload.user._id) {
           state.user = action.payload.user;
         }
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        // Do not set state.loading here
       })
 
       // Delete User
       .addCase(deleteUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        // Do not set state.loading here
       })
       .addCase(deleteUser.fulfilled, (state, action) => {
-        state.loading = false;
+        // Do not set state.loading here
         state.users = state.users.filter(user => user._id !== action.payload);
       })
       .addCase(deleteUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        // Do not set state.loading here
+      })
+
+      // Add User
+      .addCase(addUser.pending, (state) => {
+        // Do not set state.loading here
+      })
+      .addCase(addUser.fulfilled, (state, action) => {
+        // Do not set state.loading here
+      })
+      .addCase(addUser.rejected, (state, action) => {
+        // Do not set state.loading here
       });
 
   },

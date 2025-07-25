@@ -35,7 +35,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
-
+import { jwtDecode } from "jwt-decode";
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -51,7 +51,12 @@ export default function AddActivity(props) {
     readMore: "",
     trackActivities: "",
   });
+ const token = localStorage.getItem("token");
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   const preFillForm = () => {
     if (selectedActivity) {
       const termId = selectedActivity.termId?._id || "";
@@ -181,14 +186,14 @@ const handleSubmit = async () => {
           !formData.shortDesc ||
           !formData.readMore
         ) {
-          setSnackbarMessage("please fill all fields!");
+          setSnackbarMessage("Please fill all fields!");
           setSnackbarSeverity("warning");
           setSnackbarOpen(true);
           setLoading(false);
           return;
         }
         await dispatch(createActivity(formData)).unwrap();
-        setSnackbarMessage("Activity created and Reviewed successfully!");
+        setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
       }
       setSnackbarOpen(true);
@@ -288,42 +293,25 @@ const handleSubmit = async () => {
               >
                 Review
               </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  backgroundColor: "#CC9A3A !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#c38f2fff !important",
-                  },
-                }}
-                onClick={handleReview}
-              >
-                Review
-              </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
 
-
-                    backgroundColor: "#357ABD !important",
+              {userRole === "admin" && (
+                <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
                   },
                 }}
                 onClick={handleSubmit}
               >
                 Save Changes
               </Button>
+              )}
+
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
@@ -613,7 +601,7 @@ const handleSubmit = async () => {
                           onChange={handleChange}
                         >
                           <FormControlLabel
-                            value="Completed"
+                            value="completed"
                             control={
                               <Radio
                                 icon={
@@ -627,7 +615,7 @@ const handleSubmit = async () => {
                             label="Completed"
                           />
                           <FormControlLabel
-                            value="Pending"
+                            value="pending"
                             control={
                               <Radio
                                 icon={
@@ -645,7 +633,7 @@ const handleSubmit = async () => {
                             label="Pending"
                           />
                           <FormControlLabel
-                            value="Failed"
+                            value="failed"
                             control={
                               <Radio
                                 icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
