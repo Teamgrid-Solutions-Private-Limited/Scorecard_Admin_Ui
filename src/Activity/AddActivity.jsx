@@ -405,9 +405,7 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      tinymceScriptSrc={`${
-                        import.meta.env.BASE_URL
-                      }tinymce/tinymce.min.js`}
+                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
