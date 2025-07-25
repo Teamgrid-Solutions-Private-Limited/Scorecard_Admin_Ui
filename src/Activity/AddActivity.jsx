@@ -288,25 +288,7 @@ const handleSubmit = async () => {
               >
                 Review
               </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  backgroundColor: "#CC9A3A !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#c38f2fff !important",
-                  },
-                }}
-                onClick={handleReview}
-              >
-                Review
-              </Button>
+             
               <Button
                 variant="outlined"
                 sx={{
