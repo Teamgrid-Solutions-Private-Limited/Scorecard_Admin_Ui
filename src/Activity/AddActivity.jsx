@@ -36,7 +36,6 @@ import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
 
-
 export default function AddActivity(props) {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -124,54 +123,58 @@ export default function AddActivity(props) {
     setSnackbarOpen(false);
   };
 
-const handleSubmit = async () => {
-  setLoading(true);
-  try {
-    const updatedFormData = { ...formData, status: "published" };
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const updatedFormData = { ...formData, status: "published" };
 
-    if (id) {
-      // Update existing activity with publishStatus
-      await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
-      setSnackbarMessage("Activity updated successfully!");
-      setSnackbarSeverity("success");
-    } else {
-      // Validate required fields
-      if (
-        !formData.type ||
-        !formData.title ||
-        !formData.shortDesc ||
-        !formData.readMore
-      ) {
-        setSnackbarMessage("Please fill all fields!");
-        setSnackbarSeverity("warning");
-        setSnackbarOpen(true);
-        setLoading(false);
-        return;
+      if (id) {
+        // Update existing activity with publishStatus
+        await dispatch(
+          updateActivity({ id, updatedData: updatedFormData })
+        ).unwrap();
+        setSnackbarMessage("Activity updated successfully!");
+        setSnackbarSeverity("success");
+      } else {
+        // Validate required fields
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.readMore
+        ) {
+          setSnackbarMessage("Please fill all fields!");
+          setSnackbarSeverity("warning");
+          setSnackbarOpen(true);
+          setLoading(false);
+          return;
+        }
+
+        // Create new activity with publishStatus
+        await dispatch(createActivity(updatedFormData)).unwrap();
+        setSnackbarMessage("Activity created successfully!");
+        setSnackbarSeverity("success");
       }
 
-      // Create new activity with publishStatus
-      await dispatch(createActivity(updatedFormData)).unwrap();
-      setSnackbarMessage("Activity created successfully!");
-      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Save error:", error);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false); // Ensure loading stops after success or failure
     }
-
-    setSnackbarOpen(true);
-  } catch (error) {
-    console.error("Save error:", error);
-    setSnackbarMessage(`Operation failed: ${error.message || error}`);
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  } finally {
-    setLoading(false); // Ensure loading stops after success or failure
-  }
-};
+  };
 
   const handleReview = async () => {
     setLoading(true);
     try {
       const updatedFormData = { ...formData, status: "reviewed" };
       if (id) {
-        await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
+        await dispatch(
+          updateActivity({ id, updatedData: updatedFormData })
+        ).unwrap();
         setSnackbarMessage("Activity Reviewed successfully!");
         setSnackbarSeverity("success");
       } else {
@@ -273,14 +276,12 @@ const handleSubmit = async () => {
               <Button
                 variant="outlined"
                 sx={{
-
                   backgroundColor: "#CC9A3A !important",
 
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-
                     backgroundColor: "#c38f2fff !important",
                   },
                 }}
@@ -291,10 +292,6 @@ const handleSubmit = async () => {
               <Button
                 variant="outlined"
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
                   backgroundColor: "#CC9A3A !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
@@ -315,8 +312,6 @@ const handleSubmit = async () => {
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-
-
                     backgroundColor: "#357ABD !important",
                   },
                 }}
@@ -574,7 +569,6 @@ const handleSubmit = async () => {
                     container
                     spacing={2}
                     alignItems="center"
-
                     sx={{ ml: { xs: 0, sm: 5.6 } }}
                   >
                     <Grid item xs={12} sm={2}>
@@ -590,7 +584,6 @@ const handleSubmit = async () => {
                       >
                         Tracked Activities
                       </InputLabel>
-
                     </Grid>
 
                     <Grid item xs={12} sm={10}>
@@ -598,9 +591,7 @@ const handleSubmit = async () => {
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
-
                             fontSize: "15px",
-
 
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
