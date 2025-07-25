@@ -158,6 +158,36 @@ export default function CustomizedDataGrid({
 
           },
           {
+            field: "status",
+            headerName: "Status",
+            flex: 1,
+            minWidth: 130,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => {
+              const status = params?.row?.status;
+              const displayStatus = status
+                ? status.charAt(0).toUpperCase() + status.slice(1)
+                : "N/A";
+
+              return (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%",
+                  }}
+                >
+                  <Typography>{displayStatus}</Typography>
+                </Box>
+              );
+            },
+          },
+        
+          {
             field: "action",
             flex: 1,
             headerName: "Action",

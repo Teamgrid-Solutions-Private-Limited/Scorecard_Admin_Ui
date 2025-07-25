@@ -183,6 +183,7 @@ export default function Bills(props) {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
+            width: "80%",
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}

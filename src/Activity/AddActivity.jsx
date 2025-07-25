@@ -124,7 +124,6 @@ export default function AddActivity(props) {
     setSnackbarOpen(false);
   };
 
-
 const handleSubmit = async () => {
   setLoading(true);
   try {
@@ -167,9 +166,41 @@ const handleSubmit = async () => {
   }
 };
 
-
-
-  
+  const handleReview = async () => {
+    setLoading(true);
+    try {
+      const updatedFormData = { ...formData, status: "reviewed" };
+      if (id) {
+        await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
+        setSnackbarMessage("Activity Reviewed successfully!");
+        setSnackbarSeverity("success");
+      } else {
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.readMore
+        ) {
+          setSnackbarMessage("please fill all fields!");
+          setSnackbarSeverity("warning");
+          setSnackbarOpen(true);
+          setLoading(false);
+          return;
+        }
+        await dispatch(createActivity(formData)).unwrap();
+        setSnackbarMessage("Activity created and Reviewed successfully!");
+        setSnackbarSeverity("success");
+      }
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Save error:", error);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false); // Ensure loading stops after success or failure
+    }
+  };
 
   return (
     <AppTheme>
@@ -264,7 +295,27 @@ const handleSubmit = async () => {
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
+                  backgroundColor: "#CC9A3A !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
                   "&:hover": {
+                    backgroundColor: "#c38f2fff !important",
+                  },
+                }}
+                onClick={handleReview}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+
 
                     backgroundColor: "#357ABD !important",
                   },

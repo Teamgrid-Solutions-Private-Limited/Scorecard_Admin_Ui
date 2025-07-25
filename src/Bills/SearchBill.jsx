@@ -59,32 +59,79 @@ export default function SearchBill(props) {
       }
       setSnackbarOpen(false);
     };
+const handleSearch = async () => {
+  setLoading(true);
+  setSearchAttempted(true);
+  
+  try {
+    if (!searchQuery) {
+      setSnackbarMessage("Fill the Field!");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      setLoading(false);
+      return;
+    }
 
-  const handleSearch = async () => {
-    setLoading(true);
-    setSearchAttempted(true); // Mark that a search was attempted
-    try {
-      if(!searchQuery){
-        setSnackbarMessage("Fill the Field!")
-        setSnackbarSeverity("warning")
-        setSnackbarOpen(true)
-        setLoading(false)
-        return
-      }
-      const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
+    if (!token) {
+      setSnackbarMessage("Please log in to search bills");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      setLoading(false);
+      navigate('/login');
+      return;
+    }
+
+    const response = await axios.post(
+      `${API_URL}/fetch-quorum/store-data`,
+      {
         type: "bills",
         additionalParams: {
           title: searchQuery,
         },
-      });
-      setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
-    } catch (error) {
-      console.error("Error searching bills:", error);
-      setSearchResults([]); // Defensive: clear results on error
-    } finally {
-      setLoading(false);
-    }
-  };
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
+  } catch (error) {
+    console.error("Error searching bills:", error);
+    setSnackbarMessage(error.response?.data?.message || "Failed to search bills");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+    setSearchResults([]);
+  } finally {
+    setLoading(false);
+  }
+};
+  // const handleSearch = async () => {
+  //   setLoading(true);
+  //   setSearchAttempted(true); // Mark that a search was attempted
+  //   try {
+  //     if(!searchQuery){
+  //       setSnackbarMessage("Fill the Field!")
+  //       setSnackbarSeverity("warning")
+  //       setSnackbarOpen(true)
+  //       setLoading(false)
+  //       return
+  //     }
+  //     const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
+  //       type: "bills",
+  //       additionalParams: {
+  //         title: searchQuery,
+  //       },
+  //     });
+  //     setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
+  //   } catch (error) {
+  //     console.error("Error searching bills:", error);
+  //     setSearchResults([]); // Defensive: clear results on error
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleAddBill = async (bill) => {
     setLoading(true);
