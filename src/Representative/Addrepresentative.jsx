@@ -30,7 +30,6 @@ import {
   clearHouseState,
   updateRepresentativeStatus,
 } from "../redux/reducer/houseSlice";
-
 import {
   getHouseById,
   updateHouse,
@@ -56,6 +55,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+import { jwtDecode } from "jwt-decode";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -67,7 +67,12 @@ export default function Addrepresentative(props) {
   const { activities } = useSelector((state) => state.activity);
   const houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
+  console.log("User Role:", userRole);
   // Initialize as an array to support multiple terms
   const [houseTermData, setHouseTermData] = useState([
     {
@@ -409,7 +414,7 @@ export default function Addrepresentative(props) {
 
       await Promise.all(termPromises);
 
-        await dispatch(
+      await dispatch(
         updateRepresentativeStatus({ id, publishStatus: "published" })
       ).unwrap();
       await dispatch(getHouseDataByHouseId(id)).unwrap();
@@ -436,7 +441,7 @@ export default function Addrepresentative(props) {
       setSnackbarMessage("");
       setSnackbarSeverity("success");
 
-      // ✅ 1. Update house data
+      //  1. Update house data
       if (id) {
         const updatedData = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
@@ -447,7 +452,7 @@ export default function Addrepresentative(props) {
         operationType = "Updated";
       }
 
-      // ✅ 2. Save house term data (filter out completely empty entries if needed)
+      // 2. Save house term data (filter out completely empty entries if needed)
       const termPromises = houseTermData.map((termData) => {
         const termPayload = {
           ...termData,
@@ -467,19 +472,16 @@ export default function Addrepresentative(props) {
 
       await Promise.all(termPromises);
 
-      // ✅ 3. Update status to "review"
+      //  3. Update status to "review"
       await dispatch(
         updateRepresentativeStatus({ id, publishStatus: "reviewed" })
       ).unwrap();
 
-      // ✅ 4. Refresh data
+      //  4. Refresh data
       await dispatch(getHouseDataByHouseId(id)).unwrap();
 
-      // ✅ 5. Success message
-      handleSnackbarOpen(
-        `Data ${operationType} successfully!`,
-        "success"
-      );
+      //  5. Success message
+      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(
@@ -589,21 +591,23 @@ export default function Addrepresentative(props) {
               >
                 Review
               </Button>
-              <Button
-                variant="outlined"
-                onClick={handleSave}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                Save Changes
-              </Button>
+              {userRole === "admin" && (
+                <Button
+                  variant="outlined"
+                  onClick={handleSave}
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                >
+                  Save Changes
+                </Button>
+              )}
               {/* <Button variant="outlined">
                 Fetch Representatives from Quorum
               </Button> */}
