@@ -1,7 +1,12 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllVotes, deleteVote, updateVoteStatus, bulkUpdateSbaPosition } from "../redux/reducer/voteSlice";
+import {
+  getAllVotes,
+  deleteVote,
+  updateVoteStatus,
+  bulkUpdateSbaPosition,
+} from "../redux/reducer/voteSlice";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import { Box, Stack, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -49,12 +54,12 @@ export default function Bills(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all"); // 'all', 'published', 'draft'
- const token = localStorage.getItem("token");
-// Decode token to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+  console.log("User Role:", userRole);
   const [selectedBills, setSelectedBills] = useState([]); // Store selected bill IDs
   const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
   const [bulkSbaPosition, setBulkSbaPosition] = useState(""); // Store bulk SBA position value
@@ -64,13 +69,17 @@ export default function Bills(props) {
 
     setFetching(true);
     try {
-      await dispatch(bulkUpdateSbaPosition({
-        ids: selectedBills,
-        sbaPosition: bulkSbaPosition // Already capitalized from dropdown
-      }));
+      await dispatch(
+        bulkUpdateSbaPosition({
+          ids: selectedBills,
+          sbaPosition: bulkSbaPosition, // Already capitalized from dropdown
+        })
+      );
 
       await dispatch(getAllVotes());
-      setSnackbarMessage(`Updated SBA position for ${selectedBills.length} bill(s)`);
+      setSnackbarMessage(
+        `Updated SBA position for ${selectedBills.length} bill(s)`
+      );
       setSnackbarSeverity("success");
 
       // Reset selection
@@ -107,13 +116,13 @@ export default function Bills(props) {
       ? vote.type.toLowerCase().includes("senate")
         ? "Senate"
         : vote.type.toLowerCase().includes("house")
-          ? "House"
-          : "Other"
+        ? "House"
+        : "Other"
       : "Other",
     status: vote.status || "draft", // <== ADD THI
   }));
 
-  console.log("bills:", billsData)
+  console.log("bills:", billsData);
 
   const handleEdit = (row) => {
     navigate(`edit-bill/${row._id}`);
@@ -248,12 +257,8 @@ export default function Bills(props) {
                   <option value="draft">Draft</option>
 
                   <option value="reviewed">Reviewed</option>
-
-
                 </TextField>
               </Stack>
-
-
 
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button
@@ -278,15 +283,17 @@ export default function Bills(props) {
                       backgroundColor: "#4a90e2 !important",
                       color: "white !important",
                       padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    "&:hover": {
-                      backgroundColor: "#357ABD !important",
-                    },
-                  }}
-                >
-                  Add Bills
-                </Button>
+                      marginLeft: "0.5rem",
+                      "&:hover": {
+                        backgroundColor: "#357ABD !important",
+                      },
+                    }}
+                  >
+                    Add Bills
+                  </Button>
                 )}
+
+              
               </Stack>
             </Box>
 

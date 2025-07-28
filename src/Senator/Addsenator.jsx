@@ -63,12 +63,12 @@ export default function AddSenator(props) {
   const { votes } = useSelector((state) => state.vote);
   const { activities } = useSelector((state) => state.activity);
   const senatorData = useSelector((state) => state.senatorData);
- const token = localStorage.getItem("token");
-// Decode token to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+  console.log("User Role:", userRole);
   let senatorActivities =
     activities?.filter((activity) => activity.type === "senate") || [];
 
@@ -581,24 +581,24 @@ export default function AddSenator(props) {
                 Review
               </Button>
 
-          {userRole === "admin" && (
-            <Button
-              variant="outlined"
-              onClick={(e) => {
-                handleSave(e, "save");
-              }}
-              sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                Save Changes
-              </Button>
-          )}
+              {userRole === "admin" && (
+                <Button
+                  variant="outlined"
+                  onClick={(e) => {
+                    handleSave(e, "save");
+                  }}
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                >
+                  Save Changes
+                </Button>
+              )}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
@@ -982,6 +982,7 @@ export default function AddSenator(props) {
                     <Grid size={9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary || ""}
                         onEditorChange={(content) =>

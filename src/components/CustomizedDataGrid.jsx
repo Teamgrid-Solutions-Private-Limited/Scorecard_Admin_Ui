@@ -127,6 +127,7 @@ export default function CustomizedDataGrid({
             field: "status",
             headerName: "Status",
             // flex: 1,
+            // flex: 1,
             minWidth: 130,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
@@ -152,7 +153,6 @@ export default function CustomizedDataGrid({
                 </Box>
               );
             },
-
           },
           {
             field: "action",
@@ -225,11 +225,9 @@ export default function CustomizedDataGrid({
             ),
           },
           {
-
             field: "status",
             headerName: "Status",
 
-        
             // flex: 1,
             minWidth: 130,
             renderHeader: (params) => (
@@ -369,9 +367,7 @@ export default function CustomizedDataGrid({
                   sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                 />
                 <DeleteForeverIcon
-
                   onClick={() => onDelete && onDelete(params.row._id)}
-
                   sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
                 />
               </div>
@@ -517,7 +513,6 @@ export default function CustomizedDataGrid({
           ...(type === "representative"
             ? [
                 {
-
                   field: "publishStatus",
                   headerName: "Status",
                   // flex: 1,
@@ -580,9 +575,6 @@ export default function CustomizedDataGrid({
                       </Box>
                     );
                   },
-
-      
-
                 },
               ]),
 
@@ -642,7 +634,11 @@ export default function CustomizedDataGrid({
           noRowsOverlay: CustomNoRowsOverlay,
         }}
         checkboxSelection={isSelectable}
-        onRowSelectionModelChange={isSelectable ? (ids) => onSelectionChange && onSelectionChange(ids) : undefined}
+        onRowSelectionModelChange={
+          isSelectable
+            ? (ids) => onSelectionChange && onSelectionChange(ids)
+            : undefined
+        }
         selectionModel={isSelectable ? selectedItems : []}
         sx={{
           "& .MuiDataGrid-row": {
