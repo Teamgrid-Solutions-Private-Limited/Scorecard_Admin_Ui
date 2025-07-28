@@ -259,6 +259,7 @@ export default function ManageUser(props) {
                 </FormLabel>
                 <TextField
                   margin="dense"
+                  name="email"
                   value={editForm.email}
                   onChange={handleEditFormChange}
                   fullWidth

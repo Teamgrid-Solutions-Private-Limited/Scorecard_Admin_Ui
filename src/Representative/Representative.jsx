@@ -372,6 +372,8 @@ export default function Representative(props) {
     }
   };
 
+  
+
   const handleToggleStatusHouse = async (house) => {
     const newStatus =
       house.publishStatus === "published" ? "draft" : "published";

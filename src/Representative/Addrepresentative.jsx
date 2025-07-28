@@ -30,7 +30,6 @@ import {
   clearHouseState,
   updateRepresentativeStatus,
 } from "../redux/reducer/houseSlice";
-
 import {
   getHouseById,
   updateHouse,
@@ -68,12 +67,12 @@ export default function Addrepresentative(props) {
   const { activities } = useSelector((state) => state.activity);
   const houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
- const token = localStorage.getItem("token");
-// Decode token to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+  console.log("User Role:", userRole);
   // Initialize as an array to support multiple terms
   const [houseTermData, setHouseTermData] = useState([
     {
@@ -415,7 +414,7 @@ export default function Addrepresentative(props) {
 
       await Promise.all(termPromises);
 
-        await dispatch(
+      await dispatch(
         updateRepresentativeStatus({ id, publishStatus: "published" })
       ).unwrap();
       await dispatch(getHouseDataByHouseId(id)).unwrap();
@@ -482,10 +481,7 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseDataByHouseId(id)).unwrap();
 
       //  5. Success message
-      handleSnackbarOpen(
-        `Data ${operationType} successfully!`,
-        "success"
-      );
+      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(
@@ -602,15 +598,15 @@ export default function Addrepresentative(props) {
                   sx={{
                     backgroundColor: "#4a90e2 !important",
                     color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                Save Changes
-              </Button>
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                >
+                  Save Changes
+                </Button>
               )}
               {/* <Button variant="outlined">
                 Fetch Representatives from Quorum
@@ -993,7 +989,8 @@ export default function Addrepresentative(props) {
                     <Grid size={9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                        apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                        //apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                        licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary}
                         name="summary"

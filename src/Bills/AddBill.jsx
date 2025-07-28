@@ -52,12 +52,12 @@ export default function AddBill(props) {
     readMore: "",
     sbaPosition: "",
   });
- const token = localStorage.getItem("token");
-// Decode token to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+  console.log("User Role:", userRole);
   const preFillForm = () => {
     if (selectedVote) {
       const termId = selectedVote.termId?._id || "";
@@ -271,7 +271,6 @@ export default function AddBill(props) {
               <Button
                 variant="outlined"
                 sx={{
-
                   backgroundColor: "#CC9A3A !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
@@ -290,16 +289,16 @@ export default function AddBill(props) {
                   sx={{
                     backgroundColor: "#4a90e2 !important",
                     color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-                onClick={handleSubmit}
-              >
-                Save Changes
-              </Button>
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                  onClick={handleSubmit}
+                >
+                  Save Changes
+                </Button>
               )}
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
@@ -708,9 +707,7 @@ export default function AddBill(props) {
                     alignItems="center"
                     sx={{ ml: { xs: 0, sm: 10.2 } }}
                   >
-
-                    <Grid item xs={12} sm={2} sx={{ mr: 0.5 }}>
-
+                    <Grid size={{ xs: 12, sm: 2 }} sx={{ mr: 0.5 }}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -720,26 +717,20 @@ export default function AddBill(props) {
                           my: 0,
                           width: "100%",
 
-                          
-
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           fontSize: "13px",
-
                         }}
                       >
                         SBA Position
                       </InputLabel>
                     </Grid>
 
-                    <Grid item xs={12} sm={10}>
+                    <Grid size={{ xs: 12, sm: 10 }}>
                       <FormControl
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
-
                             fontSize: "15px",
-
-                          
 
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },

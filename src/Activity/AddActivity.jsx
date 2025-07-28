@@ -51,12 +51,12 @@ export default function AddActivity(props) {
     readMore: "",
     trackActivities: "",
   });
- const token = localStorage.getItem("token");
-// Decode token to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+  console.log("User Role:", userRole);
   const preFillForm = () => {
     if (selectedActivity) {
       const termId = selectedActivity.termId?._id || "";
@@ -129,54 +129,58 @@ export default function AddActivity(props) {
     setSnackbarOpen(false);
   };
 
-const handleSubmit = async () => {
-  setLoading(true);
-  try {
-    const updatedFormData = { ...formData, status: "published" };
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const updatedFormData = { ...formData, status: "published" };
 
-    if (id) {
-      // Update existing activity with publishStatus
-      await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
-      setSnackbarMessage("Activity updated successfully!");
-      setSnackbarSeverity("success");
-    } else {
-      // Validate required fields
-      if (
-        !formData.type ||
-        !formData.title ||
-        !formData.shortDesc ||
-        !formData.readMore
-      ) {
-        setSnackbarMessage("Please fill all fields!");
-        setSnackbarSeverity("warning");
-        setSnackbarOpen(true);
-        setLoading(false);
-        return;
+      if (id) {
+        // Update existing activity with publishStatus
+        await dispatch(
+          updateActivity({ id, updatedData: updatedFormData })
+        ).unwrap();
+        setSnackbarMessage("Activity updated successfully!");
+        setSnackbarSeverity("success");
+      } else {
+        // Validate required fields
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.readMore
+        ) {
+          setSnackbarMessage("Please fill all fields!");
+          setSnackbarSeverity("warning");
+          setSnackbarOpen(true);
+          setLoading(false);
+          return;
+        }
+
+        // Create new activity with publishStatus
+        await dispatch(createActivity(updatedFormData)).unwrap();
+        setSnackbarMessage("Activity created successfully!");
+        setSnackbarSeverity("success");
       }
 
-      // Create new activity with publishStatus
-      await dispatch(createActivity(updatedFormData)).unwrap();
-      setSnackbarMessage("Activity created successfully!");
-      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Save error:", error);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false); // Ensure loading stops after success or failure
     }
-
-    setSnackbarOpen(true);
-  } catch (error) {
-    console.error("Save error:", error);
-    setSnackbarMessage(`Operation failed: ${error.message || error}`);
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  } finally {
-    setLoading(false); // Ensure loading stops after success or failure
-  }
-};
+  };
 
   const handleReview = async () => {
     setLoading(true);
     try {
       const updatedFormData = { ...formData, status: "reviewed" };
       if (id) {
-        await dispatch(updateActivity({ id, updatedData: updatedFormData })).unwrap();
+        await dispatch(
+          updateActivity({ id, updatedData: updatedFormData })
+        ).unwrap();
         setSnackbarMessage("Activity Reviewed successfully!");
         setSnackbarSeverity("success");
       } else {
@@ -278,14 +282,12 @@ const handleSubmit = async () => {
               <Button
                 variant="outlined"
                 sx={{
-
                   backgroundColor: "#CC9A3A !important",
 
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-
                     backgroundColor: "#c38f2fff !important",
                   },
                 }}
@@ -304,12 +306,12 @@ const handleSubmit = async () => {
                     marginLeft: "0.5rem",
                     "&:hover": {
                       backgroundColor: "#357ABD !important",
-                  },
-                }}
-                onClick={handleSubmit}
-              >
-                Save Changes
-              </Button>
+                    },
+                  }}
+                  onClick={handleSubmit}
+                >
+                  Save Changes
+                </Button>
               )}
 
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
@@ -398,9 +400,9 @@ const handleSubmit = async () => {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      tinymceScriptSrc={`${
-                        import.meta.env.BASE_URL
-                      }tinymce/tinymce.min.js`}
+                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
+                      //apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
@@ -562,7 +564,6 @@ const handleSubmit = async () => {
                     container
                     spacing={2}
                     alignItems="center"
-
                     sx={{ ml: { xs: 0, sm: 5.6 } }}
                   >
                     <Grid item xs={12} sm={2}>
@@ -578,7 +579,6 @@ const handleSubmit = async () => {
                       >
                         Tracked Activities
                       </InputLabel>
-
                     </Grid>
 
                     <Grid item xs={12} sm={10}>
@@ -586,9 +586,7 @@ const handleSubmit = async () => {
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
-
                             fontSize: "15px",
-
 
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
