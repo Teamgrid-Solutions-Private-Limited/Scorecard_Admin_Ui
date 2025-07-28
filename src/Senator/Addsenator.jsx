@@ -404,7 +404,7 @@ export default function AddSenator(props) {
       await dispatch(
         updateSenatorStatus({
           id,
-          publishStatus: "published", // ✅ valid value
+          publishStatus: "published", //  valid value
         })
       ).unwrap();
 
@@ -466,7 +466,7 @@ export default function AddSenator(props) {
       await dispatch(
         updateSenatorStatus({
           id,
-          publishStatus: "reviewed", // valid value
+         publishStatus: "under review", // ✅ match the enum in schema
         })
       ).unwrap();
 
