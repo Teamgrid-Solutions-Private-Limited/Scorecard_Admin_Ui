@@ -466,7 +466,7 @@ export default function AddSenator(props) {
       await dispatch(
         updateSenatorStatus({
           id,
-          publishStatus: "reviewed", // ✅ valid value
+          publishStatus: "reviewed", // valid value
         })
       ).unwrap();
 
