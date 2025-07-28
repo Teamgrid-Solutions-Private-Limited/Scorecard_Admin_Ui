@@ -293,7 +293,7 @@ export default function CustomizedDataGrid({
       ? [
           {
             field: "fullName",
-            flex: 2,
+            flex: 1.5,
             headerName: "Name",
             minWidth: 150,
             renderHeader: (params) => (
@@ -301,10 +301,19 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
+            renderCell: (params) => {
+  const name = params.value || "";
+  return (
+    <Typography sx={{height:'100%',display:'flex',alignItems:'center'}}>
+      {name?.charAt(0).toUpperCase() + name?.slice(1)}
+    </Typography>
+  );
+}
+
           },
           {
             field: "nickName",
-            flex: 1,
+            flex: 1.5,
             headerName: "Nick Name",
             minWidth: 120,
             renderHeader: (params) => (
@@ -312,6 +321,15 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
+
+            renderCell: (params) => {
+  const nickName = params.value || "";
+  return (
+    <Typography sx={{height:'100%',display:'flex',alignItems:'center'}}>
+      {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
+    </Typography>
+  );
+}
           },
           {
             field: "email",
@@ -341,11 +359,11 @@ export default function CustomizedDataGrid({
             field: "action",
             flex: 1,
             headerName: "Action",
-            minWidth: 100,
+            minWidth: 60,
             headerAlign: "right",
             align: "right",
             renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
+              <Typography sx={{paddingRight: "32px", fontWeight: "bold" }}>
                 {params.colDef.headerName}
               </Typography>
             ),
@@ -356,9 +374,9 @@ export default function CustomizedDataGrid({
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "flex-end",
+                  paddingRight: "32px",
                   columnGap: "10px",
                   height: "100%",
-                  paddingRight: "16px",
                 }}
               >
                 <EditIcon

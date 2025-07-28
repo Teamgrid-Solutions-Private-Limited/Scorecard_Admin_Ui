@@ -17,6 +17,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import CloseIcon from "@mui/icons-material/Close";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -52,12 +53,12 @@ const AddUserContainer = styled(Stack)(({ theme }) => ({
 }));
 
 const Header = styled(Box)(({ theme }) => ({
-  textAlign: "center",
-  backgroundColor: "#739ACE",
-  padding: "32px 20px 24px 20px",
-  position: "relative",
-  marginBottom: "10px",
-  height: "95px",
+  textAlign: 'center',
+  backgroundColor: '#739ACE',
+  padding: '22px 20px 24px 20px',
+  position: 'relative',
+  marginBottom: '10px',
+  height: '75px',
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -186,17 +187,10 @@ function AddUser({ open = false, onClose }) {
         fullWidth
         scroll="body"
       >
-        <DialogTitle sx={{ p: 0 }}>
+        <DialogTitle sx={{ p: 0,  position: 'relative' }}>
           <Header>
-            <PersonAddAltRoundedIcon
-              sx={{ fontSize: 48, color: "white", mb: 1 }}
-            />
-            <Typography
-              variant="h6"
-              fontWeight="bold"
-              color="white"
-              fontSize={18}
-            >
+            <PersonAddAltRoundedIcon sx={{ fontSize: 30, color: 'white', }} />
+            <Typography variant="h6" fontWeight="bold" color="white" fontSize={18}>
               Add New User
             </Typography>
             <Typography
@@ -206,6 +200,19 @@ function AddUser({ open = false, onClose }) {
             >
               Fill in the details below
             </Typography>
+            <IconButton
+      aria-label="close"
+      onClick={onClose}
+      size="small"
+      sx={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        color: 'white',
+      }}
+    >
+      <CloseIcon fontSize="small"/>
+    </IconButton>
           </Header>
         </DialogTitle>
         <Box
@@ -217,16 +224,12 @@ function AddUser({ open = false, onClose }) {
             flexDirection: "column",
             gap: 2,
             paddingX: 3,
-            pt: 0,
+            pt: 2,
             pb: 3,
           }}
         >
           <FormControl>
-            <FormLabel
-              sx={{ color: "#656D9A", pb: 1, fontSize: 13, fontWeight: "bold" }}
-            >
-              Full Name
-            </FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Full Name</FormLabel>
             <TextField
               name="fullName"
               placeholder="Enter full name"
@@ -256,11 +259,7 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel
-              sx={{ color: "#656D9A", pb: 1, fontSize: 13, fontWeight: "bold" }}
-            >
-              Nick Name
-            </FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Nick Name</FormLabel>
             <TextField
               name="nickName"
               placeholder="Enter nick name"
@@ -287,11 +286,7 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel
-              sx={{ color: "#656D9A", pb: 1, fontSize: 13, fontWeight: "bold" }}
-            >
-              Email
-            </FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Email</FormLabel>
             <TextField
               name="email"
               type="email"
@@ -322,11 +317,7 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel
-              sx={{ color: "#656D9A", pb: 1, fontSize: 13, fontWeight: "bold" }}
-            >
-              Password
-            </FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Password</FormLabel>
             <TextField
               name="password"
               type={showPassword ? "text" : "password"}
@@ -365,7 +356,7 @@ function AddUser({ open = false, onClose }) {
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
                       size="small"
-                      sx={{ border: "none" }}
+                      sx={{border:'none'}}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
@@ -375,11 +366,7 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel
-              sx={{ color: "#656D9A", pb: 1, fontSize: 13, fontWeight: "bold" }}
-            >
-              Role
-            </FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Role</FormLabel>
             <Select
               name="role"
               value={form.role}
@@ -407,9 +394,7 @@ function AddUser({ open = false, onClose }) {
               <MenuItem value="contributor">Contributor</MenuItem>
             </Select>
             {errors.role && (
-              <Typography color="error" variant="caption">
-                {errors.role}
-              </Typography>
+              <Typography color="error" variant="caption">{errors.role}</Typography>
             )}
           </FormControl>
           <StyledButton
@@ -418,11 +403,7 @@ function AddUser({ open = false, onClose }) {
             endIcon={<PersonAddAltRoundedIcon />}
             disabled={loading}
           >
-            {loading ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              "Add User"
-            )}
+            {loading ? <CircularProgress size={20} color="inherit" /> : "Add User"}
           </StyledButton>
         </Box>
       </Dialog>

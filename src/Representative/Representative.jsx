@@ -575,7 +575,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "party" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               {/* <TextField
                                 fullWidth
                                 size="small"
@@ -593,7 +593,7 @@ export default function Representative(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredPartyOptions.length > 0 ? (
                                   filteredPartyOptions.map((party) => (
                                     <Box
@@ -663,7 +663,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "district" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               <TextField
                                 fullWidth
                                 size="small"
@@ -681,7 +681,7 @@ export default function Representative(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredDistrictOptions.length > 0 ? (
                                   filteredDistrictOptions.map((district) => (
                                     <Box
@@ -751,7 +751,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "rating" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               {/* <TextField
                                 fullWidth
                                 size="small"
@@ -769,7 +769,7 @@ export default function Representative(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredRatingOptions.length > 0 ? (
                                   filteredRatingOptions.map((rating) => (
                                     <Box
@@ -839,7 +839,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "year" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               <TextField
                                 fullWidth
                                 size="small"
@@ -857,7 +857,7 @@ export default function Representative(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
                                 {filteredYearOptions.length > 0 ? (
                                   filteredYearOptions.map((year) => (
                                     <Box
@@ -929,8 +929,8 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "term" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
                                 {["current", "past"].map((term) => (
                                   <Box
                                     key={term}
@@ -990,8 +990,8 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "status" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}

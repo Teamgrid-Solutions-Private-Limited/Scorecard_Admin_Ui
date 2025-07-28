@@ -531,6 +531,12 @@ export default function Senator(props) {
                   <Badge
                     badgeContent={activeFilterCount > 0 ? activeFilterCount : null}
                     color="primary"
+                    sx={{
+    "& .MuiBadge-badge": {
+      top: 6, 
+      right: 6, 
+    },
+  }}
                   >
                     <Button
                       variant="outlined"
@@ -606,7 +612,7 @@ export default function Senator(props) {
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{ p: 2, cursor: "pointer", }}
                             onClick={() => toggleFilterSection("party")}
                           >
                             <Typography variant="body1">Party</Typography>
@@ -617,7 +623,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "party" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0,bgcolor:'#fff' }}>
                               {/* <TextField
                                 fullWidth
                                 size="small"
@@ -635,7 +641,7 @@ export default function Senator(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto", }}>
                                 {filteredPartyOptions.length > 0 ? (
                                   filteredPartyOptions.map((party) => (
                                     <Box
@@ -708,7 +714,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "state" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               <TextField
                                 fullWidth
                                 size="small"
@@ -726,7 +732,7 @@ export default function Senator(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredStateOptions.length > 0 ? (
                                   filteredStateOptions.map((state) => (
                                     <Box
@@ -799,7 +805,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "rating" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               {/* <TextField
                                 fullWidth
                                 size="small"
@@ -817,7 +823,7 @@ export default function Senator(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredRatingOptions.length > 0 ? (
                                   filteredRatingOptions.map((rating) => (
                                     <Box
@@ -890,7 +896,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "year" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               <TextField
                                 fullWidth
                                 size="small"
@@ -906,7 +912,7 @@ export default function Senator(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredYearOptions.length > 0 ? (
                                   filteredYearOptions.map((year) => (
                                     <Box
@@ -1036,8 +1042,8 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "term" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 <Box
                                   onClick={() => setTermFilter('current')}
                                   sx={{
@@ -1113,8 +1119,8 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "status" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}

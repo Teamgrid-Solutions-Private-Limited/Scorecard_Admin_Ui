@@ -197,7 +197,7 @@ export default function AddActivity(props) {
           return;
         }
         await dispatch(createActivity(formData)).unwrap();
-        setSnackbarMessage("Activity created and Reviewed successfully!");
+        setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
       }
       setSnackbarOpen(true);
