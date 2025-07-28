@@ -61,6 +61,7 @@ import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
 import CheckCircle from "@mui/icons-material/CheckCircle";
+import { jwtDecode } from "jwt-decode";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -72,7 +73,6 @@ export default function Addrepresentative(props) {
   const { activities } = useSelector((state) => state.activity);
   const houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
- 
 
   // Initialize as an array to support multiple terms
   const [houseTermData, setHouseTermData] = useState([
@@ -328,6 +328,13 @@ export default function Addrepresentative(props) {
     }
   };
 
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
+
+  console.log("User Role:", userRole);
+
   useEffect(() => {
     if (id) {
       dispatch(getHouseById(id));
@@ -378,10 +385,9 @@ export default function Addrepresentative(props) {
     setLoading(true);
 
     try {
-      // Reset any previous errors
       setSnackbarMessage("");
       setSnackbarSeverity("success");
-      // First handle house data
+
       if (id) {
         const updatedData = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
@@ -391,7 +397,6 @@ export default function Addrepresentative(props) {
         operationType = "Updated";
       }
 
-      // Then handle house term data
       const termPromises = houseTermData.map((termData) => {
         if (termData._id) {
           operationType = "Updated";
@@ -417,75 +422,20 @@ export default function Addrepresentative(props) {
 
       await Promise.all(termPromises);
 
-      await dispatch(
-        updateRepresentativeStatus({ id, publishStatus: "published" })
-      ).unwrap();
-      await dispatch(getHouseDataByHouseId(id)).unwrap();
-      await dispatch(getHouseById(id)).unwrap();
-
-      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
-    } catch (error) {
-      console.error("Save failed:", error);
-      handleSnackbarOpen(
-        "Failed to save: " + (error.message || "Unknown error occurred"),
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleReview = async (e) => {
-    e.preventDefault();
-    let operationType = "";
-    setLoading(true);
-
-    try {
-      // Reset any previous errors
-      setSnackbarMessage("");
-      setSnackbarSeverity("success");
-
-      // ✅ 1. Update house data
-      if (id) {
-        const updatedData = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-          if (value) updatedData.append(key, value);
-        });
-
-        await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
-        operationType = "Updated";
+      // ✅ Different logic based on role
+      if (userRole === "admin") {
+        await dispatch(
+          updateRepresentativeStatus({ id, publishStatus: "published" })
+        ).unwrap();
+      } else {
+        await dispatch(
+          updateRepresentativeStatus({ id, publishStatus: "under review" })
+        ).unwrap();
       }
 
-      // ✅ 2. Save house term data (filter out completely empty entries if needed)
-      const termPromises = houseTermData.map((termData) => {
-        const termPayload = {
-          ...termData,
-          houseId: id,
-        };
-
-        if (termData._id) {
-          operationType = "reviewed";
-          return dispatch(
-            updateHouseData({ id: termData._id, data: termPayload })
-          ).unwrap();
-        } else {
-          operationType = "Reviewed";
-          return dispatch(createHouseData(termPayload)).unwrap();
-        }
-      });
-
-      await Promise.all(termPromises);
-
-      // ✅ 3. Update status to "review"
-      await dispatch(
-        updateRepresentativeStatus({ id, publishStatus: "reviewed" })
-      ).unwrap();
-
-      // ✅ 4. Refresh data
       await dispatch(getHouseDataByHouseId(id)).unwrap();
       await dispatch(getHouseById(id)).unwrap();
 
-      // ✅ 5. Success message
       handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
       console.error("Save failed:", error);
@@ -497,6 +447,69 @@ export default function Addrepresentative(props) {
       setLoading(false);
     }
   };
+
+  // const handleReview = async (e) => {
+  //   e.preventDefault();
+  //   let operationType = "";
+  //   setLoading(true);
+
+  //   try {
+  //     // Reset any previous errors
+  //     setSnackbarMessage("");
+  //     setSnackbarSeverity("success");
+
+  //     // ✅ 1. Update house data
+  //     if (id) {
+  //       const updatedData = new FormData();
+  //       Object.entries(formData).forEach(([key, value]) => {
+  //         if (value) updatedData.append(key, value);
+  //       });
+
+  //       await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
+  //       operationType = "Updated";
+  //     }
+
+  //     // ✅ 2. Save house term data (filter out completely empty entries if needed)
+  //     const termPromises = houseTermData.map((termData) => {
+  //       const termPayload = {
+  //         ...termData,
+  //         houseId: id,
+  //       };
+
+  //       if (termData._id) {
+  //         operationType = "under review";
+  //         return dispatch(
+  //           updateHouseData({ id: termData._id, data: termPayload })
+  //         ).unwrap();
+  //       } else {
+  //         operationType = "under review";
+  //         return dispatch(createHouseData(termPayload)).unwrap();
+  //       }
+  //     });
+
+  //     await Promise.all(termPromises);
+
+  //     // ✅ 3. Update status to "review"
+  //     await dispatch(
+  //       updateRepresentativeStatus({ id, publishStatus: "under review" })
+  //     ).unwrap();
+
+  //     // ✅ 4. Refresh data
+  //     await dispatch(getHouseDataByHouseId(id)).unwrap();
+  //     await dispatch(getHouseById(id)).unwrap();
+
+  //     // ✅ 5. Success message
+  //     handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
+  //   } catch (error) {
+  //     console.error("Save failed:", error);
+  //     handleSnackbarOpen(
+  //       "Failed to save: " + (error.message || "Unknown error occurred"),
+  //       "error"
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
   const [activity, setActivity] = React.useState([
@@ -631,7 +644,7 @@ export default function Addrepresentative(props) {
                     backgroundColor: `rgba(${
                       currentStatus === "draft"
                         ? "66, 165, 245"
-                        : currentStatus === "review"
+                        : currentStatus === "under review"
                         ? "255, 193, 7"
                         : currentStatus === "published"
                         ? "76, 175, 80"
@@ -687,7 +700,7 @@ export default function Addrepresentative(props) {
                 alignItems: "center",
               }}
             >
-              <Button
+              {/* <Button
                 variant="outlined"
                 onClick={handleReview}
                 sx={{
@@ -701,7 +714,7 @@ export default function Addrepresentative(props) {
                 }}
               >
                 Review
-              </Button>
+              </Button> */}
               <Button
                 variant="outlined"
                 onClick={handleSave}
@@ -715,8 +728,9 @@ export default function Addrepresentative(props) {
                   },
                 }}
               >
-                Save Changes
+                {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
+
               {/* <Button variant="outlined">
                 Fetch Representatives from Quorum
               </Button> */}

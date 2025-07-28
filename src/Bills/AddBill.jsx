@@ -39,6 +39,7 @@ import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
 import CheckCircle from "@mui/icons-material/CheckCircle";
+import { jwtDecode } from "jwt-decode";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -82,6 +83,13 @@ export default function AddBill(props) {
       });
     }
   };
+
+    const token = localStorage.getItem("token");
+    // Decode token to get user role
+    const decodedToken = jwtDecode(token);
+    const userRole = decodedToken.role;
+  
+    console.log("User Role:", userRole);
 
   useEffect(() => {
     if (id) {
@@ -144,7 +152,7 @@ export default function AddBill(props) {
 
     setLoading(true);
     try {
-      const updatedFormData = { ...formData, status: "published" };
+      const updatedFormData = { ...formData, status: userRole === "admin" ? "published" : "under review" };
 
       if (id) {
         await dispatch(
@@ -169,41 +177,41 @@ export default function AddBill(props) {
     }
   };
 
-  const handleReview = async () => {
-    if (!formData.termId) {
-      setSnackbarMessage("Term is required!");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-      return;
-    }
+  // const handleReview = async () => {
+  //   if (!formData.termId) {
+  //     setSnackbarMessage("Term is required!");
+  //     setSnackbarSeverity("error");
+  //     setSnackbarOpen(true);
+  //     return;
+  //   }
 
-    setLoading(true);
-    try {
-      const updatedFormData = { ...formData, status: "reviewed" };
+  //   setLoading(true);
+  //   try {
+  //     const updatedFormData = { ...formData, status: "under review" };
 
-      if (id) {
-        await dispatch(
-          updateVote({ id, updatedData: updatedFormData })
-        ).unwrap();
-        setSnackbarMessage("Bill Reviewed successfully!");
-      } else {
-        await dispatch(createVote(updatedFormData)).unwrap();
-        setSnackbarMessage("Bill Reviewed successfully!");
-      }
-      await dispatch(getVoteById(id)).unwrap();
+  //     if (id) {
+  //       await dispatch(
+  //         updateVote({ id, updatedData: updatedFormData })
+  //       ).unwrap();
+  //       setSnackbarMessage("Bill Reviewed successfully!");
+  //     } else {
+  //       await dispatch(createVote(updatedFormData)).unwrap();
+  //       setSnackbarMessage("Bill Reviewed successfully!");
+  //     }
+  //     await dispatch(getVoteById(id)).unwrap();
 
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
+  //     setSnackbarSeverity("success");
+  //     setSnackbarOpen(true);
       
-    } catch (error) {
-      console.error("Save error:", error);
-      setSnackbarMessage(`Operation failed: ${error.message || error}`);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   } catch (error) {
+  //     console.error("Save error:", error);
+  //     setSnackbarMessage(`Operation failed: ${error.message || error}`);
+  //     setSnackbarSeverity("error");
+  //     setSnackbarOpen(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   
       const statusConfig = {
         draft: {
@@ -378,7 +386,7 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button
+              {/* <Button
                 variant="outlined"
                 sx={{
                   backgroundColor: "#CC9A3A !important",
@@ -392,7 +400,7 @@ export default function AddBill(props) {
                 onClick={handleReview}
               >
                 Review
-              </Button>
+              </Button> */}
               <Button
                 variant="outlined"
                 sx={{
@@ -406,7 +414,7 @@ export default function AddBill(props) {
                 }}
                 onClick={handleSubmit}
               >
-                Save Changes
+                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
