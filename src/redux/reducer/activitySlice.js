@@ -93,7 +93,7 @@ export const updateActivityStatus = createAsyncThunk(
   "activity/updateActivityStatus",
   async ({ id, status }, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(
+      const response = await axios.put(
         `${API_URL}/activity/activity/status/${id}`,
         { status }
       );
@@ -108,7 +108,7 @@ export const bulkUpdateTrackActivities = createAsyncThunk(
   "activity/bulkUpdateTrackActivities",
   async ({ ids, trackActivities }, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(
+      const response = await axios.put(
         `${API_URL}/activity/update/bulk-update-track-activities`,
         { ids, trackActivities },
         {
@@ -128,7 +128,7 @@ export const bulkUpdateTrackActivities = createAsyncThunk(
 //   "activity/bulkUpdateTrackActivities",
 //   async ({ ids, trackActivities }, { rejectWithValue }) => {
 //     try {
-//       const response = await axios.patch(
+//       const response = await axios.put(
 //         `${API_URL}/activity/update/bulk-update-track-activities`,
 //         { ids, trackActivities }
 //       );
