@@ -54,10 +54,10 @@ const AddUserContainer = styled(Stack)(({ theme }) => ({
 const Header = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   backgroundColor: '#739ACE',
-  padding: '32px 20px 24px 20px',
+  padding: '22px 20px 24px 20px',
   position: 'relative',
   marginBottom: '10px',
-  height: '95px',
+  height: '75px',
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -178,7 +178,7 @@ function AddUser({ open = false, onClose }) {
       <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth scroll="body">
         <DialogTitle sx={{ p: 0 }}>
           <Header>
-            <PersonAddAltRoundedIcon sx={{ fontSize: 48, color: 'white', mb: 1 }} />
+            <PersonAddAltRoundedIcon sx={{ fontSize: 30, color: 'white', }} />
             <Typography variant="h6" fontWeight="bold" color="white" fontSize={18}>
               Add New User
             </Typography>
@@ -196,12 +196,12 @@ function AddUser({ open = false, onClose }) {
             flexDirection: 'column',
             gap: 2,
             paddingX: 3,
-            pt: 0,
+            pt: 2,
             pb: 3,
           }}
         >
           <FormControl>
-            <FormLabel sx={{ color: '#656D9A', pb: 1, fontSize: 13, fontWeight: 'bold' }}>Full Name</FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Full Name</FormLabel>
             <TextField
               name="fullName"
               placeholder="Enter full name"
@@ -231,7 +231,7 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel sx={{ color: '#656D9A', pb: 1, fontSize: 13, fontWeight: 'bold' }}>Nick Name</FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Nick Name</FormLabel>
             <TextField
               name="nickName"
               placeholder="Enter nick name"
@@ -258,7 +258,7 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel sx={{ color: '#656D9A', pb: 1, fontSize: 13, fontWeight: 'bold' }}>Email</FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Email</FormLabel>
             <TextField
               name="email"
               type="email"
@@ -289,7 +289,7 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel sx={{ color: '#656D9A', pb: 1, fontSize: 13, fontWeight: 'bold' }}>Password</FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Password</FormLabel>
             <TextField
               name="password"
               type={showPassword ? 'text' : 'password'}
@@ -336,7 +336,7 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel sx={{ color: '#656D9A', pb: 1, fontSize: 13, fontWeight: 'bold' }}>Role</FormLabel>
+            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Role</FormLabel>
             <Select
               name="role"
               value={form.role}

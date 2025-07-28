@@ -342,13 +342,13 @@ export default function CustomizedDataGrid({
           },
           {
             field: "action",
-            flex: 0,
+            flex: 1,
             headerName: "Action",
-            minWidth: 100,
-            headerAlign: "center",
-            align: "center",
+            minWidth: 60,
+            headerAlign: "right",
+            align: "right",
             renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
+              <Typography sx={{paddingRight: "32px", fontWeight: "bold" }}>
                 {params.colDef.headerName}
               </Typography>
             ),
@@ -359,9 +359,9 @@ export default function CustomizedDataGrid({
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "flex-end",
+                  paddingRight: "32px",
                   columnGap: "10px",
                   height: "100%",
-                  paddingRight: "16px",
                 }}
               >
                 <EditIcon
