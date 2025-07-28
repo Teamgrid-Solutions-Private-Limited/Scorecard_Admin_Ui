@@ -707,7 +707,7 @@ export default function AddBill(props) {
                     alignItems="center"
                     sx={{ ml: { xs: 0, sm: 10.2 } }}
                   >
-                    <Grid item xs={12} sm={2} sx={{ mr: 0.5 }}>
+                    <Grid size={{ xs: 12, sm: 2 }} sx={{ mr: 0.5 }}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -725,7 +725,7 @@ export default function AddBill(props) {
                       </InputLabel>
                     </Grid>
 
-                    <Grid item xs={12} sm={10}>
+                    <Grid size={{ xs: 12, sm: 10 }}>
                       <FormControl
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",

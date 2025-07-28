@@ -289,165 +289,183 @@ export default function CustomizedDataGrid({
             ),
           },
         ]
-        : type === "user"
-          ? [
-            {
-              field: "fullName",
-              flex: 2,
-              headerName: "Name",
-              minWidth: 150,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-            },
-            {
-              field: "nickName",
-              flex: 1,
-              headerName: "Nick Name",
-              minWidth: 120,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-            },
-            {
-              field: "email",
-              flex: 2,
-              headerName: "Email",
-              minWidth: 180,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-            },
-            {
-              field: "role",
-              flex: 1,
-              headerName: "Role",
-              minWidth: 100,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-              valueGetter: (params) =>
-                params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
-            },
-            {
-              field: "action",
-              flex: 1,
-              headerName: "Action",
-              minWidth: 100,
-              headerAlign: "right",
-              align: "right",
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-              renderCell: (params) => (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "flex-end",
-                    columnGap: "10px",
-                    height: "100%",
-                    paddingRight: "16px",
-                  }}
-                >
-                  <EditIcon
-                    onClick={() => onEdit && onEdit(params.row)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-                  />
-                  <DeleteForeverIcon
-                    onClick={() => onDelete && onDelete(params.row._id)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                  />
-                </div>
-              ),
-            },
-          ]
-          : [
-            {
-              field: "name",
-              flex: 2,
-              headerName: type === "senator" ? "Senator" : "Representative",
-              minWidth: 150,
-              minHeight: 200,
-              headerAlign: "left",
-              align: "left",
-              renderHeader: (params) => (
-                <Typography
-                  sx={{
-                    paddingLeft: "32px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-              renderCell: (params) => (
+      : type === "user"
+      ? [
+          {
+            field: "fullName",
+            flex: 1.5,
+            headerName: "Name",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => {
+  const name = params.value || "";
+  return (
+    <Typography sx={{height:'100%',display:'flex',alignItems:'center'}}>
+      {name?.charAt(0).toUpperCase() + name?.slice(1)}
+    </Typography>
+  );
+}
+
+          },
+          {
+            field: "nickName",
+            flex: 1.5,
+            headerName: "Nick Name",
+            minWidth: 120,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+
+            renderCell: (params) => {
+  const nickName = params.value || "";
+  return (
+    <Typography sx={{height:'100%',display:'flex',alignItems:'center'}}>
+      {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
+    </Typography>
+  );
+}
+          },
+          {
+            field: "email",
+            flex: 2,
+            headerName: "Email",
+            minWidth: 180,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "role",
+            flex: 1,
+            headerName: "Role",
+            minWidth: 100,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            valueGetter: (params) =>
+              params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
+          },
+          {
+            field: "action",
+            flex: 1,
+            headerName: "Action",
+            minWidth: 60,
+            headerAlign: "right",
+            align: "right",
+            renderHeader: (params) => (
+              <Typography sx={{paddingRight: "32px", fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  paddingRight: "32px",
+                  columnGap: "10px",
+                  height: "100%",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit && onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                <DeleteForeverIcon
+                  onClick={() => onDelete && onDelete(params.row._id)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                />
+              </div>
+            ),
+          },
+        ]
+      : [
+          {
+            field: "name",
+            flex: 2,
+            headerName: type === "senator" ? "Senator" : "Representative",
+            minWidth: 150,
+            minHeight: 200,
+            headerAlign: "left",
+            align: "left",
+            renderHeader: (params) => (
+              <Typography
+                sx={{
+                  paddingLeft: "32px",
+                  fontWeight: "bold",
+                }}
+              >
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  columnGap: "10px",
+                  width: "fit-content",
+                  height: "100%",
+                  paddingLeft: "32px",
+                  "&:hover": {
+                    cursor: "pointer",
+                  },
+                }}
+                onClick={() => {
+                  if (type === "senator" && params.row._id) {
+                    navigate(`edit-senator/${params.row._id}`);
+                  } else {
+                    navigate(`/edit-representative/${params.row._id}`);
+                  }
+                }}
+              >
                 <Box
                   sx={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: "50%",
                     display: "flex",
-                    flexDirection: "row",
                     alignItems: "center",
-                    columnGap: "10px",
-                    width: "fit-content",
-                    height: "100%",
-                    paddingLeft: "32px",
-                    "&:hover": {
-                      cursor: "pointer",
-                    },
-                  }}
-                  onClick={() => {
-                    if (type === "senator" && params.row._id) {
-                      navigate(`edit-senator/${params.row._id}`);
-                    } else {
-                      navigate(`/edit-representative/${params.row._id}`);
-                    }
+                    justifyContent: "center",
+                    border: `2px solid ${getBorderColor(params.row.party)}`,
                   }}
                 >
-                  <Box
+                  <Avatar
+                    src={params.row.photo}
                     sx={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: `2px solid ${getBorderColor(params.row.party)}`,
+                      width: 45,
+                      height: 45,
                     }}
-                  >
-                    <Avatar
-                      src={params.row.photo}
-                      sx={{
-                        width: 45,
-                        height: 45,
-                      }}
-                    />
-                  </Box>
-                  <Typography
-                    sx={{
-                      transition: "color 0.3s ease-in-out",
-                      "&:hover": {
-                        color: getBorderColor(params.row.party),
-                      },
-                    }}
-                  >
-                    {params.row.name}
-                  </Typography>
+                  />
                 </Box>
-              ),
-            },
-            ...(type === "representative"
-              ? [
+                <Typography
+                  sx={{
+                    transition: "color 0.3s ease-in-out",
+                    "&:hover": {
+                      color: getBorderColor(params.row.party),
+                    },
+                  }}
+                >
+                  {params.row.name}
+                </Typography>
+              </Box>
+            ),
+          },
+          ...(type === "representative"
+            ? [
                 {
                   field: "district",
                   flex: 1,

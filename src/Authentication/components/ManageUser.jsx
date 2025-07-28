@@ -4,18 +4,12 @@ import {
   Box,
   Typography,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Stack,
   CircularProgress,
   Alert,
   Snackbar,
   IconButton,
+  FormLabel,
 } from "@mui/material";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import CloseIcon from "@mui/icons-material/Close";
@@ -60,7 +54,11 @@ export default function ManageUser(props) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [editUser, setEditUser] = useState(null);
-  const [editForm, setEditForm] = useState({ fullName: '', email: '', role: '' });
+  const [editForm, setEditForm] = useState({
+    fullName: "",
+    email: "",
+    role: "",
+  });
   const [editErrors, setEditErrors] = useState({});
 
   // Fetch users on component mount
@@ -73,11 +71,11 @@ export default function ManageUser(props) {
     if (error) {
       if (error === "Access denied: Admins only") {
         setSnackbarMessage("You do not have permission to view users.");
-        setSnackbarSeverity('error');
+        setSnackbarSeverity("error");
         setOpenSnackbar(true);
       } else {
         setSnackbarMessage(error);
-        setSnackbarSeverity('error');
+        setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     }
@@ -106,7 +104,10 @@ export default function ManageUser(props) {
     } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(editForm.email)) {
       newErrors.email = "Invalid email address";
     }
-    if (!editForm.role || !['admin', 'editor', 'contributor'].includes(editForm.role)) {
+    if (
+      !editForm.role ||
+      !["admin", "editor", "contributor"].includes(editForm.role)
+    ) {
       newErrors.role = "Role is required";
     }
     setEditErrors(newErrors);
@@ -192,9 +193,11 @@ export default function ManageUser(props) {
             </Stack>
 
             {error === "Access denied: Admins only" ? (
-              <Alert severity="error">You do not have permission to view users.</Alert>
+              <Alert severity="error">
+                You do not have permission to view users.
+              </Alert>
             ) : loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
                 <CircularProgress />
               </Box>
             ) : error ? (
@@ -210,31 +213,72 @@ export default function ManageUser(props) {
 
             {/* Edit User Dialog */}
             <Dialog open={!!editUser} onClose={handleEditUserClose}>
-              <DialogTitle>Edit User</DialogTitle>
-              <DialogContent>
+              <DialogTitle
+                sx={{
+                  textAlign: "center",
+                  backgroundColor: "#739ACE",
+                  padding: "22px 20px 24px 20px",
+                  position: "relative",
+                  marginBottom: "10px",
+                  height: "25px",
+                  color: "#fff",
+                }}
+              >
+                Edit User
+              </DialogTitle>
+              <DialogContent sx={{mt:2}}>
+                <FormLabel
+                  sx={{
+                    color: "#656D9A",
+                    pb: 0,
+                    fontSize: 13,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Full Name
+                </FormLabel>
                 <TextField
                   margin="dense"
-                  label="Full Name"
                   name="fullName"
                   value={editForm.fullName}
                   onChange={handleEditFormChange}
                   fullWidth
                   error={!!editErrors.fullName}
                   helperText={editErrors.fullName}
+                  sx={{mb:2}}
                 />
+                <FormLabel
+                  sx={{
+                    color: "#656D9A",
+                    pb: 0,
+                    fontSize: 13,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Email
+                </FormLabel>
                 <TextField
                   margin="dense"
-                  label="Email"
                   name="email"
                   value={editForm.email}
                   onChange={handleEditFormChange}
                   fullWidth
                   error={!!editErrors.email}
                   helperText={editErrors.email}
+                  sx={{mb:2}}
                 />
+                <FormLabel
+                  sx={{
+                    color: "#656D9A",
+                    pb: 0,
+                    fontSize: 13,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Role
+                </FormLabel>
                 <TextField
                   margin="dense"
-                  label="Role"
                   name="role"
                   value={editForm.role}
                   onChange={handleEditFormChange}
@@ -249,12 +293,29 @@ export default function ManageUser(props) {
                   ))}
                 </TextField>
                 {editErrors.role && (
-                  <Typography color="error" variant="caption">{editErrors.role}</Typography>
+                  <Typography color="error" variant="caption">
+                    {editErrors.role}
+                  </Typography>
                 )}
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleEditUserClose}>Cancel</Button>
-                <Button onClick={handleEditUserSave} variant="contained">
+                <Button
+                  onClick={handleEditUserSave}
+                  sx={{
+                    background: "#CBA246",
+                    color: "white",
+                    fontSize: "13px",
+                    padding: "10px",
+                    height: "37px",
+                    borderRadius: "6px",
+                    textTransform: "none",
+                    "&:hover": {
+                      background: "#B28E3D",
+                      color: "white",
+                    },
+                  }}
+                >
                   Save
                 </Button>
               </DialogActions>
