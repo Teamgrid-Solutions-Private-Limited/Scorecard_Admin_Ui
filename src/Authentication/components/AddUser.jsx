@@ -17,6 +17,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import CloseIcon from "@mui/icons-material/Close";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -186,7 +187,7 @@ function AddUser({ open = false, onClose }) {
         fullWidth
         scroll="body"
       >
-        <DialogTitle sx={{ p: 0 }}>
+        <DialogTitle sx={{ p: 0,  position: 'relative' }}>
           <Header>
             <PersonAddAltRoundedIcon sx={{ fontSize: 30, color: 'white', }} />
             <Typography variant="h6" fontWeight="bold" color="white" fontSize={18}>
@@ -199,6 +200,19 @@ function AddUser({ open = false, onClose }) {
             >
               Fill in the details below
             </Typography>
+            <IconButton
+      aria-label="close"
+      onClick={onClose}
+      size="small"
+      sx={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        color: 'white',
+      }}
+    >
+      <CloseIcon fontSize="small"/>
+    </IconButton>
           </Header>
         </DialogTitle>
         <Box

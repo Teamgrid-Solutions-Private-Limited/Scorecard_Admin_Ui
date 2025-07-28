@@ -301,6 +301,15 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
+            renderCell: (params) => {
+  const name = params.value || "";
+  return (
+    <Typography sx={{height:'100%',display:'flex',alignItems:'center'}}>
+      {name?.charAt(0).toUpperCase() + name?.slice(1)}
+    </Typography>
+  );
+}
+
           },
           {
             field: "nickName",
@@ -312,6 +321,15 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
+
+            renderCell: (params) => {
+  const nickName = params.value || "";
+  return (
+    <Typography sx={{height:'100%',display:'flex',alignItems:'center'}}>
+      {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
+    </Typography>
+  );
+}
           },
           {
             field: "email",

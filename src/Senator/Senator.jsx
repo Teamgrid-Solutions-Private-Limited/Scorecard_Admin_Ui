@@ -531,6 +531,12 @@ export default function Senator(props) {
                   <Badge
                     badgeContent={activeFilterCount > 0 ? activeFilterCount : null}
                     color="primary"
+                    sx={{
+    "& .MuiBadge-badge": {
+      top: 6, 
+      right: 6, 
+    },
+  }}
                   >
                     <Button
                       variant="outlined"
