@@ -448,7 +448,7 @@ export default function AddBill(props) {
                     }}
                   >
                     {React.cloneElement(statusData.icon, {
-                      sx: { color: statusData.iconColor }, // apply icon color here
+                      sx: { color: statusData.iconColor },
                     })}
                   </Box>
 
@@ -506,7 +506,6 @@ export default function AddBill(props) {
                           </Typography>
 
                           <List dense sx={{ py: 0 }}>
-                            {/* Show backend changes first */}
                             {selectedVote?.editedFields?.map((field) => {
                               const editorInfo =
                                 selectedVote.fieldEditors?.[field];
@@ -558,9 +557,7 @@ export default function AddBill(props) {
                                         variant="caption"
                                         color="text.secondary"
                                       >
-                                        Edited on{" "}
-                                        {/* {editorInfo?.editorName || "unknown"} •{" "} */}
-                                        {editTime}
+                                        Edited on {editTime}
                                       </Typography>
                                     }
                                     sx={{ my: 0 }}
@@ -569,18 +566,9 @@ export default function AddBill(props) {
                               );
                             })}
 
-                            {/* Show current session changes */}
                             {editedFields.map((field) => {
-                              // Skip fields already shown in backend changes
                               if (selectedVote?.editedFields?.includes(field))
                                 return null;
-
-                              const editorInfo = {
-                                editorName: "You",
-                                editedAt: new Date(),
-                              };
-                              const editTime = "just now";
-
                               return (
                                 <ListItem
                                   key={`current-${field}`}
@@ -600,7 +588,7 @@ export default function AddBill(props) {
                                             width: 8,
                                             height: 8,
                                             borderRadius: "50%",
-                                            backgroundColor: "#FFA000", // Different color for your changes
+                                            backgroundColor: "#FFA000",
                                           }}
                                         />
                                         <Typography
@@ -616,7 +604,7 @@ export default function AddBill(props) {
                                         variant="caption"
                                         color="text.secondary"
                                       >
-                                        Edited by You • {editTime}
+                                        Edited by You • just now
                                       </Typography>
                                     }
                                     sx={{ my: 0 }}
@@ -644,6 +632,61 @@ export default function AddBill(props) {
                         </Typography>
                       )}
                     </Box>
+
+                    {/* ✅ Show Unsaved Changes Chips */}
+                    {(userRole === "admin" || userRole === "editor") &&
+                      editedFields.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography
+                            variant="overline"
+                            sx={{ color: "text.secondary" }}
+                          >
+                            Your Unsaved Changes
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              mt: 1,
+                              p: 1,
+                              backgroundColor: "action.hover",
+                              borderRadius: 1,
+                            }}
+                          >
+                            {editedFields.map((field) => {
+                              return (
+                                <Chip
+                                  key={field}
+                                  label={
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 0.5,
+                                      }}
+                                    >
+                                      <span>{fieldLabels[field] || field}</span>
+                                      <CircleIcon sx={{ fontSize: 8 }} />
+                                      <span>just now</span>
+                                    </Box>
+                                  }
+                                  size="small"
+                                  color="warning"
+                                  variant="outlined"
+                                  sx={{
+                                    "& .MuiChip-label": {
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 0.5,
+                                    },
+                                  }}
+                                />
+                              );
+                            })}
+                          </Box>
+                        </Box>
+                      )}
                   </Box>
                 </Box>
               </Box>

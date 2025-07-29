@@ -618,7 +618,7 @@ export default function AddActivity(props) {
                       )}
                     </Box>
 
-                    {userRole === "admin" && editedFields.length > 0 && (
+                    {(userRole === "admin" || userRole === "editor") && editedFields.length > 0 && (
                       <Box sx={{ mt: 2 }}>
                         <Typography
                           variant="overline"
