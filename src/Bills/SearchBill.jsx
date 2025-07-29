@@ -96,7 +96,15 @@ const handleSearch = async () => {
       }
     );
 
-    setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
+    // setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
+
+    setSearchResults(
+  (Array.isArray(response.data?.data) ? response.data.data : []).filter((item) => {
+    const date = new Date(item.date);
+    return date instanceof Date && !isNaN(date) && date.getFullYear() >= 2015;
+  })
+);
+
   } catch (error) {
     console.error("Error searching bills:", error);
     setSnackbarMessage(error.response?.data?.message || "Failed to search bills");
