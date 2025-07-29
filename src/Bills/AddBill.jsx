@@ -34,7 +34,13 @@ import MuiAlert from "@mui/material/Alert";
 import { FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import { Chip } from "@mui/material";
+import HourglassTop from "@mui/icons-material/HourglassTop";
+import Verified from "@mui/icons-material/Verified";
+import { Drafts } from "@mui/icons-material";
+import CheckCircle from "@mui/icons-material/CheckCircle";
 import { jwtDecode } from "jwt-decode";
+
 export default function AddBill(props) {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -51,6 +57,7 @@ export default function AddBill(props) {
     rollCall: "",
     readMore: "",
     sbaPosition: "",
+    status:"", // Default status
   });
   const token = localStorage.getItem("token");
   // Decode token to get user role
@@ -77,9 +84,17 @@ export default function AddBill(props) {
         rollCall: selectedVote.rollCall || "",
         readMore: selectedVote.readMore || "",
         sbaPosition: selectedVote.sbaPosition || "",
+        status: selectedVote.status || "draft", // Default to draft if not set
       });
     }
   };
+
+    // const token = localStorage.getItem("token");
+    // // Decode token to get user role
+    // const decodedToken = jwtDecode(token);
+    // const userRole = decodedToken.role;
+  
+    console.log("User Role:", userRole);
 
   useEffect(() => {
     if (id) {
@@ -142,13 +157,14 @@ export default function AddBill(props) {
 
     setLoading(true);
     try {
-      const updatedFormData = { ...formData, status: "published" };
+      const updatedFormData = { ...formData, status: userRole === "admin" ? "published" : "under review" };
 
       if (id) {
         await dispatch(
           updateVote({ id, updatedData: updatedFormData })
         ).unwrap();
         setSnackbarMessage("Bill updated successfully!");
+        await dispatch(getVoteById(id)).unwrap();
       } else {
         await dispatch(createVote(updatedFormData)).unwrap();
         setSnackbarMessage("Bill created successfully!");
@@ -166,39 +182,78 @@ export default function AddBill(props) {
     }
   };
 
-  const handleReview = async () => {
-    if (!formData.termId) {
-      setSnackbarMessage("Term is required!");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-      return;
-    }
+  // const handleReview = async () => {
+  //   if (!formData.termId) {
+  //     setSnackbarMessage("Term is required!");
+  //     setSnackbarSeverity("error");
+  //     setSnackbarOpen(true);
+  //     return;
+  //   }
 
-    setLoading(true);
-    try {
-      const updatedFormData = { ...formData, status: "reviewed" };
+  //   setLoading(true);
+  //   try {
+  //     const updatedFormData = { ...formData, status: "under review" };
 
-      if (id) {
-        await dispatch(
-          updateVote({ id, updatedData: updatedFormData })
-        ).unwrap();
-        setSnackbarMessage("Bill Reviewed successfully!");
-      } else {
-        await dispatch(createVote(updatedFormData)).unwrap();
-        setSnackbarMessage("Bill Reviewed successfully!");
-      }
+  //     if (id) {
+  //       await dispatch(
+  //         updateVote({ id, updatedData: updatedFormData })
+  //       ).unwrap();
+  //       setSnackbarMessage("Bill Reviewed successfully!");
+  //     } else {
+  //       await dispatch(createVote(updatedFormData)).unwrap();
+  //       setSnackbarMessage("Bill Reviewed successfully!");
+  //     }
+  //     await dispatch(getVoteById(id)).unwrap();
 
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Save error:", error);
-      setSnackbarMessage(`Operation failed: ${error.message || error}`);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     setSnackbarSeverity("success");
+  //     setSnackbarOpen(true);
+      
+  //   } catch (error) {
+  //     console.error("Save error:", error);
+  //     setSnackbarMessage(`Operation failed: ${error.message || error}`);
+  //     setSnackbarSeverity("error");
+  //     setSnackbarOpen(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  
+      const statusConfig = {
+        draft: {
+          backgroundColor: "rgba(66, 165, 245, 0.12)",
+          borderColor: "#2196F3",
+          iconColor: "#1565C0",
+          icon: <Drafts sx={{ fontSize: "20px" }} />,
+          title: "Draft Version",
+          description: "Unpublished draft - changes pending",
+          titleColor: "#0D47A1",
+          descColor: "#1976D2",
+        },
+        reviewed: {
+          backgroundColor: "rgba(255, 193, 7, 0.12)",
+          borderColor: "#FFC107",
+          iconColor: "#FFA000",
+          icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+          title: "Under Review",
+          description: "Being reviewed by the team",
+          titleColor: "#5D4037",
+          descColor: "#795548",
+        },
+        // published: {
+        //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+        //   borderColor: "#4CAF50",
+        //   iconColor: "#2E7D32",
+        //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+        //   title: "Published",
+        //   description: "This document is live",
+        //   titleColor: "#2E7D32",
+        //   descColor: "#388E3C",
+        // },
+      };
+  
+      
+    const currentStatus = formData.status || ""; // Fallback to draft if undefined
+    const statusData = statusConfig[currentStatus];
 
   return (
     <AppTheme>
@@ -259,6 +314,74 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
+            {statusData && (
+                                    <Box
+                                      sx={{
+                                        width: "98%",
+                                        py: 1.2,
+                                        px: 3,
+                                        backgroundColor: statusData.backgroundColor,
+                                        borderLeft: `3px solid ${statusData.borderColor}`,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.5,
+                                        borderRadius: "0 4px 4px 0",
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          p: 1,
+                                          borderRadius: "50%",
+                                          backgroundColor: `rgba(${
+                                            currentStatus === "draft"
+                                              ? "66, 165, 245"
+                                              : currentStatus === "review"
+                                              ? "255, 193, 7"
+                                              : currentStatus === "published"
+                                              ? "76, 175, 80"
+                                              : "244, 67, 54"
+                                          }, 0.2)`,
+                                          display: "grid",
+                                          placeItems: "center",
+                                          flexShrink: 0,
+                                        }}
+                                      >
+                                        {React.cloneElement(statusData.icon, {
+                                          color: statusData.iconColor,
+                                        })}
+                                      </Box>
+                      
+                                      <Box sx={{ overflow: "hidden" }}>
+                                        <Typography
+                                          variant="subtitle2"
+                                          fontWeight="600"
+                                          sx={{
+                                            color: statusData.titleColor,
+                                            lineHeight: 1.3,
+                                            whiteSpace: "nowrap",
+                                            textOverflow: "ellipsis",
+                                            overflow: "hidden",
+                                          }}
+                                        >
+                                          {statusData.title}
+                                        </Typography>
+                                        <Typography
+                                          variant="caption"
+                                          sx={{
+                                            color: statusData.descColor,
+                                            opacity: 0.8,
+                                            display: "block",
+                                            lineHeight: 1.2,
+                                            whiteSpace: "nowrap",
+                                            textOverflow: "ellipsis",
+                                            overflow: "hidden",
+                                          }}
+                                        >
+                                          {statusData.description}
+                                        </Typography>
+                                      </Box>
+                                    </Box>
+                                  )}
             <Stack
               direction="row"
               spacing={2}
@@ -268,7 +391,7 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button
+              {/* <Button
                 variant="outlined"
                 sx={{
                   backgroundColor: "#CC9A3A !important",
@@ -282,24 +405,22 @@ export default function AddBill(props) {
                 onClick={handleReview}
               >
                 Review
+              </Button> */}
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+                onClick={handleSubmit}
+              >
+                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
-              {userRole === "admin" && (
-                <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    "&:hover": {
-                      backgroundColor: "#357ABD !important",
-                    },
-                  }}
-                  onClick={handleSubmit}
-                >
-                  Save Changes
-                </Button>
-              )}
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 

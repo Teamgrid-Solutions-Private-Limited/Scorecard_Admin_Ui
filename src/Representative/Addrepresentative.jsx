@@ -55,6 +55,11 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+import { Chip } from "@mui/material";
+import HourglassTop from "@mui/icons-material/HourglassTop";
+import Verified from "@mui/icons-material/Verified";
+import { Drafts } from "@mui/icons-material";
+import CheckCircle from "@mui/icons-material/CheckCircle";
 import { jwtDecode } from "jwt-decode";
 
 export default function Addrepresentative(props) {
@@ -307,6 +312,7 @@ export default function Addrepresentative(props) {
     party: "",
     photo: null,
     status: "",
+    publishStatus: "", // Default status
   });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -321,9 +327,17 @@ export default function Addrepresentative(props) {
         party: house.party || "",
         photo: house.photo || "",
         status: house.status || "Active",
+        publishStatus: house.publishStatus || "",
       });
     }
   };
+
+  // const token = localStorage.getItem("token");
+  // // Decode token to get user role
+  // const decodedToken = jwtDecode(token);
+  // const userRole = decodedToken.role;
+
+  console.log("User Role:", userRole);
 
   useEffect(() => {
     if (id) {
@@ -375,10 +389,9 @@ export default function Addrepresentative(props) {
     setLoading(true);
 
     try {
-      // Reset any previous errors
       setSnackbarMessage("");
       setSnackbarSeverity("success");
-      // First handle house data
+
       if (id) {
         const updatedData = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
@@ -388,7 +401,6 @@ export default function Addrepresentative(props) {
         operationType = "Updated";
       }
 
-      // Then handle house term data
       const termPromises = houseTermData.map((termData) => {
         if (termData._id) {
           operationType = "Updated";
@@ -414,73 +426,20 @@ export default function Addrepresentative(props) {
 
       await Promise.all(termPromises);
 
-      await dispatch(
-        updateRepresentativeStatus({ id, publishStatus: "published" })
-      ).unwrap();
-      await dispatch(getHouseDataByHouseId(id)).unwrap();
-
-      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
-    } catch (error) {
-      console.error("Save failed:", error);
-      handleSnackbarOpen(
-        "Failed to save: " + (error.message || "Unknown error occurred"),
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleReview = async (e) => {
-    e.preventDefault();
-    let operationType = "";
-    setLoading(true);
-
-    try {
-      // Reset any previous errors
-      setSnackbarMessage("");
-      setSnackbarSeverity("success");
-
-      //  1. Update house data
-      if (id) {
-        const updatedData = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-          if (value) updatedData.append(key, value);
-        });
-
-        await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
-        operationType = "Updated";
+      // ✅ Different logic based on role
+      if (userRole === "admin") {
+        await dispatch(
+          updateRepresentativeStatus({ id, publishStatus: "published" })
+        ).unwrap();
+      } else {
+        await dispatch(
+          updateRepresentativeStatus({ id, publishStatus: "under review" })
+        ).unwrap();
       }
 
-      // 2. Save house term data (filter out completely empty entries if needed)
-      const termPromises = houseTermData.map((termData) => {
-        const termPayload = {
-          ...termData,
-          houseId: id,
-        };
-
-        if (termData._id) {
-          operationType = "reviewed";
-          return dispatch(
-            updateHouseData({ id: termData._id, data: termPayload })
-          ).unwrap();
-        } else {
-          operationType = "Reviewed";
-          return dispatch(createHouseData(termPayload)).unwrap();
-        }
-      });
-
-      await Promise.all(termPromises);
-
-      //  3. Update status to "review"
-      await dispatch(
-        updateRepresentativeStatus({ id, publishStatus: "reviewed" })
-      ).unwrap();
-
-      //  4. Refresh data
       await dispatch(getHouseDataByHouseId(id)).unwrap();
+      await dispatch(getHouseById(id)).unwrap();
 
-      //  5. Success message
       handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
     } catch (error) {
       console.error("Save failed:", error);
@@ -492,6 +451,69 @@ export default function Addrepresentative(props) {
       setLoading(false);
     }
   };
+
+  // const handleReview = async (e) => {
+  //   e.preventDefault();
+  //   let operationType = "";
+  //   setLoading(true);
+
+  //   try {
+  //     // Reset any previous errors
+  //     setSnackbarMessage("");
+  //     setSnackbarSeverity("success");
+
+  //     // ✅ 1. Update house data
+  //     if (id) {
+  //       const updatedData = new FormData();
+  //       Object.entries(formData).forEach(([key, value]) => {
+  //         if (value) updatedData.append(key, value);
+  //       });
+
+  //       await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
+  //       operationType = "Updated";
+  //     }
+
+  //     // ✅ 2. Save house term data (filter out completely empty entries if needed)
+  //     const termPromises = houseTermData.map((termData) => {
+  //       const termPayload = {
+  //         ...termData,
+  //         houseId: id,
+  //       };
+
+  //       if (termData._id) {
+  //         operationType = "under review";
+  //         return dispatch(
+  //           updateHouseData({ id: termData._id, data: termPayload })
+  //         ).unwrap();
+  //       } else {
+  //         operationType = "under review";
+  //         return dispatch(createHouseData(termPayload)).unwrap();
+  //       }
+  //     });
+
+  //     await Promise.all(termPromises);
+
+  //     // ✅ 3. Update status to "review"
+  //     await dispatch(
+  //       updateRepresentativeStatus({ id, publishStatus: "under review" })
+  //     ).unwrap();
+
+  //     // ✅ 4. Refresh data
+  //     await dispatch(getHouseDataByHouseId(id)).unwrap();
+  //     await dispatch(getHouseById(id)).unwrap();
+
+  //     // ✅ 5. Success message
+  //     handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
+  //   } catch (error) {
+  //     console.error("Save failed:", error);
+  //     handleSnackbarOpen(
+  //       "Failed to save: " + (error.message || "Unknown error occurred"),
+  //       "error"
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
   const [activity, setActivity] = React.useState([
@@ -524,6 +546,42 @@ export default function Addrepresentative(props) {
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
+  const statusConfig = {
+    draft: {
+      backgroundColor: "rgba(66, 165, 245, 0.12)",
+      borderColor: "#2196F3",
+      iconColor: "#1565C0",
+      icon: <Drafts sx={{ fontSize: "20px" }} />,
+      title: "Draft Version",
+      description: "Unpublished draft - changes pending",
+      titleColor: "#0D47A1",
+      descColor: "#1976D2",
+    },
+    reviewed: {
+      backgroundColor: "rgba(255, 193, 7, 0.12)",
+      borderColor: "#FFC107",
+      iconColor: "#FFA000",
+      icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+      title: "Under Review",
+      description: "Being reviewed by the team",
+      titleColor: "#5D4037",
+      descColor: "#795548",
+    },
+    // published: {
+    //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+    //   borderColor: "#4CAF50",
+    //   iconColor: "#2E7D32",
+    //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+    //   title: "Published",
+    //   description: "This document is live",
+    //   titleColor: "#2E7D32",
+    //   descColor: "#388E3C",
+    // },
+  };
+
+  const currentStatus = formData.publishStatus || ""; // Fallback to draft if undefined
+  const statusData = statusConfig[currentStatus];
+
   return (
     <AppTheme>
       {loading && (
@@ -546,6 +604,7 @@ export default function Addrepresentative(props) {
       )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
+
         <Box
           component="main"
           sx={(theme) => ({
@@ -558,6 +617,7 @@ export default function Addrepresentative(props) {
           })}
         >
           <FixedHeader />
+
           <Stack
             spacing={2}
             sx={{
@@ -567,6 +627,74 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
+            {statusData && (
+              <Box
+                sx={{
+                  width: "98%",
+                  py: 1.2,
+                  px: 3,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `3px solid ${statusData.borderColor}`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  borderRadius: "0 4px 4px 0",
+                }}
+              >
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: "50%",
+                    backgroundColor: `rgba(${
+                      currentStatus === "draft"
+                        ? "66, 165, 245"
+                        : currentStatus === "under review"
+                        ? "255, 193, 7"
+                        : currentStatus === "published"
+                        ? "76, 175, 80"
+                        : "244, 67, 54"
+                    }, 0.2)`,
+                    display: "grid",
+                    placeItems: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {React.cloneElement(statusData.icon, {
+                    color: statusData.iconColor,
+                  })}
+                </Box>
+
+                <Box sx={{ overflow: "hidden" }}>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="600"
+                    sx={{
+                      color: statusData.titleColor,
+                      lineHeight: 1.3,
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {statusData.title}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: statusData.descColor,
+                      opacity: 0.8,
+                      display: "block",
+                      lineHeight: 1.2,
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {statusData.description}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
             <Stack
               direction="row"
               spacing={2}
@@ -576,7 +704,7 @@ export default function Addrepresentative(props) {
                 alignItems: "center",
               }}
             >
-              <Button
+              {/* <Button
                 variant="outlined"
                 onClick={handleReview}
                 sx={{
@@ -590,24 +718,23 @@ export default function Addrepresentative(props) {
                 }}
               >
                 Review
+              </Button> */}
+              <Button
+                variant="outlined"
+                onClick={handleSave}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
-              {userRole === "admin" && (
-                <Button
-                  variant="outlined"
-                  onClick={handleSave}
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    "&:hover": {
-                      backgroundColor: "#357ABD !important",
-                    },
-                  }}
-                >
-                  Save Changes
-                </Button>
-              )}
+
               {/* <Button variant="outlined">
                 Fetch Representatives from Quorum
               </Button> */}
