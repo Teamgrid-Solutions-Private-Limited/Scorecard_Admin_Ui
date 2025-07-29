@@ -39,6 +39,8 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
+import { jwtDecode } from "jwt-decode";
+
 export default function Activity(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -52,7 +54,12 @@ export default function Activity(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
+ const token = localStorage.getItem("token");
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); // Store selected activity IDs
   const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
   const [bulkTrackActivity, setBulkTrackActivity] = useState(""); // Store bulk track activity value
@@ -129,48 +136,48 @@ export default function Activity(props) {
         setSnackbarOpen(true);
       });
   };
-// In your Activity component, update the handleBulkUpdate function:
-const handleBulkUpdate = async () => {
-  if (!selectedTrackActivity.length || !bulkTrackActivity) {
-    setSnackbarMessage("Please select activities and a status");
-    setSnackbarSeverity("warning");
-    setSnackbarOpen(true);
-    return;
-  }
+  // In your Activity component, update the handleBulkUpdate function:
+  const handleBulkUpdate = async () => {
+    if (!selectedTrackActivity.length || !bulkTrackActivity) {
+      setSnackbarMessage("Please select activities and a status");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      return;
+    }
 
-  setFetching(true);
-  try {
-    // Dispatch and unwrap the result to properly catch errors
-    const result = await dispatch(
-      bulkUpdateTrackActivities({
-        ids: selectedTrackActivity,
-        trackActivities: bulkTrackActivity
-      })
-    ).unwrap(); // This is crucial for proper error handling
+    setFetching(true);
+    try {
+      // Dispatch and unwrap the result to properly catch errors
+      const result = await dispatch(
+        bulkUpdateTrackActivities({
+          ids: selectedTrackActivity,
+          trackActivities: bulkTrackActivity
+        })
+      ).unwrap(); // This is crucial for proper error handling
 
-    setSnackbarMessage(
-      `Successfully updated ${result.updatedActivities?.length || selectedTrackActivity.length} activities`
-    );
-    setSnackbarSeverity("success");
-    
-    // Reset selection
-    setSelectedTrackActivity([]);
-    setBulkTrackActivity("");
-    setIsBulkEditMode(false);
-    
-    // Refresh the data
-    dispatch(getAllActivity());
-  } catch (error) {
-    console.error("Bulk update failed:", error);
-    setSnackbarMessage(
-      error.message || "Failed to update activities"
-    );
-    setSnackbarSeverity("error");
-  } finally {
-    setFetching(false);
-    setSnackbarOpen(true);
-  }
-};
+      setSnackbarMessage(
+        `Successfully updated ${result.updatedActivities?.length || selectedTrackActivity.length} activities`
+      );
+      setSnackbarSeverity("success");
+
+      // Reset selection
+      setSelectedTrackActivity([]);
+      setBulkTrackActivity("");
+      setIsBulkEditMode(false);
+
+      // Refresh the data
+      dispatch(getAllActivity());
+    } catch (error) {
+      console.error("Bulk update failed:", error);
+      setSnackbarMessage(
+        error.message || "Failed to update activities"
+      );
+      setSnackbarSeverity("error");
+    } finally {
+      setFetching(false);
+      setSnackbarOpen(true);
+    }
+  };
   // const handleBulkUpdate = async () => {
   //   if (!selectedTrackActivity.length || !bulkTrackActivity) return;
 
@@ -223,6 +230,7 @@ const handleBulkUpdate = async () => {
           sx={{
             flexGrow: 1,
             // overflow: "auto",
+            width: "80%",
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}
@@ -272,6 +280,8 @@ const handleBulkUpdate = async () => {
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
                   <option value="reviewed">Reviewed</option>
+
+
                 </TextField>
               </Stack>
 
@@ -290,11 +300,12 @@ const handleBulkUpdate = async () => {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
-                <Button
-                  onClick={() => navigate("/add-activity")}
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
+                {userRole === "admin" && (
+                  <Button
+                    onClick={() => navigate("/add-activity")}
+                    sx={{
+                      backgroundColor: "#4a90e2 !important",
+                      color: "white !important",
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
                     "&:hover": {
@@ -304,6 +315,7 @@ const handleBulkUpdate = async () => {
                 >
                   Add Activity
                 </Button>
+                )}
               </Stack>
             </Box>
             {isBulkEditMode && (
@@ -332,9 +344,9 @@ const handleBulkUpdate = async () => {
                     size="small"
                     sx={{ minWidth: 150 }}
                   >
-                    <MenuItem value="Pending">Pending</MenuItem>
-                    <MenuItem value="Completed">Completed</MenuItem>
-                    <MenuItem value="Failed">Failed</MenuItem>
+                    <MenuItem value="pending">Pending</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="failed">Failed</MenuItem>
                   </TextField>
 
                   <Button

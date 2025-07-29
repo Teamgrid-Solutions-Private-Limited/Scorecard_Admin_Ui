@@ -95,6 +95,7 @@ export default function AddBill(props) {
     return newVal !== oldVal;
   };
 
+  console.log("User Role:", userRole);
   const preFillForm = () => {
     if (selectedVote) {
       const termId = selectedVote.termId?._id || "";
@@ -1121,7 +1122,7 @@ export default function AddBill(props) {
                     alignItems="center"
                     sx={{ ml: { xs: 0, sm: 10.2 } }}
                   >
-                    <Grid item xs={12} sm={2} sx={{ mr: 0.5 }}>
+                    <Grid size={{ xs: 12, sm: 2 }} sx={{ mr: 0.5 }}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1130,18 +1131,22 @@ export default function AddBill(props) {
                           fontWeight: 700,
                           my: 0,
                           width: "100%",
+
+                          fontFamily: "'Be Vietnam Pro', sans-serif",
+                          fontSize: "13px",
                         }}
                       >
                         SBA Position
                       </InputLabel>
                     </Grid>
 
-                    <Grid item xs={12} sm={10}>
+                    <Grid size={{ xs: 12, sm: 10 }}>
                       <FormControl
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
                             fontSize: "15px",
+
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
                         }}

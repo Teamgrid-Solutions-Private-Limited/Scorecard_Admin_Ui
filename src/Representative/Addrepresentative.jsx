@@ -1,8 +1,10 @@
 import * as React from "react";
-import { useRef, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { alpha, styled } from "@mui/material/styles";
-import Box from "@mui/material/Box";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import SideMenu from "../components/SideMenu";
@@ -22,46 +24,45 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import Switch from "@mui/material/Switch";
 import Copyright from "../Dashboard/internals/components/Copyright";
-import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
 import { rating } from "../Dashboard/global/common";
-import {
-  clearHouseState,
-  updateRepresentativeStatus,
-} from "../redux/reducer/houseSlice";
-
-import {
-  getHouseById,
-  updateHouse,
-  createHouse,
-} from "../redux/reducer/houseSlice";
-import { getAllActivity } from "../redux/reducer/activitySlice";
-import {
-  getHouseDataByHouseId,
-  updateHouseData,
-  createHouseData,
-  getHouseDataById,
-  clearHouseDataState,
-} from "../redux/reducer/houseTermSlice";
-import {
-  getAllVotes,
-  getVoteById,
-  clearVoteState,
-  updateVote,
-  createVote,
-} from "../redux/reducer/voteSlice";
-import { getAllTerms } from "../redux/reducer/termSlice";
-import Snackbar from "@mui/material/Snackbar";
-import MuiAlert from "@mui/material/Alert";
-import FixedHeader from "../components/FixedHeader";
-import Footer from "../components/Footer";
+import { useParams } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
 import CheckCircle from "@mui/icons-material/CheckCircle";
 import { jwtDecode } from "jwt-decode";
+import CircleIcon from "@mui/icons-material/Circle";
+import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+
+import {
+  getVoteById,
+  clearVoteState,
+  updateVote,
+  createVote,
+  getAllVotes,
+} from "../redux/reducer/voteSlice";
+import { getAllActivity } from "../redux/reducer/activitySlice";
+import {
+  clearHouseState,
+  updateRepresentativeStatus,
+  getHouseById,
+  updateHouse,
+  createHouse,
+} from "../redux/reducer/houseSlice";
+import {
+  getHouseDataByHouseId,
+  updateHouseData,
+  createHouseData,
+  clearHouseDataState,
+} from "../redux/reducer/houseTermSlice";
+import { getAllTerms } from "../redux/reducer/termSlice";
+import FixedHeader from "../components/FixedHeader";
+import Footer from "../components/Footer";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -69,12 +70,56 @@ export default function Addrepresentative(props) {
   const { house } = useSelector((state) => state.house);
   const { terms } = useSelector((state) => state.term);
   const { votes } = useSelector((state) => state.vote);
-  const houseData = useSelector((state) => state.houseData);
   const { activities } = useSelector((state) => state.activity);
-  const houseActivities =
+  const houseData = useSelector((state) => state.houseData);
+  const [editedFields, setEditedFields] = useState([]);
+  const [originalFormData, setOriginalFormData] = useState(null);
+  const [originalTermData, setOriginalTermData] = useState([]);
+
+  let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
 
-  // Initialize as an array to support multiple terms
+  // Field labels for display
+  const fieldLabels = {
+    // Representative fields
+    name: "Representative Name",
+    status: "Status",
+    district: "District",
+    party: "Party",
+    photo: "Photo",
+    publishStatus: "Publish Status",
+
+    // Term fields (will be prefixed with termX_)
+    houseId: "House ID",
+    summary: "Term Summary",
+    rating: "SBA Rating",
+    votesScore: "Voted Bills",
+    activitiesScore: "Tracked Activities",
+    currentTerm: "Current Term",
+    termId: "Term",
+  };
+
+  // Helper function to get display name
+  const getFieldDisplayName = (field) => {
+    // Handle term fields (term0_fieldName)
+    if (field.includes("_")) {
+      const [termPrefix, actualField] = field.split("_");
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
+    }
+    return fieldLabels[field] || field;
+  };
+
+  const [formData, setFormData] = useState({
+    name: "",
+    district: "",
+    party: "",
+    photo: null,
+    status: "Active",
+    publishStatus: "draft",
+  });
+
   const [houseTermData, setHouseTermData] = useState([
     {
       houseId: id,
@@ -87,7 +132,7 @@ export default function Addrepresentative(props) {
     },
   ]);
 
-  const handleTermChange = (e, termIndex) => {
+   const handleTermChange = (e, termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -97,7 +142,7 @@ export default function Addrepresentative(props) {
     );
   };
 
-  const handleSwitchChange = (e, termIndex) => {
+   const handleSwitchChange = (e, termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -147,6 +192,7 @@ export default function Addrepresentative(props) {
       )
     );
   };
+
   const handleAddActivity = (termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
@@ -178,7 +224,7 @@ export default function Addrepresentative(props) {
     );
   };
 
-  const handleActivityChange = (termIndex, activityIndex, field, value) => {
+   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -215,7 +261,7 @@ export default function Addrepresentative(props) {
     );
   }, []);
 
-  // Add a new term
+  // Add a new empty term
   const handleAddTerm = () => {
     setHouseTermData((prev) => [
       ...prev,
@@ -231,13 +277,18 @@ export default function Addrepresentative(props) {
     ]);
   };
 
-  // Remove a term (can't remove the first one)
+  // Remove a term
   const handleRemoveTerm = (termIndex) => {
-    if (termIndex > 0) {
-      setHouseTermData((prev) =>
-        prev.filter((_, index) => index !== termIndex)
-      );
+    setHouseTermData((prev) =>
+      prev.filter((_, index) => index !== termIndex)
+    );
+  };
+
+  const compareValues = (newVal, oldVal) => {
+    if (typeof newVal === "string" && typeof oldVal === "string") {
+      return newVal.trim() !== oldVal.trim();
     }
+    return newVal !== oldVal;
   };
 
   const termPreFill = () => {
@@ -251,11 +302,15 @@ export default function Addrepresentative(props) {
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
           currentTerm: term.currentTerm || false,
+          editedFields: term.editedFields || [],
+          fieldEditors: term.fieldEditors || {},
           votesScore:
             term.votesScore?.length > 0
               ? term.votesScore.map((vote) => {
                   let scoreValue = "";
                   const dbScore = vote.score?.toLowerCase();
+
+                 
                   if (dbScore?.includes("yea_votes")) {
                     scoreValue = "Yes";
                   } else if (dbScore?.includes("nay_votes")) {
@@ -282,9 +337,11 @@ export default function Addrepresentative(props) {
               : [{ activityId: null, score: "" }],
         };
       });
+
       setHouseTermData(termsData);
+      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
     } else {
-      setHouseTermData([
+      const defaultTerm = [
         {
           houseId: id,
           summary: "",
@@ -293,47 +350,105 @@ export default function Addrepresentative(props) {
           activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
+          editedFields: [],
+          fieldEditors: {},
         },
-      ]);
+      ];
+
+      setHouseTermData(defaultTerm);
+      setOriginalTermData(JSON.parse(JSON.stringify(defaultTerm)));
     }
   };
+
+  useEffect(() => {
+    if (originalFormData && formData) {
+      const changes = [];
+      Object.keys(formData).forEach((key) => {
+        if (compareValues(formData[key], originalFormData[key])) {
+          changes.push(key);
+        }
+      });
+      setEditedFields(changes);
+    }
+  }, [formData, originalFormData]);
+
+  // Update your change tracking useEffect
+  useEffect(() => {
+    if (originalFormData && formData && originalTermData && houseTermData) {
+      const changes = [];
+
+      // Track representative-level changes
+      Object.keys(formData).forEach((key) => {
+        if (key === "editedFields" || key === "fieldEditors") return;
+        if (compareValues(formData[key], originalFormData[key])) {
+          changes.push(key);
+        }
+      });
+
+      // Track term-level changes
+      houseTermData.forEach((term, termIndex) => {
+        const originalTerm = originalTermData[termIndex] || {};
+
+        Object.keys(term).forEach((key) => {
+          // Skip internal and tracking fields
+          if (["_id", "houseId", "editedFields", "fieldEditors"].includes(key))
+            return;
+
+          // Handle array fields
+          if (key === "votesScore" || key === "activitiesScore") {
+            const current = JSON.stringify(term[key]);
+            const original = JSON.stringify(originalTerm[key] || []);
+            if (current !== original) {
+              changes.push(`term${termIndex}_${key}`);
+            }
+          }
+          // Handle regular fields
+          else if (compareValues(term[key], originalTerm[key])) {
+            changes.push(`term${termIndex}_${key}`);
+          }
+        });
+      });
+
+      // Merge with any existing editedFields from backend
+      const backendEditedFields = Array.isArray(formData.editedFields)
+        ? formData.editedFields
+        : [];
+      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
+
+      setEditedFields(mergedChanges);
+    }
+  }, [formData, originalFormData, houseTermData, originalTermData]);
+
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
   useEffect(() => {
     termPreFill();
   }, [id, houseData]);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    district: "",
-    party: "",
-    photo: null,
-    status: "",
-    publishStatus: "", // Default status
-  });
-
+  const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const preFillForm = () => {
     if (house) {
-      setFormData({
+      const newFormData = {
         name: house.name || "",
         district: house.district || "",
         party: house.party || "",
-        photo: house.photo || "",
+        photo: house.photo || null,
         status: house.status || "Active",
-        publishStatus: house.publishStatus || "",
-      });
+        publishStatus: house.publishStatus || "draft",
+        editedFields: house.editedFields || [],
+        fieldEditors: house.fieldEditors || {},
+      };
+
+      setFormData(newFormData);
+      setOriginalFormData(JSON.parse(JSON.stringify(newFormData)));
     }
   };
-
-  const token = localStorage.getItem("token");
-  // Decode token to get user role
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
-
-  console.log("User Role:", userRole);
 
   useEffect(() => {
     if (id) {
@@ -343,7 +458,6 @@ export default function Addrepresentative(props) {
     dispatch(getAllTerms());
     dispatch(getAllVotes());
     dispatch(getAllActivity());
-
     return () => {
       dispatch(clearHouseState());
       dispatch(clearHouseDataState());
@@ -353,6 +467,107 @@ export default function Addrepresentative(props) {
   useEffect(() => {
     preFillForm();
   }, [house, terms]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+
+      if (originalFormData) {
+        const changes = Object.keys(newData).filter((key) =>
+          compareValues(newData[key], originalFormData[key])
+        );
+        setEditedFields(changes);
+      }
+
+      return newData;
+    });
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setFormData((prev) => ({ ...prev, photo: file }));
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: decodedToken.name || decodedToken.username || "You",
+        editedAt: new Date(),
+      };
+
+      // Update field editors with current changes
+      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+      editedFields.forEach((field) => {
+        updatedFieldEditors[field] = currentEditor;
+      });
+
+      // Prepare representative update
+      const representativeUpdate = {
+        ...formData,
+        editedFields,
+        fieldEditors: updatedFieldEditors,
+        publishStatus: userRole === "admin" ? "published" : "under review",
+      };
+
+      // Clear editedFields if publishing
+      if (representativeUpdate.publishStatus === "published") {
+        representativeUpdate.editedFields = [];
+      }
+
+      // Update representative
+      if (id) {
+        const formData = new FormData();
+        Object.entries(representativeUpdate).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (typeof value === "object" && !(value instanceof File)) {
+              formData.append(key, JSON.stringify(value));
+            } else {
+              formData.append(key, value);
+            }
+          }
+        });
+
+        await dispatch(updateHouse({ id, formData })).unwrap();
+      }
+
+      // Update terms
+      const termPromises = houseTermData.map((term, index) => {
+        const termUpdate = {
+          ...term,
+          houseId: id,
+          editedFields: editedFields.filter((f) =>
+            f.startsWith(`term${index}_`)
+          ),
+          fieldEditors: updatedFieldEditors,
+        };
+
+        return term._id
+          ? dispatch(
+              updateHouseData({ id: term._id, data: termUpdate })
+            ).unwrap()
+          : dispatch(createHouseData(termUpdate)).unwrap();
+      });
+
+      await Promise.all(termPromises);
+
+      // Reload data
+      await dispatch(getHouseById(id)).unwrap();
+      await dispatch(getHouseDataByHouseId(id)).unwrap();
+
+      handleSnackbarOpen("Changes saved successfully!", "success");
+    } catch (error) {
+      console.error("Save failed:", error);
+      handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -367,154 +582,6 @@ export default function Addrepresentative(props) {
     setOpenSnackbar(false);
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    setFormData((prev) => ({ ...prev, photo: file }));
-  };
-
-  const [loading, setLoading] = useState(false);
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    let operationType = "";
-    setLoading(true);
-
-    try {
-      setSnackbarMessage("");
-      setSnackbarSeverity("success");
-
-      if (id) {
-        const updatedData = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-          if (value) updatedData.append(key, value);
-        });
-        await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
-        operationType = "Updated";
-      }
-
-      const termPromises = houseTermData.map((termData) => {
-        if (termData._id) {
-          operationType = "Updated";
-          return dispatch(
-            updateHouseData({
-              id: termData._id,
-              data: {
-                ...termData,
-                houseId: id,
-              },
-            })
-          ).unwrap();
-        } else {
-          operationType = "Created";
-          return dispatch(
-            createHouseData({
-              ...termData,
-              houseId: id,
-            })
-          ).unwrap();
-        }
-      });
-
-      await Promise.all(termPromises);
-
-      // ✅ Different logic based on role
-      if (userRole === "admin") {
-        await dispatch(
-          updateRepresentativeStatus({ id, publishStatus: "published" })
-        ).unwrap();
-      } else {
-        await dispatch(
-          updateRepresentativeStatus({ id, publishStatus: "under review" })
-        ).unwrap();
-      }
-
-      await dispatch(getHouseDataByHouseId(id)).unwrap();
-      await dispatch(getHouseById(id)).unwrap();
-
-      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
-    } catch (error) {
-      console.error("Save failed:", error);
-      handleSnackbarOpen(
-        "Failed to save: " + (error.message || "Unknown error occurred"),
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // const handleReview = async (e) => {
-  //   e.preventDefault();
-  //   let operationType = "";
-  //   setLoading(true);
-
-  //   try {
-  //     // Reset any previous errors
-  //     setSnackbarMessage("");
-  //     setSnackbarSeverity("success");
-
-  //     // ✅ 1. Update house data
-  //     if (id) {
-  //       const updatedData = new FormData();
-  //       Object.entries(formData).forEach(([key, value]) => {
-  //         if (value) updatedData.append(key, value);
-  //       });
-
-  //       await dispatch(updateHouse({ id, formData: updatedData })).unwrap();
-  //       operationType = "Updated";
-  //     }
-
-  //     // ✅ 2. Save house term data (filter out completely empty entries if needed)
-  //     const termPromises = houseTermData.map((termData) => {
-  //       const termPayload = {
-  //         ...termData,
-  //         houseId: id,
-  //       };
-
-  //       if (termData._id) {
-  //         operationType = "under review";
-  //         return dispatch(
-  //           updateHouseData({ id: termData._id, data: termPayload })
-  //         ).unwrap();
-  //       } else {
-  //         operationType = "under review";
-  //         return dispatch(createHouseData(termPayload)).unwrap();
-  //       }
-  //     });
-
-  //     await Promise.all(termPromises);
-
-  //     // ✅ 3. Update status to "review"
-  //     await dispatch(
-  //       updateRepresentativeStatus({ id, publishStatus: "under review" })
-  //     ).unwrap();
-
-  //     // ✅ 4. Refresh data
-  //     await dispatch(getHouseDataByHouseId(id)).unwrap();
-  //     await dispatch(getHouseById(id)).unwrap();
-
-  //     // ✅ 5. Success message
-  //     handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
-  //   } catch (error) {
-  //     console.error("Save failed:", error);
-  //     handleSnackbarOpen(
-  //       "Failed to save: " + (error.message || "Unknown error occurred"),
-  //       "error"
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  const [vote, setVote] = React.useState([{ id: 1, option1: "", option2: "" }]);
-  const [activity, setActivity] = React.useState([
-    { id: 1, option1: "", option2: "" },
-  ]);
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -532,51 +599,57 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, status }));
   };
 
-  const handleAdd = () => {
-    setVote([...vote, { id: vote.length + 1, option1: "", option2: "" }]);
-  };
-
-  const handleRemove = (id) => {
-    setVote(vote.filter((item) => item.id !== id));
-  };
-
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
-  const statusConfig = {
-    draft: {
-      backgroundColor: "rgba(66, 165, 245, 0.12)",
-      borderColor: "#2196F3",
-      iconColor: "#1565C0",
-      icon: <Drafts sx={{ fontSize: "20px" }} />,
-      title: "Draft Version",
-      description: "Unpublished draft - changes pending",
-      titleColor: "#0D47A1",
-      descColor: "#1976D2",
-    },
-    reviewed: {
-      backgroundColor: "rgba(255, 193, 7, 0.12)",
-      borderColor: "#FFC107",
-      iconColor: "#FFA000",
-      icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-      title: "Under Review",
-      description: "Being reviewed by the team",
-      titleColor: "#5D4037",
-      descColor: "#795548",
-    },
-    // published: {
-    //   backgroundColor: "rgba(76, 175, 80, 0.12)",
-    //   borderColor: "#4CAF50",
-    //   iconColor: "#2E7D32",
-    //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-    //   title: "Published",
-    //   description: "This document is live",
-    //   titleColor: "#2E7D32",
-    //   descColor: "#388E3C",
-    // },
+  const getStatusConfig = (editedFields, currentStatus) => {
+    const configs = {
+      draft: {
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
+        icon: <Drafts sx={{ fontSize: "20px" }} />,
+        title: "Draft Version",
+        description:
+          editedFields.length > 0
+            ? `${editedFields.length} pending changes`
+            : "No changes made yet",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
+      },
+      "under review": {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Under Review",
+        description:
+          editedFields.length > 0
+            ? `Waiting approval for ${editedFields.length} changes`
+            : "No changes pending review",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
+      published: {
+        backgroundColor: "rgba(76, 175, 80, 0.12)",
+        borderColor: "#4CAF50",
+        iconColor: "#2E7D32",
+        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+        title: "Published",
+        description: "Published and live",
+        titleColor: "#2E7D32",
+        descColor: "#388E3C",
+      },
+    };
+
+    return configs[currentStatus] || configs.draft;
   };
 
-  const currentStatus = formData.publishStatus || ""; // Fallback to draft if undefined
-  const statusData = statusConfig[currentStatus];
+  const currentStatus =
+    formData.publishStatus || (userRole === "admin" ? "published" : "");
+  const statusData = getStatusConfig(
+    Array.isArray(editedFields) ? editedFields : [],
+    currentStatus
+  );
 
   return (
     <AppTheme>
@@ -600,7 +673,6 @@ export default function Addrepresentative(props) {
       )}
       <Box sx={{ display: "flex" }}>
         <SideMenu />
-
         <Box
           component="main"
           sx={(theme) => ({
@@ -609,7 +681,6 @@ export default function Addrepresentative(props) {
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
-            // overflow: "auto",
           })}
         >
           <FixedHeader />
@@ -623,74 +694,165 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {statusData && (
+            {userRole && formData.publishStatus !== "published" && (
               <Box
                 sx={{
                   width: "98%",
-                  py: 1.2,
-                  px: 3,
+                  p: 2,
                   backgroundColor: statusData.backgroundColor,
-                  borderLeft: `3px solid ${statusData.borderColor}`,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  borderRadius: "0 4px 4px 0",
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
                 }}
               >
-                <Box
-                  sx={{
-                    p: 1,
-                    borderRadius: "50%",
-                    backgroundColor: `rgba(${
-                      currentStatus === "draft"
-                        ? "66, 165, 245"
-                        : currentStatus === "under review"
-                        ? "255, 193, 7"
-                        : currentStatus === "published"
-                        ? "76, 175, 80"
-                        : "244, 67, 54"
-                    }, 0.2)`,
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  {React.cloneElement(statusData.icon, {
-                    color: statusData.iconColor,
-                  })}
-                </Box>
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon */}
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${
+                        formData.publishStatus === "draft"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
+                          ? "255, 193, 7"
+                          : formData.publishStatus === "published"
+                          ? "76, 175, 80"
+                          : "244, 67, 54"
+                      }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(statusData.icon, {
+                      sx: { color: statusData.iconColor },
+                    })}
+                  </Box>
 
-                <Box sx={{ overflow: "hidden" }}>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="600"
-                    sx={{
-                      color: statusData.titleColor,
-                      lineHeight: 1.3,
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {statusData.title}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: statusData.descColor,
-                      opacity: 0.8,
-                      display: "block",
-                      lineHeight: 1.2,
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {statusData.description}
-                  </Typography>
+                  <Box sx={{ flex: 1 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        sx={{
+                          color: statusData.titleColor,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {statusData.title}
+                      </Typography>
+
+                      {userRole === "admin" && (
+                        <Chip
+                          label={`${editedFields.length} pending changes`}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+
+                    <Box sx={{ mt: 1.5 }}>
+                      {editedFields.length > 0 ? (
+                        <Box
+                          sx={{
+                            backgroundColor: "background.paper",
+                            borderRadius: 1,
+                            p: 1.5,
+                            border: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Typography
+                            variant="overline"
+                            sx={{ color: "text.secondary", mb: 1 }}
+                          >
+                            Pending Changes
+                          </Typography>
+
+                          <List dense sx={{ py: 0 }}>
+                            {editedFields.map((field, index) => {
+                              const parts = field.split("_");
+                              const isTermField = field.startsWith("term");
+
+                              const displayLabel = isTermField
+                                ? `Term ${
+                                    +parts[0].replace("term", "") + 1
+                                  } • ${
+                                    parts[1]?.charAt(0).toUpperCase() +
+                                    parts[1]?.slice(1)
+                                  }`
+                                : field.charAt(0).toUpperCase() +
+                                  field.slice(1);
+
+                              const editor = formData?.fieldEditors?.[field];
+
+                              return (
+                                <Box key={index} sx={{ mb: 2 }}>
+                                  <Typography
+                                    sx={{
+                                      fontWeight: 600,
+                                      color: "#555",
+                                      fontSize: 14,
+                                    }}
+                                  >
+                                    {displayLabel}
+                                  </Typography>
+                                  <Typography
+                                    sx={{
+                                      fontSize: 12,
+                                      color: "#999",
+                                      mt: 0.5,
+                                    }}
+                                  >
+                                    Edited on •{" "}
+                                    {editor?.editedAt
+                                      ? new Date(
+                                          editor.editedAt
+                                        ).toLocaleString("en-GB", {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          day: "2-digit",
+                                          month: "short",
+                                        })
+                                      : "-"}
+                                  </Typography>
+                                </Box>
+                              );
+                            })}
+                          </List>
+                        </Box>
+                      ) : (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontStyle: "italic",
+                            color: "text.disabled",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <HourglassEmpty sx={{ fontSize: 16 }} />
+                          No recent changes
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
                 </Box>
               </Box>
             )}
+
             <Stack
               direction="row"
               spacing={2}
@@ -700,21 +862,6 @@ export default function Addrepresentative(props) {
                 alignItems: "center",
               }}
             >
-              {/* <Button
-                variant="outlined"
-                onClick={handleReview}
-                sx={{
-                  backgroundColor: "#CC9A3A !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#c38f2fff !important",
-                  },
-                }}
-              >
-                Review
-              </Button> */}
               <Button
                 variant="outlined"
                 onClick={handleSave}
@@ -730,11 +877,8 @@ export default function Addrepresentative(props) {
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
-
-              {/* <Button variant="outlined">
-                Fetch Representatives from Quorum
-              </Button> */}
             </Stack>
+
             <Paper elevation={2} sx={{ width: "100%" }}>
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
@@ -863,6 +1007,7 @@ export default function Addrepresentative(props) {
                   </Grid>
                   <Grid size={4}>
                     <TextField
+                      id="district"
                       name="district"
                       value={formData.district}
                       onChange={handleChange}
@@ -870,7 +1015,6 @@ export default function Addrepresentative(props) {
                       size="small"
                       autoComplete="off"
                       variant="outlined"
-                      placeholder="Enter district"
                     />
                   </Grid>
                   <Grid size={1} sx={{ alignContent: "center" }}>
@@ -886,7 +1030,7 @@ export default function Addrepresentative(props) {
                     </InputLabel>
                   </Grid>
                   <Grid size={4}>
-                    <FormControl fullWidth>
+                   <FormControl fullWidth>
                       <Select
                         name="party"
                         value={formData.party}
@@ -898,7 +1042,9 @@ export default function Addrepresentative(props) {
                         <MenuItem value="independent">Independent</MenuItem>
                       </Select>
                     </FormControl>
+
                   </Grid>
+
                   <Grid size={2}>
                     <InputLabel
                       sx={{
@@ -920,7 +1066,7 @@ export default function Addrepresentative(props) {
                               ? formData.photo
                               : URL.createObjectURL(formData.photo)
                           }
-                          alt="Senator's Photo"
+                          alt="Representative's Photo"
                           style={{
                             width: "100px",
                             height: "100px",
@@ -938,13 +1084,12 @@ export default function Addrepresentative(props) {
                         component="label"
                         variant="outlined"
                         sx={{
-                          alignSelf: "flex-start",
                           backgroundColor: "#4a90e2 !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#357ABD !important",
+                            backgroundColor: "#7b1fe0 !important",
                           },
                         }}
                         startIcon={<CloudUploadIcon />}
@@ -964,7 +1109,7 @@ export default function Addrepresentative(props) {
 
             <div className="spacer"></div>
 
-            {/* Render each term */}
+            {/* Render each term in houseTermData */}
             {houseTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
@@ -1020,9 +1165,12 @@ export default function Addrepresentative(props) {
                     <Grid size={2.2}>
                       <FormControl fullWidth>
                         <Select
-                          name="termId"
                           value={term.termId || ""}
-                          onChange={(e) => handleTermChange(e, termIndex)}
+                          id="term"
+                          name="termId"
+                          onChange={(event) =>
+                            handleTermChange(event, termIndex)
+                          }
                           sx={{ background: "#fff" }}
                         >
                           <MenuItem value="" disabled>
@@ -1042,7 +1190,6 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
-
                     <Grid size={2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{
@@ -1082,8 +1229,11 @@ export default function Addrepresentative(props) {
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
+                          id="rating"
                           name="rating"
-                          onChange={(e) => handleTermChange(e, termIndex)}
+                          onChange={(event) =>
+                            handleTermChange(event, termIndex)
+                          }
                           sx={{ background: "#fff" }}
                         >
                           <MenuItem value="" disabled>
@@ -1097,6 +1247,7 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
+
                     <Grid size={2}>
                       <InputLabel
                         sx={{
@@ -1112,10 +1263,8 @@ export default function Addrepresentative(props) {
                     <Grid size={9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                        apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
                         onInit={(_evt, editor) => (editorRef.current = editor)}
-                        initialValue={term.summary}
-                        name="summary"
+                        initialValue={term.summary || ""}
                         onEditorChange={(content) =>
                           handleEditorChange(content, termIndex)
                         }
@@ -1144,16 +1293,15 @@ export default function Addrepresentative(props) {
                             "wordcount",
                           ],
                           toolbar:
-                            "undo redo | blocks | " +
-                            "bold italic forecolor | alignleft aligncenter " +
-                            "alignright alignjustify | bullist numlist outdent indent | " +
-                            "removeformat | help",
+                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
                           content_style:
-                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+                          directionality: "ltr",
                         }}
                       />
                     </Grid>
 
+                    {/* Vote Repeater Start */}
                     {term.votesScore.map((vote, voteIndex) => (
                       <Grid
                         rowSpacing={2}
@@ -1166,7 +1314,6 @@ export default function Addrepresentative(props) {
                           alignItems="center"
                           columnGap={"15px"}
                         >
-                          {/* Label - keep size 2 to match other labels */}
                           <Grid size={2}>
                             <InputLabel
                               sx={{
@@ -1180,8 +1327,6 @@ export default function Addrepresentative(props) {
                               Scored Vote
                             </InputLabel>
                           </Grid>
-
-                          {/* Vote Select - adjusted to 5 (was 4) */}
                           <Grid size={7.5}>
                             <FormControl fullWidth>
                               <Select
@@ -1196,6 +1341,23 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{
                                   background: "#fff",
+                                  width: "100%",
+                                }}
+                                renderValue={(selected) => {
+                                  const selectedVote = votes.find(
+                                    (v) => v._id === selected
+                                  );
+                                  return (
+                                    <Typography
+                                      sx={{
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {selectedVote?.title || "Select a Bill"}
+                                    </Typography>
+                                  );
                                 }}
                                 MenuProps={{
                                   PaperProps: {
@@ -1203,7 +1365,6 @@ export default function Addrepresentative(props) {
                                       maxHeight: 300,
                                       width: 400,
                                       "& .MuiMenuItem-root": {
-                                        whiteSpace: "normal",
                                         minHeight: "48px",
                                       },
                                     },
@@ -1218,13 +1379,13 @@ export default function Addrepresentative(props) {
                                     <MenuItem
                                       key={voteItem._id}
                                       value={voteItem._id}
-                                      sx={{
-                                        py: 1.5,
-                                      }}
+                                      sx={{ py: 1.5 }}
                                     >
                                       <Typography
-                                        noWrap
-                                        sx={{ maxWidth: "100%" }}
+                                        sx={{
+                                          whiteSpace: "normal",
+                                          overflowWrap: "break-word",
+                                        }}
                                       >
                                         {voteItem.title}
                                       </Typography>
@@ -1238,18 +1399,16 @@ export default function Addrepresentative(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-
-                          {/* Score Select - adjusted to 3 (was 5) */}
                           <Grid size={1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={vote.score || ""}
-                                onChange={(e) =>
+                                onChange={(event) =>
                                   handleVoteChange(
                                     termIndex,
                                     voteIndex,
                                     "score",
-                                    e.target.value
+                                    event.target.value
                                   )
                                 }
                                 sx={{ background: "#fff" }}
@@ -1261,8 +1420,6 @@ export default function Addrepresentative(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-
-                          {/* Delete icon - keep size 1 */}
                           <Grid size={1}>
                             <DeleteForeverIcon
                               onClick={() =>
@@ -1270,11 +1427,11 @@ export default function Addrepresentative(props) {
                               }
                             />
                           </Grid>
-
-                          {/* Add an empty Grid to balance the layout */}
                         </Grid>
                       </Grid>
                     ))}
+                    {/* Vote Repeater Ends */}
+
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
@@ -1296,6 +1453,7 @@ export default function Addrepresentative(props) {
                     </Grid>
                     <Grid size={1}></Grid>
 
+                    {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) => (
                       <Grid
                         rowSpacing={2}
@@ -1338,9 +1496,10 @@ export default function Addrepresentative(props) {
                                   width: "100%",
                                 }}
                                 renderValue={(selected) => {
-                                  const selectedActivity = houseActivities.find(
-                                    (a) => a._id === selected
-                                  );
+                                  const selectedActivity =
+                                    houseActivities.find(
+                                      (a) => a._id === selected
+                                    );
                                   return (
                                     <Typography
                                       sx={{
@@ -1426,6 +1585,7 @@ export default function Addrepresentative(props) {
                         </Grid>
                       </Grid>
                     ))}
+                    {/* Activities Repeater Ends */}
 
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
@@ -1455,6 +1615,8 @@ export default function Addrepresentative(props) {
             {/* Add Term Button */}
             <Button
               variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={handleAddTerm}
               sx={{
                 alignSelf: "flex-start",
                 backgroundColor: "#4a90e2 !important",
@@ -1465,8 +1627,6 @@ export default function Addrepresentative(props) {
                   backgroundColor: "#357ABD !important",
                 },
               }}
-              startIcon={<AddIcon />}
-              onClick={handleAddTerm}
             >
               Add Another Term
             </Button>

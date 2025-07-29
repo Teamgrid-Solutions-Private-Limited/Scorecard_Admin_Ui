@@ -30,6 +30,7 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -93,6 +94,7 @@ export default function AddActivity(props) {
     return newVal !== oldVal;
   };
 
+  console.log("User Role:", userRole);
   const preFillForm = () => {
     if (selectedActivity) {
       const newFormData = {
@@ -698,6 +700,7 @@ export default function AddActivity(props) {
                 variant="outlined"
                 sx={{
                   backgroundColor: "#CC9A3A !important",
+
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
@@ -811,9 +814,9 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      tinymceScriptSrc={`${
-                        import.meta.env.BASE_URL
-                      }tinymce/tinymce.min.js`}
+                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
+                      //apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
@@ -998,6 +1001,7 @@ export default function AddActivity(props) {
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
                             fontSize: "15px",
+
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
                         }}
@@ -1009,7 +1013,7 @@ export default function AddActivity(props) {
                           onChange={handleChange}
                         >
                           <FormControlLabel
-                            value="Completed"
+                            value="completed"
                             control={
                               <Radio
                                 icon={
@@ -1023,7 +1027,7 @@ export default function AddActivity(props) {
                             label="Completed"
                           />
                           <FormControlLabel
-                            value="Pending"
+                            value="pending"
                             control={
                               <Radio
                                 icon={
@@ -1041,7 +1045,7 @@ export default function AddActivity(props) {
                             label="Pending"
                           />
                           <FormControlLabel
-                            value="Failed"
+                            value="failed"
                             control={
                               <Radio
                                 icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}

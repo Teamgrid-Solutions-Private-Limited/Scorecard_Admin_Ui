@@ -57,6 +57,7 @@ const xThemeComponents = {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { FormControl, InputLabel, Select } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { jwtDecode } from "jwt-decode";
 
 export default function Senator(props) {
   const navigate = useNavigate();
@@ -81,10 +82,15 @@ export default function Senator(props) {
   const [selectedSenator, setSelectedSenator] = useState(null);
   const [selectedYear, setSelectedYear] = useState("");
   const { terms } = useSelector((state) => state.term);
+// Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
 
+      console.log("User Role:", userRole);
   const [partyFilter, setPartyFilter] = useState([]);
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
+  const [statusFilter, setStatusFilter] = useState([]);
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [partyMenuAnchorEl, setPartyMenuAnchorEl] = useState(null);
   const [stateMenuAnchorEl, setStateMenuAnchorEl] = useState(null);
@@ -120,6 +126,7 @@ export default function Senator(props) {
   };
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
+  const statusOptions = ["published", "reviewed", "draft"];
 
   useEffect(() => {
     dispatch(getAllSenators());
@@ -330,6 +337,11 @@ export default function Senator(props) {
         : [...prev, year]
     );
   };
+  const handleStatusFilter = (status) => {
+    setStatusFilter((prev) =>
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
+    );
+  };
   const handleTermMenuOpen = (event) => {
     setTermFilterAnchorEl(event.currentTarget);
   };
@@ -339,6 +351,7 @@ export default function Senator(props) {
     setRatingFilter([]);
     setSelectedYears([]);
     setTermFilter(null);
+    setStatusFilter([]);
     setSearchQuery("");
   };
 
@@ -409,14 +422,20 @@ export default function Senator(props) {
       ratingFilter.length === 0 ||
       (senator.rating && ratingFilter.includes(senator.rating));
 
-    return nameMatch && partyMatch && stateMatch && ratingMatch;
+    // Status filter
+    const statusMatch =
+      statusFilter.length === 0 ||
+      (senator.publishStatus && statusFilter.includes(senator.publishStatus));
+
+    return nameMatch && partyMatch && stateMatch && ratingMatch && statusMatch;
   });
   const activeFilterCount =
     partyFilter.length +
     stateFilter.length +
     ratingFilter.length +
     selectedYears.length +
-    (termFilter ? 1 : 0);
+    (termFilter ? 1 : 0) +
+    statusFilter.length;
    const handleToggleStatusSenator = (senator) => {
     const newStatus = senator.publishStatus === "published" ? "draft" : "published";
     console.log("Toggling status:", senator.publishStatus, "→", newStatus);
@@ -512,6 +531,12 @@ export default function Senator(props) {
                   <Badge
                     badgeContent={activeFilterCount > 0 ? activeFilterCount : null}
                     color="primary"
+                    sx={{
+    "& .MuiBadge-badge": {
+      top: 6, 
+      right: 6, 
+    },
+  }}
                   >
                     <Button
                       variant="outlined"
@@ -535,41 +560,7 @@ export default function Senator(props) {
                       Filters
                     </Button>
                   </Badge>
-                  {/* <Badge
-                    badgeContent={
-                      partyFilter.length +
-                      stateFilter.length +
-                      ratingFilter.length +
-                      (selectedYear ? 1 : 0) || null +
-                      (termFilter ? 1 : 0) || null
-                    }
-                    color="primary"
-                  >
-                    <Button
-                      variant="outlined"
-                      startIcon={<FilterListIcon />}
-                      endIcon={
-                        filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
-                      }
-                      onClick={toggleFilter}
-                      sx={{
-                        height: "40px",
-                        minWidth: "120px",
-                        borderColor: filterOpen ? "primary.main" : "divider",
-                        backgroundColor: filterOpen
-                          ? "primary.light"
-                          : "background.paper",
-                        "&:hover": {
-                          backgroundColor: filterOpen
-                            ? "primary.light"
-                            : "action.hover",
-                        },
-                      }}
-                    >
-                      Filters
-                    </Button>
-                  </Badge> */}
-
+                
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
                       <Paper
@@ -579,7 +570,7 @@ export default function Senator(props) {
                           top: "100%",
                           mt: 1,
                           width: 320,
-                          zIndex: 1200,
+                          zIndex: 1,
                           boxShadow: 3,
                           borderRadius: 2,
                           overflow: "hidden",
@@ -621,7 +612,7 @@ export default function Senator(props) {
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{ p: 2, cursor: "pointer", }}
                             onClick={() => toggleFilterSection("party")}
                           >
                             <Typography variant="body1">Party</Typography>
@@ -632,8 +623,8 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "party" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
-                              <TextField
+                            <Box sx={{ py: 2, pt: 0,bgcolor:'#fff' }}>
+                              {/* <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search parties..."
@@ -649,8 +640,8 @@ export default function Senator(props) {
                                   ),
                                 }}
                                 sx={{ mb: 2 }}
-                              />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              /> */}
+                              <Box sx={{ maxHeight: 200, overflow: "auto", }}>
                                 {filteredPartyOptions.length > 0 ? (
                                   filteredPartyOptions.map((party) => (
                                     <Box
@@ -679,7 +670,7 @@ export default function Senator(props) {
                                         variant="body2"
                                         sx={{ ml: 1 }}
                                       >
-                                        {party}
+                                        {party.charAt(0).toUpperCase()+party.slice(1)}
                                       </Typography>
                                     </Box>
                                   ))
@@ -723,7 +714,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "state" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               <TextField
                                 fullWidth
                                 size="small"
@@ -741,7 +732,7 @@ export default function Senator(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredStateOptions.length > 0 ? (
                                   filteredStateOptions.map((state) => (
                                     <Box
@@ -814,8 +805,8 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "rating" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
-                              <TextField
+                            <Box sx={{ py: 2, pt: 0 }}>
+                              {/* <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search ratings..."
@@ -831,8 +822,8 @@ export default function Senator(props) {
                                   ),
                                 }}
                                 sx={{ mb: 2 }}
-                              />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              /> */}
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredRatingOptions.length > 0 ? (
                                   filteredRatingOptions.map((rating) => (
                                     <Box
@@ -905,7 +896,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "year" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
                               <TextField
                                 fullWidth
                                 size="small"
@@ -921,7 +912,7 @@ export default function Senator(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredYearOptions.length > 0 ? (
                                   filteredYearOptions.map((year) => (
                                     <Box
@@ -1051,8 +1042,8 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "term" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                            <Box sx={{ py: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 <Box
                                   onClick={() => setTermFilter('current')}
                                   sx={{
@@ -1102,6 +1093,64 @@ export default function Senator(props) {
                           )}
                         </Box>
 
+                        {/* Status Filter */}
+                        <Box
+                          sx={{
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                            bgcolor:
+                              expandedFilter === "status"
+                                ? "action.hover"
+                                : "background.paper",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ p: 2, cursor: "pointer" }}
+                            onClick={() => toggleFilterSection("status")}
+                          >
+                            <Typography variant="body1">Status</Typography>
+                            {expandedFilter === "status" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "status" && (
+                            <Box sx={{ py: 2, pt: 0 }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
+                                {statusOptions.map((status) => (
+                                  <Box
+                                    key={status}
+                                    onClick={() => handleStatusFilter(status)}
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 1,
+                                      borderRadius: 1,
+                                      cursor: "pointer",
+                                      "&:hover": {
+                                        bgcolor: "action.hover",
+                                      },
+                                    }}
+                                  >
+                                    {statusFilter.includes(status) ? (
+                                      <CheckIcon color="primary" fontSize="small" />
+                                    ) : (
+                                      <Box sx={{ width: 24, height: 24 }} />
+                                    )}
+                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </Typography>
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
                         {/* Clear All Button */}
                         <Box
                           sx={{
@@ -1120,7 +1169,8 @@ export default function Senator(props) {
                               !stateFilter.length &&
                               !ratingFilter.length &&
                               !selectedYears.length &&
-                              !termFilter
+                              !termFilter &&
+                              !statusFilter.length
                             }
                           >
                             Clear All Filters
@@ -1132,7 +1182,7 @@ export default function Senator(props) {
                 </Box>
 
 
-                <Button
+             {userRole === "admin" && (  <Button
                   variant="outlined"
                   sx={{
                     backgroundColor: "#4a90e2 !important",
@@ -1147,8 +1197,9 @@ export default function Senator(props) {
                 >
                   Fetch Senators from Quorum
                 </Button>
-              </Stack>
-            </Box>
+              )}
+            </Stack>
+          </Box>
 
             <MainGrid
               type="senator"

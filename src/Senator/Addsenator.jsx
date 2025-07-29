@@ -64,6 +64,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+// import { jwtDecode } from "jwt-decode";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -77,6 +78,7 @@ export default function AddSenator(props) {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [originalTermData, setOriginalTermData] = useState([]);
 
+  // console.log("User Role:", userRole);
   let senatorActivities =
     activities?.filter((activity) => activity.type === "senate") || [];
 
@@ -100,6 +102,12 @@ export default function AddSenator(props) {
     currentTerm: "Current Term",
     termId: "Term",
   };
+    const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
+
+  console.log("User Role:", userRole);
 
   // Helper function to get display name
   const getFieldDisplayName = (field) => {
@@ -416,12 +424,7 @@ export default function AddSenator(props) {
       setEditedFields(mergedChanges);
     }
   }, [formData, originalFormData, senatorTermData, originalTermData]);
-  const token = localStorage.getItem("token");
-  // Decode token to get user role
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
 
-  console.log("User Role:", userRole);
 
   useEffect(() => {
     termPreFill();
@@ -1411,6 +1414,7 @@ export default function AddSenator(props) {
                     <Grid size={9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary || ""}
                         onEditorChange={(content) =>

@@ -151,7 +151,7 @@ export const bulkUpdateSbaPosition = createAsyncThunk(
         sbaPosition && typeof sbaPosition === 'string'
           ? sbaPosition.charAt(0).toUpperCase() + sbaPosition.slice(1).toLowerCase()
           : sbaPosition;
-      const response = await axios.patch(
+      const response = await axios.put(
         'http://localhost:4000/vote/update/bulk-update-sbaPosition',
         { ids, sbaPosition: formattedSbaPosition },
         {

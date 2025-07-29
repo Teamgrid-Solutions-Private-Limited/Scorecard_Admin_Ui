@@ -146,7 +146,7 @@ export const updateSenatorStatus = createAsyncThunk(
   "senators/updateStatus",
   async ({ id, publishStatus }, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(
+      const response = await axios.put(
         `${API_URL}/senator/senators/status/${id}`,
         { publishStatus }
       );
@@ -309,4 +309,7 @@ const senatorSlice = createSlice({
 });
 
 export default senatorSlice.reducer;
+
 export const { clearSenatorState } = senatorSlice.actions;
+
+
