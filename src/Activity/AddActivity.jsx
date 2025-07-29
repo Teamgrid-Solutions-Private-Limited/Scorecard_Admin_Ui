@@ -109,7 +109,6 @@ export default function AddActivity(props) {
         readMore: selectedActivity.readMore || "",
         trackActivities: selectedActivity.trackActivities || "",
         status: selectedActivity.status || "",
-
       };
 
       setFormData(newFormData);
@@ -383,7 +382,7 @@ export default function AddActivity(props) {
   };
 
   const currentStatus =
-    formData.status || (userRole === "admin" ? "published" : "draft");
+    formData.status || (userRole === "admin" ? "published" : "");
   const statusData = getStatusConfig(
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
@@ -468,8 +467,27 @@ export default function AddActivity(props) {
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                  <Box sx={{ color: statusData.iconColor }}>
-                    {statusData.icon}
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${
+                        currentStatus === "draft"
+                          ? "66, 165, 245"
+                          : currentStatus === "review"
+                          ? "255, 193, 7"
+                          : currentStatus === "published"
+                          ? "76, 175, 80"
+                          : "244, 67, 54"
+                      }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(statusData.icon, {
+                      sx: { color: statusData.iconColor }, // apply icon color here
+                    })}
                   </Box>
 
                   <Box sx={{ flex: 1 }}>
@@ -490,7 +508,6 @@ export default function AddActivity(props) {
                           gap: 1,
                         }}
                       >
-                        {statusData.icon}
                         {statusData.title}
                       </Typography>
 
@@ -520,7 +537,7 @@ export default function AddActivity(props) {
                             variant="overline"
                             sx={{ color: "text.secondary", mb: 1 }}
                           >
-                            Recent Changes Fields
+                            Pending Changes
                           </Typography>
 
                           <List dense sx={{ py: 0 }}>
@@ -574,7 +591,7 @@ export default function AddActivity(props) {
                                         variant="caption"
                                         color="text.secondary"
                                       >
-                                        Edited at • {editTime}
+                                        Edited on • {editTime}
                                       </Typography>
                                     }
                                     sx={{ my: 0 }}

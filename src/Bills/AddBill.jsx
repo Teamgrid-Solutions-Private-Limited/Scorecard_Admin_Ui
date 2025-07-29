@@ -8,7 +8,6 @@ import {
   clearVoteState,
   updateVote,
   createVote,
-  updateVoteStatus,
 } from "../redux/reducer/voteSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
@@ -36,10 +35,11 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
-import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
-import CheckCircle from "@mui/icons-material/CheckCircle";
 import { jwtDecode } from "jwt-decode";
+import { List, ListItem, ListItemText } from "@mui/material";
+import CircleIcon from "@mui/icons-material/Circle";
+import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -57,14 +57,48 @@ export default function AddBill(props) {
     rollCall: "",
     readMore: "",
     sbaPosition: "",
-    status:"", // Default status
+    status: "",
   });
+
+  const [fieldEditors, setFieldEditors] = useState({});
+  const [editedFields, setEditedFields] = useState([]);
+  const [originalFormData, setOriginalFormData] = useState(null);
+
+  const fieldLabels = {
+    type: "Type",
+    title: "Title",
+    shortDesc: "Short Description",
+    longDesc: "Long Description",
+    date: "Date",
+    congress: "Congress",
+    termId: "Term",
+    rollCall: "Roll Call",
+    readMore: "Read More URL",
+    sbaPosition: "SBA Position",
+    status: "Status",
+  };
+
+  // Defensive userRole extraction
+  const token = localStorage.getItem("token");
+  let userRole = "";
+  try {
+    const decodedToken = jwtDecode(token);
+    userRole = decodedToken.role;
+  } catch (e) {
+    userRole = "";
+  }
+
+  const compareValues = (newVal, oldVal) => {
+    if (typeof newVal === "string" && typeof oldVal === "string") {
+      return newVal.trim() !== oldVal.trim();
+    }
+    return newVal !== oldVal;
+  };
 
   const preFillForm = () => {
     if (selectedVote) {
       const termId = selectedVote.termId?._id || "";
-      setFormData({
-        ...formData,
+      const newFormData = {
         type: selectedVote.type.includes("senate")
           ? "senate"
           : selectedVote.type.includes("house")
@@ -75,21 +109,42 @@ export default function AddBill(props) {
         longDesc: selectedVote.longDesc || "",
         date: selectedVote.date ? selectedVote.date.split("T")[0] : "",
         congress: selectedVote.congress || "",
-        termId: termId, // Correctly set termId
+        termId: termId,
         rollCall: selectedVote.rollCall || "",
         readMore: selectedVote.readMore || "",
         sbaPosition: selectedVote.sbaPosition || "",
-        status: selectedVote.status || "draft", // Default to draft if not set
-      });
+        status: selectedVote.status || "",
+      };
+
+      setFormData(newFormData);
+      setOriginalFormData(newFormData);
     }
   };
 
-    const token = localStorage.getItem("token");
-    // Decode token to get user role
-    const decodedToken = jwtDecode(token);
-    const userRole = decodedToken.role;
-  
-    console.log("User Role:", userRole);
+  // When selectedVote changes, set editedFields from backend
+  useEffect(() => {
+    if (selectedVote) {
+      preFillForm();
+      setEditedFields(
+        Array.isArray(selectedVote.editedFields)
+          ? selectedVote.editedFields
+          : []
+      );
+    }
+  }, [selectedVote]);
+
+  // When formData changes, update editedFields (track all changes)
+  useEffect(() => {
+    if (originalFormData && formData) {
+      const changes = [];
+      Object.keys(formData).forEach((key) => {
+        if (compareValues(formData[key], originalFormData[key])) {
+          changes.push(key);
+        }
+      });
+      setEditedFields(changes);
+    }
+  }, [formData, originalFormData]);
 
   useEffect(() => {
     if (id) {
@@ -101,12 +156,6 @@ export default function AddBill(props) {
       dispatch(clearVoteState());
     };
   }, [id, dispatch]);
-
-  useEffect(() => {
-    if (selectedVote) {
-      preFillForm();
-    }
-  }, [selectedVote]);
 
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
@@ -123,11 +172,33 @@ export default function AddBill(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+
+      if (originalFormData) {
+        const changes = Object.keys(newData).filter((key) =>
+          compareValues(newData[key], originalFormData[key])
+        );
+        setEditedFields(changes);
+      }
+
+      return newData;
+    });
   };
 
   const handleEditorChange = (content, fieldName) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: content }));
+    setFormData((prev) => {
+      const newData = { ...prev, [fieldName]: content };
+
+      if (originalFormData) {
+        const changes = Object.keys(newData).filter((key) =>
+          compareValues(newData[key], originalFormData[key])
+        );
+        setEditedFields(changes);
+      }
+
+      return newData;
+    });
   };
 
   const [loading, setLoading] = useState(false);
@@ -152,20 +223,80 @@ export default function AddBill(props) {
 
     setLoading(true);
     try {
-      const updatedFormData = { ...formData, status: userRole === "admin" ? "published" : "under review" };
+      // Merge backend's editedFields with current session's changes
+      const backendEditedFields = Array.isArray(selectedVote?.editedFields)
+        ? selectedVote.editedFields
+        : [];
+      const mergedEditedFields = Array.from(
+        new Set([...backendEditedFields, ...editedFields])
+      );
+
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: decodedToken.name || decodedToken.username || "You",
+        editedAt: new Date(),
+      };
+
+      // Create updated fieldEditors map
+      const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
+      editedFields.forEach((field) => {
+        updatedFieldEditors[field] = currentEditor;
+      });
+
+      const updatedFormData = {
+        ...formData,
+        status: userRole === "admin" ? "published" : "under review",
+        editedFields: mergedEditedFields,
+        fieldEditors: updatedFieldEditors,
+      };
 
       if (id) {
         await dispatch(
           updateVote({ id, updatedData: updatedFormData })
         ).unwrap();
-        setSnackbarMessage("Bill updated successfully!");
-        await dispatch(getVoteById(id)).unwrap();
+
+        setSnackbarMessage(
+          userRole === "admin"
+            ? "Bill published successfully!"
+            : "Changes saved successfully!"
+        );
+        setSnackbarSeverity("success");
+
+        if (userRole !== "admin") {
+          setFormData((prev) => ({ ...prev, status: "under review" }));
+          setOriginalFormData(updatedFormData);
+        } else {
+          // After admin publishes, reload vote to get cleared editedFields
+          await dispatch(getVoteById(id)).unwrap();
+          // Only clear locally if status is published
+          if (updatedFormData.status === "published") {
+            setEditedFields([]);
+          }
+        }
       } else {
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.readMore
+        ) {
+          setSnackbarMessage("Please fill all required fields!");
+          setSnackbarSeverity("warning");
+          setSnackbarOpen(true);
+          setLoading(false);
+          return;
+        }
+
         await dispatch(createVote(updatedFormData)).unwrap();
-        setSnackbarMessage("Bill created successfully!");
+        setSnackbarMessage(
+          userRole === "admin"
+            ? "Bill created and published!"
+            : "Bill created successfully!"
+        );
+        setSnackbarSeverity("success");
       }
 
-      setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
       console.error("Save error:", error);
@@ -177,78 +308,56 @@ export default function AddBill(props) {
     }
   };
 
-  // const handleReview = async () => {
-  //   if (!formData.termId) {
-  //     setSnackbarMessage("Term is required!");
-  //     setSnackbarSeverity("error");
-  //     setSnackbarOpen(true);
-  //     return;
-  //   }
+  const getStatusConfig = (editedFields, currentStatus) => {
+    const configs = {
+      draft: {
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
+        icon: <Drafts sx={{ fontSize: "20px" }} />,
+        title: "Draft Version",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "No changes made yet",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
+      },
+      "under review": {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Under Review",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "No recent changes",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
+    };
 
-  //   setLoading(true);
-  //   try {
-  //     const updatedFormData = { ...formData, status: "under review" };
+    return configs[currentStatus] || configs.draft;
+  };
 
-  //     if (id) {
-  //       await dispatch(
-  //         updateVote({ id, updatedData: updatedFormData })
-  //       ).unwrap();
-  //       setSnackbarMessage("Bill Reviewed successfully!");
-  //     } else {
-  //       await dispatch(createVote(updatedFormData)).unwrap();
-  //       setSnackbarMessage("Bill Reviewed successfully!");
-  //     }
-  //     await dispatch(getVoteById(id)).unwrap();
+  const currentStatus =
+    formData.status || (userRole === "admin" ? "published" : "");
+  const statusData = getStatusConfig(
+    Array.isArray(editedFields) ? editedFields : [],
+    currentStatus
+  );
 
-  //     setSnackbarSeverity("success");
-  //     setSnackbarOpen(true);
-      
-  //   } catch (error) {
-  //     console.error("Save error:", error);
-  //     setSnackbarMessage(`Operation failed: ${error.message || error}`);
-  //     setSnackbarSeverity("error");
-  //     setSnackbarOpen(true);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  
-      const statusConfig = {
-        draft: {
-          backgroundColor: "rgba(66, 165, 245, 0.12)",
-          borderColor: "#2196F3",
-          iconColor: "#1565C0",
-          icon: <Drafts sx={{ fontSize: "20px" }} />,
-          title: "Draft Version",
-          description: "Unpublished draft - changes pending",
-          titleColor: "#0D47A1",
-          descColor: "#1976D2",
-        },
-        reviewed: {
-          backgroundColor: "rgba(255, 193, 7, 0.12)",
-          borderColor: "#FFC107",
-          iconColor: "#FFA000",
-          icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-          title: "Under Review",
-          description: "Being reviewed by the team",
-          titleColor: "#5D4037",
-          descColor: "#795548",
-        },
-        // published: {
-        //   backgroundColor: "rgba(76, 175, 80, 0.12)",
-        //   borderColor: "#4CAF50",
-        //   iconColor: "#2E7D32",
-        //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        //   title: "Published",
-        //   description: "This document is live",
-        //   titleColor: "#2E7D32",
-        //   descColor: "#388E3C",
-        // },
-      };
-  
-      
-    const currentStatus = formData.status || ""; // Fallback to draft if undefined
-    const statusData = statusConfig[currentStatus];
+  useEffect(() => {
+    console.log("Current status:", currentStatus);
+    console.log("Edited fields:", editedFields);
+    console.log("Original data:", originalFormData);
+    console.log("Form data:", formData);
+  }, [currentStatus, editedFields, originalFormData, formData]);
 
   return (
     <AppTheme>
@@ -295,8 +404,6 @@ export default function AddBill(props) {
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
-            // overflow: "auto",
-            // overflow: "auto",
           })}
         >
           <FixedHeader />
@@ -309,74 +416,239 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {statusData && (
-                                    <Box
-                                      sx={{
-                                        width: "98%",
-                                        py: 1.2,
-                                        px: 3,
-                                        backgroundColor: statusData.backgroundColor,
-                                        borderLeft: `3px solid ${statusData.borderColor}`,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 1.5,
-                                        borderRadius: "0 4px 4px 0",
-                                      }}
-                                    >
+            {userRole && currentStatus !== "published" && (
+              <Box
+                sx={{
+                  width: "98%",
+                  p: 2,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${
+                        currentStatus === "draft"
+                          ? "66, 165, 245"
+                          : currentStatus === "review"
+                          ? "255, 193, 7"
+                          : currentStatus === "published"
+                          ? "76, 175, 80"
+                          : "244, 67, 54"
+                      }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(statusData.icon, {
+                      sx: { color: statusData.iconColor }, // apply icon color here
+                    })}
+                  </Box>
+
+                  <Box sx={{ flex: 1 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        sx={{
+                          color: statusData.titleColor,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {statusData.title}
+                      </Typography>
+
+                      {userRole === "admin" && (
+                        <Chip
+                          label={`${
+                            (selectedVote?.editedFields?.length || 0) +
+                            editedFields.length
+                          } pending changes`}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+
+                    <Box sx={{ mt: 1.5 }}>
+                      {editedFields.length > 0 ||
+                      (selectedVote?.editedFields?.length || 0) > 0 ? (
+                        <Box
+                          sx={{
+                            backgroundColor: "background.paper",
+                            borderRadius: 1,
+                            p: 1.5,
+                            border: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Typography
+                            variant="overline"
+                            sx={{ color: "text.secondary", mb: 1 }}
+                          >
+                            {id ? "Pending Changes" : "New Fields"}
+                          </Typography>
+
+                          <List dense sx={{ py: 0 }}>
+                            {/* Show backend changes first */}
+                            {selectedVote?.editedFields?.map((field) => {
+                              const editorInfo =
+                                selectedVote.fieldEditors?.[field];
+                              const editTime = editorInfo?.editedAt
+                                ? new Date(editorInfo.editedAt).toLocaleString(
+                                    [],
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }
+                                  )
+                                : "unknown time";
+
+                              return (
+                                <ListItem
+                                  key={`backend-${field}`}
+                                  sx={{ py: 0.5, px: 1 }}
+                                >
+                                  <ListItemText
+                                    primary={
                                       <Box
                                         sx={{
-                                          p: 1,
-                                          borderRadius: "50%",
-                                          backgroundColor: `rgba(${
-                                            currentStatus === "draft"
-                                              ? "66, 165, 245"
-                                              : currentStatus === "review"
-                                              ? "255, 193, 7"
-                                              : currentStatus === "published"
-                                              ? "76, 175, 80"
-                                              : "244, 67, 54"
-                                          }, 0.2)`,
-                                          display: "grid",
-                                          placeItems: "center",
-                                          flexShrink: 0,
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
                                         }}
                                       >
-                                        {React.cloneElement(statusData.icon, {
-                                          color: statusData.iconColor,
-                                        })}
-                                      </Box>
-                      
-                                      <Box sx={{ overflow: "hidden" }}>
-                                        <Typography
-                                          variant="subtitle2"
-                                          fontWeight="600"
+                                        <Box
                                           sx={{
-                                            color: statusData.titleColor,
-                                            lineHeight: 1.3,
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                            overflow: "hidden",
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: "50%",
+                                            backgroundColor:
+                                              statusData.iconColor,
                                           }}
-                                        >
-                                          {statusData.title}
-                                        </Typography>
+                                        />
                                         <Typography
-                                          variant="caption"
-                                          sx={{
-                                            color: statusData.descColor,
-                                            opacity: 0.8,
-                                            display: "block",
-                                            lineHeight: 1.2,
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                            overflow: "hidden",
-                                          }}
+                                          variant="body2"
+                                          fontWeight="500"
                                         >
-                                          {statusData.description}
+                                          {fieldLabels[field] || field}
                                         </Typography>
                                       </Box>
-                                    </Box>
-                                  )}
+                                    }
+                                    secondary={
+                                      <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                      >
+                                        Edited on{" "}
+                                        {/* {editorInfo?.editorName || "unknown"} •{" "} */}
+                                        {editTime}
+                                      </Typography>
+                                    }
+                                    sx={{ my: 0 }}
+                                  />
+                                </ListItem>
+                              );
+                            })}
+
+                            {/* Show current session changes */}
+                            {editedFields.map((field) => {
+                              // Skip fields already shown in backend changes
+                              if (selectedVote?.editedFields?.includes(field))
+                                return null;
+
+                              const editorInfo = {
+                                editorName: "You",
+                                editedAt: new Date(),
+                              };
+                              const editTime = "just now";
+
+                              return (
+                                <ListItem
+                                  key={`current-${field}`}
+                                  sx={{ py: 0.5, px: 1 }}
+                                >
+                                  <ListItemText
+                                    primary={
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <Box
+                                          sx={{
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: "50%",
+                                            backgroundColor: "#FFA000", // Different color for your changes
+                                          }}
+                                        />
+                                        <Typography
+                                          variant="body2"
+                                          fontWeight="500"
+                                        >
+                                          {fieldLabels[field] || field}
+                                        </Typography>
+                                      </Box>
+                                    }
+                                    secondary={
+                                      <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                      >
+                                        Edited by You • {editTime}
+                                      </Typography>
+                                    }
+                                    sx={{ my: 0 }}
+                                  />
+                                </ListItem>
+                              );
+                            })}
+                          </List>
+                        </Box>
+                      ) : (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontStyle: "italic",
+                            color: "text.disabled",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <HourglassEmpty sx={{ fontSize: 16 }} />
+                          {id
+                            ? "No pending changes"
+                            : "Fill in the form to create a new bill"}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            )}
+
             <Stack
               direction="row"
               spacing={2}
@@ -386,23 +658,9 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              {/* <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: "#CC9A3A !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#c38f2fff !important",
-                  },
-                }}
-                onClick={handleReview}
-              >
-                Review
-              </Button> */}
               <Button
                 variant="outlined"
+                onClick={handleSubmit}
                 sx={{
                   backgroundColor: "#4a90e2 !important",
                   color: "white !important",
@@ -412,11 +670,9 @@ export default function AddBill(props) {
                     backgroundColor: "#357ABD !important",
                   },
                 }}
-                onClick={handleSubmit}
               >
-                 {userRole === "admin" ? "Publish" : "Save Changes"}
+                {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
-              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
@@ -554,7 +810,6 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                       value={formData.longDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "longDesc")
@@ -832,7 +1087,6 @@ export default function AddBill(props) {
                           fontWeight: 700,
                           my: 0,
                           width: "100%",
-                          
                         }}
                       >
                         SBA Position
