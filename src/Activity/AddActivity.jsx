@@ -35,7 +35,15 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
+import { Chip } from "@mui/material";
+import HourglassTop from "@mui/icons-material/HourglassTop";
+import Verified from "@mui/icons-material/Verified";
+import { Drafts } from "@mui/icons-material";
+import CheckCircle from "@mui/icons-material/CheckCircle";
 import { jwtDecode } from "jwt-decode";
+import { List, ListItem, ListItemText } from "@mui/material";
+import CircleIcon from "@mui/icons-material/Circle";
+import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -50,18 +58,46 @@ export default function AddActivity(props) {
     congress: "",
     readMore: "",
     trackActivities: "",
+    status: "",
   });
+  const [fieldEditors, setFieldEditors] = useState({});
+  // Defensive userRole extraction
   const token = localStorage.getItem("token");
-  // Decode token to get user role
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  let userRole = "";
+  try {
+    const decodedToken = jwtDecode(token);
+    userRole = decodedToken.role;
+  } catch (e) {
+    userRole = "";
+  }
+
+  console.log("User Role:", userRole);
+  // 1. Add editedFields state and always use backend's value when available
+  const [editedFields, setEditedFields] = useState([]);
+  const [originalFormData, setOriginalFormData] = useState(null);
+
+  const fieldLabels = {
+    type: "Type",
+    title: "Name",
+    shortDesc: "Activity Details",
+    congress: "Congress",
+    date: "Date",
+    readMore: "Read More URL",
+    trackActivities: "Tracked Activities",
+    status: "Status",
+  };
+
+  const compareValues = (newVal, oldVal) => {
+    if (typeof newVal === "string" && typeof oldVal === "string") {
+      return newVal.trim() !== oldVal.trim();
+    }
+    return newVal !== oldVal;
+  };
 
   console.log("User Role:", userRole);
   const preFillForm = () => {
     if (selectedActivity) {
-      const termId = selectedActivity.termId?._id || "";
-      setFormData({
-        ...formData,
+      const newFormData = {
         type:
           selectedActivity.type === "senate"
             ? "senate"
@@ -74,9 +110,38 @@ export default function AddActivity(props) {
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
         readMore: selectedActivity.readMore || "",
         trackActivities: selectedActivity.trackActivities || "",
-      });
+        status: selectedActivity.status || "",
+      };
+
+      setFormData(newFormData);
+      setOriginalFormData(newFormData); // Store the original data
     }
   };
+
+  // 2. When selectedActivity changes, set editedFields from backend
+  useEffect(() => {
+    if (selectedActivity) {
+      preFillForm();
+      setEditedFields(
+        Array.isArray(selectedActivity.editedFields)
+          ? selectedActivity.editedFields
+          : []
+      );
+    }
+  }, [selectedActivity]);
+
+  // 3. When formData changes, update editedFields (track all changes)
+  useEffect(() => {
+    if (originalFormData && formData) {
+      const changes = [];
+      Object.keys(formData).forEach((key) => {
+        if (formData[key] !== originalFormData[key]) {
+          changes.push(key);
+        }
+      });
+      setEditedFields(changes);
+    }
+  }, [formData, originalFormData]);
 
   useEffect(() => {
     if (id) {
@@ -88,12 +153,6 @@ export default function AddActivity(props) {
       dispatch(clearActivityState());
     };
   }, [id, dispatch]);
-
-  useEffect(() => {
-    if (selectedActivity) {
-      preFillForm();
-    }
-  }, [selectedActivity]);
 
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
@@ -108,15 +167,37 @@ export default function AddActivity(props) {
     width: 1,
   });
 
+  // Update your handleChange and handleEditorChange to properly track changes
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+
+      if (originalFormData) {
+        const changes = Object.keys(newData).filter((key) =>
+          compareValues(newData[key], originalFormData[key])
+        );
+        setEditedFields(changes);
+      }
+
+      return newData;
+    });
   };
 
   const handleEditorChange = (content, fieldName) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: content }));
-  };
+    setFormData((prev) => {
+      const newData = { ...prev, [fieldName]: content };
 
+      if (originalFormData) {
+        const changes = Object.keys(newData).filter((key) =>
+          compareValues(newData[key], originalFormData[key])
+        );
+        setEditedFields(changes);
+      }
+
+      return newData;
+    });
+  };
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -129,20 +210,61 @@ export default function AddActivity(props) {
     setSnackbarOpen(false);
   };
 
+  // 4. In handleSubmit, only clear editedFields if status is published
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const updatedFormData = { ...formData, status: "published" };
+      // Merge backend's editedFields with current session's changes
+      const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
+        ? selectedActivity.editedFields
+        : [];
+      const mergedEditedFields = Array.from(
+        new Set([...backendEditedFields, ...editedFields])
+      );
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: decodedToken.name || decodedToken.username || "You",
+        editedAt: new Date(),
+      };
+
+      // Create updated fieldEditors map
+      const updatedFieldEditors = { ...(selectedActivity?.fieldEditors || {}) };
+      editedFields.forEach((field) => {
+        updatedFieldEditors[field] = currentEditor;
+      });
+
+      const updatedFormData = {
+        ...formData,
+        status: userRole === "admin" ? "published" : "under review",
+        editedFields: mergedEditedFields, // always send the merged array!
+        fieldEditors: updatedFieldEditors,
+      };
 
       if (id) {
-        // Update existing activity with publishStatus
         await dispatch(
           updateActivity({ id, updatedData: updatedFormData })
         ).unwrap();
-        setSnackbarMessage("Activity updated successfully!");
+
+        setSnackbarMessage(
+          userRole === "admin"
+            ? "Changes published successfully!"
+            : 'Status changed to "Under Review" for admin to moderate.'
+        );
         setSnackbarSeverity("success");
+
+        if (userRole !== "admin") {
+          setFormData((prev) => ({ ...prev, status: "under review" }));
+          setOriginalFormData(updatedFormData); // Keep tracking changes
+        } else {
+          // After admin publishes, reload activity to get cleared editedFields
+          await dispatch(getActivityById(id)).unwrap();
+          // Only clear locally if status is published
+          if (updatedFormData.status === "published") {
+            setEditedFields([]);
+          }
+        }
       } else {
-        // Validate required fields
         if (
           !formData.type ||
           !formData.title ||
@@ -156,9 +278,12 @@ export default function AddActivity(props) {
           return;
         }
 
-        // Create new activity with publishStatus
         await dispatch(createActivity(updatedFormData)).unwrap();
-        setSnackbarMessage("Activity created successfully!");
+        setSnackbarMessage(
+          userRole === "admin"
+            ? "Activity created and published!"
+            : "Activity created successfully!"
+        );
         setSnackbarSeverity("success");
       }
 
@@ -169,48 +294,109 @@ export default function AddActivity(props) {
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
-      setLoading(false); // Ensure loading stops after success or failure
+      setLoading(false);
     }
   };
+  // const handleReview = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const updatedFormData = { ...formData, status: "under review" };
+  //     if (id) {
+  //       await dispatch(
+  //         updateActivity({ id, updatedData: updatedFormData })
+  //       ).unwrap();
+  //       setSnackbarMessage("Activity Reviewed successfully!");
+  //       setSnackbarSeverity("success");
+  //       await dispatch(getActivityById(id)).unwrap();
+  //     } else {
+  //       if (
+  //         !formData.type ||
+  //         !formData.title ||
+  //         !formData.shortDesc ||
+  //         !formData.readMore
+  //       ) {
+  //         setSnackbarMessage("please fill all fields!");
+  //         setSnackbarSeverity("warning");
+  //         setSnackbarOpen(true);
+  //         setLoading(false);
+  //         return;
+  //       }
+  //       await dispatch(createActivity(formData)).unwrap();
+  //       setSnackbarMessage("Activity created and Reviewed successfully!");
+  //       setSnackbarSeverity("success");
+  //     }
+  //     setSnackbarOpen(true);
+  //   } catch (error) {
+  //     console.error("Save error:", error);
+  //     setSnackbarMessage(`Operation failed: ${error.message || error}`);
+  //     setSnackbarSeverity("error");
+  //     setSnackbarOpen(true);
+  //   } finally {
+  //     setLoading(false); // Ensure loading stops after success or failure
+  //   }
+  // };
 
-  const handleReview = async () => {
-    setLoading(true);
-    try {
-      const updatedFormData = { ...formData, status: "reviewed" };
-      if (id) {
-        await dispatch(
-          updateActivity({ id, updatedData: updatedFormData })
-        ).unwrap();
-        setSnackbarMessage("Activity Reviewed successfully!");
-        setSnackbarSeverity("success");
-      } else {
-        if (
-          !formData.type ||
-          !formData.title ||
-          !formData.shortDesc ||
-          !formData.readMore
-        ) {
-          setSnackbarMessage("Please fill all fields!");
-          setSnackbarSeverity("warning");
-          setSnackbarOpen(true);
-          setLoading(false);
-          return;
-        }
-        await dispatch(createActivity(formData)).unwrap();
-        setSnackbarMessage("Activity created successfully!");
-        setSnackbarSeverity("success");
-      }
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Save error:", error);
-      setSnackbarMessage(`Operation failed: ${error.message || error}`);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    } finally {
-      setLoading(false); // Ensure loading stops after success or failure
-    }
+  const getStatusConfig = (editedFields, currentStatus) => {
+    const configs = {
+      draft: {
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
+        icon: <Drafts sx={{ fontSize: "20px" }} />,
+        title: "Draft Version",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "No changes made yet",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
+      },
+      "under review": {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Under Review",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "No recent changes",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
+      // published: {
+      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+      //   borderColor: "#4CAF50",
+      //   iconColor: "#2E7D32",
+      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+      //   title: "Published",
+      //   description: "Published and live",
+      //   titleColor: "#2E7D32",
+      //   descColor: "#388E3C",
+      // },
+    };
+
+    return configs[currentStatus] || configs.draft;
   };
 
+  const currentStatus =
+    formData.status || (userRole === "admin" ? "published" : "");
+  const statusData = getStatusConfig(
+    Array.isArray(editedFields) ? editedFields : [],
+    currentStatus
+  );
+
+  // 5. The banner already uses editedFields, so no change needed there
+  useEffect(() => {
+    console.log("Current status:", currentStatus);
+    console.log("Edited fields:", editedFields);
+    console.log("Original data:", originalFormData);
+    console.log("data:", formData);
+  }, [currentStatus, editedFields, originalFormData, formData]);
   return (
     <AppTheme>
       {loading && (
@@ -270,6 +456,267 @@ export default function AddActivity(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
+            {userRole && currentStatus !== "published" && (
+              <Box
+                sx={{
+                  width: "98%",
+                  p: 2,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon bubble */}
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${
+                        currentStatus === "draft"
+                          ? "66, 165, 245"
+                          : currentStatus === "review"
+                          ? "255, 193, 7"
+                          : currentStatus === "published"
+                          ? "76, 175, 80"
+                          : "244, 67, 54"
+                      }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {/* apply icon color here */}
+                    {statusData?.icon
+                      ? React.cloneElement(statusData.icon, {
+                          sx: { color: statusData.iconColor },
+                        })
+                      : null}
+                  </Box>
+
+                  <Box sx={{ flex: 1 }}>
+                    {/* Header: title + pending count (admin only) */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        sx={{
+                          color: statusData.titleColor,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {statusData.title}
+                      </Typography>
+
+                      {userRole === "admin" && (
+                        <Chip
+                          label={`${(() => {
+                            const backend = Array.isArray(
+                              selectedActivity?.editedFields
+                            )
+                              ? selectedActivity.editedFields
+                              : [];
+                            const local = Array.isArray(editedFields)
+                              ? editedFields
+                              : [];
+                            // don't double count fields present in both
+                            const localOnly = local.filter(
+                              (f) => !backend.includes(f)
+                            );
+                            return backend.length + localOnly.length;
+                          })()} pending changes`}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+
+                    {/* Pending / New fields list */}
+                    <Box sx={{ mt: 1.5 }}>
+                      {(() => {
+                        const backend = Array.isArray(
+                          selectedActivity?.editedFields
+                        )
+                          ? selectedActivity.editedFields
+                          : [];
+                        const local = Array.isArray(editedFields)
+                          ? editedFields
+                          : [];
+                        const hasAny = backend.length > 0 || local.length > 0;
+
+                        if (!hasAny) {
+                          return (
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontStyle: "italic",
+                                color: "text.disabled",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              {typeof id !== "undefined" && id
+                                ? "No pending changes"
+                                : "Fill in the form to create a new activity"}
+                            </Typography>
+                          );
+                        }
+
+                        return (
+                          <Box
+                            sx={{
+                              backgroundColor: "background.paper",
+                              borderRadius: 1,
+                              p: 1.5,
+                              border: "1px solid",
+                              borderColor: "divider",
+                            }}
+                          >
+                            <Typography
+                              variant="overline"
+                              sx={{ color: "text.secondary", mb: 1 }}
+                            >
+                              {typeof id !== "undefined" && id
+                                ? "Pending Changes"
+                                : "New Fields"}
+                            </Typography>
+
+                            <List dense sx={{ py: 0 }}>
+                              {/* Backend-edited fields (with timestamps) */}
+                              {backend.map((field) => {
+                                const editorInfo =
+                                  selectedActivity?.fieldEditors?.[field];
+                                const editTime = editorInfo?.editedAt
+                                  ? new Date(
+                                      editorInfo.editedAt
+                                    ).toLocaleString([], {
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : "unknown time";
+
+                                return (
+                                  <ListItem
+                                    key={`backend-${field}`}
+                                    sx={{ py: 0.5, px: 1 }}
+                                  >
+                                    <ListItemText
+                                      primary={
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                          }}
+                                        >
+                                          <Box
+                                            sx={{
+                                              width: 8,
+                                              height: 8,
+                                              borderRadius: "50%",
+                                              backgroundColor:
+                                                statusData.iconColor,
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight="500"
+                                          >
+                                            {fieldLabels?.[field] || field}
+                                          </Typography>
+                                        </Box>
+                                      }
+                                      secondary={
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          Edited on {editTime}
+                                        </Typography>
+                                      }
+                                      sx={{ my: 0 }}
+                                    />
+                                  </ListItem>
+                                );
+                              })}
+                            </List>
+                          </Box>
+                        );
+                      })()}
+                    </Box>
+
+                    {/* Unsaved (local) changes chips */}
+                    {(userRole === "admin" || userRole === "editor") &&
+                      Array.isArray(editedFields) &&
+                      editedFields.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography
+                            variant="overline"
+                            sx={{ color: "text.secondary" }}
+                          >
+                            Your Unsaved Changes
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              mt: 1,
+                              p: 1,
+                              backgroundColor: "action.hover",
+                              borderRadius: 1,
+                            }}
+                          >
+                            {editedFields.map((field) => (
+                              <Chip
+                                key={field}
+                                label={
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    <span>{fieldLabels?.[field] || field}</span>
+                                    <span>•</span>
+                                    <span>just now</span>
+                                  </Box>
+                                }
+                                size="small"
+                                color="warning"
+                                variant="outlined"
+                                sx={{
+                                  "& .MuiChip-label": {
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                  },
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+                  </Box>
+                </Box>
+              </Box>
+            )}
             <Stack
               direction="row"
               spacing={2}
@@ -279,7 +726,7 @@ export default function AddActivity(props) {
                 alignItems: "center",
               }}
             >
-              <Button
+              {/* <Button
                 variant="outlined"
                 sx={{
                   backgroundColor: "#CC9A3A !important",
@@ -294,25 +741,22 @@ export default function AddActivity(props) {
                 onClick={handleReview}
               >
                 Review
+              </Button> */}
+              <Button
+                variant="outlined"
+                onClick={handleSubmit}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
-
-              {userRole === "admin" && (
-                <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    "&:hover": {
-                      backgroundColor: "#357ABD !important",
-                    },
-                  }}
-                  onClick={handleSubmit}
-                >
-                  Save Changes
-                </Button>
-              )}
 
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
