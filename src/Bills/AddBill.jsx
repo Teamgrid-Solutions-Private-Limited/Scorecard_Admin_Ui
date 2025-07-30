@@ -386,9 +386,8 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      tinymceScriptSrc={`${
-                        import.meta.env.BASE_URL
-                      }tinymce/tinymce.min.js`}
+                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
