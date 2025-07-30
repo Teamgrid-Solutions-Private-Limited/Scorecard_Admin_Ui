@@ -259,8 +259,8 @@ export default function AddBill(props) {
 
         setSnackbarMessage(
           userRole === "admin"
-            ? "Bill published successfully!"
-            : "Changes saved successfully!"
+            ? "Changes published successfully!"
+            : 'Status changed to "Under Review" for admin to moderate.'
         );
         setSnackbarSeverity("success");
 
@@ -488,153 +488,120 @@ export default function AddBill(props) {
                     </Box>
 
                     <Box sx={{ mt: 1.5 }}>
-                      {editedFields.length > 0 ||
-                      (selectedVote?.editedFields?.length || 0) > 0 ? (
-                        <Box
-                          sx={{
-                            backgroundColor: "background.paper",
-                            borderRadius: 1,
-                            p: 1.5,
-                            border: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        >
-                          <Typography
-                            variant="overline"
-                            sx={{ color: "text.secondary", mb: 1 }}
-                          >
-                            {id ? "Pending Changes" : "New Fields"}
-                          </Typography>
+                      {(() => {
+                        const backend = Array.isArray(
+                          selectedVote?.editedFields
+                        )
+                          ? selectedVote.editedFields
+                          : [];
+                        const local = Array.isArray(editedFields)
+                          ? editedFields
+                          : [];
+                        const hasAny = backend.length > 0 || local.length > 0;
 
-                          <List dense sx={{ py: 0 }}>
-                            {selectedVote?.editedFields?.map((field) => {
-                              const editorInfo =
-                                selectedVote.fieldEditors?.[field];
-                              const editTime = editorInfo?.editedAt
-                                ? new Date(editorInfo.editedAt).toLocaleString(
-                                    [],
-                                    {
+                        if (!hasAny) {
+                          return (
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontStyle: "italic",
+                                color: "text.disabled",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              {id
+                                ? "No pending changes"
+                                : "Fill in the form to create a new bill"}
+                            </Typography>
+                          );
+                        }
+
+                        return (
+                          <Box
+                            sx={{
+                              backgroundColor: "background.paper",
+                              borderRadius: 1,
+                              p: 1.5,
+                              border: "1px solid",
+                              borderColor: "divider",
+                            }}
+                          >
+                            <Typography
+                              variant="overline"
+                              sx={{ color: "text.secondary", mb: 1 }}
+                            >
+                              {id ? "Pending Changes" : "New Fields"}
+                            </Typography>
+
+                            <List dense sx={{ py: 0 }}>
+                              {backend.map((field) => {
+                                const editorInfo =
+                                  selectedVote?.fieldEditors?.[field];
+                                const editTime = editorInfo?.editedAt
+                                  ? new Date(
+                                      editorInfo.editedAt
+                                    ).toLocaleString([], {
                                       month: "short",
                                       day: "numeric",
                                       hour: "2-digit",
                                       minute: "2-digit",
-                                    }
-                                  )
-                                : "unknown time";
+                                    })
+                                  : "unknown time";
 
-                              return (
-                                <ListItem
-                                  key={`backend-${field}`}
-                                  sx={{ py: 0.5, px: 1 }}
-                                >
-                                  <ListItemText
-                                    primary={
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: 1,
-                                        }}
-                                      >
+                                return (
+                                  <ListItem
+                                    key={`backend-${field}`}
+                                    sx={{ py: 0.5, px: 1 }}
+                                  >
+                                    <ListItemText
+                                      primary={
                                         <Box
                                           sx={{
-                                            width: 8,
-                                            height: 8,
-                                            borderRadius: "50%",
-                                            backgroundColor:
-                                              statusData.iconColor,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
                                           }}
-                                        />
-                                        <Typography
-                                          variant="body2"
-                                          fontWeight="500"
                                         >
-                                          {fieldLabels[field] || field}
-                                        </Typography>
-                                      </Box>
-                                    }
-                                    secondary={
-                                      <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                      >
-                                        Edited on {editTime}
-                                      </Typography>
-                                    }
-                                    sx={{ my: 0 }}
-                                  />
-                                </ListItem>
-                              );
-                            })}
-
-                            {editedFields.map((field) => {
-                              if (selectedVote?.editedFields?.includes(field))
-                                return null;
-                              return (
-                                <ListItem
-                                  key={`current-${field}`}
-                                  sx={{ py: 0.5, px: 1 }}
-                                >
-                                  <ListItemText
-                                    primary={
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: 1,
-                                        }}
-                                      >
-                                        <Box
-                                          sx={{
-                                            width: 8,
-                                            height: 8,
-                                            borderRadius: "50%",
-                                            backgroundColor: "#FFA000",
-                                          }}
-                                        />
+                                          <Box
+                                            sx={{
+                                              width: 8,
+                                              height: 8,
+                                              borderRadius: "50%",
+                                              backgroundColor:
+                                                statusData.iconColor,
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight="500"
+                                          >
+                                            {fieldLabels[field] || field}
+                                          </Typography>
+                                        </Box>
+                                      }
+                                      secondary={
                                         <Typography
-                                          variant="body2"
-                                          fontWeight="500"
+                                          variant="caption"
+                                          color="text.secondary"
                                         >
-                                          {fieldLabels[field] || field}
+                                          Edited on {editTime}
                                         </Typography>
-                                      </Box>
-                                    }
-                                    secondary={
-                                      <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                      >
-                                        Edited by You • just now
-                                      </Typography>
-                                    }
-                                    sx={{ my: 0 }}
-                                  />
-                                </ListItem>
-                              );
-                            })}
-                          </List>
-                        </Box>
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontStyle: "italic",
-                            color: "text.disabled",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          <HourglassEmpty sx={{ fontSize: 16 }} />
-                          {id
-                            ? "No pending changes"
-                            : "Fill in the form to create a new bill"}
-                        </Typography>
-                      )}
+                                      }
+                                      sx={{ my: 0 }}
+                                    />
+                                  </ListItem>
+                                );
+                              })}
+                            </List>
+                          </Box>
+                        );
+                      })()}
                     </Box>
 
-                    {/* ✅ Show Unsaved Changes Chips */}
+                    {/* Unsaved Changes Section */}
                     {(userRole === "admin" || userRole === "editor") &&
                       editedFields.length > 0 && (
                         <Box sx={{ mt: 2 }}>
@@ -655,36 +622,34 @@ export default function AddBill(props) {
                               borderRadius: 1,
                             }}
                           >
-                            {editedFields.map((field) => {
-                              return (
-                                <Chip
-                                  key={field}
-                                  label={
-                                    <Box
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 0.5,
-                                      }}
-                                    >
-                                      <span>{fieldLabels[field] || field}</span>
-                                      <CircleIcon sx={{ fontSize: 8 }} />
-                                      <span>just now</span>
-                                    </Box>
-                                  }
-                                  size="small"
-                                  color="warning"
-                                  variant="outlined"
-                                  sx={{
-                                    "& .MuiChip-label": {
+                            {editedFields.map((field) => (
+                              <Chip
+                                key={field}
+                                label={
+                                  <Box
+                                    sx={{
                                       display: "flex",
                                       alignItems: "center",
                                       gap: 0.5,
-                                    },
-                                  }}
-                                />
-                              );
-                            })}
+                                    }}
+                                  >
+                                    <span>{fieldLabels[field] || field}</span>
+                                    <span>•</span>
+                                    <span>just now</span>
+                                  </Box>
+                                }
+                                size="small"
+                                color="warning"
+                                variant="outlined"
+                                sx={{
+                                  "& .MuiChip-label": {
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                  },
+                                }}
+                              />
+                            ))}
                           </Box>
                         </Box>
                       )}

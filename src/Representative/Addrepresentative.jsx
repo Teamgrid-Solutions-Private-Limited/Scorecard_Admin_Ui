@@ -132,7 +132,7 @@ export default function Addrepresentative(props) {
     },
   ]);
 
-   const handleTermChange = (e, termIndex) => {
+  const handleTermChange = (e, termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -142,7 +142,7 @@ export default function Addrepresentative(props) {
     );
   };
 
-   const handleSwitchChange = (e, termIndex) => {
+  const handleSwitchChange = (e, termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -224,7 +224,7 @@ export default function Addrepresentative(props) {
     );
   };
 
-   const handleActivityChange = (termIndex, activityIndex, field, value) => {
+  const handleActivityChange = (termIndex, activityIndex, field, value) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -279,9 +279,7 @@ export default function Addrepresentative(props) {
 
   // Remove a term
   const handleRemoveTerm = (termIndex) => {
-    setHouseTermData((prev) =>
-      prev.filter((_, index) => index !== termIndex)
-    );
+    setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
   };
 
   const compareValues = (newVal, oldVal) => {
@@ -310,7 +308,6 @@ export default function Addrepresentative(props) {
                   let scoreValue = "";
                   const dbScore = vote.score?.toLowerCase();
 
-                 
                   if (dbScore?.includes("yea_votes")) {
                     scoreValue = "Yes";
                   } else if (dbScore?.includes("nay_votes")) {
@@ -560,7 +557,12 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseById(id)).unwrap();
       await dispatch(getHouseDataByHouseId(id)).unwrap();
 
-      handleSnackbarOpen("Changes saved successfully!", "success");
+      userRole === "admin"
+        ? handleSnackbarOpen("Changes Published successfully!", "success")
+        : handleSnackbarOpen(
+            'Status changed to "Under Review" for admin to moderate.',
+            "info"
+          );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -754,7 +756,21 @@ export default function Addrepresentative(props) {
 
                       {userRole === "admin" && (
                         <Chip
-                          label={`${editedFields.length} pending changes`}
+                          label={`${(() => {
+                            const backend = Array.isArray(
+                              formData?.editedFields
+                            )
+                              ? formData.editedFields
+                              : [];
+                            const local = Array.isArray(editedFields)
+                              ? editedFields
+                              : [];
+                            // don't double count fields present in both
+                            const localOnly = local.filter(
+                              (f) => !backend.includes(f)
+                            );
+                            return backend.length + localOnly.length;
+                          })()} pending changes`}
                           size="small"
                           color="warning"
                           variant="outlined"
@@ -763,28 +779,152 @@ export default function Addrepresentative(props) {
                     </Box>
 
                     <Box sx={{ mt: 1.5 }}>
-                      {editedFields.length > 0 ? (
-                        <Box
-                          sx={{
-                            backgroundColor: "background.paper",
-                            borderRadius: 1,
-                            p: 1.5,
-                            border: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        >
+                      {(() => {
+                        const backend = Array.isArray(formData?.editedFields)
+                          ? formData.editedFields
+                          : [];
+                        const local = Array.isArray(editedFields)
+                          ? editedFields
+                          : [];
+                        const hasAny = backend.length > 0 || local.length > 0;
+
+                        if (!hasAny) {
+                          return (
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontStyle: "italic",
+                                color: "text.disabled",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              No recent changes
+                            </Typography>
+                          );
+                        }
+
+                        return (
+                          <Box
+                            sx={{
+                              backgroundColor: "background.paper",
+                              borderRadius: 1,
+                              p: 1.5,
+                              border: "1px solid",
+                              borderColor: "divider",
+                            }}
+                          >
+                            <Typography
+                              variant="overline"
+                              sx={{ color: "text.secondary", mb: 1 }}
+                            >
+                              Pending Changes
+                            </Typography>
+
+                            <List dense sx={{ py: 0 }}>
+                              {backend.map((field) => {
+                                const parts = field.split("_");
+                                const isTermField = field.startsWith("term");
+                                const editorInfo =
+                                  formData?.fieldEditors?.[field];
+                                const editTime = editorInfo?.editedAt
+                                  ? new Date(
+                                      editorInfo.editedAt
+                                    ).toLocaleString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      day: "2-digit",
+                                      month: "short",
+                                    })
+                                  : "unknown time";
+
+                                return (
+                                  <ListItem key={field} sx={{ py: 0.5, px: 1 }}>
+                                    <ListItemText
+                                      primary={
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                          }}
+                                        >
+                                          <Box
+                                            sx={{
+                                              width: 8,
+                                              height: 8,
+                                              borderRadius: "50%",
+                                              backgroundColor:
+                                                statusData.iconColor,
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight="500"
+                                          >
+                                            {isTermField
+                                              ? `Term ${
+                                                  +parts[0].replace(
+                                                    "term",
+                                                    ""
+                                                  ) + 1
+                                                } • ${
+                                                  parts[1]
+                                                    ?.charAt(0)
+                                                    .toUpperCase() +
+                                                  parts[1]?.slice(1)
+                                                }`
+                                              : field.charAt(0).toUpperCase() +
+                                                field.slice(1)}
+                                          </Typography>
+                                        </Box>
+                                      }
+                                      secondary={
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          Edited on {editTime}
+                                        </Typography>
+                                      }
+                                      sx={{ my: 0 }}
+                                    />
+                                  </ListItem>
+                                );
+                              })}
+                            </List>
+                          </Box>
+                        );
+                      })()}
+                    </Box>
+
+                    {/* Unsaved (local) changes chips */}
+                    {(userRole === "admin" || userRole === "editor") &&
+                      Array.isArray(editedFields) &&
+                      editedFields.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
                           <Typography
                             variant="overline"
-                            sx={{ color: "text.secondary", mb: 1 }}
+                            sx={{ color: "text.secondary" }}
                           >
-                            Pending Changes
+                            Your Unsaved Changes
                           </Typography>
-
-                          <List dense sx={{ py: 0 }}>
-                            {editedFields.map((field, index) => {
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              mt: 1,
+                              p: 1,
+                              backgroundColor: "action.hover",
+                              borderRadius: 1,
+                            }}
+                          >
+                            {editedFields.map((field) => {
                               const parts = field.split("_");
                               const isTermField = field.startsWith("term");
-
                               const displayLabel = isTermField
                                 ? `Term ${
                                     +parts[0].replace("term", "") + 1
@@ -795,59 +935,38 @@ export default function Addrepresentative(props) {
                                 : field.charAt(0).toUpperCase() +
                                   field.slice(1);
 
-                              const editor = formData?.fieldEditors?.[field];
-
                               return (
-                                <Box key={index} sx={{ mb: 2 }}>
-                                  <Typography
-                                    sx={{
-                                      fontWeight: 600,
-                                      color: "#555",
-                                      fontSize: 14,
-                                    }}
-                                  >
-                                    {displayLabel}
-                                  </Typography>
-                                  <Typography
-                                    sx={{
-                                      fontSize: 12,
-                                      color: "#999",
-                                      mt: 0.5,
-                                    }}
-                                  >
-                                    Edited on •{" "}
-                                    {editor?.editedAt
-                                      ? new Date(
-                                          editor.editedAt
-                                        ).toLocaleString("en-GB", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                          day: "2-digit",
-                                          month: "short",
-                                        })
-                                      : "-"}
-                                  </Typography>
-                                </Box>
+                                <Chip
+                                  key={field}
+                                  label={
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 0.5,
+                                      }}
+                                    >
+                                      <span>{displayLabel}</span>
+                                      <span>•</span>
+                                      <span>just now</span>
+                                    </Box>
+                                  }
+                                  size="small"
+                                  color="warning"
+                                  variant="outlined"
+                                  sx={{
+                                    "& .MuiChip-label": {
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 0.5,
+                                    },
+                                  }}
+                                />
                               );
                             })}
-                          </List>
+                          </Box>
                         </Box>
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontStyle: "italic",
-                            color: "text.disabled",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          <HourglassEmpty sx={{ fontSize: 16 }} />
-                          No recent changes
-                        </Typography>
                       )}
-                    </Box>
                   </Box>
                 </Box>
               </Box>
@@ -1030,7 +1149,7 @@ export default function Addrepresentative(props) {
                     </InputLabel>
                   </Grid>
                   <Grid size={4}>
-                   <FormControl fullWidth>
+                    <FormControl fullWidth>
                       <Select
                         name="party"
                         value={formData.party}
@@ -1042,7 +1161,6 @@ export default function Addrepresentative(props) {
                         <MenuItem value="independent">Independent</MenuItem>
                       </Select>
                     </FormControl>
-
                   </Grid>
 
                   <Grid size={2}>
@@ -1496,10 +1614,9 @@ export default function Addrepresentative(props) {
                                   width: "100%",
                                 }}
                                 renderValue={(selected) => {
-                                  const selectedActivity =
-                                    houseActivities.find(
-                                      (a) => a._id === selected
-                                    );
+                                  const selectedActivity = houseActivities.find(
+                                    (a) => a._id === selected
+                                  );
                                   return (
                                     <Typography
                                       sx={{

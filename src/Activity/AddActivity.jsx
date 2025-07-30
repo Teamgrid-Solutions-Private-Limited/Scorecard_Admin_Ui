@@ -248,8 +248,8 @@ export default function AddActivity(props) {
 
         setSnackbarMessage(
           userRole === "admin"
-            ? "Activity published successfully!"
-            : "Changes saved successfully!"
+            ? "Changes published successfully!"
+            : 'Status changed to "Under Review" for admin to moderate.'
         );
         setSnackbarSeverity("success");
 
@@ -469,6 +469,7 @@ export default function AddActivity(props) {
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon bubble */}
                   <Box
                     sx={{
                       p: 1,
@@ -487,12 +488,16 @@ export default function AddActivity(props) {
                       flexShrink: 0,
                     }}
                   >
-                    {React.cloneElement(statusData.icon, {
-                      sx: { color: statusData.iconColor }, // apply icon color here
-                    })}
+                    {/* apply icon color here */}
+                    {statusData?.icon
+                      ? React.cloneElement(statusData.icon, {
+                          sx: { color: statusData.iconColor },
+                        })
+                      : null}
                   </Box>
 
                   <Box sx={{ flex: 1 }}>
+                    {/* Header: title + pending count (admin only) */}
                     <Box
                       sx={{
                         display: "flex",
@@ -515,7 +520,21 @@ export default function AddActivity(props) {
 
                       {userRole === "admin" && (
                         <Chip
-                          label={`${selectedActivity.editedFields.length} pending changes`}
+                          label={`${(() => {
+                            const backend = Array.isArray(
+                              selectedActivity?.editedFields
+                            )
+                              ? selectedActivity.editedFields
+                              : [];
+                            const local = Array.isArray(editedFields)
+                              ? editedFields
+                              : [];
+                            // don't double count fields present in both
+                            const localOnly = local.filter(
+                              (f) => !backend.includes(f)
+                            );
+                            return backend.length + localOnly.length;
+                          })()} pending changes`}
                           size="small"
                           color="warning"
                           variant="outlined"
@@ -523,134 +542,147 @@ export default function AddActivity(props) {
                       )}
                     </Box>
 
+                    {/* Pending / New fields list */}
                     <Box sx={{ mt: 1.5 }}>
-                      {Array.isArray(selectedActivity?.editedFields) &&
-                      selectedActivity.editedFields.length > 0 ? (
-                        <Box
-                          sx={{
-                            backgroundColor: "background.paper",
-                            borderRadius: 1,
-                            p: 1.5,
-                            border: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        >
-                          <Typography
-                            variant="overline"
-                            sx={{ color: "text.secondary", mb: 1 }}
-                          >
-                            Pending Changes
-                          </Typography>
+                      {(() => {
+                        const backend = Array.isArray(
+                          selectedActivity?.editedFields
+                        )
+                          ? selectedActivity.editedFields
+                          : [];
+                        const local = Array.isArray(editedFields)
+                          ? editedFields
+                          : [];
+                        const hasAny = backend.length > 0 || local.length > 0;
 
-                          <List dense sx={{ py: 0 }}>
-                            {selectedActivity.editedFields.map((field) => {
-                              const editorInfo =
-                                selectedActivity.fieldEditors?.[field];
-                              // const editorName =
-                              //   editorInfo?.editorName || "System";
-                              const editTime = editorInfo?.editedAt
-                                ? new Date(editorInfo.editedAt).toLocaleString(
-                                    [],
-                                    {
+                        if (!hasAny) {
+                          return (
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontStyle: "italic",
+                                color: "text.disabled",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              {typeof id !== "undefined" && id
+                                ? "No pending changes"
+                                : "Fill in the form to create a new activity"}
+                            </Typography>
+                          );
+                        }
+
+                        return (
+                          <Box
+                            sx={{
+                              backgroundColor: "background.paper",
+                              borderRadius: 1,
+                              p: 1.5,
+                              border: "1px solid",
+                              borderColor: "divider",
+                            }}
+                          >
+                            <Typography
+                              variant="overline"
+                              sx={{ color: "text.secondary", mb: 1 }}
+                            >
+                              {typeof id !== "undefined" && id
+                                ? "Pending Changes"
+                                : "New Fields"}
+                            </Typography>
+
+                            <List dense sx={{ py: 0 }}>
+                              {/* Backend-edited fields (with timestamps) */}
+                              {backend.map((field) => {
+                                const editorInfo =
+                                  selectedActivity?.fieldEditors?.[field];
+                                const editTime = editorInfo?.editedAt
+                                  ? new Date(
+                                      editorInfo.editedAt
+                                    ).toLocaleString([], {
                                       month: "short",
                                       day: "numeric",
                                       hour: "2-digit",
                                       minute: "2-digit",
-                                    }
-                                  )
-                                : "unknown time";
+                                    })
+                                  : "unknown time";
 
-                              return (
-                                <ListItem key={field} sx={{ py: 0.5, px: 1 }}>
-                                  <ListItemText
-                                    primary={
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: 1,
-                                        }}
-                                      >
+                                return (
+                                  <ListItem
+                                    key={`backend-${field}`}
+                                    sx={{ py: 0.5, px: 1 }}
+                                  >
+                                    <ListItemText
+                                      primary={
                                         <Box
                                           sx={{
-                                            width: 8,
-                                            height: 8,
-                                            borderRadius: "50%",
-                                            backgroundColor:
-                                              statusData.iconColor,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
                                           }}
-                                        />
-                                        <Typography
-                                          variant="body2"
-                                          fontWeight="500"
                                         >
-                                          {fieldLabels[field] || field}
+                                          <Box
+                                            sx={{
+                                              width: 8,
+                                              height: 8,
+                                              borderRadius: "50%",
+                                              backgroundColor:
+                                                statusData.iconColor,
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight="500"
+                                          >
+                                            {fieldLabels?.[field] || field}
+                                          </Typography>
+                                        </Box>
+                                      }
+                                      secondary={
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          Edited on {editTime}
                                         </Typography>
-                                      </Box>
-                                    }
-                                    secondary={
-                                      <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                      >
-                                        Edited on • {editTime}
-                                      </Typography>
-                                    }
-                                    sx={{ my: 0 }}
-                                  />
-                                </ListItem>
-                              );
-                            })}
-                          </List>
-                        </Box>
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontStyle: "italic",
-                            color: "text.disabled",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          <HourglassEmpty sx={{ fontSize: 16 }} />
-                          No recent changes
-                        </Typography>
-                      )}
+                                      }
+                                      sx={{ my: 0 }}
+                                    />
+                                  </ListItem>
+                                );
+                              })}
+                            </List>
+                          </Box>
+                        );
+                      })()}
                     </Box>
 
-                    {(userRole === "admin" || userRole === "editor") && editedFields.length > 0 && (
-                      <Box sx={{ mt: 2 }}>
-                        <Typography
-                          variant="overline"
-                          sx={{ color: "text.secondary" }}
-                        >
-                          Your Unsaved Changes
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 1,
-                            mt: 1,
-                            p: 1,
-                            backgroundColor: "action.hover",
-                            borderRadius: 1,
-                          }}
-                        >
-                          {editedFields.map((field) => {
-                            const editorInfo = formData.fieldEditors?.[field];
-                            const editTime = editorInfo?.editedAt
-                              ? new Date(
-                                  editorInfo.editedAt
-                                ).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : "just now";
-
-                            return (
+                    {/* Unsaved (local) changes chips */}
+                    {(userRole === "admin" || userRole === "editor") &&
+                      Array.isArray(editedFields) &&
+                      editedFields.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography
+                            variant="overline"
+                            sx={{ color: "text.secondary" }}
+                          >
+                            Your Unsaved Changes
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              mt: 1,
+                              p: 1,
+                              backgroundColor: "action.hover",
+                              borderRadius: 1,
+                            }}
+                          >
+                            {editedFields.map((field) => (
                               <Chip
                                 key={field}
                                 label={
@@ -661,9 +693,9 @@ export default function AddActivity(props) {
                                       gap: 0.5,
                                     }}
                                   >
-                                    <span>{fieldLabels[field] || field}</span>
-                                    <CircleIcon sx={{ fontSize: 8 }} />
-                                    <span>{editTime}</span>
+                                    <span>{fieldLabels?.[field] || field}</span>
+                                    <span>•</span>
+                                    <span>just now</span>
                                   </Box>
                                 }
                                 size="small"
@@ -677,16 +709,14 @@ export default function AddActivity(props) {
                                   },
                                 }}
                               />
-                            );
-                          })}
+                            ))}
+                          </Box>
                         </Box>
-                      </Box>
-                    )}
+                      )}
                   </Box>
                 </Box>
               </Box>
             )}
-
             <Stack
               direction="row"
               spacing={2}
