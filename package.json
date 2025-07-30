@@ -32,7 +32,7 @@
     "react-dom": "latest",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.4.0",
-    "tinymce": "^6.7.0"
+    "tinymce": "^6.8.6"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "latest",
