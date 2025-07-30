@@ -489,6 +489,8 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
+  
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -497,7 +499,7 @@ export default function Addrepresentative(props) {
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
-        editorName: decodedToken.name || decodedToken.username || "You",
+        editorName: localStorage.getItem("fullName") || decodedToken.username || "unKnown",
         editedAt: new Date(),
       };
 
@@ -695,163 +697,257 @@ export default function Addrepresentative(props) {
             }}
           >
             {userRole && formData.publishStatus !== "published" && (
+  <Box
+    sx={{
+      width: "98%",
+      p: 2,
+      backgroundColor: statusData.backgroundColor,
+      borderLeft: `4px solid ${statusData.borderColor}`,
+      borderRadius: "0 8px 8px 0",
+      boxShadow: 1,
+      mb: 2,
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+      {/* Status icon bubble */}
+      <Box
+        sx={{
+          p: 1,
+          borderRadius: "50%",
+          backgroundColor: `rgba(${
+            formData.publishStatus === "draft"
+              ? "66, 165, 245"
+              : formData.publishStatus === "under review"
+              ? "255, 193, 7"
+              : formData.publishStatus === "published"
+              ? "76, 175, 80"
+              : "244, 67, 54"
+          }, 0.2)`,
+          display: "grid",
+          placeItems: "center",
+          flexShrink: 0,
+        }}
+      >
+        {React.cloneElement(statusData.icon, {
+          sx: { color: statusData.iconColor },
+        })}
+      </Box>
+
+      <Box sx={{ flex: 1 }}>
+        {/* Header: title + pending count (admin only) */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography
+            variant="subtitle1"
+            fontWeight="600"
+            sx={{
+              color: statusData.titleColor,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            {statusData.title}
+          </Typography>
+
+          {userRole === "admin" && (
+            <Chip
+              label={`${(() => {
+                const backend = Array.isArray(formData?.editedFields)
+                  ? formData.editedFields
+                  : [];
+                const local = Array.isArray(editedFields)
+                  ? editedFields
+                  : [];
+                // don't double count fields present in both
+                const localOnly = local.filter(
+                  (f) => !backend.includes(f)
+                );
+                return backend.length + localOnly.length;
+              })()} pending changes`}
+              size="small"
+              color="warning"
+              variant="outlined"
+            />
+          )}
+        </Box>
+
+        {/* Pending / New fields list */}
+        <Box sx={{ mt: 1.5 }}>
+          {(() => {
+            const backend = Array.isArray(formData?.editedFields)
+              ? formData.editedFields
+              : [];
+            const local = Array.isArray(editedFields)
+              ? editedFields
+              : [];
+            const hasAny = backend.length > 0 || local.length > 0;
+
+            if (!hasAny) {
+              return (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontStyle: "italic",
+                    color: "text.disabled",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <HourglassEmpty sx={{ fontSize: 16 }} />
+                  {formData?.id
+                    ? "No pending changes"
+                    : "Fill in the form to create new content"}
+                </Typography>
+              );
+            }
+
+            return (
               <Box
                 sx={{
-                  width: "98%",
-                  p: 2,
-                  backgroundColor: statusData.backgroundColor,
-                  borderLeft: `4px solid ${statusData.borderColor}`,
-                  borderRadius: "0 8px 8px 0",
-                  boxShadow: 1,
-                  mb: 2,
+                  backgroundColor: "background.paper",
+                  borderRadius: 1,
+                  p: 1.5,
+                  border: "1px solid",
+                  borderColor: "divider",
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                  {/* Status icon */}
-                  <Box
-                    sx={{
-                      p: 1,
-                      borderRadius: "50%",
-                      backgroundColor: `rgba(${
-                        formData.publishStatus === "draft"
-                          ? "66, 165, 245"
-                          : formData.publishStatus === "under review"
-                          ? "255, 193, 7"
-                          : formData.publishStatus === "published"
-                          ? "76, 175, 80"
-                          : "244, 67, 54"
-                      }, 0.2)`,
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {React.cloneElement(statusData.icon, {
-                      sx: { color: statusData.iconColor },
-                    })}
-                  </Box>
+                <Typography
+                  variant="overline"
+                  sx={{ color: "text.secondary", mb: 1 }}
+                >
+                  {formData?.id
+                    ? "Pending Changes"
+                    : "New Fields"}
+                </Typography>
 
-                  <Box sx={{ flex: 1 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight="600"
-                        sx={{
-                          color: statusData.titleColor,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
+                <List dense sx={{ py: 0 }}>
+                  {/* Backend-edited fields (with timestamps) */}
+                  {backend.map((field) => {
+                    const editorInfo = formData?.fieldEditors?.[field];
+                    const editedBy = editorInfo?.editorName
+                    const editTime = editorInfo?.editedAt
+                      ? new Date(editorInfo.editedAt).toLocaleString([], {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "unknown time";
+
+                    const parts = field.split("_");
+                    const isTermField = field.startsWith("term");
+                    const displayLabel = isTermField
+                      ? `Term ${+parts[0].replace("term", "") + 1} • ${
+                          parts[1]?.charAt(0).toUpperCase() + parts[1]?.slice(1)
+                        }`
+                      : field.charAt(0).toUpperCase() + field.slice(1);
+
+                    return (
+                      <ListItem
+                        key={`backend-${field}`}
+                        sx={{ py: 0.5, px: 1 }}
                       >
-                        {statusData.title}
-                      </Typography>
-
-                      {userRole === "admin" && (
-                        <Chip
-                          label={`${editedFields.length} pending changes`}
-                          size="small"
-                          color="warning"
-                          variant="outlined"
+                        <ListItemText
+                          primary={
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: "50%",
+                                  backgroundColor: statusData.iconColor,
+                                }}
+                              />
+                              <Typography
+                                variant="body2"
+                                fontWeight="500"
+                              >
+                                {displayLabel}
+                              </Typography>
+                            </Box>
+                          }
+                          secondary={
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {
+                                editedBy? `Edited by ${editedBy} on ${editTime}`: `Edited on ${editTime}`
+                              }
+                            </Typography>
+                          }
+                          sx={{ my: 0 }}
                         />
-                      )}
-                    </Box>
-
-                    <Box sx={{ mt: 1.5 }}>
-                      {editedFields.length > 0 ? (
-                        <Box
-                          sx={{
-                            backgroundColor: "background.paper",
-                            borderRadius: 1,
-                            p: 1.5,
-                            border: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        >
-                          <Typography
-                            variant="overline"
-                            sx={{ color: "text.secondary", mb: 1 }}
-                          >
-                            Pending Changes
-                          </Typography>
-
-                          <List dense sx={{ py: 0 }}>
-                            {editedFields.map((field, index) => {
-                              const parts = field.split("_");
-                              const isTermField = field.startsWith("term");
-
-                              const displayLabel = isTermField
-                                ? `Term ${
-                                    +parts[0].replace("term", "") + 1
-                                  } • ${
-                                    parts[1]?.charAt(0).toUpperCase() +
-                                    parts[1]?.slice(1)
-                                  }`
-                                : field.charAt(0).toUpperCase() +
-                                  field.slice(1);
-
-                              const editor = formData?.fieldEditors?.[field];
-
-                              return (
-                                <Box key={index} sx={{ mb: 2 }}>
-                                  <Typography
-                                    sx={{
-                                      fontWeight: 600,
-                                      color: "#555",
-                                      fontSize: 14,
-                                    }}
-                                  >
-                                    {displayLabel}
-                                  </Typography>
-                                  <Typography
-                                    sx={{
-                                      fontSize: 12,
-                                      color: "#999",
-                                      mt: 0.5,
-                                    }}
-                                  >
-                                    Edited on •{" "}
-                                    {editor?.editedAt
-                                      ? new Date(
-                                          editor.editedAt
-                                        ).toLocaleString("en-GB", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                          day: "2-digit",
-                                          month: "short",
-                                        })
-                                      : "-"}
-                                  </Typography>
-                                </Box>
-                              );
-                            })}
-                          </List>
-                        </Box>
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontStyle: "italic",
-                            color: "text.disabled",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          <HourglassEmpty sx={{ fontSize: 16 }} />
-                          No recent changes
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                </Box>
+                      </ListItem>
+                    );
+                  })}
+                </List>
               </Box>
-            )}
+            );
+          })()}
+        </Box>
+
+        {/* Unsaved (local) changes chips */}
+        {(userRole === "admin" || userRole === "editor") &&
+          Array.isArray(editedFields) &&
+          editedFields.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <Typography
+                variant="overline"
+                sx={{ color: "text.secondary" }}
+              >
+                Your Unsaved Changes
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 1,
+                  mt: 1,
+                  p: 1,
+                  backgroundColor: "action.hover",
+                  borderRadius: 1,
+                }}
+              >
+                {editedFields.map((field) => {
+                  const parts = field.split("_");
+                  const isTermField = field.startsWith("term");
+                  const displayLabel = isTermField
+                    ? `Term ${+parts[0].replace("term", "") + 1} • ${
+                        parts[1]?.charAt(0).toUpperCase() + parts[1]?.slice(1)
+                      }`
+                    : field.charAt(0).toUpperCase() + field.slice(1);
+
+                  return (
+                    <Chip
+                      key={field}
+                      label={displayLabel}
+                      size="small"
+                      color="warning"
+                      variant="outlined"
+                    />
+                  );
+                })}
+              </Box>
+            </Box>
+          )}
+      </Box>
+    </Box>
+  </Box>
+)}
 
             <Stack
               direction="row"
