@@ -306,12 +306,12 @@ export default function AddActivity(props) {
                     marginLeft: "0.5rem",
                     "&:hover": {
                       backgroundColor: "#357ABD !important",
-                    },
-                  }}
-                  onClick={handleSubmit}
-                >
-                  Save Changes
-                </Button>
+                  },
+                }}
+                onClick={handleSubmit}
+              >
+                Save Changes
+              </Button>
               )}
 
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}

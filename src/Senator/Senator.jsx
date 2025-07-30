@@ -160,22 +160,7 @@ export default function Senator(props) {
   for (let y = currentYear; y >= 2015; y--) {
     years.push(y);
   }
-  // Merge senator data with ratings
-  // useEffect(() => {
-  //   if (senatorData && senators) {
-  //     const merged = senators
-  //       .map((senator) => {
-  //         const match = senatorData.find((data) => data.senateId === senator._id);
-  //         return {
-  //           ...senator,
-  //           rating: match ? match.rating : "N/A",
-  //         };
-  //       });
-  //     setMergedSenators(merged);
-  //   }
-  // }, [senators, senatorData]);
-
-  // Get unique parties and states for filter options
+ 
   const partyOptions = [
     ...new Set(senators.map((senator) => senator.party)),
   ].filter(Boolean);
@@ -376,23 +361,7 @@ export default function Senator(props) {
       }
     }
 
-    // if (selectedYear) {
-    //   if (senator.termName && senator.termName.includes("-")) {
-    //     const [start, end] = senator.termName.split("-").map(Number);
-    //     if (
-    //       !(
-    //         start &&
-    //         end &&
-    //         Number(selectedYear) >= start &&
-    //         Number(selectedYear) <= end
-    //       )
-    //     ) {
-    //       return false;
-    //     }
-    //   } else {
-    //     return false;
-    //   }
-    // }
+    
 
     const nameMatch = searchQuery
       .toLowerCase()
