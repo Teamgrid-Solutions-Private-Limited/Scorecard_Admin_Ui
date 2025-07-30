@@ -29,6 +29,17 @@ import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../../src/Dashboard/global/common";
 import { useParams } from "react-router-dom";
+import { Chip } from "@mui/material";
+import HourglassTop from "@mui/icons-material/HourglassTop";
+import Verified from "@mui/icons-material/Verified";
+import { Drafts } from "@mui/icons-material";
+import CheckCircle from "@mui/icons-material/CheckCircle";
+import { jwtDecode } from "jwt-decode";
+import CircleIcon from "@mui/icons-material/Circle";
+import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
 
 import {
   getVoteById,
@@ -53,7 +64,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
-import { jwtDecode } from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -63,14 +74,61 @@ export default function AddSenator(props) {
   const { votes } = useSelector((state) => state.vote);
   const { activities } = useSelector((state) => state.activity);
   const senatorData = useSelector((state) => state.senatorData);
+  const [editedFields, setEditedFields] = useState([]);
+  const [originalFormData, setOriginalFormData] = useState(null);
+  const [originalTermData, setOriginalTermData] = useState([]);
+
+  // console.log("User Role:", userRole);
+  let senatorActivities =
+    activities?.filter((activity) => activity.type === "senate") || [];
+
+  // Add this near the top of your component
+  const fieldLabels = {
+    // Senator fields
+    name: "Senator Name",
+    status: "Status",
+    state: "State",
+    party: "Party",
+    photo: "Photo",
+    term: "Term",
+    publishStatus: "Publish Status",
+
+    // Term fields (will be prefixed with termX_)
+    senateId: "Senate ID",
+    summary: "Term Summary",
+    rating: "SBA Rating",
+    votesScore: "Voted Bills",
+    activitiesScore: "Tracked Activities",
+    currentTerm: "Current Term",
+    termId: "Term",
+  };
   const token = localStorage.getItem("token");
   // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
   console.log("User Role:", userRole);
-  let senatorActivities =
-    activities?.filter((activity) => activity.type === "senate") || [];
+
+  // Helper function to get display name
+  const getFieldDisplayName = (field) => {
+    // Handle term fields (term0_fieldName)
+    if (field.includes("_")) {
+      const [termPrefix, actualField] = field.split("_");
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
+    }
+    return fieldLabels[field] || field;
+  };
+  const [formData, setFormData] = useState({
+    name: "",
+    status: "",
+    state: "",
+    party: "",
+    photo: null,
+    term: "",
+    publishStatus: "", // Default status
+  });
 
   const [senatorTermData, setSenatorTermData] = useState([
     {
@@ -93,7 +151,6 @@ export default function AddSenator(props) {
       )
     );
   };
-
   const handleSwitchChange = (e, termIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
@@ -129,7 +186,6 @@ export default function AddSenator(props) {
       )
     );
   };
-
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
@@ -175,7 +231,6 @@ export default function AddSenator(props) {
       )
     );
   };
-
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
@@ -236,6 +291,13 @@ export default function AddSenator(props) {
     );
   };
 
+  const compareValues = (newVal, oldVal) => {
+    if (typeof newVal === "string" && typeof oldVal === "string") {
+      return newVal.trim() !== oldVal.trim();
+    }
+    return newVal !== oldVal;
+  };
+
   const termPreFill = () => {
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
@@ -247,6 +309,8 @@ export default function AddSenator(props) {
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
           currentTerm: term.currentTerm || false,
+          editedFields: term.editedFields || [],
+          fieldEditors: term.fieldEditors || {},
           votesScore:
             term.votesScore?.length > 0
               ? term.votesScore.map((vote) => {
@@ -281,8 +345,9 @@ export default function AddSenator(props) {
       });
 
       setSenatorTermData(termsData);
+      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
     } else {
-      setSenatorTermData([
+      const defaultTerm = [
         {
           senateId: id,
           summary: "",
@@ -291,23 +356,78 @@ export default function AddSenator(props) {
           activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
+          editedFields: [],
+          fieldEditors: {},
         },
-      ]);
+      ];
+
+      setSenatorTermData(defaultTerm);
+      setOriginalTermData(JSON.parse(JSON.stringify(defaultTerm)));
     }
   };
 
   useEffect(() => {
+    if (originalFormData && formData) {
+      const changes = [];
+      Object.keys(formData).forEach((key) => {
+        if (compareValues(formData[key], originalFormData[key])) {
+          changes.push(key);
+        }
+      });
+      setEditedFields(changes);
+    }
+  }, [formData, originalFormData]);
+
+  // Update your change tracking useEffect
+  useEffect(() => {
+    if (originalFormData && formData && originalTermData && senatorTermData) {
+      const changes = [];
+
+      // Track senator-level changes
+      Object.keys(formData).forEach((key) => {
+        if (key === "editedFields" || key === "fieldEditors") return;
+        if (compareValues(formData[key], originalFormData[key])) {
+          changes.push(key);
+        }
+      });
+
+      // Track term-level changes
+      senatorTermData.forEach((term, termIndex) => {
+        const originalTerm = originalTermData[termIndex] || {};
+
+        Object.keys(term).forEach((key) => {
+          // Skip internal and tracking fields
+          if (["_id", "senateId", "editedFields", "fieldEditors"].includes(key))
+            return;
+
+          // Handle array fields
+          if (key === "votesScore" || key === "activitiesScore") {
+            const current = JSON.stringify(term[key]);
+            const original = JSON.stringify(originalTerm[key] || []);
+            if (current !== original) {
+              changes.push(`term${termIndex}_${key}`);
+            }
+          }
+          // Handle regular fields
+          else if (compareValues(term[key], originalTerm[key])) {
+            changes.push(`term${termIndex}_${key}`);
+          }
+        });
+      });
+
+      // Merge with any existing editedFields from backend
+      const backendEditedFields = Array.isArray(formData.editedFields)
+        ? formData.editedFields
+        : [];
+      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
+
+      setEditedFields(mergedChanges);
+    }
+  }, [formData, originalFormData, senatorTermData, originalTermData]);
+
+  useEffect(() => {
     termPreFill();
   }, [id, senatorData]);
-
-  const [formData, setFormData] = useState({
-    name: "",
-    status: "",
-    state: "",
-    party: "",
-    photo: null,
-    term: "",
-  });
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -320,14 +440,21 @@ export default function AddSenator(props) {
         senator.termId && terms.length > 0
           ? terms.find((term) => term._id === senator.termId)?._id || ""
           : "";
-      setFormData({
+
+      const newFormData = {
         name: senator.name || "",
         status: senator.status || "Active",
         state: senator.state || "",
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
-      });
+        publishStatus: senator.publishStatus || "draft",
+        editedFields: senator.editedFields || [],
+        fieldEditors: senator.fieldEditors || {},
+      };
+
+      setFormData(newFormData);
+      setOriginalFormData(JSON.parse(JSON.stringify(newFormData)));
     }
   };
 
@@ -351,7 +478,18 @@ export default function AddSenator(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+
+      if (originalFormData) {
+        const changes = Object.keys(newData).filter((key) =>
+          compareValues(newData[key], originalFormData[key])
+        );
+        setEditedFields(changes);
+      }
+
+      return newData;
+    });
   };
 
   const handleFileChange = (event) => {
@@ -361,125 +499,151 @@ export default function AddSenator(props) {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    let operationType = "";
     setLoading(true);
+
     try {
-      // First handle senator data
-      if (id) {
-        const updatedData = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-          if (value) updatedData.append(key, value);
-        });
-        await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
-        operationType = "Updated";
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: decodedToken.name || decodedToken.username || "You",
+        editedAt: new Date(),
+      };
+
+      // Update field editors with current changes
+      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+      editedFields.forEach((field) => {
+        updatedFieldEditors[field] = currentEditor;
+      });
+
+      // Prepare senator update
+      const senatorUpdate = {
+        ...formData,
+        editedFields,
+        fieldEditors: updatedFieldEditors,
+        publishStatus: userRole === "admin" ? "published" : "under review",
+      };
+
+      // Clear editedFields if publishing
+      if (senatorUpdate.publishStatus === "published") {
+        senatorUpdate.editedFields = [];
       }
 
-      // Then handle senator term data
-      const termPromises = senatorTermData.map((termData) => {
-        if (termData._id) {
-          operationType = "Updated";
-          return dispatch(
-            updateSenatorData({
-              id: termData._id,
-              data: {
-                ...termData,
-                senateId: id,
-              },
-            })
-          ).unwrap();
-        } else {
-          operationType = "Created";
-          return dispatch(
-            createSenatorData({
-              ...termData,
-              senateId: id,
-            })
-          ).unwrap();
-        }
+      // Update senator
+      if (id) {
+        const formData = new FormData();
+        Object.entries(senatorUpdate).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (typeof value === "object" && !(value instanceof File)) {
+              formData.append(key, JSON.stringify(value));
+            } else {
+              formData.append(key, value);
+            }
+          }
+        });
+
+        await dispatch(updateSenator({ id, formData })).unwrap();
+      }
+
+      // Update terms
+      const termPromises = senatorTermData.map((term, index) => {
+        const termUpdate = {
+          ...term,
+          senateId: id, // 👈✅ explicitly add it
+          editedFields: editedFields.filter((f) =>
+            f.startsWith(`term${index}_`)
+          ),
+          fieldEditors: updatedFieldEditors,
+        };
+
+        return term._id
+          ? dispatch(
+              updateSenatorData({ id: term._id, data: termUpdate })
+            ).unwrap()
+          : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
       await Promise.all(termPromises);
 
-      // 🔄 Update Status to "review"
-      await dispatch(
-        updateSenatorStatus({
-          id,
-          publishStatus: "published", //  valid value
-        })
-      ).unwrap();
-
+      // Reload data
+      await dispatch(getSenatorById(id)).unwrap();
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+      setEditedFields([]);
 
-      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
+      userRole === "admin"
+        ? handleSnackbarOpen("Changes Published successfully!", "success")
+        : handleSnackbarOpen(
+            'Status changed to "Under Review" for admin to moderate.',
+            "info"
+          );
     } catch (error) {
       console.error("Save failed:", error);
-      handleSnackbarOpen("Failed to save: " + error.message, "error");
+      handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReview = async (e) => {
-    e.preventDefault();
-    let operationType = "";
-    setLoading(true);
+  // const handleReview = async (e) => {
+  //   e.preventDefault();
+  //   let operationType = "";
+  //   setLoading(true);
 
-    try {
-      // First handle senator data
-      if (id) {
-        const updatedData = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-          if (value) updatedData.append(key, value);
-        });
-        await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
-        operationType = "Updated";
-      }
+  //   try {
+  //     // First handle senator data
+  //     if (id) {
+  //       const updatedData = new FormData();
+  //       Object.entries(formData).forEach(([key, value]) => {
+  //         if (value) updatedData.append(key, value);
+  //       });
+  //       await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
+  //       operationType = "Updated";
+  //     }
 
-      // Handle senator term data
-      const termPromises = senatorTermData.map((termData) => {
-        if (termData._id) {
-          operationType = "Reviewed";
-          return dispatch(
-            updateSenatorData({
-              id: termData._id,
-              data: {
-                ...termData,
-                senateId: id,
-              },
-            })
-          ).unwrap();
-        } else {
-          operationType = "Reviewed";
-          return dispatch(
-            createSenatorData({
-              ...termData,
-              senateId: id,
-            })
-          ).unwrap();
-        }
-      });
+  //     // Handle senator term data
+  //     const termPromises = senatorTermData.map((termData) => {
+  //       if (termData._id) {
+  //         operationType = "under review";
+  //         return dispatch(
+  //           updateSenatorData({
+  //             id: termData._id,
+  //             data: {
+  //               ...termData,
+  //               senateId: id,
+  //             },
+  //           })
+  //         ).unwrap();
+  //       } else {
+  //         operationType = "under review";
+  //         return dispatch(
+  //           createSenatorData({
+  //             ...termData,
+  //             senateId: id,
+  //           })
+  //         ).unwrap();
+  //       }
+  //     });
 
-      await Promise.all(termPromises);
+  //     await Promise.all(termPromises);
 
-      // 🔄 Update Status to "review"
-      await dispatch(
-        updateSenatorStatus({
-          id,
-         publishStatus: "under review", // ✅ match the enum in schema
-        })
-      ).unwrap();
+  //     // 🔄 Update Status to "review"
+  //     await dispatch(
+  //       updateSenatorStatus({
+  //         id,
+  //         publishStatus: "under review", // ✅ valid value
+  //       })
+  //     ).unwrap();
 
-      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+  //     await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+  //     await dispatch(getSenatorById(id)).unwrap();
 
-      handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
-    } catch (error) {
-      console.error("Save failed:", error);
-      handleSnackbarOpen("Failed to save: " + error.message, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
+  //   } catch (error) {
+  //     console.error("Save failed:", error);
+  //     handleSnackbarOpen("Failed to save: " + error.message, "error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -512,6 +676,56 @@ export default function AddSenator(props) {
   };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
+  // Update your status config
+  const getStatusConfig = (editedFields, currentStatus) => {
+    const configs = {
+      draft: {
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
+        icon: <Drafts sx={{ fontSize: "20px" }} />,
+        title: "Draft Version",
+        description:
+          editedFields.length > 0
+            ? `${editedFields.length} pending changes`
+            : "No changes made yet",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
+      },
+      "under review": {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Under Review",
+        description:
+          editedFields.length > 0
+            ? `Waiting approval for ${editedFields.length} changes`
+            : "No changes pending review",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
+      published: {
+        backgroundColor: "rgba(76, 175, 80, 0.12)",
+        borderColor: "#4CAF50",
+        iconColor: "#2E7D32",
+        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+        title: "Published",
+        description: "Published and live",
+        titleColor: "#2E7D32",
+        descColor: "#388E3C",
+      },
+    };
+
+    return configs[currentStatus] || configs.draft;
+  };
+
+  const currentStatus =
+    formData.publishStatus || (userRole === "admin" ? "published" : "");
+  const statusData = getStatusConfig(
+    Array.isArray(editedFields) ? editedFields : [],
+    currentStatus
+  );
 
   return (
     <AppTheme>
@@ -546,6 +760,7 @@ export default function AddSenator(props) {
           })}
         >
           <FixedHeader />
+
           <Stack
             spacing={2}
             sx={{
@@ -555,6 +770,281 @@ export default function AddSenator(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
+            {userRole && formData.publishStatus !== "published" && (
+              <Box
+                sx={{
+                  width: "98%",
+                  p: 2,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon */}
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${
+                        formData.publishStatus === "draft"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
+                          ? "255, 193, 7"
+                          : formData.publishStatus === "published"
+                          ? "76, 175, 80"
+                          : "244, 67, 54"
+                      }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(statusData.icon, {
+                      sx: { color: statusData.iconColor },
+                    })}
+                  </Box>
+
+                  <Box sx={{ flex: 1 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        sx={{
+                          color: statusData.titleColor,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {statusData.title}
+                      </Typography>
+
+                      {userRole === "admin" && (
+                        <Chip
+                          label={`${(() => {
+                            const backend = Array.isArray(
+                              formData?.editedFields
+                            )
+                              ? formData.editedFields
+                              : [];
+                            const local = Array.isArray(editedFields)
+                              ? editedFields
+                              : [];
+                            // don't double count fields present in both
+                            const localOnly = local.filter(
+                              (f) => !backend.includes(f)
+                            );
+                            return backend.length + localOnly.length;
+                          })()} pending changes`}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+
+                    <Box sx={{ mt: 1.5 }}>
+                      {(() => {
+                        const backend = Array.isArray(formData?.editedFields)
+                          ? formData.editedFields
+                          : [];
+                        const local = Array.isArray(editedFields)
+                          ? editedFields
+                          : [];
+                        const hasAny = backend.length > 0 || local.length > 0;
+
+                        if (!hasAny) {
+                          return (
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontStyle: "italic",
+                                color: "text.disabled",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              No recent changes
+                            </Typography>
+                          );
+                        }
+
+                        return (
+                          <Box
+                            sx={{
+                              backgroundColor: "background.paper",
+                              borderRadius: 1,
+                              p: 1.5,
+                              border: "1px solid",
+                              borderColor: "divider",
+                            }}
+                          >
+                            <Typography
+                              variant="overline"
+                              sx={{ color: "text.secondary", mb: 1 }}
+                            >
+                              Pending Changes
+                            </Typography>
+
+                            <List dense sx={{ py: 0 }}>
+                              {backend.map((field) => {
+                                const parts = field.split("_");
+                                const isTermField = field.startsWith("term");
+                                const editorInfo =
+                                  formData?.fieldEditors?.[field];
+                                const editTime = editorInfo?.editedAt
+                                  ? new Date(
+                                      editorInfo.editedAt
+                                    ).toLocaleString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      day: "2-digit",
+                                      month: "short",
+                                    })
+                                  : "unknown time";
+
+                                return (
+                                  <ListItem key={field} sx={{ py: 0.5, px: 1 }}>
+                                    <ListItemText
+                                      primary={
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                          }}
+                                        >
+                                          <Box
+                                            sx={{
+                                              width: 8,
+                                              height: 8,
+                                              borderRadius: "50%",
+                                              backgroundColor:
+                                                statusData.iconColor,
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight="500"
+                                          >
+                                            {isTermField
+                                              ? `Term ${
+                                                  +parts[0].replace(
+                                                    "term",
+                                                    ""
+                                                  ) + 1
+                                                } • ${
+                                                  parts[1]
+                                                    ?.charAt(0)
+                                                    .toUpperCase() +
+                                                  parts[1]?.slice(1)
+                                                }`
+                                              : field.charAt(0).toUpperCase() +
+                                                field.slice(1)}
+                                          </Typography>
+                                        </Box>
+                                      }
+                                      secondary={
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          Edited on {editTime}
+                                        </Typography>
+                                      }
+                                      sx={{ my: 0 }}
+                                    />
+                                  </ListItem>
+                                );
+                              })}
+                            </List>
+                          </Box>
+                        );
+                      })()}
+                    </Box>
+
+                    {/* Unsaved (local) changes chips */}
+                    {(userRole === "admin" || userRole === "editor") &&
+                      Array.isArray(editedFields) &&
+                      editedFields.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography
+                            variant="overline"
+                            sx={{ color: "text.secondary" }}
+                          >
+                            Your Unsaved Changes
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              mt: 1,
+                              p: 1,
+                              backgroundColor: "action.hover",
+                              borderRadius: 1,
+                            }}
+                          >
+                            {editedFields.map((field) => {
+                              const parts = field.split("_");
+                              const isTermField = field.startsWith("term");
+                              const displayLabel = isTermField
+                                ? `Term ${
+                                    +parts[0].replace("term", "") + 1
+                                  } • ${
+                                    parts[1]?.charAt(0).toUpperCase() +
+                                    parts[1]?.slice(1)
+                                  }`
+                                : field.charAt(0).toUpperCase() +
+                                  field.slice(1);
+
+                              return (
+                                <Chip
+                                  key={field}
+                                  label={
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 0.5,
+                                      }}
+                                    >
+                                      <span>{displayLabel}</span>
+                                      <span>•</span>
+                                      <span>just now</span>
+                                    </Box>
+                                  }
+                                  size="small"
+                                  color="warning"
+                                  variant="outlined"
+                                  sx={{
+                                    "& .MuiChip-label": {
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 0.5,
+                                    },
+                                  }}
+                                />
+                              );
+                            })}
+                          </Box>
+                        </Box>
+                      )}
+                  </Box>
+                </Box>
+              </Box>
+            )}
             <Stack
               direction="row"
               spacing={2}
@@ -566,39 +1056,36 @@ export default function AddSenator(props) {
             >
               <Button
                 variant="outlined"
-                onClick={(e) => {
-                  handleReview(e, "review");
-                }}
+                onClick={handleSave}
                 sx={{
-                  backgroundColor: "#CC9A3A !important",
+                  backgroundColor: "#4a90e2 !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#c38f2fff !important",
+                    backgroundColor: "#357ABD !important",
                   },
                 }}
               >
-                Review
+                {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
 
-              {userRole === "admin" && (
-                <Button
-                  variant="outlined"
-                  onClick={(e) => {
-                    handleSave(e, "save");
-                  }}
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
-                    "&:hover": {
-                      backgroundColor: "#357ABD !important",
-                    },
-                  }}
-                >
-                  Save Changes
-                </Button>
-              )}
+              {/* <Button
+                variant="outlined"
+                onClick={(e) => {
+                  handleSave(e, "save");
+                }}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                Save Changes
+              </Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
@@ -752,16 +1239,18 @@ export default function AddSenator(props) {
                     </InputLabel>
                   </Grid>
                   <Grid size={4}>
-                    <TextField
-                      id="party"
-                      name="party"
-                      value={formData.party}
-                      onChange={handleChange}
-                      fullWidth
-                      size="small"
-                      autoComplete="off"
-                      variant="outlined"
-                    />
+                    <FormControl fullWidth>
+                      <Select
+                        name="party"
+                        value={formData.party}
+                        onChange={handleChange}
+                        sx={{ background: "#fff" }}
+                      >
+                        <MenuItem value="republican">Republican</MenuItem>
+                        <MenuItem value="democrat">Democrat</MenuItem>
+                        <MenuItem value="independent">Independent</MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid size={2}>
