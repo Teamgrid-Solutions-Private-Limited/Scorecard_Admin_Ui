@@ -487,6 +487,12 @@ export default function Representative(props) {
                   <Badge
                     badgeContent={activeFilterCount}
                     color="primary"
+                    sx={{
+    "& .MuiBadge-badge": {
+      top: 6, 
+      right: 6, 
+    },
+  }}
                   >
                     <Button
                       variant="outlined"
