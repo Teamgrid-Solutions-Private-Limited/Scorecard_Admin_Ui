@@ -63,6 +63,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -76,7 +77,8 @@ export default function Addrepresentative(props) {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
-
+  const [deletedTermIds, setDeletedTermIds] = useState([]);
+  
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
 
@@ -167,9 +169,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: null, score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: " ", score: "" }],
+          }
           : term
       )
     );
@@ -180,9 +182,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       )
     );
@@ -201,11 +203,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
           : term
       )
     );
@@ -216,12 +218,12 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: null, score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: null, score: "" },
+            ],
+          }
           : term
       )
     );
@@ -232,11 +234,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       )
     );
@@ -255,11 +257,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.map((activity, i) =>
-                i === activityIndex ? { ...activity, [field]: value } : activity
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.map((activity, i) =>
+              i === activityIndex ? { ...activity, [field]: value } : activity
+            ),
+          }
           : term
       )
     );
@@ -285,9 +287,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              summary: contentRefs.current[termIndex]?.content || "",
-            }
+            ...term,
+            summary: contentRefs.current[termIndex]?.content || "",
+          }
           : term
       )
     );
@@ -311,8 +313,17 @@ export default function Addrepresentative(props) {
 
   // Remove a term
   const handleRemoveTerm = (termIndex) => {
-    setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
+    setHouseTermData((prev) => {
+      const removed = prev[termIndex];
+      if (removed && removed._id) {
+        setDeletedTermIds((ids) => [...ids, removed._id]);
+      }
+      return prev.filter((_, index) => index !== termIndex);
+    });
   };
+  // const handleRemoveTerm = (termIndex) => {
+  //   setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
+  // };
 
   const compareValues = (newVal, oldVal) => {
     if (typeof newVal === "string" && typeof oldVal === "string") {
@@ -350,19 +361,19 @@ export default function Addrepresentative(props) {
                     scoreValue = vote.score || "";
                   }
 
-                  return {
-                    voteId: vote.voteId?._id || vote.voteId || null,
-                    score: scoreValue,
-                  };
-                })
+                return {
+                  voteId: vote.voteId?._id || vote.voteId || null,
+                  score: scoreValue,
+                };
+              })
               : [{ voteId: null, score: "" }],
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId:
-                    activity.activityId?._id || activity.activityId || null,
-                  score: activity.score || "",
-                }))
+                activityId:
+                  activity.activityId?._id || activity.activityId || null,
+                score: activity.score || "",
+              }))
               : [{ activityId: null, score: "" }],
         };
       });
@@ -536,6 +547,13 @@ export default function Addrepresentative(props) {
         editorName: localStorage.getItem("user") || "Unknown Editor",
         editedAt: new Date(),
       };
+
+      if (deletedTermIds.length > 0) {
+        await Promise.all(
+          deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
+        );
+        setDeletedTermIds([]); // clear after delete
+      }
 
        const allChanges = [
         ...new Set([
@@ -1058,14 +1076,17 @@ export default function Addrepresentative(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                 >
-                  <Grid size={2}>
+                  <Grid size={2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: "flex-end", // align left
                         fontWeight: 700,
                         my: 0,
+                        whiteSpace: "normal",         // allow wrapping
+                        overflowWrap: "break-word",   // break long words
+                        width: "100%",                // take full width of grid cell
                       }}
                     >
                       Representative's Name
@@ -1161,7 +1182,7 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={2} sx={{ minWidth: 165 }} >
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1212,19 +1233,23 @@ export default function Addrepresentative(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        alignItems: "center",
+                        justifyContent: "flex-end", // align left
                         fontWeight: 700,
                         my: 0,
+                        whiteSpace: "normal",         // allow wrapping
+                        overflowWrap: "break-word",   // break long words
+                        width: "100%",
                       }}
                     >
                       Representative's Photo
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={8}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       {formData.photo ? (
                         <img
@@ -1430,6 +1455,7 @@ export default function Addrepresentative(props) {
                     <Grid size={9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary || ""}
                         onEditorChange={(content) =>
@@ -1469,134 +1495,137 @@ export default function Addrepresentative(props) {
                     </Grid>
 
                     {/* Vote Repeater Start */}
-                    {term.votesScore.map((vote, voteIndex) => (
-                      <Grid
-                        rowSpacing={2}
-                        sx={{ width: "100%" }}
-                        key={voteIndex}
-                      >
-                        <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
-                        >
-                          <Grid size={2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "end",
-                                fontWeight: 700,
-                                my: 0,
-                              }}
+                    {term.votesScore
+                      .map((vote, voteIndex) => (
+                        vote.voteId != null ? ( // Only render if voteId is not null
+                          <Grid
+                            rowSpacing={2}
+                            sx={{ width: "100%" }}
+                            key={voteIndex}
+                          >
+                            <Grid
+                              size={12}
+                              display="flex"
+                              alignItems="center"
+                              columnGap={"15px"}
                             >
-                              Scored Vote
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={vote.voteId || ""}
-                                onChange={(event) =>
-                                  handleVoteChange(
-                                    termIndex,
-                                    voteIndex,
-                                    "voteId",
-                                    event.target.value
-                                  )
-                                }
-                                sx={{
-                                  background: "#fff",
-                                  width: "100%",
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedVote = votes.find(
-                                    (v) => v._id === selected
-                                  );
-                                  return (
-                                    <Typography
-                                      sx={{
-                                        overflow: "hidden",
-                                        whiteSpace: "nowrap",
-                                        textOverflow: "ellipsis",
-                                      }}
-                                    >
-                                      {selectedVote?.title || "Select a Bill"}
-                                    </Typography>
-                                  );
-                                }}
-                                MenuProps={{
-                                  PaperProps: {
-                                    sx: {
-                                      maxHeight: 300,
-                                      width: 400,
-                                      "& .MuiMenuItem-root": {
-                                        minHeight: "48px",
+                              <Grid size={2}>
+                                <InputLabel
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "end",
+                                    fontWeight: 700,
+                                    my: 0,
+                                  }}
+                                >
+                                  Scored Vote
+                                </InputLabel>
+                              </Grid>
+                              <Grid size={7.5}>
+                                <FormControl fullWidth>
+                                  <Select
+                                    value={vote.voteId || ""}
+                                    onChange={(event) =>
+                                      handleVoteChange(
+                                        termIndex,
+                                        voteIndex,
+                                        "voteId",
+                                        event.target.value
+                                      )
+                                    }
+                                    sx={{
+                                      background: "#fff",
+                                      width: "100%",
+                                    }}
+                                    renderValue={(selected) => {
+                                      const selectedVote = votes.find(
+                                        (v) => v._id === selected
+                                      );
+                                      return (
+                                        <Typography
+                                          sx={{
+                                            overflow: "hidden",
+                                            whiteSpace: "nowrap",
+                                            textOverflow: "ellipsis",
+                                          }}
+                                        >
+                                          {selectedVote?.title || "Select a Bill"}
+                                        </Typography>
+                                      );
+                                    }}
+                                    MenuProps={{
+                                      PaperProps: {
+                                        sx: {
+                                          maxHeight: 300,
+                                          width: 400,
+                                          "& .MuiMenuItem-root": {
+                                            minHeight: "48px",
+                                          },
+                                        },
                                       },
-                                    },
-                                  },
-                                }}
-                              >
-                                <MenuItem value="" disabled>
-                                  Select a Bill
-                                </MenuItem>
-                                {votes && votes.length > 0 ? (
-                                  votes.map((voteItem) => (
-                                    <MenuItem
-                                      key={voteItem._id}
-                                      value={voteItem._id}
-                                      sx={{ py: 1.5 }}
-                                    >
-                                      <Typography
-                                        sx={{
-                                          whiteSpace: "normal",
-                                          overflowWrap: "break-word",
-                                        }}
-                                      >
-                                        {voteItem.title}
-                                      </Typography>
+                                    }}
+                                  >
+                                    <MenuItem value="" disabled>
+                                      Select a Bill
                                     </MenuItem>
-                                  ))
-                                ) : (
-                                  <MenuItem value="" disabled>
-                                    No bills available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
+                                    {votes && votes.length > 0 ? (
+                                      votes.map((voteItem) => (
+                                        <MenuItem
+                                          key={voteItem._id}
+                                          value={voteItem._id}
+                                          sx={{ py: 1.5 }}
+                                        >
+                                          <Typography
+                                            sx={{
+                                              whiteSpace: "normal",
+                                              overflowWrap: "break-word",
+                                            }}
+                                          >
+                                            {voteItem.title}
+                                          </Typography>
+                                        </MenuItem>
+                                      ))
+                                    ) : (
+                                      <MenuItem value="" disabled>
+                                        No bills available
+                                      </MenuItem>
+                                    )}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid size={1.6}>
+                                <FormControl fullWidth>
+                                  <Select
+                                    value={vote.score || ""}
+                                    onChange={(event) =>
+                                      handleVoteChange(
+                                        termIndex,
+                                        voteIndex,
+                                        "score",
+                                        event.target.value
+                                      )
+                                    }
+                                    sx={{ background: "#fff" }}
+                                  >
+                                    <MenuItem value="Yes">Yea</MenuItem>
+                                    <MenuItem value="No">Nay</MenuItem>
+                                    <MenuItem value="Neutral">Other</MenuItem>
+                                    {/* <MenuItem value="None">None</MenuItem> */}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid size={1}>
+                                <DeleteForeverIcon
+                                  onClick={() =>
+                                    handleRemoveVote(termIndex, voteIndex)
+                                  }
+                                />
+                              </Grid>
+                            </Grid>
                           </Grid>
-                          <Grid size={1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={vote.score || ""}
-                                onChange={(event) =>
-                                  handleVoteChange(
-                                    termIndex,
-                                    voteIndex,
-                                    "score",
-                                    event.target.value
-                                  )
-                                }
-                                sx={{ background: "#fff" }}
-                              >
-                                <MenuItem value="Yes">Yea</MenuItem>
-                                <MenuItem value="No">Nay</MenuItem>
-                                <MenuItem value="Neutral">Other</MenuItem>
-                                <MenuItem value="None">None</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveVote(termIndex, voteIndex)
-                              }
-                            />
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    ))}
+                        ) : null
+                      ))}
                     {/* Vote Repeater Ends */}
 
                     <Grid size={1}></Grid>
@@ -1695,7 +1724,7 @@ export default function Addrepresentative(props) {
                                   Select an Activity
                                 </MenuItem>
                                 {houseActivities &&
-                                houseActivities.length > 0 ? (
+                                  houseActivities.length > 0 ? (
                                   houseActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
@@ -1737,7 +1766,7 @@ export default function Addrepresentative(props) {
                                 <MenuItem value="Yes">Yea</MenuItem>
                                 <MenuItem value="No">Nay</MenuItem>
                                 <MenuItem value="Neutral">Other</MenuItem>
-                                <MenuItem value="None">None</MenuItem>
+                                {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>
                           </Grid>

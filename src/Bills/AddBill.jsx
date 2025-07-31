@@ -771,9 +771,8 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
-                      tinymceScriptSrc={`${
-                        import.meta.env.BASE_URL
-                      }tinymce/tinymce.min.js`}
+                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
@@ -1085,22 +1084,15 @@ export default function AddBill(props) {
                       />
                     </FormControl>
                   </Grid>
-                  <Grid
-                    container
-                    spacing={2}
-                    alignItems="center"
-                    sx={{ ml: { xs: 0, sm: 10.2 } }}
-                  >
-                    <Grid size={{ xs: 12, sm: 2 }} sx={{ mr: 0.5 }}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
+                  <Grid size={2}>
+                    <InputLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
                           justifyContent: "end",
                           fontWeight: 700,
                           my: 0,
                           width: "100%",
-
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           fontSize: "13px",
                         }}
@@ -1109,13 +1101,12 @@ export default function AddBill(props) {
                       </InputLabel>
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 10 }}>
-                      <FormControl
+                   <Grid size={10}>
+                      <FormControl fullWidth
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
                           "& .MuiFormControlLabel-label": {
                             fontSize: "15px",
-
                             fontFamily: "'Be Vietnam Pro', sans-serif",
                           },
                         }}
@@ -1125,6 +1116,7 @@ export default function AddBill(props) {
                           name="sbaPosition"
                           value={formData.sbaPosition}
                           onChange={handleChange}
+                          
                         >
                           <FormControlLabel
                             value="Yes"
@@ -1155,7 +1147,6 @@ export default function AddBill(props) {
                         </RadioGroup>
                       </FormControl>
                     </Grid>
-                  </Grid>
                 </Grid>
               </Box>
             </Paper>

@@ -65,6 +65,7 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 // import { jwtDecode } from "jwt-decode";
+import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; // adjust path as needed
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -78,6 +79,7 @@ export default function AddSenator(props) {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
+  const [deletedTermIds, setDeletedTermIds] = useState([]);
 
   // console.log("User Role:", userRole);
   let senatorActivities =
@@ -175,9 +177,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: null, score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: " ", score: "" }],
+          }
           : term
       )
     );
@@ -188,9 +190,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       )
     );
@@ -209,11 +211,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
           : term
       )
     );
@@ -224,12 +226,12 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: null, score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: null, score: "" },
+            ],
+          }
           : term
       )
     );
@@ -240,11 +242,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       )
     );
@@ -263,11 +265,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.map((activity, i) =>
-                i === activityIndex ? { ...activity, [field]: value } : activity
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.map((activity, i) =>
+              i === activityIndex ? { ...activity, [field]: value } : activity
+            ),
+          }
           : term
       )
     );
@@ -294,9 +296,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              summary: contentRefs.current[termIndex]?.content || "",
-            }
+            ...term,
+            summary: contentRefs.current[termIndex]?.content || "",
+          }
           : term
       )
     );
@@ -318,12 +320,20 @@ export default function AddSenator(props) {
     ]);
   };
 
-  // Remove a term
-  const handleRemoveTerm = (termIndex) => {
-    setSenatorTermData((prev) =>
-      prev.filter((_, index) => index !== termIndex)
-    );
+ const handleRemoveTerm = (termIndex) => {
+    setSenatorTermData((prev) => {
+      const removed = prev[termIndex];
+      if (removed && removed._id) {
+        setDeletedTermIds((ids) => [...ids, removed._id]);
+      }
+      return prev.filter((_, index) => index !== termIndex);
+    });
   };
+  // const handleRemoveTerm = (termIndex) => {
+  //   setSenatorTermData((prev) =>
+  //     prev.filter((_, index) => index !== termIndex)
+  //   );
+  // };
 
   const compareValues = (newVal, oldVal) => {
     if (typeof newVal === "string" && typeof oldVal === "string") {
@@ -348,32 +358,32 @@ export default function AddSenator(props) {
           votesScore:
             term.votesScore?.length > 0
               ? term.votesScore.map((vote) => {
-                  let scoreValue = "";
-                  const dbScore = vote.score?.toLowerCase();
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase();
 
-                  if (dbScore?.includes("yea")) {
-                    scoreValue = "Yes";
-                  } else if (dbScore?.includes("nay")) {
-                    scoreValue = "No";
-                  } else if (dbScore?.includes("other")) {
-                    scoreValue = "Neutral";
-                  } else {
-                    scoreValue = vote.score || "";
-                  }
+                if (dbScore?.includes("yea")) {
+                  scoreValue = "Yes";
+                } else if (dbScore?.includes("nay")) {
+                  scoreValue = "No";
+                } else if (dbScore?.includes("other")) {
+                  scoreValue = "Neutral";
+                } else {
+                  scoreValue = vote.score || "";
+                }
 
-                  return {
-                    voteId: vote.voteId?._id || vote.voteId || null,
-                    score: scoreValue,
-                  };
-                })
+                return {
+                  voteId: vote.voteId?._id || vote.voteId || null,
+                  score: scoreValue,
+                };
+              })
               : [{ voteId: null, score: "" }],
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId:
-                    activity.activityId?._id || activity.activityId || null,
-                  score: activity.score || "",
-                }))
+                activityId:
+                  activity.activityId?._id || activity.activityId || null,
+                score: activity.score || "",
+              }))
               : [{ activityId: null, score: "" }],
         };
       });
@@ -553,6 +563,12 @@ export default function AddSenator(props) {
         editorName: localStorage.getItem("user") || "Unknown User",
         editedAt: new Date(),
       };
+      if (deletedTermIds.length > 0) {
+        await Promise.all(
+          deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
+        );
+        setDeletedTermIds([]); // clear after delete
+      }
 
       const allChanges = [
         ...new Set([
@@ -617,7 +633,7 @@ export default function AddSenator(props) {
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
-      await Promise.all(termPromises);
+  //     await Promise.all(termPromises);
 
       // Clear local changes
       setEditedFields([]);
@@ -1522,132 +1538,134 @@ export default function AddSenator(props) {
 
                     {/* Vote Repeater Start */}
                     {term.votesScore.map((vote, voteIndex) => (
-                      <Grid
-                        rowSpacing={2}
-                        sx={{ width: "100%" }}
-                        key={voteIndex}
-                      >
+                      vote.voteId != null ? ( // Only render if voteId is not null
                         <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
+                          rowSpacing={2}
+                          sx={{ width: "100%" }}
+                          key={voteIndex}
                         >
-                          <Grid size={2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "end",
-                                fontWeight: 700,
-                                my: 0,
-                              }}
-                            >
-                              Scored Vote
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={vote.voteId || ""}
-                                onChange={(event) =>
-                                  handleVoteChange(
-                                    termIndex,
-                                    voteIndex,
-                                    "voteId",
-                                    event.target.value
-                                  )
-                                }
+                          <Grid
+                            size={12}
+                            display="flex"
+                            alignItems="center"
+                            columnGap={"15px"}
+                          >
+                            <Grid size={2}>
+                              <InputLabel
                                 sx={{
-                                  background: "#fff",
-                                  width: "100%",
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedVote = votes.find(
-                                    (v) => v._id === selected
-                                  );
-                                  return (
-                                    <Typography
-                                      sx={{
-                                        overflow: "hidden",
-                                        whiteSpace: "nowrap",
-                                        textOverflow: "ellipsis",
-                                      }}
-                                    >
-                                      {selectedVote?.title || "Select a Bill"}
-                                    </Typography>
-                                  );
-                                }}
-                                MenuProps={{
-                                  PaperProps: {
-                                    sx: {
-                                      maxHeight: 300,
-                                      width: 400,
-                                      "& .MuiMenuItem-root": {
-                                        minHeight: "48px",
-                                      },
-                                    },
-                                  },
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "end",
+                                  fontWeight: 700,
+                                  my: 0,
                                 }}
                               >
-                                <MenuItem value="" disabled>
-                                  Select a Bill
-                                </MenuItem>
-                                {votes && votes.length > 0 ? (
-                                  votes.map((voteItem) => (
-                                    <MenuItem
-                                      key={voteItem._id}
-                                      value={voteItem._id}
-                                      sx={{ py: 1.5 }}
-                                    >
+                                Scored Vote
+                              </InputLabel>
+                            </Grid>
+                            <Grid size={7.5}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={vote.voteId || ""}
+                                  onChange={(event) =>
+                                    handleVoteChange(
+                                      termIndex,
+                                      voteIndex,
+                                      "voteId",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{
+                                    background: "#fff",
+                                    width: "100%",
+                                  }}
+                                  renderValue={(selected) => {
+                                    const selectedVote = votes.find(
+                                      (v) => v._id === selected
+                                    );
+                                    return (
                                       <Typography
                                         sx={{
-                                          whiteSpace: "normal",
-                                          overflowWrap: "break-word",
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                          textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {voteItem.title}
+                                        {selectedVote?.title || "Select a Bill"}
                                       </Typography>
-                                    </MenuItem>
-                                  ))
-                                ) : (
+                                    );
+                                  }}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 300,
+                                        width: 400,
+                                        "& .MuiMenuItem-root": {
+                                          minHeight: "48px",
+                                        },
+                                      },
+                                    },
+                                  }}
+                                >
                                   <MenuItem value="" disabled>
-                                    No bills available
+                                    Select a Bill
                                   </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={vote.score || ""}
-                                onChange={(event) =>
-                                  handleVoteChange(
-                                    termIndex,
-                                    voteIndex,
-                                    "score",
-                                    event.target.value
-                                  )
+                                  {votes && votes.length > 0 ? (
+                                    votes.map((voteItem) => (
+                                      <MenuItem
+                                        key={voteItem._id}
+                                        value={voteItem._id}
+                                        sx={{ py: 1.5 }}
+                                      >
+                                        <Typography
+                                          sx={{
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                          }}
+                                        >
+                                          {voteItem.title}
+                                        </Typography>
+                                      </MenuItem>
+                                    ))
+                                  ) : (
+                                    <MenuItem value="" disabled>
+                                      No bills available
+                                    </MenuItem>
+                                  )}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1.6}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={vote.score || ""}
+                                  onChange={(event) =>
+                                    handleVoteChange(
+                                      termIndex,
+                                      voteIndex,
+                                      "score",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{ background: "#fff" }}
+                                >
+                                  <MenuItem value="Yes">Yea</MenuItem>
+                                  <MenuItem value="No">Nay</MenuItem>
+                                  <MenuItem value="Neutral">Other</MenuItem>
+                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1}>
+                              <DeleteForeverIcon
+                                onClick={() =>
+                                  handleRemoveVote(termIndex, voteIndex)
                                 }
-                                sx={{ background: "#fff" }}
-                              >
-                                <MenuItem value="Yes">Yea</MenuItem>
-                                <MenuItem value="No">Nay</MenuItem>
-                                <MenuItem value="Neutral">Other</MenuItem>
-                                <MenuItem value="None">None</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveVote(termIndex, voteIndex)
-                              }
-                            />
+                              />
+                            </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
+                      ) : null
                     ))}
                     {/* Vote Repeater Ends */}
 
@@ -1748,7 +1766,7 @@ export default function AddSenator(props) {
                                   Select an Activity
                                 </MenuItem>
                                 {senatorActivities &&
-                                senatorActivities.length > 0 ? (
+                                  senatorActivities.length > 0 ? (
                                   senatorActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
@@ -1790,7 +1808,7 @@ export default function AddSenator(props) {
                                 <MenuItem value="Yes">Yea</MenuItem>
                                 <MenuItem value="No">Nay</MenuItem>
                                 <MenuItem value="Neutral">Other</MenuItem>
-                                <MenuItem value="None">None</MenuItem>
+                                {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>
                           </Grid>
