@@ -529,6 +529,19 @@ export default function AddSenator(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
+  
+  const handleStatusChange = (status) => {
+    const fieldName = "status"; // The field being changed
+
+    // Update local changes if not already tracked
+    setLocalChanges((prev) =>
+      prev.includes(fieldName) ? prev : [...prev, fieldName]
+    );
+
+    // Update the form data
+    setFormData((prev) => ({ ...prev, status }));
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -606,14 +619,13 @@ export default function AddSenator(props) {
 
       await Promise.all(termPromises);
 
-      // Reload data
-
-      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-      setEditedFields([]);
-
       // Clear local changes
+      setEditedFields([]);
       setLocalChanges([]);
+      // Reload data
+      
       await dispatch(getSenatorById(id)).unwrap();
+      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
 
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -628,68 +640,6 @@ export default function AddSenator(props) {
       setLoading(false);
     }
   };
-
-  // const handleReview = async (e) => {
-  //   e.preventDefault();
-  //   let operationType = "";
-  //   setLoading(true);
-
-  //   try {
-  //     // First handle senator data
-  //     if (id) {
-  //       const updatedData = new FormData();
-  //       Object.entries(formData).forEach(([key, value]) => {
-  //         if (value) updatedData.append(key, value);
-  //       });
-  //       await dispatch(updateSenator({ id, formData: updatedData })).unwrap();
-  //       operationType = "Updated";
-  //     }
-
-  //     // Handle senator term data
-  //     const termPromises = senatorTermData.map((termData) => {
-  //       if (termData._id) {
-  //         operationType = "under review";
-  //         return dispatch(
-  //           updateSenatorData({
-  //             id: termData._id,
-  //             data: {
-  //               ...termData,
-  //               senateId: id,
-  //             },
-  //           })
-  //         ).unwrap();
-  //       } else {
-  //         operationType = "under review";
-  //         return dispatch(
-  //           createSenatorData({
-  //             ...termData,
-  //             senateId: id,
-  //           })
-  //         ).unwrap();
-  //       }
-  //     });
-
-  //     await Promise.all(termPromises);
-
-  //     // 🔄 Update Status to "review"
-  //     await dispatch(
-  //       updateSenatorStatus({
-  //         id,
-  //         publishStatus: "under review", // ✅ valid value
-  //       })
-  //     ).unwrap();
-
-  //     await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-  //     await dispatch(getSenatorById(id)).unwrap();
-
-  //     handleSnackbarOpen(`Data ${operationType} successfully!`, "success");
-  //   } catch (error) {
-  //     console.error("Save failed:", error);
-  //     handleSnackbarOpen("Failed to save: " + error.message, "error");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -717,17 +667,6 @@ export default function AddSenator(props) {
     width: 1,
   });
 
-  const handleStatusChange = (status) => {
-    const fieldName = "status"; // The field being changed
-
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
-    );
-
-    // Update the form data
-    setFormData((prev) => ({ ...prev, status }));
-  };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
   // Update your status config
@@ -835,7 +774,7 @@ export default function AddSenator(props) {
                         formData.publishStatus === "draft"
                           ? "66, 165, 245"
                           : formData.publishStatus === "under review"
-                          ? "255, 193, 7"
+                          ? "230, 81, 0"
                           : formData.publishStatus === "published"
                           ? "76, 175, 80"
                           : "244, 67, 54"
@@ -875,9 +814,9 @@ export default function AddSenator(props) {
                       {userRole === "admin" && (
                         <Chip
                           label={`${
-                            (Array.isArray(formData?.editedFields)
+                            Array.isArray(formData?.editedFields)
                               ? formData.editedFields.length
-                              : 0) + localChanges.length
+                              : 0
                           } pending changes`}
                           size="small"
                           color="warning"
