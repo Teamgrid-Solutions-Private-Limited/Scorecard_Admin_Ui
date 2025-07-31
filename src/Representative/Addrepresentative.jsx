@@ -494,7 +494,7 @@ export default function Addrepresentative(props) {
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
-        editorName: decodedToken.name || decodedToken.username || "You",
+        editorName: localStorage.getItem("user") || "Unknown Editor",
         editedAt: new Date(),
       };
 
@@ -515,6 +515,7 @@ export default function Addrepresentative(props) {
       // Clear editedFields if publishing
       if (representativeUpdate.publishStatus === "published") {
         representativeUpdate.editedFields = [];
+        representativeUpdate.fieldEditors = {};
       }
 
       // Update representative
@@ -829,6 +830,7 @@ export default function Addrepresentative(props) {
                                 const isTermField = field.startsWith("term");
                                 const editorInfo =
                                   formData?.fieldEditors?.[field];
+                                const editor = editorInfo?.editorName || "Unknown Editor";
                                 const editTime = editorInfo?.editedAt
                                   ? new Date(
                                       editorInfo.editedAt
@@ -886,7 +888,7 @@ export default function Addrepresentative(props) {
                                           variant="caption"
                                           color="text.secondary"
                                         >
-                                          Edited on {editTime}
+                                          Edited by {editor} on {editTime}
                                         </Typography>
                                       }
                                       sx={{ my: 0 }}
