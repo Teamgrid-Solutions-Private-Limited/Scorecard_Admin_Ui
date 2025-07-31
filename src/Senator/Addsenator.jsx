@@ -167,7 +167,7 @@ export default function AddSenator(props) {
         index === termIndex
           ? {
               ...term,
-              votesScore: [...term.votesScore, { voteId: null, score: "" }],
+              votesScore: [...term.votesScore, { voteId: " ", score: "" }],
             }
           : term
       )
@@ -625,7 +625,7 @@ export default function AddSenator(props) {
 
   //     await Promise.all(termPromises);
 
-  //     // 🔄 Update Status to "review"
+  //     // Update Status to "review"
   //     await dispatch(
   //       updateSenatorStatus({
   //         id,
@@ -1512,6 +1512,7 @@ export default function AddSenator(props) {
 
                     {/* Vote Repeater Start */}
                     {term.votesScore.map((vote, voteIndex) => (
+                        vote.voteId != null ? ( // Only render if voteId is not null
                       <Grid
                         rowSpacing={2}
                         sx={{ width: "100%" }}
@@ -1625,7 +1626,7 @@ export default function AddSenator(props) {
                                 <MenuItem value="Yes">Yea</MenuItem>
                                 <MenuItem value="No">Nay</MenuItem>
                                 <MenuItem value="Neutral">Other</MenuItem>
-                                <MenuItem value="None">None</MenuItem>
+                                {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>
                           </Grid>
@@ -1638,6 +1639,7 @@ export default function AddSenator(props) {
                           </Grid>
                         </Grid>
                       </Grid>
+                        ):null
                     ))}
                     {/* Vote Repeater Ends */}
 
@@ -1780,7 +1782,7 @@ export default function AddSenator(props) {
                                 <MenuItem value="Yes">Yea</MenuItem>
                                 <MenuItem value="No">Nay</MenuItem>
                                 <MenuItem value="Neutral">Other</MenuItem>
-                                <MenuItem value="None">None</MenuItem>
+                                {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>
                           </Grid>
