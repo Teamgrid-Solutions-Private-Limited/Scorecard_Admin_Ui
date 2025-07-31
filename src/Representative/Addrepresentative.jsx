@@ -496,7 +496,7 @@ export default function Addrepresentative(props) {
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
-        editorName: localStorage.getItem("fullName") || decodedToken.username || "unKnown",
+        editorName: localStorage.getItem("user") || "Unknown Editor",
         editedAt: new Date(),
       };
 
@@ -517,6 +517,7 @@ export default function Addrepresentative(props) {
       // Clear editedFields if publishing
       if (representativeUpdate.publishStatus === "published") {
         representativeUpdate.editedFields = [];
+        representativeUpdate.fieldEditors = {};
       }
 
       // Update representative
@@ -826,27 +827,23 @@ export default function Addrepresentative(props) {
                               Pending Changes
                             </Typography>
 
-                <List dense sx={{ py: 0 }}>
-                  {/* Backend-edited fields (with timestamps) */}
-                  {backend.map((field) => {
-                    const editorInfo = formData?.fieldEditors?.[field];
-                    const editedBy = editorInfo?.editorName
-                    const editTime = editorInfo?.editedAt
-                      ? new Date(editorInfo.editedAt).toLocaleString([], {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "unknown time";
-
-                    const parts = field.split("_");
-                    const isTermField = field.startsWith("term");
-                    const displayLabel = isTermField
-                      ? `Term ${+parts[0].replace("term", "") + 1} • ${
-                          parts[1]?.charAt(0).toUpperCase() + parts[1]?.slice(1)
-                        }`
-                      : field.charAt(0).toUpperCase() + field.slice(1);
+                            <List dense sx={{ py: 0 }}>
+                              {backend.map((field) => {
+                                const parts = field.split("_");
+                                const isTermField = field.startsWith("term");
+                                const editorInfo =
+                                  formData?.fieldEditors?.[field];
+                                const editor = editorInfo?.editorName || "Unknown Editor";
+                                const editTime = editorInfo?.editedAt
+                                  ? new Date(
+                                      editorInfo.editedAt
+                                    ).toLocaleString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      day: "2-digit",
+                                      month: "short",
+                                    })
+                                  : "unknown time";
 
                                 return (
                                   <ListItem key={field} sx={{ py: 0.5, px: 1 }}>
@@ -894,7 +891,7 @@ export default function Addrepresentative(props) {
                                           variant="caption"
                                           color="text.secondary"
                                         >
-                                          Edited on {editTime}
+                                          Edited by {editor} on {editTime}
                                         </Typography>
                                       }
                                       sx={{ my: 0 }}
