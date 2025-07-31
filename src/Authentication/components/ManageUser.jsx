@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import {
   Box,
   Typography,
@@ -163,9 +162,9 @@ export default function ManageUser(props) {
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
-        <Box sx={{ flexGrow: 1, width: "80%", p: 2 }}>
+        <Box sx={{ flexGrow: 1, width: "80%",  }}>
           <FixedHeader />
-          <Box sx={{ maxWidth: "100%", mx: "auto", mt: 6 }}>
+          <Box sx={{ maxWidth: "100%", mt: 4,mx:2 }}>
             <Stack
               direction="row"
               justifyContent="space-between"
