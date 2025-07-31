@@ -495,8 +495,6 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-
-
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -505,7 +503,10 @@ export default function Addrepresentative(props) {
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
-        editorName: localStorage.getItem("fullName") || decodedToken.username || "unKnown",
+        editorName:
+          localStorage.getItem("fullName") ||
+          decodedToken.username ||
+          "unKnown",
         editedAt: new Date(),
       };
       if (deletedTermIds.length > 0) {
@@ -730,14 +731,15 @@ export default function Addrepresentative(props) {
                     sx={{
                       p: 1,
                       borderRadius: "50%",
-                      backgroundColor: `rgba(${formData.publishStatus === "draft"
-                        ? "66, 165, 245"
-                        : formData.publishStatus === "under review"
+                      backgroundColor: `rgba(${
+                        formData.publishStatus === "draft"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
                           ? "255, 193, 7"
                           : formData.publishStatus === "published"
-                            ? "76, 175, 80"
-                            : "244, 67, 54"
-                        }, 0.2)`,
+                          ? "76, 175, 80"
+                          : "244, 67, 54"
+                      }, 0.2)`,
                       display: "grid",
                       placeItems: "center",
                       flexShrink: 0,
@@ -842,23 +844,31 @@ export default function Addrepresentative(props) {
                             <List dense sx={{ py: 0 }}>
                               {/* Backend-edited fields (with timestamps) */}
                               {backend.map((field) => {
-                                const editorInfo = formData?.fieldEditors?.[field];
-                                const editedBy = editorInfo?.editorName
+                                const editorInfo =
+                                  formData?.fieldEditors?.[field];
+                                const editedBy = editorInfo?.editorName;
                                 const editTime = editorInfo?.editedAt
-                                  ? new Date(editorInfo.editedAt).toLocaleString([], {
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
+                                  ? new Date(
+                                      editorInfo.editedAt
+                                    ).toLocaleString([], {
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
                                   : "unknown time";
 
                                 const parts = field.split("_");
                                 const isTermField = field.startsWith("term");
                                 const displayLabel = isTermField
-                                  ? `Term ${+parts[0].replace("term", "") + 1} • ${parts[1]?.charAt(0).toUpperCase() + parts[1]?.slice(1)
-                                  }`
-                                  : field.charAt(0).toUpperCase() + field.slice(1);
+                                  ? `Term ${
+                                      +parts[0].replace("term", "") + 1
+                                    } • ${
+                                      parts[1]?.charAt(0).toUpperCase() +
+                                      parts[1]?.slice(1)
+                                    }`
+                                  : field.charAt(0).toUpperCase() +
+                                    field.slice(1);
 
                                 return (
                                   <ListItem key={field} sx={{ py: 0.5, px: 1 }}>
@@ -1404,6 +1414,7 @@ export default function Addrepresentative(props) {
                     <Grid size={9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         initialValue={term.summary || ""}
                         onEditorChange={(content) =>
