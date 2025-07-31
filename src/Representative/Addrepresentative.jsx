@@ -63,6 +63,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -75,7 +76,7 @@ export default function Addrepresentative(props) {
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [originalTermData, setOriginalTermData] = useState([]);
-
+  const [deletedTermIds, setDeletedTermIds] = useState([]);
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
 
@@ -157,7 +158,7 @@ export default function Addrepresentative(props) {
         index === termIndex
           ? {
             ...term,
-            votesScore: [...term.votesScore, { voteId:  " ", score: "" }],
+            votesScore: [...term.votesScore, { voteId: " ", score: "" }],
           }
           : term
       )
@@ -278,8 +279,17 @@ export default function Addrepresentative(props) {
 
   // Remove a term
   const handleRemoveTerm = (termIndex) => {
-    setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
+    setHouseTermData((prev) => {
+      const removed = prev[termIndex];
+      if (removed && removed._id) {
+        setDeletedTermIds((ids) => [...ids, removed._id]);
+      }
+      return prev.filter((_, index) => index !== termIndex);
+    });
   };
+  // const handleRemoveTerm = (termIndex) => {
+  //   setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
+  // };
 
   const compareValues = (newVal, oldVal) => {
     if (typeof newVal === "string" && typeof oldVal === "string") {
@@ -498,7 +508,12 @@ export default function Addrepresentative(props) {
         editorName: localStorage.getItem("fullName") || decodedToken.username || "unKnown",
         editedAt: new Date(),
       };
-
+      if (deletedTermIds.length > 0) {
+        await Promise.all(
+          deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
+        );
+        setDeletedTermIds([]); // clear after delete
+      }
       // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
       editedFields.forEach((field) => {
@@ -716,12 +731,12 @@ export default function Addrepresentative(props) {
                       p: 1,
                       borderRadius: "50%",
                       backgroundColor: `rgba(${formData.publishStatus === "draft"
-                          ? "66, 165, 245"
-                          : formData.publishStatus === "under review"
-                            ? "255, 193, 7"
-                            : formData.publishStatus === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
+                        ? "66, 165, 245"
+                        : formData.publishStatus === "under review"
+                          ? "255, 193, 7"
+                          : formData.publishStatus === "published"
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
                         }, 0.2)`,
                       display: "grid",
                       placeItems: "center",
@@ -1116,7 +1131,7 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2} sx={{minWidth:165}} >
+                  <Grid size={2} sx={{ minWidth: 165 }} >
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1177,7 +1192,7 @@ export default function Addrepresentative(props) {
                         my: 0,
                         whiteSpace: "normal",         // allow wrapping
                         overflowWrap: "break-word",   // break long words
-                        width: "100%",    
+                        width: "100%",
                       }}
                     >
                       Representative's Photo
@@ -1429,136 +1444,136 @@ export default function Addrepresentative(props) {
 
                     {/* Vote Repeater Start */}
                     {term.votesScore
-                    .map((vote, voteIndex) => (
-                       vote.voteId != null ? ( // Only render if voteId is not null
-                      <Grid
-                        rowSpacing={2}
-                        sx={{ width: "100%" }}
-                        key={voteIndex}
-                      >
-                        <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
-                        >
-                          <Grid size={2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "end",
-                                fontWeight: 700,
-                                my: 0,
-                              }}
+                      .map((vote, voteIndex) => (
+                        vote.voteId != null ? ( // Only render if voteId is not null
+                          <Grid
+                            rowSpacing={2}
+                            sx={{ width: "100%" }}
+                            key={voteIndex}
+                          >
+                            <Grid
+                              size={12}
+                              display="flex"
+                              alignItems="center"
+                              columnGap={"15px"}
                             >
-                              Scored Vote
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={vote.voteId || ""}
-                                onChange={(event) =>
-                                  handleVoteChange(
-                                    termIndex,
-                                    voteIndex,
-                                    "voteId",
-                                    event.target.value
-                                  )
-                                }
-                                sx={{
-                                  background: "#fff",
-                                  width: "100%",
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedVote = votes.find(
-                                    (v) => v._id === selected
-                                  );
-                                  return (
-                                    <Typography
-                                      sx={{
-                                        overflow: "hidden",
-                                        whiteSpace: "nowrap",
-                                        textOverflow: "ellipsis",
-                                      }}
-                                    >
-                                      {selectedVote?.title || "Select a Bill"}
-                                    </Typography>
-                                  );
-                                }}
-                                MenuProps={{
-                                  PaperProps: {
-                                    sx: {
-                                      maxHeight: 300,
-                                      width: 400,
-                                      "& .MuiMenuItem-root": {
-                                        minHeight: "48px",
+                              <Grid size={2}>
+                                <InputLabel
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "end",
+                                    fontWeight: 700,
+                                    my: 0,
+                                  }}
+                                >
+                                  Scored Vote
+                                </InputLabel>
+                              </Grid>
+                              <Grid size={7.5}>
+                                <FormControl fullWidth>
+                                  <Select
+                                    value={vote.voteId || ""}
+                                    onChange={(event) =>
+                                      handleVoteChange(
+                                        termIndex,
+                                        voteIndex,
+                                        "voteId",
+                                        event.target.value
+                                      )
+                                    }
+                                    sx={{
+                                      background: "#fff",
+                                      width: "100%",
+                                    }}
+                                    renderValue={(selected) => {
+                                      const selectedVote = votes.find(
+                                        (v) => v._id === selected
+                                      );
+                                      return (
+                                        <Typography
+                                          sx={{
+                                            overflow: "hidden",
+                                            whiteSpace: "nowrap",
+                                            textOverflow: "ellipsis",
+                                          }}
+                                        >
+                                          {selectedVote?.title || "Select a Bill"}
+                                        </Typography>
+                                      );
+                                    }}
+                                    MenuProps={{
+                                      PaperProps: {
+                                        sx: {
+                                          maxHeight: 300,
+                                          width: 400,
+                                          "& .MuiMenuItem-root": {
+                                            minHeight: "48px",
+                                          },
+                                        },
                                       },
-                                    },
-                                  },
-                                }}
-                              >
-                                <MenuItem value="" disabled>
-                                  Select a Bill
-                                </MenuItem>
-                                {votes && votes.length > 0 ? (
-                                  votes.map((voteItem) => (
-                                    <MenuItem
-                                      key={voteItem._id}
-                                      value={voteItem._id}
-                                      sx={{ py: 1.5 }}
-                                    >
-                                      <Typography
-                                        sx={{
-                                          whiteSpace: "normal",
-                                          overflowWrap: "break-word",
-                                        }}
-                                      >
-                                        {voteItem.title}
-                                      </Typography>
+                                    }}
+                                  >
+                                    <MenuItem value="" disabled>
+                                      Select a Bill
                                     </MenuItem>
-                                  ))
-                                ) : (
-                                  <MenuItem value="" disabled>
-                                    No bills available
-                                  </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
+                                    {votes && votes.length > 0 ? (
+                                      votes.map((voteItem) => (
+                                        <MenuItem
+                                          key={voteItem._id}
+                                          value={voteItem._id}
+                                          sx={{ py: 1.5 }}
+                                        >
+                                          <Typography
+                                            sx={{
+                                              whiteSpace: "normal",
+                                              overflowWrap: "break-word",
+                                            }}
+                                          >
+                                            {voteItem.title}
+                                          </Typography>
+                                        </MenuItem>
+                                      ))
+                                    ) : (
+                                      <MenuItem value="" disabled>
+                                        No bills available
+                                      </MenuItem>
+                                    )}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid size={1.6}>
+                                <FormControl fullWidth>
+                                  <Select
+                                    value={vote.score || ""}
+                                    onChange={(event) =>
+                                      handleVoteChange(
+                                        termIndex,
+                                        voteIndex,
+                                        "score",
+                                        event.target.value
+                                      )
+                                    }
+                                    sx={{ background: "#fff" }}
+                                  >
+                                    <MenuItem value="Yes">Yea</MenuItem>
+                                    <MenuItem value="No">Nay</MenuItem>
+                                    <MenuItem value="Neutral">Other</MenuItem>
+                                    {/* <MenuItem value="None">None</MenuItem> */}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid size={1}>
+                                <DeleteForeverIcon
+                                  onClick={() =>
+                                    handleRemoveVote(termIndex, voteIndex)
+                                  }
+                                />
+                              </Grid>
+                            </Grid>
                           </Grid>
-                          <Grid size={1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={vote.score || ""}
-                                onChange={(event) =>
-                                  handleVoteChange(
-                                    termIndex,
-                                    voteIndex,
-                                    "score",
-                                    event.target.value
-                                  )
-                                }
-                                sx={{ background: "#fff" }}
-                              >
-                                <MenuItem value="Yes">Yea</MenuItem>
-                                <MenuItem value="No">Nay</MenuItem>
-                                <MenuItem value="Neutral">Other</MenuItem>
-                                {/* <MenuItem value="None">None</MenuItem> */}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveVote(termIndex, voteIndex)
-                              }
-                            />
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                       ):null
-                    ))}
+                        ) : null
+                      ))}
                     {/* Vote Repeater Ends */}
 
                     <Grid size={1}></Grid>
