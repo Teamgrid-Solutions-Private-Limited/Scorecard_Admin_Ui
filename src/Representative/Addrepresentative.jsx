@@ -104,9 +104,8 @@ export default function Addrepresentative(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -157,9 +156,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: null, score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId:  " ", score: "" }],
+          }
           : term
       )
     );
@@ -170,9 +169,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       )
     );
@@ -183,11 +182,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
           : term
       )
     );
@@ -198,12 +197,12 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: null, score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: null, score: "" },
+            ],
+          }
           : term
       )
     );
@@ -214,11 +213,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       )
     );
@@ -229,11 +228,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.map((activity, i) =>
-                i === activityIndex ? { ...activity, [field]: value } : activity
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.map((activity, i) =>
+              i === activityIndex ? { ...activity, [field]: value } : activity
+            ),
+          }
           : term
       )
     );
@@ -253,9 +252,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              summary: contentRefs.current[termIndex]?.content || "",
-            }
+            ...term,
+            summary: contentRefs.current[termIndex]?.content || "",
+          }
           : term
       )
     );
@@ -305,32 +304,32 @@ export default function Addrepresentative(props) {
           votesScore:
             term.votesScore?.length > 0
               ? term.votesScore.map((vote) => {
-                  let scoreValue = "";
-                  const dbScore = vote.score?.toLowerCase();
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase();
 
-                  if (dbScore?.includes("yea_votes")) {
-                    scoreValue = "Yes";
-                  } else if (dbScore?.includes("nay_votes")) {
-                    scoreValue = "No";
-                  } else if (dbScore?.includes("other_votes")) {
-                    scoreValue = "Neutral";
-                  } else {
-                    scoreValue = vote.score || "";
-                  }
+                if (dbScore?.includes("yea_votes")) {
+                  scoreValue = "Yes";
+                } else if (dbScore?.includes("nay_votes")) {
+                  scoreValue = "No";
+                } else if (dbScore?.includes("other_votes")) {
+                  scoreValue = "Neutral";
+                } else {
+                  scoreValue = vote.score || "";
+                }
 
-                  return {
-                    voteId: vote.voteId?._id || vote.voteId || null,
-                    score: scoreValue,
-                  };
-                })
+                return {
+                  voteId: vote.voteId?._id || vote.voteId || null,
+                  score: scoreValue,
+                };
+              })
               : [{ voteId: null, score: "" }],
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId:
-                    activity.activityId?._id || activity.activityId || null,
-                  score: activity.score || "",
-                }))
+                activityId:
+                  activity.activityId?._id || activity.activityId || null,
+                score: activity.score || "",
+              }))
               : [{ activityId: null, score: "" }],
         };
       });
@@ -486,7 +485,7 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-  
+
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -548,8 +547,8 @@ export default function Addrepresentative(props) {
 
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateHouseData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -562,9 +561,9 @@ export default function Addrepresentative(props) {
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -699,63 +698,62 @@ export default function Addrepresentative(props) {
             }}
           >
             {userRole && formData.publishStatus !== "published" && (
-  <Box
-    sx={{
-      width: "98%",
-      p: 2,
-      backgroundColor: statusData.backgroundColor,
-      borderLeft: `4px solid ${statusData.borderColor}`,
-      borderRadius: "0 8px 8px 0",
-      boxShadow: 1,
-      mb: 2,
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-      {/* Status icon bubble */}
-      <Box
-        sx={{
-          p: 1,
-          borderRadius: "50%",
-          backgroundColor: `rgba(${
-            formData.publishStatus === "draft"
-              ? "66, 165, 245"
-              : formData.publishStatus === "under review"
-              ? "255, 193, 7"
-              : formData.publishStatus === "published"
-              ? "76, 175, 80"
-              : "244, 67, 54"
-          }, 0.2)`,
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        {React.cloneElement(statusData.icon, {
-          sx: { color: statusData.iconColor },
-        })}
-      </Box>
+              <Box
+                sx={{
+                  width: "98%",
+                  p: 2,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon bubble */}
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${formData.publishStatus === "draft"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
+                            ? "255, 193, 7"
+                            : formData.publishStatus === "published"
+                              ? "76, 175, 80"
+                              : "244, 67, 54"
+                        }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(statusData.icon, {
+                      sx: { color: statusData.iconColor },
+                    })}
+                  </Box>
 
-      <Box sx={{ flex: 1 }}>
-        {/* Header: title + pending count (admin only) */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography
-            variant="subtitle1"
-            fontWeight="600"
-            sx={{
-              color: statusData.titleColor,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            {statusData.title}
-          </Typography>
+                  <Box sx={{ flex: 1 }}>
+                    {/* Header: title + pending count (admin only) */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        sx={{
+                          color: statusData.titleColor,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {statusData.title}
+                      </Typography>
 
                       {userRole === "admin" && (
                         <Chip
@@ -826,27 +824,26 @@ export default function Addrepresentative(props) {
                               Pending Changes
                             </Typography>
 
-                <List dense sx={{ py: 0 }}>
-                  {/* Backend-edited fields (with timestamps) */}
-                  {backend.map((field) => {
-                    const editorInfo = formData?.fieldEditors?.[field];
-                    const editedBy = editorInfo?.editorName
-                    const editTime = editorInfo?.editedAt
-                      ? new Date(editorInfo.editedAt).toLocaleString([], {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "unknown time";
+                            <List dense sx={{ py: 0 }}>
+                              {/* Backend-edited fields (with timestamps) */}
+                              {backend.map((field) => {
+                                const editorInfo = formData?.fieldEditors?.[field];
+                                const editedBy = editorInfo?.editorName
+                                const editTime = editorInfo?.editedAt
+                                  ? new Date(editorInfo.editedAt).toLocaleString([], {
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                  : "unknown time";
 
-                    const parts = field.split("_");
-                    const isTermField = field.startsWith("term");
-                    const displayLabel = isTermField
-                      ? `Term ${+parts[0].replace("term", "") + 1} • ${
-                          parts[1]?.charAt(0).toUpperCase() + parts[1]?.slice(1)
-                        }`
-                      : field.charAt(0).toUpperCase() + field.slice(1);
+                                const parts = field.split("_");
+                                const isTermField = field.startsWith("term");
+                                const displayLabel = isTermField
+                                  ? `Term ${+parts[0].replace("term", "") + 1} • ${parts[1]?.charAt(0).toUpperCase() + parts[1]?.slice(1)
+                                  }`
+                                  : field.charAt(0).toUpperCase() + field.slice(1);
 
                                 return (
                                   <ListItem key={field} sx={{ py: 0.5, px: 1 }}>
@@ -873,19 +870,17 @@ export default function Addrepresentative(props) {
                                             fontWeight="500"
                                           >
                                             {isTermField
-                                              ? `Term ${
-                                                  +parts[0].replace(
-                                                    "term",
-                                                    ""
-                                                  ) + 1
-                                                } • ${
-                                                  parts[1]
-                                                    ?.charAt(0)
-                                                    .toUpperCase() +
-                                                  parts[1]?.slice(1)
-                                                }`
+                                              ? `Term ${+parts[0].replace(
+                                                "term",
+                                                ""
+                                              ) + 1
+                                              } • ${parts[1]
+                                                ?.charAt(0)
+                                                .toUpperCase() +
+                                              parts[1]?.slice(1)
+                                              }`
                                               : field.charAt(0).toUpperCase() +
-                                                field.slice(1)}
+                                              field.slice(1)}
                                           </Typography>
                                         </Box>
                                       }
@@ -934,14 +929,12 @@ export default function Addrepresentative(props) {
                               const parts = field.split("_");
                               const isTermField = field.startsWith("term");
                               const displayLabel = isTermField
-                                ? `Term ${
-                                    +parts[0].replace("term", "") + 1
-                                  } • ${
-                                    parts[1]?.charAt(0).toUpperCase() +
-                                    parts[1]?.slice(1)
-                                  }`
+                                ? `Term ${+parts[0].replace("term", "") + 1
+                                } • ${parts[1]?.charAt(0).toUpperCase() +
+                                parts[1]?.slice(1)
+                                }`
                                 : field.charAt(0).toUpperCase() +
-                                  field.slice(1);
+                                field.slice(1);
 
                               return (
                                 <Chip
@@ -1017,14 +1010,17 @@ export default function Addrepresentative(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                 >
-                  <Grid size={2}>
+                  <Grid size={2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: "flex-end", // align left
                         fontWeight: 700,
                         my: 0,
+                        whiteSpace: "normal",         // allow wrapping
+                        overflowWrap: "break-word",   // break long words
+                        width: "100%",                // take full width of grid cell
                       }}
                     >
                       Representative's Name
@@ -1120,7 +1116,7 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={2} sx={{minWidth:165}} >
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1171,19 +1167,23 @@ export default function Addrepresentative(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        alignItems: "center",
+                        justifyContent: "flex-end", // align left
                         fontWeight: 700,
                         my: 0,
+                        whiteSpace: "normal",         // allow wrapping
+                        overflowWrap: "break-word",   // break long words
+                        width: "100%",    
                       }}
                     >
                       Representative's Photo
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={8}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       {formData.photo ? (
                         <img
@@ -1428,7 +1428,9 @@ export default function Addrepresentative(props) {
                     </Grid>
 
                     {/* Vote Repeater Start */}
-                    {term.votesScore.map((vote, voteIndex) => (
+                    {term.votesScore
+                    .map((vote, voteIndex) => (
+                       vote.voteId != null ? ( // Only render if voteId is not null
                       <Grid
                         rowSpacing={2}
                         sx={{ width: "100%" }}
@@ -1555,6 +1557,7 @@ export default function Addrepresentative(props) {
                           </Grid>
                         </Grid>
                       </Grid>
+                       ):null
                     ))}
                     {/* Vote Repeater Ends */}
 
@@ -1654,7 +1657,7 @@ export default function Addrepresentative(props) {
                                   Select an Activity
                                 </MenuItem>
                                 {houseActivities &&
-                                houseActivities.length > 0 ? (
+                                  houseActivities.length > 0 ? (
                                   houseActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
