@@ -75,6 +75,7 @@ export default function Addrepresentative(props) {
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [originalTermData, setOriginalTermData] = useState([]);
+  const [localChanges, setLocalChanges] = useState([]);
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -133,6 +134,11 @@ export default function Addrepresentative(props) {
   ]);
 
   const handleTermChange = (e, termIndex) => {
+
+    const fieldName = `term${termIndex}_${e.target.name}`;
+    if (!localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    }
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -143,6 +149,10 @@ export default function Addrepresentative(props) {
   };
 
   const handleSwitchChange = (e, termIndex) => {
+    const fieldName = `term${termIndex}_${e.target.name}`;
+    if (!localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    }
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -179,6 +189,14 @@ export default function Addrepresentative(props) {
   };
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
+
+    // Construct the field name for change tracking
+    const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
+
+    // Update local changes if not already tracked
+    setLocalChanges((prev) =>
+      prev.includes(fieldName) ? prev : [...prev, fieldName]
+    );
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -225,6 +243,14 @@ export default function Addrepresentative(props) {
   };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
+
+    // Construct the field name for change tracking
+    const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
+
+    // Update local changes if not already tracked
+    setLocalChanges((prev) =>
+      prev.includes(fieldName) ? prev : [...prev, fieldName]
+    );
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -242,6 +268,12 @@ export default function Addrepresentative(props) {
   const contentRefs = useRef([]);
 
   const handleEditorChange = useCallback((content, termIndex) => {
+     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
+
+    // Track the change if not already tracked
+    setLocalChanges((prev) => 
+      prev.includes(fieldName) ? prev : [...prev, fieldName]
+    );
     if (!contentRefs.current[termIndex]) {
       contentRefs.current[termIndex] = {};
     }
@@ -467,15 +499,20 @@ export default function Addrepresentative(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+
+    // Track the changed field
+    if (!localChanges.includes(name)) {
+      setLocalChanges((prev) => [...prev, name]);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
-      if (originalFormData) {
-        const changes = Object.keys(newData).filter((key) =>
-          compareValues(newData[key], originalFormData[key])
-        );
-        setEditedFields(changes);
-      }
+      // if (originalFormData) {
+      //   const changes = Object.keys(newData).filter((key) =>
+      //     compareValues(newData[key], originalFormData[key])
+      //   );
+      //   setEditedFields(changes);
+      // }
 
       return newData;
     });
@@ -499,6 +536,15 @@ export default function Addrepresentative(props) {
         editorName: localStorage.getItem("user") || "Unknown Editor",
         editedAt: new Date(),
       };
+
+       const allChanges = [
+        ...new Set([
+          ...(Array.isArray(formData.editedFields)
+            ? formData.editedFields
+            : []),
+          ...localChanges,
+        ]),
+      ];
 
       // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
@@ -557,9 +603,10 @@ export default function Addrepresentative(props) {
       await Promise.all(termPromises);
 
       // Reload data
-      await dispatch(getHouseById(id)).unwrap();
+     
       await dispatch(getHouseDataByHouseId(id)).unwrap();
-
+       setLocalChanges([]);
+       await dispatch(getHouseById(id)).unwrap();
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
@@ -601,6 +648,13 @@ export default function Addrepresentative(props) {
   });
 
   const handleStatusChange = (status) => {
+
+    const fieldName = "status"; // The field being changed
+
+    // Update local changes if not already tracked
+    setLocalChanges((prev) =>
+      prev.includes(fieldName) ? prev : [...prev, fieldName]
+    );
     setFormData((prev) => ({ ...prev, status }));
   };
 
@@ -760,21 +814,11 @@ export default function Addrepresentative(props) {
 
                       {userRole === "admin" && (
                         <Chip
-                          label={`${(() => {
-                            const backend = Array.isArray(
-                              formData?.editedFields
-                            )
-                              ? formData.editedFields
-                              : [];
-                            const local = Array.isArray(editedFields)
-                              ? editedFields
-                              : [];
-                            // don't double count fields present in both
-                            const localOnly = local.filter(
-                              (f) => !backend.includes(f)
-                            );
-                            return backend.length + localOnly.length;
-                          })()} pending changes`}
+                          label={`${
+                            (Array.isArray(formData?.editedFields)
+                              ? formData.editedFields.length
+                              : 0) + localChanges.length
+                          } pending changes`}
                           size="small"
                           color="warning"
                           variant="outlined"
@@ -784,15 +828,15 @@ export default function Addrepresentative(props) {
 
                     <Box sx={{ mt: 1.5 }}>
                       {(() => {
-                        const backend = Array.isArray(formData?.editedFields)
+                        const backendChanges = Array.isArray(
+                          formData?.editedFields
+                        )
                           ? formData.editedFields
                           : [];
-                        const local = Array.isArray(editedFields)
-                          ? editedFields
-                          : [];
-                        const hasAny = backend.length > 0 || local.length > 0;
+                        const hasChanges =
+                          backendChanges.length > 0 || localChanges.length > 0;
 
-                        if (!hasAny) {
+                        if (!hasChanges) {
                           return (
                             <Typography
                               variant="body2"
@@ -828,7 +872,7 @@ export default function Addrepresentative(props) {
                             </Typography>
 
                             <List dense sx={{ py: 0 }}>
-                              {backend.map((field) => {
+                              {backendChanges.map((field) => {
                                 const parts = field.split("_");
                                 const isTermField = field.startsWith("term");
                                 const editorInfo =
@@ -908,7 +952,7 @@ export default function Addrepresentative(props) {
                     {/* Unsaved (local) changes chips */}
                     {(userRole === "admin" || userRole === "editor") &&
                       Array.isArray(editedFields) &&
-                      editedFields.length > 0 && (
+                      localChanges.length > 0 && (
                         <Box sx={{ mt: 2 }}>
                           <Typography
                             variant="overline"
@@ -927,7 +971,7 @@ export default function Addrepresentative(props) {
                               borderRadius: 1,
                             }}
                           >
-                            {editedFields.map((field) => {
+                            {localChanges.map((field) => {
                               const parts = field.split("_");
                               const isTermField = field.startsWith("term");
                               const displayLabel = isTermField
