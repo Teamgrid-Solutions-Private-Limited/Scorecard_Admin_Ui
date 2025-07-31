@@ -619,9 +619,11 @@ export default function AddBill(props) {
                               flexWrap: "wrap",
                               gap: 1,
                               mt: 1,
-                              p: 1,
+                              p: 1.5,
                               backgroundColor: "action.hover",
                               borderRadius: 1,
+                              border: "1px solid",
+                              borderColor: "divider",
                             }}
                           >
                             {editedFields.map((field) => (
