@@ -391,7 +391,7 @@ export default function AddBill(props) {
       },
     };
 
-    return configs[currentStatus];
+    return configs[currentStatus] || configs.draft;
   };
 
   const currentStatus =
