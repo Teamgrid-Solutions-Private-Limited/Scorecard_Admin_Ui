@@ -66,7 +66,6 @@ import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 // import { jwtDecode } from "jwt-decode";
 import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; // adjust path as needed
-import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; // adjust path as needed
 
 export default function AddSenator(props) {
   const { id } = useParams();

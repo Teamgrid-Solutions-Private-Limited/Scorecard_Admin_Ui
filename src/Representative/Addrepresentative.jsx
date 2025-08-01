@@ -64,7 +64,6 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
-import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
