@@ -40,7 +40,7 @@ import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-
+import { discardSenatorChanges } from "../redux/reducer/senetorSlice";
 import {
   getVoteById,
   clearVoteState,
@@ -174,7 +174,52 @@ export default function AddSenator(props) {
       )
     );
   };
+  const handleDiscard = async () => {
+    if (!id) {
+      setSnackbarMessage("No senator selected");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
 
+    try {
+      setLoading(true);
+
+      const confirmDiscard = window.confirm(
+        "Are you sure you want to discard all changes? This cannot be undone."
+      );
+      if (!confirmDiscard) {
+        setLoading(false);
+        return;
+      }
+
+      await dispatch(discardSenatorChanges(id)).unwrap();
+
+      // Refresh the data
+      await dispatch(getSenatorById(id));
+      await dispatch(getSenatorDataBySenetorId(id));
+
+      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarSeverity("success");
+    } catch (error) {
+      console.error("Discard failed:", error);
+      let errorMessage = "Failed to discard changes";
+
+      if (typeof error === "string") {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.payload?.message) {
+        errorMessage = error.payload.message;
+      }
+
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+    } finally {
+      setOpenSnackbar(true);
+      setLoading(false);
+    }
+  };
   const handleRemoveVote = (termIndex, voteIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
@@ -563,7 +608,7 @@ export default function AddSenator(props) {
       const termPromises = senatorTermData.map((term, index) => {
         const termUpdate = {
           ...term,
-          senateId: id, // 👈✅ explicitly add it
+          senateId: id, // explicitly add it
           editedFields: editedFields.filter((f) =>
             f.startsWith(`term${index}_`)
           ),
@@ -1064,6 +1109,21 @@ export default function AddSenator(props) {
                 alignItems: "center",
               }}
             >
+              <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}

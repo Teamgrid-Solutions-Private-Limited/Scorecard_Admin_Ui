@@ -34,25 +34,25 @@ export const getAllSenators = createAsyncThunk(
   "senators/getAllSenators",
   async (_, { rejectWithValue }) => {
     try {
-    //  console.log('Making API request to:', `${API_URL}/senator/senators/view`);
-      const response = await axios.get(`${API_URL}/senator/senators/view`,{
+      //  console.log('Making API request to:', `${API_URL}/senator/senators/view`);
+      const response = await axios.get(`${API_URL}/senator/senators/view`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
       //console.log('Full API Response:', response);
       //console.log('Response Data:', response.data);
       //console.log('Response Info:', response.data?.info);
-      
+
       if (!response.data) {
         throw new Error('No data received from API');
       }
-      
+
       const senators = response.data;
       //console.log('Processed Senators Data:', senators);
-      
+
       if (!Array.isArray(senators)) {
         throw new Error('Received data is not an array');
       }
-      
+
       return senators;
     } catch (error) {
       console.error('Error in getAllSenators:', error);
@@ -157,6 +157,26 @@ export const updateSenatorStatus = createAsyncThunk(
   }
 );
 
+// Discard changes for a senator
+export const discardSenatorChanges = createAsyncThunk(
+  "senators/discardChanges",
+  async (senatorId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/senator/discard/${senatorId}`
+      );
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        return rejectWithValue(error.response.data);
+      } else if (error.request) {
+        return rejectWithValue({ message: "No response from server" });
+      } else {
+        return rejectWithValue({ message: error.message });
+      }
+    }
+  }
+);
 
 // Initial state
 const initialState = {
@@ -207,7 +227,7 @@ const senatorSlice = createSlice({
       .addCase(getAllSenators.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
-       // console.log('Reducer: Setting senators with payload:', action.payload);
+        // console.log('Reducer: Setting senators with payload:', action.payload);
         state.senators = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(getAllSenators.rejected, (state, action) => {
@@ -250,7 +270,7 @@ const senatorSlice = createSlice({
         state.error = action.payload;
       });
 
-  
+
     builder
       .addCase(deleteSenator.pending, (state) => {
         state.loading = true;
@@ -286,25 +306,30 @@ const senatorSlice = createSlice({
         state.loading = false;
         state.error = action.payload?.message || "Error deleting senator";
       });
-    // Update senator status
-    // builder
-    //   .addCase(updateSenatorStatus.pending, (state) => {
-    //     state.loading = true;
-    //     state.error = null;
-    //   })
-    //   .addCase(updateSenatorStatus.fulfilled, (state, action) => {
-    //     state.loading = false;
-    //     const updated = action.payload;
-    //     const index = state.senators.findIndex((s) => s._id === updated._id);
-    //     if (index !== -1) {
-    //       state.senators[index] = updated;
-    //     }
-    //   })
+    // Discard Senator Changes
+    builder.addCase(discardSenatorChanges.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(discardSenatorChanges.fulfilled, (state, action) => {
+      state.loading = false;
+      // Update the current senator with the reverted data
+      if (state.senator && state.senator._id === action.payload.senator._id) {
+        state.senator = action.payload.senator;
+      }
+      // Optionally, update in senators list if needed
+      const idx = state.senators.findIndex(
+        (s) => s._id === action.payload.senator._id
+      );
+      if (idx !== -1) {
+        state.senators[idx] = action.payload.senator;
+      }
+    });
+    builder.addCase(discardSenatorChanges.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Failed to discard changes";
+    });
 
-    //   .addCase(updateSenatorStatus.rejected, (state, action) => {
-    //     state.loading = false;
-    //     state.error = action.payload;
-    //   });
   },
 });
 
