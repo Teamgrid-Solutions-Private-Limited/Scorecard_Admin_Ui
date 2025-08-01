@@ -38,6 +38,12 @@ import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
+import { Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,} from '@mui/material';
 
 import {
   getVoteById,
@@ -47,6 +53,7 @@ import {
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
+import { discardHouseChanges } from "../redux/reducer/houseSlice";
 import {
   clearHouseState,
   updateRepresentativeStatus,
@@ -78,6 +85,7 @@ export default function Addrepresentative(props) {
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
+const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -728,6 +736,41 @@ export default function Addrepresentative(props) {
     currentStatus
   );
 
+  const handleDiscard = () => {
+  if (!id) {
+    setSnackbarMessage("No house selected");
+    setSnackbarSeverity("error");
+    setOpenSnackbar(true);
+    return;
+  }
+  setOpenDiscardDialog(true);
+};
+
+const handleConfirmDiscard = async () => {
+  setOpenDiscardDialog(false);
+
+  try {
+    setLoading(true);
+    await dispatch(discardHouseChanges(id)).unwrap();
+    await dispatch(getHouseById(id));
+    await dispatch(getHouseDataByHouseId(id));
+    setSnackbarMessage("Changes discarded successfully");
+    setSnackbarSeverity("success");
+  } catch (error) {
+    console.error("Discard failed:", error);
+    const errorMessage =
+      error?.payload?.message ||
+      error?.message ||
+      (typeof error === "string" ? error : "Failed to discard changes");
+    setSnackbarMessage(errorMessage);
+    setSnackbarSeverity("error");
+  } finally {
+    setOpenSnackbar(true);
+    setLoading(false);
+  }
+};
+
+
   return (
     <AppTheme>
       {loading && (
@@ -1048,6 +1091,21 @@ export default function Addrepresentative(props) {
                 alignItems: "center",
               }}
             >
+            <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}
@@ -1066,6 +1124,64 @@ export default function Addrepresentative(props) {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
+            <Dialog
+  open={openDiscardDialog}
+  onClose={() => setOpenDiscardDialog(false)}
+  PaperProps={{
+    sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontSize: "1.4rem",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "warning.main",
+    }}
+  >
+    Discard Changes?
+  </DialogTitle>
+
+  <DialogContent>
+    <DialogContentText
+      sx={{
+        textAlign: "center",
+        fontSize: "1rem",
+        color: "text.secondary",
+      }}
+    >
+      Are you sure you want to discard all changes? <br />
+      <strong>This action cannot be undone.</strong>
+    </DialogContentText>
+  </DialogContent>
+
+  <DialogActions>
+    <Stack
+      direction="row"
+      spacing={2}
+      sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+    >
+      <Button
+        onClick={() => setOpenDiscardDialog(false)}
+        variant="outlined"
+        color="secondary"
+        sx={{ borderRadius: 2, paddingX: 3 }}
+      >
+        Cancel
+      </Button>
+
+      <Button
+        onClick={handleConfirmDiscard}
+        variant="contained"
+        color="warning"
+        sx={{ borderRadius: 2, paddingX: 3 }}
+      >
+        Discard
+      </Button>
+    </Stack>
+  </DialogActions>
+</Dialog>
+
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Representative's Information
