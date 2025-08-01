@@ -89,6 +89,28 @@ export const deleteActivity = createAsyncThunk(
   }
 );
 
+// Discard changes and revert to previous state
+export const discardActivityChanges = createAsyncThunk(
+  'activity/discardChanges',
+  async (activityId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/activity/discard/${activityId}`
+      );
+      return response.data;
+    } catch (error) {
+      // Handle different error formats
+      if (error.response) {
+        return rejectWithValue(error.response.data);
+      } else if (error.request) {
+        return rejectWithValue({ message: "No response from server" });
+      } else {
+        return rejectWithValue({ message: error.message });
+      }
+    }
+  }
+);
+
 export const updateActivityStatus = createAsyncThunk(
   "activity/updateActivityStatus",
   async ({ id, status }, { rejectWithValue }) => {
@@ -114,8 +136,8 @@ export const bulkUpdateTrackActivities = createAsyncThunk(
         {
           headers: {
             "Content-Type": "application/json",
-            "x-protected-key": "MySuperSecretApiKey123" // Add if needed
-          }
+            "x-protected-key": "MySuperSecretApiKey123", // Add if needed
+          },
         }
       );
       return response.data;
@@ -140,7 +162,6 @@ export const bulkUpdateTrackActivities = createAsyncThunk(
 //     }
 //   }
 // );
-
 
 // Slice
 const activitySlice = createSlice({
@@ -248,7 +269,7 @@ const activitySlice = createSlice({
           ...state.activities[index],
           status: updated.status,
         };
-       
+
         builder
           .addCase(bulkUpdateTrackActivities.pending, (state) => {
             state.loading = true;
@@ -258,8 +279,10 @@ const activitySlice = createSlice({
             state.loading = false;
             // Update the state with the modified activities
             if (action.payload.updatedActivities) {
-              action.payload.updatedActivities.forEach(updated => {
-                const index = state.activities.findIndex(a => a._id === updated._id);
+              action.payload.updatedActivities.forEach((updated) => {
+                const index = state.activities.findIndex(
+                  (a) => a._id === updated._id
+                );
                 if (index !== -1) {
                   state.activities[index] = updated;
                 }
@@ -268,9 +291,8 @@ const activitySlice = createSlice({
           })
           .addCase(bulkUpdateTrackActivities.rejected, (state, action) => {
             state.loading = false;
-            state.error = action.payload?.message || 'Bulk update failed';
+            state.error = action.payload?.message || "Bulk update failed";
           });
-
       }
     });
 
@@ -278,6 +300,29 @@ const activitySlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     });
+
+   builder.addCase(discardActivityChanges.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+});
+
+builder.addCase(discardActivityChanges.fulfilled, (state, action) => {
+  state.loading = false;
+  // Update the current activity
+  if (state.activity?._id === action.payload._id) {
+    state.activity = action.payload;
+  }
+  // Update in activities list
+  const index = state.activities.findIndex(a => a._id === action.payload._id);
+  if (index !== -1) {
+    state.activities[index] = action.payload;
+  }
+});
+
+builder.addCase(discardActivityChanges.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload?.message || "Failed to discard changes";
+});
   },
 });
 

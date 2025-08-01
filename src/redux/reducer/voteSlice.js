@@ -72,12 +72,11 @@ export const updateVote = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response.daa);
     }
   }
 );
 
-// Delete a vote by ID
 // Delete a vote by ID
 export const deleteVote = createAsyncThunk(
   "votes/deleteVote",
@@ -115,17 +114,6 @@ export const deleteVote = createAsyncThunk(
     }
   }
 );
-// export const deleteVote = createAsyncThunk(
-//   "votes/deleteVote",
-//   async (id, { rejectWithValue }) => {
-//     try {
-//       const response = await axios.delete(`${API_URL}/vote/votes/delete/${id}`);
-//       return response.data;
-//     } catch (error) {
-//       return rejectWithValue(error.response.data);
-//     }
-//   }
-// );
 
 // Update vote status (publish/draft)
 export const updateVoteStatus = createAsyncThunk(
@@ -167,6 +155,29 @@ export const bulkUpdateSbaPosition = createAsyncThunk(
     }
   }
 );
+
+// Discard changes and revert to previous state
+export const discardVoteChanges = createAsyncThunk(
+  'votes/discardChanges',
+  async (voteId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/vote/discard/${voteId}`
+      );
+      return response.data;
+    } catch (error) {
+      // Handle different error formats
+      if (error.response) {
+        return rejectWithValue(error.response.data);
+      } else if (error.request) {
+        return rejectWithValue({ message: "No response from server" });
+      } else {
+        return rejectWithValue({ message: error.message });
+      }
+    }
+  }
+);
+
 
 // Slice
 const voteSlice = createSlice({
@@ -285,6 +296,30 @@ const voteSlice = createSlice({
       state.loading = false;
       state.error = action.payload?.message || 'Failed to update bills';
     });
+       builder.addCase(discardVoteChanges.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+
+    builder.addCase(discardVoteChanges.fulfilled, (state, action) => {
+      state.loading = false;
+      // Update the current vote
+      if (state.vote?._id === action.payload._id) {
+        state.vote = action.payload;
+      }
+      // Update in votes list
+      const index = state.votes.findIndex(v => v._id === action.payload._id);
+      if (index !== -1) {
+        state.votes[index] = action.payload;
+      }
+    });
+
+    builder.addCase(discardVoteChanges.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Failed to discard changes";
+    });
+
+    
   },
 });
 
