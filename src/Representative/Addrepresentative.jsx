@@ -714,16 +714,16 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
-        description: "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
-      },
+      // published: {
+      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+      //   borderColor: "#4CAF50",
+      //   iconColor: "#2E7D32",
+      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+      //   title: "Published",
+      //   description: "Published and live",
+      //   titleColor: "#2E7D32",
+      //   descColor: "#388E3C",
+      // },
     };
 
     return configs[currentStatus];
