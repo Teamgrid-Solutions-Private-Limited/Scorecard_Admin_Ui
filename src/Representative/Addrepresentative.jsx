@@ -117,7 +117,7 @@ export default function Addrepresentative(props) {
     party: "",
     photo: null,
     status: "Active",
-    publishStatus: "draft",
+    publishStatus: "",
   });
 
   const [houseTermData, setHouseTermData] = useState([
@@ -437,7 +437,7 @@ export default function Addrepresentative(props) {
         party: house.party || "",
         photo: house.photo || null,
         status: house.status || "Active",
-        publishStatus: house.publishStatus || "draft",
+        publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
       };
@@ -644,7 +644,7 @@ export default function Addrepresentative(props) {
       },
     };
 
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -697,7 +697,7 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && formData.publishStatus !== "published" && (
+            {userRole && formData.publishStatus !== "published" && statusData && (
               <Box
                 sx={{
                   width: "98%",
@@ -794,15 +794,15 @@ export default function Addrepresentative(props) {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontStyle: "italic",
+                                // fontStyle: "italic",
                                 color: "text.disabled",
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
                               }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
-                              No recent changes
+                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
+                              No Pending changes
                             </Typography>
                           );
                         }

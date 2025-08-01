@@ -390,7 +390,7 @@ const handleDiscard = async () => {
       // },
     };
 
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -466,7 +466,7 @@ const handleDiscard = async () => {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && currentStatus !== "published" && (
+            {userRole && currentStatus !== "published" && statusData && (
               <Box
                 sx={{
                   width: "98%",
@@ -570,14 +570,14 @@ const handleDiscard = async () => {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontStyle: "italic",
+                                // fontStyle: "italic",
                                 color: "text.disabled",
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
                               }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
                               {typeof id !== "undefined" && id
                                 ? "No pending changes"
                                 : "Fill in the form to create a new activity"}
