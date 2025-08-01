@@ -128,7 +128,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
     party: "",
     photo: null,
     status: "Active",
-    publishStatus: "draft",
+    publishStatus: "",
   });
 
   const [houseTermData, setHouseTermData] = useState([
@@ -488,7 +488,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
         party: house.party || "",
         photo: house.photo || null,
         status: house.status || "Active",
-        publishStatus: house.publishStatus || "draft",
+        publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
       };
@@ -726,7 +726,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       },
     };
 
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -814,42 +814,42 @@ const handleConfirmDiscard = async () => {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && formData.publishStatus !== "published" && (
-  <Box
-    sx={{
-      width: "98%",
-      p: 2,
-      backgroundColor: statusData.backgroundColor,
-      borderLeft: `4px solid ${statusData.borderColor}`,
-      borderRadius: "0 8px 8px 0",
-      boxShadow: 1,
-      mb: 2,
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-      {/* Status icon bubble */}
-      <Box
-        sx={{
-          p: 1,
-          borderRadius: "50%",
-          backgroundColor: `rgba(${
-            formData.publishStatus === "draft"
-              ? "66, 165, 245"
-              : formData.publishStatus === "under review"
-              ? "255, 193, 7"
-              : formData.publishStatus === "published"
-              ? "76, 175, 80"
-              : "244, 67, 54"
-          }, 0.2)`,
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        {React.cloneElement(statusData.icon, {
-          sx: { color: statusData.iconColor },
-        })}
-      </Box>
+            {userRole && formData.publishStatus !== "published" && statusData && (
+              <Box
+                sx={{
+                  width: "98%",
+                  p: 2,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon */}
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${
+                        formData.publishStatus === "draft"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
+                          ? "255, 193, 7"
+                          : formData.publishStatus === "published"
+                          ? "76, 175, 80"
+                          : "244, 67, 54"
+                      }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(statusData.icon, {
+                      sx: { color: statusData.iconColor },
+                    })}
+                  </Box>
 
       <Box sx={{ flex: 1 }}>
         {/* Header: title + pending count (admin only) */}
@@ -902,15 +902,15 @@ const handleConfirmDiscard = async () => {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontStyle: "italic",
+                                // fontStyle: "italic",
                                 color: "text.disabled",
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
                               }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
-                              No recent changes
+                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
+                              No Pending changes
                             </Typography>
                           );
                         }

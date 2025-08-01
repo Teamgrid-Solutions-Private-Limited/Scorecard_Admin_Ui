@@ -532,7 +532,7 @@ export default function AddSenator(props) {
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
-        publishStatus: senator.publishStatus || "draft",
+        publishStatus: senator.publishStatus || "",
         editedFields: senator.editedFields || [],
         fieldEditors: senator.fieldEditors || {},
       };
@@ -755,7 +755,7 @@ export default function AddSenator(props) {
         descColor: "#795548",
       },
     };
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -808,7 +808,7 @@ export default function AddSenator(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && formData.publishStatus !== "published" && (
+            {userRole && formData.publishStatus !== "published" && statusData && (
               <Box
                 sx={{
                   width: "98%",
@@ -897,14 +897,14 @@ export default function AddSenator(props) {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontStyle: "italic",
+                                // fontStyle: "italic",
                                 color: "text.disabled",
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
                               }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
                               {id
                                 ? "No pending changes"
                                 : "Fill in the form to create a new senator"}
