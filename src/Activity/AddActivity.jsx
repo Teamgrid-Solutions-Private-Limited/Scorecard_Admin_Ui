@@ -8,6 +8,7 @@ import {
   clearActivityState,
   updateActivity,
   createActivity,
+  discardActivityChanges,
 } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
@@ -298,44 +299,52 @@ export default function AddActivity(props) {
       setLoading(false);
     }
   };
-  // const handleReview = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const updatedFormData = { ...formData, status: "under review" };
-  //     if (id) {
-  //       await dispatch(
-  //         updateActivity({ id, updatedData: updatedFormData })
-  //       ).unwrap();
-  //       setSnackbarMessage("Activity Reviewed successfully!");
-  //       setSnackbarSeverity("success");
-  //       await dispatch(getActivityById(id)).unwrap();
-  //     } else {
-  //       if (
-  //         !formData.type ||
-  //         !formData.title ||
-  //         !formData.shortDesc ||
-  //         !formData.readMore
-  //       ) {
-  //         setSnackbarMessage("please fill all fields!");
-  //         setSnackbarSeverity("warning");
-  //         setSnackbarOpen(true);
-  //         setLoading(false);
-  //         return;
-  //       }
-  //       await dispatch(createActivity(formData)).unwrap();
-  //       setSnackbarMessage("Activity created and Reviewed successfully!");
-  //       setSnackbarSeverity("success");
-  //     }
-  //     setSnackbarOpen(true);
-  //   } catch (error) {
-  //     console.error("Save error:", error);
-  //     setSnackbarMessage(`Operation failed: ${error.message || error}`);
-  //     setSnackbarSeverity("error");
-  //     setSnackbarOpen(true);
-  //   } finally {
-  //     setLoading(false); // Ensure loading stops after success or failure
-  //   }
-  // };
+const handleDiscard = async () => {
+  if (!id) {
+    setSnackbarMessage("No activity selected");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+    return;
+  }
+
+  try {
+    setLoading(true);
+    
+    const confirmDiscard = window.confirm(
+      "Are you sure you want to discard all changes? This cannot be undone."
+    );
+    if (!confirmDiscard) {
+      setLoading(false);
+      return;
+    }
+
+    const result = await dispatch(discardActivityChanges(id)).unwrap();
+    
+    // Refresh the data
+    await dispatch(getActivityById(id));
+    
+    setSnackbarMessage("Changes discarded successfully");
+    setSnackbarSeverity("success");
+  } catch (error) {
+    console.error("Discard failed:", error);
+    let errorMessage = "Failed to discard changes";
+    
+    // Handle different error formats
+    if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    } else if (error?.payload?.message) {
+      errorMessage = error.payload.message;
+    }
+    
+    setSnackbarMessage(errorMessage);
+    setSnackbarSeverity("error");
+  } finally {
+    setSnackbarOpen(true);
+    setLoading(false);
+  }
+};
 
   const getStatusConfig = (editedFields, currentStatus) => {
     const configs = {
@@ -762,6 +771,22 @@ export default function AddActivity(props) {
                 }}
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
+              </Button>
+
+              <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
 
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}

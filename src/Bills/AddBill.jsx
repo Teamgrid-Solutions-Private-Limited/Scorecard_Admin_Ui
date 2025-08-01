@@ -8,6 +8,7 @@ import {
   clearVoteState,
   updateVote,
   createVote,
+  discardVoteChanges,
 } from "../redux/reducer/voteSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
@@ -305,6 +306,53 @@ export default function AddBill(props) {
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDiscard = async () => {
+    if (!id) {
+      setSnackbarMessage("No Vote selected");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const confirmDiscard = window.confirm(
+        "Are you sure you want to discard all changes? This cannot be undone."
+      );
+      if (!confirmDiscard) {
+        setLoading(false);
+        return;
+      }
+
+      const result = await dispatch(discardVoteChanges(id)).unwrap();
+
+      // Refresh the data
+      await dispatch(getVoteById(id));
+
+      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarSeverity("success");
+    } catch (error) {
+      console.error("Discard failed:", error);
+      let errorMessage = "Failed to discard changes";
+
+      // Handle different error formats
+      if (typeof error === "string") {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.payload?.message) {
+        errorMessage = error.payload.message;
+      }
+
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+    } finally {
+      setSnackbarOpen(true);
       setLoading(false);
     }
   };
@@ -685,6 +733,21 @@ export default function AddBill(props) {
                 }}
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
             </Stack>
 
