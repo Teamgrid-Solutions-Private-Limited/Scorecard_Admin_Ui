@@ -40,7 +40,7 @@ import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-
+import { discardSenatorChanges } from "../redux/reducer/senetorSlice";
 import {
   getVoteById,
   clearVoteState,
@@ -49,7 +49,12 @@ import {
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
-
+import { Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,} from '@mui/material';
 import { createSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
   clearSenatorDataState,
@@ -80,6 +85,7 @@ export default function AddSenator(props) {
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
+  const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
 
   // console.log("User Role:", userRole);
   let senatorActivities =
@@ -117,9 +123,8 @@ export default function AddSenator(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -184,7 +189,42 @@ export default function AddSenator(props) {
       )
     );
   };
+    const handleDiscard = () => {
+    if (!id) {
+      setSnackbarMessage("No house selected");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    setOpenDiscardDialog(true);
+  };
+  
+  const handleConfirmDiscard = async () => {
+    setOpenDiscardDialog(false);
+  
+    try {
+      setLoading(true);
+       await dispatch(discardSenatorChanges(id)).unwrap();
 
+      // Refresh the data
+      await dispatch(getSenatorById(id));
+      await dispatch(getSenatorDataBySenetorId(id));
+      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarSeverity("success");
+    } catch (error) {
+      console.error("Discard failed:", error);
+      const errorMessage =
+        error?.payload?.message ||
+        error?.message ||
+        (typeof error === "string" ? error : "Failed to discard changes");
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+    } finally {
+      setOpenSnackbar(true);
+      setLoading(false);
+    }
+  };
+  
   const handleRemoveVote = (termIndex, voteIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
@@ -492,7 +532,7 @@ export default function AddSenator(props) {
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
-        publishStatus: senator.publishStatus || "draft",
+        publishStatus: senator.publishStatus || "",
         editedFields: senator.editedFields || [],
         fieldEditors: senator.fieldEditors || {},
       };
@@ -628,8 +668,8 @@ export default function AddSenator(props) {
 
         return term._id
           ? dispatch(
-              updateSenatorData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateSenatorData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
@@ -646,9 +686,9 @@ export default function AddSenator(props) {
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -715,7 +755,7 @@ export default function AddSenator(props) {
         descColor: "#795548",
       },
     };
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -768,7 +808,7 @@ export default function AddSenator(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && formData.publishStatus !== "published" && (
+            {userRole && formData.publishStatus !== "published" && statusData && (
               <Box
                 sx={{
                   width: "98%",
@@ -792,9 +832,9 @@ export default function AddSenator(props) {
                           : formData.publishStatus === "under review"
                           ? "230, 81, 0"
                           : formData.publishStatus === "published"
-                          ? "76, 175, 80"
-                          : "244, 67, 54"
-                      }, 0.2)`,
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
                       display: "grid",
                       placeItems: "center",
                       flexShrink: 0,
@@ -857,14 +897,14 @@ export default function AddSenator(props) {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontStyle: "italic",
+                                // fontStyle: "italic",
                                 color: "text.disabled",
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
                               }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
                               {id
                                 ? "No pending changes"
                                 : "Fill in the form to create a new senator"}
@@ -1082,6 +1122,21 @@ export default function AddSenator(props) {
             >
               <Button
                 variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
+              <Button
+                variant="outlined"
                 onClick={handleSave}
                 sx={{
                   backgroundColor: "#4a90e2 !important",
@@ -1115,6 +1170,63 @@ export default function AddSenator(props) {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
+                          <Dialog
+                open={openDiscardDialog}
+                onClose={() => setOpenDiscardDialog(false)}
+                PaperProps={{
+                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+                }}
+              >
+                <DialogTitle
+                  sx={{
+                    fontSize: "1.4rem",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    color: "warning.main",
+                  }}
+                >
+                  Discard Changes?
+                </DialogTitle>
+              
+                <DialogContent>
+                  <DialogContentText
+                    sx={{
+                      textAlign: "center",
+                      fontSize: "1rem",
+                      color: "text.secondary",
+                    }}
+                  >
+                    Are you sure you want to discard all changes? <br />
+                    <strong>This action cannot be undone.</strong>
+                  </DialogContentText>
+                </DialogContent>
+              
+                <DialogActions>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                  >
+                    <Button
+                      onClick={() => setOpenDiscardDialog(false)}
+                      variant="outlined"
+                      color="secondary"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Cancel
+                    </Button>
+              
+                    <Button
+                      onClick={handleConfirmDiscard}
+                      variant="contained"
+                      color="warning"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Discard
+                    </Button>
+                  </Stack>
+                </DialogActions>
+              </Dialog>
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Senator's Information

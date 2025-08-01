@@ -38,6 +38,12 @@ import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
+import { Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,} from '@mui/material';
 
 import {
   getVoteById,
@@ -47,6 +53,7 @@ import {
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
+import { discardHouseChanges } from "../redux/reducer/houseSlice";
 import {
   clearHouseState,
   updateRepresentativeStatus,
@@ -78,6 +85,7 @@ export default function Addrepresentative(props) {
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
+const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -120,7 +128,7 @@ export default function Addrepresentative(props) {
     party: "",
     photo: null,
     status: "Active",
-    publishStatus: "draft",
+    publishStatus: "",
   });
 
   const [houseTermData, setHouseTermData] = useState([
@@ -348,8 +356,8 @@ export default function Addrepresentative(props) {
           votesScore:
             term.votesScore?.length > 0
               ? term.votesScore.map((vote) => {
-                  let scoreValue = "";
-                  const dbScore = vote.score?.toLowerCase();
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase();
 
                   if (dbScore?.includes("yea_votes")) {
                     scoreValue = "Yes";
@@ -480,7 +488,7 @@ export default function Addrepresentative(props) {
         party: house.party || "",
         photo: house.photo || null,
         status: house.status || "Active",
-        publishStatus: house.publishStatus || "draft",
+        publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
       };
@@ -613,8 +621,8 @@ export default function Addrepresentative(props) {
 
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateHouseData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -628,9 +636,9 @@ export default function Addrepresentative(props) {
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -706,19 +714,19 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
-        description: "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
-      },
+      // published: {
+      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+      //   borderColor: "#4CAF50",
+      //   iconColor: "#2E7D32",
+      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+      //   title: "Published",
+      //   description: "Published and live",
+      //   titleColor: "#2E7D32",
+      //   descColor: "#388E3C",
+      // },
     };
 
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -727,6 +735,41 @@ export default function Addrepresentative(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+
+  const handleDiscard = () => {
+  if (!id) {
+    setSnackbarMessage("No house selected");
+    setSnackbarSeverity("error");
+    setOpenSnackbar(true);
+    return;
+  }
+  setOpenDiscardDialog(true);
+};
+
+const handleConfirmDiscard = async () => {
+  setOpenDiscardDialog(false);
+
+  try {
+    setLoading(true);
+    await dispatch(discardHouseChanges(id)).unwrap();
+    await dispatch(getHouseById(id));
+    await dispatch(getHouseDataByHouseId(id));
+    setSnackbarMessage("Changes discarded successfully");
+    setSnackbarSeverity("success");
+  } catch (error) {
+    console.error("Discard failed:", error);
+    const errorMessage =
+      error?.payload?.message ||
+      error?.message ||
+      (typeof error === "string" ? error : "Failed to discard changes");
+    setSnackbarMessage(errorMessage);
+    setSnackbarSeverity("error");
+  } finally {
+    setOpenSnackbar(true);
+    setLoading(false);
+  }
+};
+
 
   return (
     <AppTheme>
@@ -771,42 +814,42 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && formData.publishStatus !== "published" && (
-  <Box
-    sx={{
-      width: "98%",
-      p: 2,
-      backgroundColor: statusData.backgroundColor,
-      borderLeft: `4px solid ${statusData.borderColor}`,
-      borderRadius: "0 8px 8px 0",
-      boxShadow: 1,
-      mb: 2,
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-      {/* Status icon bubble */}
-      <Box
-        sx={{
-          p: 1,
-          borderRadius: "50%",
-          backgroundColor: `rgba(${
-            formData.publishStatus === "draft"
-              ? "66, 165, 245"
-              : formData.publishStatus === "under review"
-              ? "255, 193, 7"
-              : formData.publishStatus === "published"
-              ? "76, 175, 80"
-              : "244, 67, 54"
-          }, 0.2)`,
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        {React.cloneElement(statusData.icon, {
-          sx: { color: statusData.iconColor },
-        })}
-      </Box>
+            {userRole && formData.publishStatus !== "published" && statusData && (
+              <Box
+                sx={{
+                  width: "98%",
+                  p: 2,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon */}
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${
+                        formData.publishStatus === "draft"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
+                          ? "255, 193, 7"
+                          : formData.publishStatus === "published"
+                          ? "76, 175, 80"
+                          : "244, 67, 54"
+                      }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(statusData.icon, {
+                      sx: { color: statusData.iconColor },
+                    })}
+                  </Box>
 
       <Box sx={{ flex: 1 }}>
         {/* Header: title + pending count (admin only) */}
@@ -859,15 +902,15 @@ export default function Addrepresentative(props) {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontStyle: "italic",
+                                // fontStyle: "italic",
                                 color: "text.disabled",
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
                               }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
-                              No recent changes
+                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
+                              No Pending changes
                             </Typography>
                           );
                         }
@@ -932,19 +975,17 @@ export default function Addrepresentative(props) {
                                             fontWeight="500"
                                           >
                                             {isTermField
-                                              ? `Term ${
-                                                  +parts[0].replace(
-                                                    "term",
-                                                    ""
-                                                  ) + 1
-                                                } • ${
-                                                  parts[1]
-                                                    ?.charAt(0)
-                                                    .toUpperCase() +
-                                                  parts[1]?.slice(1)
-                                                }`
+                                              ? `Term ${+parts[0].replace(
+                                                "term",
+                                                ""
+                                              ) + 1
+                                              } • ${parts[1]
+                                                ?.charAt(0)
+                                                .toUpperCase() +
+                                              parts[1]?.slice(1)
+                                              }`
                                               : field.charAt(0).toUpperCase() +
-                                                field.slice(1)}
+                                              field.slice(1)}
                                           </Typography>
                                         </Box>
                                       }
@@ -993,14 +1034,12 @@ export default function Addrepresentative(props) {
                               const parts = field.split("_");
                               const isTermField = field.startsWith("term");
                               const displayLabel = isTermField
-                                ? `Term ${
-                                    +parts[0].replace("term", "") + 1
-                                  } • ${
-                                    parts[1]?.charAt(0).toUpperCase() +
-                                    parts[1]?.slice(1)
-                                  }`
+                                ? `Term ${+parts[0].replace("term", "") + 1
+                                } • ${parts[1]?.charAt(0).toUpperCase() +
+                                parts[1]?.slice(1)
+                                }`
                                 : field.charAt(0).toUpperCase() +
-                                  field.slice(1);
+                                field.slice(1);
 
                               return (
                                 <Chip
@@ -1048,6 +1087,21 @@ export default function Addrepresentative(props) {
                 alignItems: "center",
               }}
             >
+            <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}
@@ -1066,6 +1120,64 @@ export default function Addrepresentative(props) {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
+            <Dialog
+  open={openDiscardDialog}
+  onClose={() => setOpenDiscardDialog(false)}
+  PaperProps={{
+    sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontSize: "1.4rem",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "warning.main",
+    }}
+  >
+    Discard Changes?
+  </DialogTitle>
+
+  <DialogContent>
+    <DialogContentText
+      sx={{
+        textAlign: "center",
+        fontSize: "1rem",
+        color: "text.secondary",
+      }}
+    >
+      Are you sure you want to discard all changes? <br />
+      <strong>This action cannot be undone.</strong>
+    </DialogContentText>
+  </DialogContent>
+
+  <DialogActions>
+    <Stack
+      direction="row"
+      spacing={2}
+      sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+    >
+      <Button
+        onClick={() => setOpenDiscardDialog(false)}
+        variant="outlined"
+        color="secondary"
+        sx={{ borderRadius: 2, paddingX: 3 }}
+      >
+        Cancel
+      </Button>
+
+      <Button
+        onClick={handleConfirmDiscard}
+        variant="contained"
+        color="warning"
+        sx={{ borderRadius: 2, paddingX: 3 }}
+      >
+        Discard
+      </Button>
+    </Stack>
+  </DialogActions>
+</Dialog>
+
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Representative's Information

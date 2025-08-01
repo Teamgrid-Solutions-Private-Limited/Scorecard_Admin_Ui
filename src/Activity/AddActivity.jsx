@@ -8,6 +8,7 @@ import {
   clearActivityState,
   updateActivity,
   createActivity,
+  discardActivityChanges,
 } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
@@ -30,7 +31,12 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-
+import { Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,} from '@mui/material';
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -61,6 +67,7 @@ export default function AddActivity(props) {
     status: "",
   });
   const [fieldEditors, setFieldEditors] = useState({});
+  const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   // Defensive userRole extraction
   const token = localStorage.getItem("token");
   let userRole = "";
@@ -199,7 +206,7 @@ export default function AddActivity(props) {
     });
   };
   const [loading, setLoading] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
@@ -207,7 +214,7 @@ export default function AddActivity(props) {
     if (reason === "clickaway") {
       return;
     }
-    setSnackbarOpen(false);
+    setOpenSnackbar(false);
   };
 
   // 4. In handleSubmit, only clear editedFields if status is published
@@ -274,7 +281,7 @@ export default function AddActivity(props) {
         ) {
           setSnackbarMessage("Please fill all fields!");
           setSnackbarSeverity("warning");
-          setSnackbarOpen(true);
+          setOpenSnackbar(true);
           setLoading(false);
           return;
         }
@@ -288,54 +295,53 @@ export default function AddActivity(props) {
         setSnackbarSeverity("success");
       }
 
-      setSnackbarOpen(true);
+      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       setSnackbarMessage(`Operation failed: ${error.message || error}`);
       setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      setOpenSnackbar(true);
     } finally {
       setLoading(false);
     }
   };
-  // const handleReview = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const updatedFormData = { ...formData, status: "under review" };
-  //     if (id) {
-  //       await dispatch(
-  //         updateActivity({ id, updatedData: updatedFormData })
-  //       ).unwrap();
-  //       setSnackbarMessage("Activity Reviewed successfully!");
-  //       setSnackbarSeverity("success");
-  //       await dispatch(getActivityById(id)).unwrap();
-  //     } else {
-  //       if (
-  //         !formData.type ||
-  //         !formData.title ||
-  //         !formData.shortDesc ||
-  //         !formData.readMore
-  //       ) {
-  //         setSnackbarMessage("please fill all fields!");
-  //         setSnackbarSeverity("warning");
-  //         setSnackbarOpen(true);
-  //         setLoading(false);
-  //         return;
-  //       }
-  //       await dispatch(createActivity(formData)).unwrap();
-  //       setSnackbarMessage("Activity created and Reviewed successfully!");
-  //       setSnackbarSeverity("success");
-  //     }
-  //     setSnackbarOpen(true);
-  //   } catch (error) {
-  //     console.error("Save error:", error);
-  //     setSnackbarMessage(`Operation failed: ${error.message || error}`);
-  //     setSnackbarSeverity("error");
-  //     setSnackbarOpen(true);
-  //   } finally {
-  //     setLoading(false); // Ensure loading stops after success or failure
-  //   }
-  // };
+
+  const handleDiscard = () => {
+    if (!id) {
+      setSnackbarMessage("No house selected");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    setOpenDiscardDialog(true);
+  };
+  
+  const handleConfirmDiscard = async () => {
+    setOpenDiscardDialog(false);
+  
+    try {
+      setLoading(true);
+     await dispatch(discardActivityChanges(id)).unwrap();
+    
+    // Refresh the data
+    await dispatch(getActivityById(id));
+      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarSeverity("success");
+    } catch (error) {
+      console.error("Discard failed:", error);
+      const errorMessage =
+        error?.payload?.message ||
+        error?.message ||
+        (typeof error === "string" ? error : "Failed to discard changes");
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+    } finally {
+      setOpenSnackbar(true);
+      setLoading(false);
+    }
+  };
+
+
 
   const getStatusConfig = (editedFields, currentStatus) => {
     const configs = {
@@ -381,7 +387,7 @@ export default function AddActivity(props) {
       // },
     };
 
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -419,7 +425,7 @@ export default function AddActivity(props) {
         </Box>
       )}
       <Snackbar
-        open={snackbarOpen}
+        open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -457,7 +463,7 @@ export default function AddActivity(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && currentStatus !== "published" && (
+            {userRole && currentStatus !== "published" && statusData && (
               <Box
                 sx={{
                   width: "98%",
@@ -561,14 +567,14 @@ export default function AddActivity(props) {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontStyle: "italic",
+                                // fontStyle: "italic",
                                 color: "text.disabled",
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
                               }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
+                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
                               {typeof id !== "undefined" && id
                                 ? "No pending changes"
                                 : "Fill in the form to create a new activity"}
@@ -764,10 +770,83 @@ export default function AddActivity(props) {
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
 
+              <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
+
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
+              <Dialog
+                open={openDiscardDialog}
+                onClose={() => setOpenDiscardDialog(false)}
+                PaperProps={{
+                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+                }}
+              >
+                <DialogTitle
+                  sx={{
+                    fontSize: "1.4rem",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    color: "warning.main",
+                  }}
+                >
+                  Discard Changes?
+                </DialogTitle>
+              
+                <DialogContent>
+                  <DialogContentText
+                    sx={{
+                      textAlign: "center",
+                      fontSize: "1rem",
+                      color: "text.secondary",
+                    }}
+                  >
+                    Are you sure you want to discard all changes? <br />
+                    <strong>This action cannot be undone.</strong>
+                  </DialogContentText>
+                </DialogContent>
+              
+                <DialogActions>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                  >
+                    <Button
+                      onClick={() => setOpenDiscardDialog(false)}
+                      variant="outlined"
+                      color="secondary"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Cancel
+                    </Button>
+              
+                    <Button
+                      onClick={handleConfirmDiscard}
+                      variant="contained"
+                      color="warning"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Discard
+                    </Button>
+                  </Stack>
+                </DialogActions>
+              </Dialog>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Activity Information
