@@ -235,7 +235,7 @@ export default function AddBill(props) {
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
-        editorName: decodedToken.name || decodedToken.username || "You",
+        editorName: localStorage.getItem("user") || "Unknown Editor",
         editedAt: new Date(),
       };
 
@@ -256,6 +256,8 @@ export default function AddBill(props) {
         await dispatch(
           updateVote({ id, updatedData: updatedFormData })
         ).unwrap();
+        // After admin publishes, reload vote to get cleared editedFields
+        await dispatch(getVoteById(id)).unwrap();
 
         setSnackbarMessage(
           userRole === "admin"
@@ -268,8 +270,6 @@ export default function AddBill(props) {
           setFormData((prev) => ({ ...prev, status: "under review" }));
           setOriginalFormData(updatedFormData);
         } else {
-          // After admin publishes, reload vote to get cleared editedFields
-          await dispatch(getVoteById(id)).unwrap();
           // Only clear locally if status is published
           if (updatedFormData.status === "published") {
             setEditedFields([]);
@@ -540,6 +540,8 @@ export default function AddBill(props) {
                               {backend.map((field) => {
                                 const editorInfo =
                                   selectedVote?.fieldEditors?.[field];
+                                const editor =
+                                  editorInfo?.editorName || "Unknown Editor";
                                 const editTime = editorInfo?.editedAt
                                   ? new Date(
                                       editorInfo.editedAt
@@ -587,7 +589,7 @@ export default function AddBill(props) {
                                           variant="caption"
                                           color="text.secondary"
                                         >
-                                          Edited on {editTime}
+                                          Edited by {editor} on {editTime}
                                         </Typography>
                                       }
                                       sx={{ my: 0 }}
@@ -617,9 +619,11 @@ export default function AddBill(props) {
                               flexWrap: "wrap",
                               gap: 1,
                               mt: 1,
-                              p: 1,
+                              p: 1.5,
                               backgroundColor: "action.hover",
                               borderRadius: 1,
+                              border: "1px solid",
+                              borderColor: "divider",
                             }}
                           >
                             {editedFields.map((field) => (
