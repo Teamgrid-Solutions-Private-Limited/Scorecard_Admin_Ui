@@ -131,6 +131,28 @@ export const updateRepresentativeStatus = createAsyncThunk(
     }
   }
 );
+
+
+export const discardHouseChanges = createAsyncThunk(
+  "house/discardChanges",
+  async (houseId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/house/discard/${houseId}`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        return rejectWithValue(error.response.data);
+      } else if (error.request) {
+        return rejectWithValue({ message: "No response from server" });
+      } else {
+        return rejectWithValue({ message: error.message });
+      }
+    }
+  }
+);
+
+
+
 // export const deleteHouse = createAsyncThunk(
 //   "house/deleteHouse",
 //   async (id, { rejectWithValue }) => {
@@ -261,6 +283,29 @@ const houseSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
+// Discard House Changes
+builder.addCase(discardHouseChanges.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+});
+builder.addCase(discardHouseChanges.fulfilled, (state, action) => {
+  state.loading = false;
+
+  if (state.house && state.house._id === action.payload.house._id) {
+    state.house = action.payload.house;
+  }
+
+  const idx = state.houses.findIndex((h) => h._id === action.payload.house._id);
+  if (idx !== -1) {
+    state.houses[idx] = action.payload.house;
+  }
+});
+builder.addCase(discardHouseChanges.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload?.message || "Failed to discard changes";
+});
+
+
   },
 });
 
