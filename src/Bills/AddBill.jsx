@@ -10,6 +10,12 @@ import {
   createVote,
   discardVoteChanges,
 } from "../redux/reducer/voteSlice";
+import { Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,} from '@mui/material';
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -64,6 +70,7 @@ export default function AddBill(props) {
   const [fieldEditors, setFieldEditors] = useState({});
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
+  const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
 
   const fieldLabels = {
     type: "Type",
@@ -204,7 +211,7 @@ export default function AddBill(props) {
   };
 
   const [loading, setLoading] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
@@ -212,14 +219,14 @@ export default function AddBill(props) {
     if (reason === "clickaway") {
       return;
     }
-    setSnackbarOpen(false);
+    setOpenSnackbar(false);
   };
 
   const handleSubmit = async () => {
     if (!formData.termId) {
       setSnackbarMessage("Term is required!");
       setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      setOpenSnackbar(true);
       return;
     }
 
@@ -285,7 +292,7 @@ export default function AddBill(props) {
         ) {
           setSnackbarMessage("Please fill all required fields!");
           setSnackbarSeverity("warning");
-          setSnackbarOpen(true);
+          setOpenSnackbar(true);
           setLoading(false);
           return;
         }
@@ -299,63 +306,52 @@ export default function AddBill(props) {
         setSnackbarSeverity("success");
       }
 
-      setSnackbarOpen(true);
+      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       setSnackbarMessage(`Operation failed: ${error.message || error}`);
       setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      setOpenSnackbar(true);
     } finally {
       setLoading(false);
     }
   };
-
-  const handleDiscard = async () => {
+    const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No Vote selected");
+      setSnackbarMessage("No house selected");
       setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      setOpenSnackbar(true);
       return;
     }
-
+    setOpenDiscardDialog(true);
+  };
+  
+  const handleConfirmDiscard = async () => {
+    setOpenDiscardDialog(false);
+  
     try {
       setLoading(true);
-
-      const confirmDiscard = window.confirm(
-        "Are you sure you want to discard all changes? This cannot be undone."
-      );
-      if (!confirmDiscard) {
-        setLoading(false);
-        return;
-      }
-
       const result = await dispatch(discardVoteChanges(id)).unwrap();
 
       // Refresh the data
       await dispatch(getVoteById(id));
-
       setSnackbarMessage("Changes discarded successfully");
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
-      let errorMessage = "Failed to discard changes";
-
-      // Handle different error formats
-      if (typeof error === "string") {
-        errorMessage = error;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (error?.payload?.message) {
-        errorMessage = error.payload.message;
-      }
-
+      const errorMessage =
+        error?.payload?.message ||
+        error?.message ||
+        (typeof error === "string" ? error : "Failed to discard changes");
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
-      setSnackbarOpen(true);
+      setOpenSnackbar(true);
       setLoading(false);
     }
   };
+
+
 
   const getStatusConfig = (editedFields, currentStatus) => {
     const configs = {
@@ -429,7 +425,7 @@ export default function AddBill(props) {
         </Box>
       )}
       <Snackbar
-        open={snackbarOpen}
+        open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -752,6 +748,63 @@ export default function AddBill(props) {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
+              <Dialog
+                open={openDiscardDialog}
+                onClose={() => setOpenDiscardDialog(false)}
+                PaperProps={{
+                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+                }}
+              >
+                <DialogTitle
+                  sx={{
+                    fontSize: "1.4rem",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    color: "warning.main",
+                  }}
+                >
+                  Discard Changes?
+                </DialogTitle>
+              
+                <DialogContent>
+                  <DialogContentText
+                    sx={{
+                      textAlign: "center",
+                      fontSize: "1rem",
+                      color: "text.secondary",
+                    }}
+                  >
+                    Are you sure you want to discard all changes? <br />
+                    <strong>This action cannot be undone.</strong>
+                  </DialogContentText>
+                </DialogContent>
+              
+                <DialogActions>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                  >
+                    <Button
+                      onClick={() => setOpenDiscardDialog(false)}
+                      variant="outlined"
+                      color="secondary"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Cancel
+                    </Button>
+              
+                    <Button
+                      onClick={handleConfirmDiscard}
+                      variant="contained"
+                      color="warning"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Discard
+                    </Button>
+                  </Stack>
+                </DialogActions>
+              </Dialog>
               <Box sx={{ padding: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Bill's Information

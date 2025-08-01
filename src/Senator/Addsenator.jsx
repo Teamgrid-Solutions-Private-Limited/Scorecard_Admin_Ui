@@ -49,7 +49,12 @@ import {
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
-
+import { Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,} from '@mui/material';
 import { createSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
   clearSenatorDataState,
@@ -80,6 +85,7 @@ export default function AddSenator(props) {
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
+  const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
 
   // console.log("User Role:", userRole);
   let senatorActivities =
@@ -183,45 +189,34 @@ export default function AddSenator(props) {
       )
     );
   };
-  const handleDiscard = async () => {
+    const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No senator selected");
+      setSnackbarMessage("No house selected");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-
+    setOpenDiscardDialog(true);
+  };
+  
+  const handleConfirmDiscard = async () => {
+    setOpenDiscardDialog(false);
+  
     try {
       setLoading(true);
-
-      const confirmDiscard = window.confirm(
-        "Are you sure you want to discard all changes? This cannot be undone."
-      );
-      if (!confirmDiscard) {
-        setLoading(false);
-        return;
-      }
-
-      await dispatch(discardSenatorChanges(id)).unwrap();
+       await dispatch(discardSenatorChanges(id)).unwrap();
 
       // Refresh the data
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenetorId(id));
-
       setSnackbarMessage("Changes discarded successfully");
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
-      let errorMessage = "Failed to discard changes";
-
-      if (typeof error === "string") {
-        errorMessage = error;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (error?.payload?.message) {
-        errorMessage = error.payload.message;
-      }
-
+      const errorMessage =
+        error?.payload?.message ||
+        error?.message ||
+        (typeof error === "string" ? error : "Failed to discard changes");
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -229,6 +224,7 @@ export default function AddSenator(props) {
       setLoading(false);
     }
   };
+  
   const handleRemoveVote = (termIndex, voteIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
@@ -1174,6 +1170,63 @@ export default function AddSenator(props) {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
+                          <Dialog
+                open={openDiscardDialog}
+                onClose={() => setOpenDiscardDialog(false)}
+                PaperProps={{
+                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+                }}
+              >
+                <DialogTitle
+                  sx={{
+                    fontSize: "1.4rem",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    color: "warning.main",
+                  }}
+                >
+                  Discard Changes?
+                </DialogTitle>
+              
+                <DialogContent>
+                  <DialogContentText
+                    sx={{
+                      textAlign: "center",
+                      fontSize: "1rem",
+                      color: "text.secondary",
+                    }}
+                  >
+                    Are you sure you want to discard all changes? <br />
+                    <strong>This action cannot be undone.</strong>
+                  </DialogContentText>
+                </DialogContent>
+              
+                <DialogActions>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                  >
+                    <Button
+                      onClick={() => setOpenDiscardDialog(false)}
+                      variant="outlined"
+                      color="secondary"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Cancel
+                    </Button>
+              
+                    <Button
+                      onClick={handleConfirmDiscard}
+                      variant="contained"
+                      color="warning"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Discard
+                    </Button>
+                  </Stack>
+                </DialogActions>
+              </Dialog>
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Senator's Information
