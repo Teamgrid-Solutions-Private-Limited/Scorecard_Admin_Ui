@@ -1783,9 +1783,9 @@ export default function Addrepresentative(props) {
                                   }
                                   sx={{ background: "#fff" }}
                                 >
-                                  <MenuItem value="Yes">Yea</MenuItem>
-                                  <MenuItem value="No">Nay</MenuItem>
-                                  <MenuItem value="Neutral">Other</MenuItem>
+                                 <MenuItem value="yea">Yea</MenuItem>
+                                    <MenuItem value="nay">Nay</MenuItem>
+                                    <MenuItem value="other">Other</MenuItem>
                                   {/* <MenuItem value="None">None</MenuItem> */}
                                 </Select>
                               </FormControl>
