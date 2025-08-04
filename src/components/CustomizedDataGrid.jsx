@@ -10,7 +10,7 @@ import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
 import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import { jwtDecode } from "jwt-decode";
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
     <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
@@ -37,7 +37,12 @@ export default function CustomizedDataGrid({
   const { senatorData } = useSelector((state) => state.senatorData);
   const { houseData } = useSelector((state) => state.houseData);
   const [mergedRows, setMergedRows] = useState([]);
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
+  console.log("User Role:", userRole);
   useEffect(() => {
     dispatch(getAllSenatorData());
     dispatch(getAllHouseData());
@@ -177,10 +182,12 @@ export default function CustomizedDataGrid({
                 onClick={() => onEdit(params.row)}
                 sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
               />
+          {userRole === "admin" && (
               <DeleteForeverIcon
                 onClick={() => onDelete(params.row)}
                 sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
               />
+          )}
             </div>
           ),
         },
@@ -283,10 +290,12 @@ export default function CustomizedDataGrid({
                   onClick={() => onEdit(params.row)}
                   sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                 />
-                <DeleteForeverIcon
-                  onClick={() => onDelete(params.row)}
-                  sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                />
+                {userRole === "admin" && (
+                  <DeleteForeverIcon
+                    onClick={() => onDelete(params.row)}
+                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                  />
+                )}
               </div>
             ),
           },
@@ -385,10 +394,12 @@ export default function CustomizedDataGrid({
                     onClick={() => onEdit && onEdit(params.row)}
                     sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                   />
-                  <DeleteForeverIcon
-                    onClick={() => onDelete && onDelete(params.row._id)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                  />
+                  {userRole === "admin" && (
+                    <DeleteForeverIcon
+                      onClick={() => onDelete && onDelete(params.row._id)}
+                      sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                    />
+                  )}
                 </div>
               ),
             },
@@ -628,10 +639,12 @@ export default function CustomizedDataGrid({
                     onClick={() => onEdit(params.row)}
                     sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                   />
-                  <DeleteForeverIcon
-                    onClick={() => onDelete(params.row)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                  />
+                  {userRole === "admin" && (
+                    <DeleteForeverIcon
+                      onClick={() => onDelete(params.row)}
+                      sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                    />
+                  )}
                 </Box>
               ),
             },

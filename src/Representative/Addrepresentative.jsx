@@ -38,12 +38,14 @@ import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import { Alert,
+import {
+  Alert,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,} from '@mui/material';
+  DialogTitle,
+} from '@mui/material';
 
 import {
   getVoteById,
@@ -85,8 +87,8 @@ export default function Addrepresentative(props) {
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
-const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-  
+  const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
 
@@ -115,9 +117,8 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -136,7 +137,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       houseId: id,
       summary: "",
       rating: "",
-      votesScore: [{ voteId: null, score: "" }],
+      votesScore: [{ voteId: "", score: "" }],
       activitiesScore: [{ activityId: null, score: "" }],
       currentTerm: false,
       termId: null,
@@ -178,7 +179,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
         index === termIndex
           ? {
             ...term,
-            votesScore: [...term.votesScore, { voteId: " ", score: "" }],
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
           }
           : term
       )
@@ -278,10 +279,10 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const contentRefs = useRef([]);
 
   const handleEditorChange = useCallback((content, termIndex) => {
-     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
+    const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
 
     // Track the change if not already tracked
-    setLocalChanges((prev) => 
+    setLocalChanges((prev) =>
       prev.includes(fieldName) ? prev : [...prev, fieldName]
     );
     if (!contentRefs.current[termIndex]) {
@@ -311,7 +312,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
         houseId: id,
         summary: "",
         rating: "",
-        votesScore: [{ voteId: null, score: "" }],
+        votesScore: [{ voteId: "", score: "" }],
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
@@ -344,6 +345,34 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+ // Transform votesScore with the same logic as house data
+      let votesScore =
+        Array.isArray(term.votesScore) && term.votesScore.length > 0
+          ? term.votesScore.map((vote) => {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+
+              if (dbScore?.includes("yea_votes")) {
+                scoreValue = "Yes";
+              } else if (dbScore?.includes("nay_votes")) {
+                scoreValue = "No";
+              } else if (dbScore?.includes("other_votes")) {
+                scoreValue = "Neutral";
+              } else {
+                scoreValue = vote.score || "";
+              }
+
+              return {
+                voteId: vote.voteId?._id || vote.voteId || null,
+                score: scoreValue,
+              };
+            })
+          : [{ voteId: null, score: "" }]; // Changed from empty string to null
+
+      // If all voteId are null or array is empty, add a blank row
+      if (votesScore.length === 0 || votesScore.every((v) => v.voteId == null)) {
+        votesScore = [{ voteId: "", score: "" }]; // Use null instead of empty string
+      }
 
         return {
           _id: term._id,
@@ -353,28 +382,29 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          votesScore:
-            term.votesScore?.length > 0
-              ? term.votesScore.map((vote) => {
-                let scoreValue = "";
-                const dbScore = vote.score?.toLowerCase();
+          votesScore,
+          // :
+          //   term.votesScore?.length > 0
+          //     ? term.votesScore.map((vote) => {
+          //       let scoreValue = "";
+          //       const dbScore = vote.score?.toLowerCase();
 
-                  if (dbScore?.includes("yea_votes")) {
-                    scoreValue = "Yes";
-                  } else if (dbScore?.includes("nay_votes")) {
-                    scoreValue = "No";
-                  } else if (dbScore?.includes("other_votes")) {
-                    scoreValue = "Neutral";
-                  } else {
-                    scoreValue = vote.score || "";
-                  }
+          //       if (dbScore?.includes("yea_votes")) {
+          //         scoreValue = "Yes";
+          //       } else if (dbScore?.includes("nay_votes")) {
+          //         scoreValue = "No";
+          //       } else if (dbScore?.includes("other_votes")) {
+          //         scoreValue = "Neutral";
+          //       } else {
+          //         scoreValue = vote.score || "";
+          //       }
 
-                return {
-                  voteId: vote.voteId?._id || vote.voteId || null,
-                  score: scoreValue,
-                };
-              })
-              : [{ voteId: null, score: "" }],
+          //       return {
+          //         voteId: vote.voteId?._id || vote.voteId || null,
+          //         score: scoreValue,
+          //       };
+          //     })
+          //     : [{ voteId: "", score: "" }],
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
@@ -394,7 +424,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
           houseId: id,
           summary: "",
           rating: "",
-          votesScore: [{ voteId: null, score: "" }],
+          votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
@@ -542,7 +572,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-  
+
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -563,7 +593,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
         setDeletedTermIds([]); // clear after delete
       }
 
-       const allChanges = [
+      const allChanges = [
         ...new Set([
           ...(Array.isArray(formData.editedFields)
             ? formData.editedFields
@@ -610,8 +640,16 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
 
       // Update terms
       const termPromises = houseTermData.map((term, index) => {
+        // Clean votesScore - remove entries with empty/null voteId and transform empty strings
+        const cleanVotesScore = term.votesScore
+          .filter(vote => vote.voteId && vote.voteId.toString().trim() !== "")
+          .map(vote => ({
+            voteId: vote.voteId.toString().trim() === "" ? null : vote.voteId,
+            score: vote.score
+          }));
         const termUpdate = {
           ...term,
+          votesScore: cleanVotesScore,
           houseId: id,
           editedFields: editedFields.filter((f) =>
             f.startsWith(`term${index}_`)
@@ -629,10 +667,10 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       await Promise.all(termPromises);
 
       // Reload data
-     
+
       await dispatch(getHouseDataByHouseId(id)).unwrap();
-       setLocalChanges([]);
-       await dispatch(getHouseById(id)).unwrap();
+      setLocalChanges([]);
+      await dispatch(getHouseById(id)).unwrap();
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
@@ -737,38 +775,38 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   );
 
   const handleDiscard = () => {
-  if (!id) {
-    setSnackbarMessage("No house selected");
-    setSnackbarSeverity("error");
-    setOpenSnackbar(true);
-    return;
-  }
-  setOpenDiscardDialog(true);
-};
+    if (!id) {
+      setSnackbarMessage("No house selected");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    setOpenDiscardDialog(true);
+  };
 
-const handleConfirmDiscard = async () => {
-  setOpenDiscardDialog(false);
+  const handleConfirmDiscard = async () => {
+    setOpenDiscardDialog(false);
 
-  try {
-    setLoading(true);
-    await dispatch(discardHouseChanges(id)).unwrap();
-    await dispatch(getHouseById(id));
-    await dispatch(getHouseDataByHouseId(id));
-    setSnackbarMessage("Changes discarded successfully");
-    setSnackbarSeverity("success");
-  } catch (error) {
-    console.error("Discard failed:", error);
-    const errorMessage =
-      error?.payload?.message ||
-      error?.message ||
-      (typeof error === "string" ? error : "Failed to discard changes");
-    setSnackbarMessage(errorMessage);
-    setSnackbarSeverity("error");
-  } finally {
-    setOpenSnackbar(true);
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      await dispatch(discardHouseChanges(id)).unwrap();
+      await dispatch(getHouseById(id));
+      await dispatch(getHouseDataByHouseId(id));
+      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarSeverity("success");
+    } catch (error) {
+      console.error("Discard failed:", error);
+      const errorMessage =
+        error?.payload?.message ||
+        error?.message ||
+        (typeof error === "string" ? error : "Failed to discard changes");
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+    } finally {
+      setOpenSnackbar(true);
+      setLoading(false);
+    }
+  };
 
 
   return (
@@ -815,71 +853,69 @@ const handleConfirmDiscard = async () => {
             }}
           >
             {userRole && formData.publishStatus !== "published" && (
-  <Box
-    sx={{
-      width: "98%",
-      p: 2,
-      backgroundColor: statusData.backgroundColor,
-      borderLeft: `4px solid ${statusData.borderColor}`,
-      borderRadius: "0 8px 8px 0",
-      boxShadow: 1,
-      mb: 2,
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-      {/* Status icon bubble */}
-      <Box
-        sx={{
-          p: 1,
-          borderRadius: "50%",
-          backgroundColor: `rgba(${
-            formData.publishStatus === "draft"
-              ? "66, 165, 245"
-              : formData.publishStatus === "under review"
-              ? "255, 193, 7"
-              : formData.publishStatus === "published"
-              ? "76, 175, 80"
-              : "244, 67, 54"
-          }, 0.2)`,
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        {React.cloneElement(statusData.icon, {
-          sx: { color: statusData.iconColor },
-        })}
-      </Box>
+              <Box
+                sx={{
+                  width: "98%",
+                  p: 2,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon bubble */}
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${formData.publishStatus === "draft"
+                        ? "66, 165, 245"
+                        : formData.publishStatus === "under review"
+                          ? "255, 193, 7"
+                          : formData.publishStatus === "published"
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(statusData.icon, {
+                      sx: { color: statusData.iconColor },
+                    })}
+                  </Box>
 
-      <Box sx={{ flex: 1 }}>
-        {/* Header: title + pending count (admin only) */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography
-            variant="subtitle1"
-            fontWeight="600"
-            sx={{
-              color: statusData.titleColor,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            {statusData.title}
-          </Typography>
+                  <Box sx={{ flex: 1 }}>
+                    {/* Header: title + pending count (admin only) */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
+                        sx={{
+                          color: statusData.titleColor,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {statusData.title}
+                      </Typography>
 
                       {userRole === "admin" && (
                         <Chip
-                          label={`${
-                            (Array.isArray(formData?.editedFields)
-                              ? formData.editedFields.length
-                              : 0) + localChanges.length
-                          } pending changes`}
+                          label={`${(Array.isArray(formData?.editedFields)
+                            ? formData.editedFields.length
+                            : 0) + localChanges.length
+                            } pending changes`}
                           size="small"
                           color="warning"
                           variant="outlined"
@@ -941,13 +977,13 @@ const handleConfirmDiscard = async () => {
                                 const editor = editorInfo?.editorName || "Unknown Editor";
                                 const editTime = editorInfo?.editedAt
                                   ? new Date(
-                                      editorInfo.editedAt
-                                    ).toLocaleString("en-GB", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      day: "2-digit",
-                                      month: "short",
-                                    })
+                                    editorInfo.editedAt
+                                  ).toLocaleString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    day: "2-digit",
+                                    month: "short",
+                                  })
                                   : "unknown time";
 
                                 return (
@@ -1087,7 +1123,7 @@ const handleConfirmDiscard = async () => {
                 alignItems: "center",
               }}
             >
-            <Button
+              <Button
                 variant="outlined"
                 onClick={handleDiscard}
                 sx={{
@@ -1120,63 +1156,63 @@ const handleConfirmDiscard = async () => {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
-            <Dialog
-  open={openDiscardDialog}
-  onClose={() => setOpenDiscardDialog(false)}
-  PaperProps={{
-    sx: { borderRadius: 3, padding: 2, minWidth: 350 },
-  }}
->
-  <DialogTitle
-    sx={{
-      fontSize: "1.4rem",
-      fontWeight: "bold",
-      textAlign: "center",
-      color: "warning.main",
-    }}
-  >
-    Discard Changes?
-  </DialogTitle>
+              <Dialog
+                open={openDiscardDialog}
+                onClose={() => setOpenDiscardDialog(false)}
+                PaperProps={{
+                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+                }}
+              >
+                <DialogTitle
+                  sx={{
+                    fontSize: "1.4rem",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    color: "warning.main",
+                  }}
+                >
+                  Discard Changes?
+                </DialogTitle>
 
-  <DialogContent>
-    <DialogContentText
-      sx={{
-        textAlign: "center",
-        fontSize: "1rem",
-        color: "text.secondary",
-      }}
-    >
-      Are you sure you want to discard all changes? <br />
-      <strong>This action cannot be undone.</strong>
-    </DialogContentText>
-  </DialogContent>
+                <DialogContent>
+                  <DialogContentText
+                    sx={{
+                      textAlign: "center",
+                      fontSize: "1rem",
+                      color: "text.secondary",
+                    }}
+                  >
+                    Are you sure you want to discard all changes? <br />
+                    <strong>This action cannot be undone.</strong>
+                  </DialogContentText>
+                </DialogContent>
 
-  <DialogActions>
-    <Stack
-      direction="row"
-      spacing={2}
-      sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
-    >
-      <Button
-        onClick={() => setOpenDiscardDialog(false)}
-        variant="outlined"
-        color="secondary"
-        sx={{ borderRadius: 2, paddingX: 3 }}
-      >
-        Cancel
-      </Button>
+                <DialogActions>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                  >
+                    <Button
+                      onClick={() => setOpenDiscardDialog(false)}
+                      variant="outlined"
+                      color="secondary"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Cancel
+                    </Button>
 
-      <Button
-        onClick={handleConfirmDiscard}
-        variant="contained"
-        color="warning"
-        sx={{ borderRadius: 2, paddingX: 3 }}
-      >
-        Discard
-      </Button>
-    </Stack>
-  </DialogActions>
-</Dialog>
+                    <Button
+                      onClick={handleConfirmDiscard}
+                      variant="contained"
+                      color="warning"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Discard
+                    </Button>
+                  </Stack>
+                </DialogActions>
+              </Dialog>
 
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>

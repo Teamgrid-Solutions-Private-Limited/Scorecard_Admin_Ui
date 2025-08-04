@@ -137,7 +137,7 @@ export default function AddSenator(props) {
       senateId: id,
       summary: "",
       rating: "",
-      votesScore: [{ voteId: null, score: "" }],
+      votesScore: [{ voteId: "", score: "" }],
       activitiesScore: [{ activityId: null, score: "" }],
       currentTerm: false,
       termId: null,
@@ -177,7 +177,7 @@ export default function AddSenator(props) {
         index === termIndex
           ? {
             ...term,
-            votesScore: [...term.votesScore, { voteId: " ", score: "" }],
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
           }
           : term
       )
@@ -356,7 +356,7 @@ export default function AddSenator(props) {
         senateId: id,
         summary: "",
         rating: "",
-        votesScore: [{ voteId: null, score: "" }],
+        votesScore: [{ voteId: "", score: "" }],
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
@@ -364,7 +364,7 @@ export default function AddSenator(props) {
     ]);
   };
 
- const handleRemoveTerm = (termIndex) => {
+  const handleRemoveTerm = (termIndex) => {
     setSenatorTermData((prev) => {
       const removed = prev[termIndex];
       if (removed && removed._id) {
@@ -390,7 +390,22 @@ export default function AddSenator(props) {
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+        // Prepare votesScore, always at least one blank row
+        let votesScore =
+          Array.isArray(term.votesScore) && term.votesScore.length > 0
+            ? term.votesScore.map((vote) => ({
+              voteId: vote.voteId?._id || vote.voteId || null,
+              score: vote.score || "",
+            }))
+            : [];
 
+        // If all voteId are null or array is empty, add a blank row
+        if (
+          votesScore.length === 0 ||
+          votesScore.every((v) => v.voteId == null)
+        ) {
+          votesScore = [{ voteId: "", score: "" }];
+        }
         return {
           _id: term._id,
           summary: term.summary || "",
@@ -399,28 +414,30 @@ export default function AddSenator(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          votesScore:
-            term.votesScore?.length > 0
-              ? term.votesScore.map((vote) => {
-                let scoreValue = "";
-                const dbScore = vote.score?.toLowerCase();
+          votesScore
+          // :
+          //   term.votesScore?.length > 0
+          //     ? term.votesScore.map((vote) => {
+          //       let scoreValue = "";
+          //       const dbScore = vote.score?.toLowerCase();
 
-                if (dbScore?.includes("yea")) {
-                  scoreValue = "Yes";
-                } else if (dbScore?.includes("nay")) {
-                  scoreValue = "No";
-                } else if (dbScore?.includes("other")) {
-                  scoreValue = "Neutral";
-                } else {
-                  scoreValue = vote.score || "";
-                }
+          //       if (dbScore?.includes("yea")) {
+          //         scoreValue = "Yes";
+          //       } else if (dbScore?.includes("nay")) {
+          //         scoreValue = "No";
+          //       } else if (dbScore?.includes("other")) {
+          //         scoreValue = "Neutral";
+          //       } else {
+          //         scoreValue = vote.score || "";
+          //       }
 
-                return {
-                  voteId: vote.voteId?._id || vote.voteId || null,
-                  score: scoreValue,
-                };
-              })
-              : [{ voteId: null, score: "" }],
+          //       return {
+          //         voteId: vote.voteId?._id || vote.voteId || null,
+          //         score: scoreValue,
+          //       };
+          //     })
+          //     : [{ voteId: "", score: "" }]
+          ,
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
@@ -440,7 +457,7 @@ export default function AddSenator(props) {
           senateId: id,
           summary: "",
           rating: "",
-          votesScore: [{ voteId: null, score: "" }],
+          votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
@@ -583,7 +600,7 @@ export default function AddSenator(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-  
+
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
 
@@ -661,8 +678,14 @@ export default function AddSenator(props) {
 
       // Update terms
       const termPromises = senatorTermData.map((term, index) => {
+        const transformedVotesScore = term.votesScore.map(vote => ({
+          ...vote,
+          voteId: vote.voteId === "" ? null : vote.voteId
+        })).filter(vote => vote.voteId !== null); // Optional: remove null entries 
+
         const termUpdate = {
           ...term,
+          votesScore: transformedVotesScore, // Use the transformed array
           senateId: id, //explicitly add it
           editedFields: editedFields.filter((f) =>
             f.startsWith(`term${index}_`)
@@ -677,13 +700,13 @@ export default function AddSenator(props) {
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
-  //     await Promise.all(termPromises);
+      await Promise.all(termPromises);
 
       // Clear local changes
       setEditedFields([]);
       setLocalChanges([]);
       // Reload data
-      
+
       await dispatch(getSenatorById(id)).unwrap();
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
 
@@ -830,14 +853,13 @@ export default function AddSenator(props) {
                     sx={{
                       p: 1,
                       borderRadius: "50%",
-                      backgroundColor: `rgba(${
-                        formData.publishStatus === "draft"
+                      backgroundColor: `rgba(${formData.publishStatus === "draft"
                           ? "66, 165, 245"
                           : formData.publishStatus === "under review"
-                          ? "230, 81, 0"
-                          : formData.publishStatus === "published"
-                            ? "76, 175, 80"
-                            : "244, 67, 54"
+                            ? "230, 81, 0"
+                            : formData.publishStatus === "published"
+                              ? "76, 175, 80"
+                              : "244, 67, 54"
                         }, 0.2)`,
                       display: "grid",
                       placeItems: "center",
@@ -873,11 +895,10 @@ export default function AddSenator(props) {
 
                       {userRole === "admin" && (
                         <Chip
-                          label={`${
-                            Array.isArray(formData?.editedFields)
+                          label={`${Array.isArray(formData?.editedFields)
                               ? formData.editedFields.length
                               : 0
-                          } pending changes`}
+                            } pending changes`}
                           size="small"
                           color="warning"
                           variant="outlined"
@@ -957,17 +978,17 @@ export default function AddSenator(props) {
                                       formData?.fieldEditors?.[field];
                                     const editor = editorInfo
                                       ? editorInfo.editorName ||
-                                        "Unknown Editor"
+                                      "Unknown Editor"
                                       : "Unknown Editor";
                                     const editTime = editorInfo?.editedAt
                                       ? new Date(
-                                          editorInfo.editedAt
-                                        ).toLocaleString([], {
-                                          month: "short",
-                                          day: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
+                                        editorInfo.editedAt
+                                      ).toLocaleString([], {
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
                                       : "unknown time";
 
                                     return (
@@ -998,15 +1019,13 @@ export default function AddSenator(props) {
                                                 fontWeight="500"
                                               >
                                                 {isTermField
-                                                  ? `Term ${
-                                                      termInfo.termNumber
-                                                    }: ${
-                                                      fieldLabels?.[
-                                                        termInfo.fieldName
-                                                      ] || termInfo.fieldName
-                                                    }`
+                                                  ? `Term ${termInfo.termNumber
+                                                  }: ${fieldLabels?.[
+                                                  termInfo.fieldName
+                                                  ] || termInfo.fieldName
+                                                  }`
                                                   : fieldLabels?.[field] ||
-                                                    field}
+                                                  field}
                                               </Typography>
                                             </Box>
                                           }
@@ -1078,13 +1097,11 @@ export default function AddSenator(props) {
                                           >
                                             <span>
                                               {isTermField
-                                                ? `Term ${
-                                                    termInfo.termNumber
-                                                  }: ${
-                                                    fieldLabels?.[
-                                                      termInfo.fieldName
-                                                    ] || termInfo.fieldName
-                                                  }`
+                                                ? `Term ${termInfo.termNumber
+                                                }: ${fieldLabels?.[
+                                                termInfo.fieldName
+                                                ] || termInfo.fieldName
+                                                }`
                                                 : fieldLabels?.[field] || field}
                                             </span>
                                             <span>•</span>

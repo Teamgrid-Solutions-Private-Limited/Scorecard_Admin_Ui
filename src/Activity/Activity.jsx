@@ -411,6 +411,11 @@ export default function Activity(props) {
               snackbarMessage === "This activity has been successfully deleted."
                 ? "#FF474D"
                 : undefined,
+            "& .MuiAlert-icon": {
+              color: snackbarMessage === "This activity has been successfully deleted."
+                ? "white"
+                : undefined
+            }
           }}
         >
           {snackbarMessage}
