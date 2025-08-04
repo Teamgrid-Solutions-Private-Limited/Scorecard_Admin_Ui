@@ -463,281 +463,237 @@ export default function AddActivity(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && currentStatus !== "published" && statusData && (
-              <Box
-                sx={{
-                  width: "98%",
-                  p: 2,
-                  backgroundColor: statusData.backgroundColor,
-                  borderLeft: `4px solid ${statusData.borderColor}`,
-                  borderRadius: "0 8px 8px 0",
-                  boxShadow: 1,
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                  {/* Status icon bubble */}
+         {userRole && currentStatus !== "published" && statusData && (
+  <Box
+    sx={{
+      width: "98%",
+      p: 2,
+      backgroundColor: statusData.backgroundColor,
+      borderLeft: `4px solid ${statusData.borderColor}`,
+      borderRadius: "0 8px 8px 0",
+      boxShadow: 1,
+      mb: 2,
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+      {/* Status icon bubble */}
+      <Box
+        sx={{
+          p: 1,
+          borderRadius: "50%",
+          backgroundColor: `rgba(${
+            currentStatus === "draft"
+              ? "66, 165, 245"
+              : currentStatus === "review"
+              ? "255, 193, 7"
+              : currentStatus === "published"
+              ? "76, 175, 80"
+              : "244, 67, 54"
+          }, 0.2)`,
+          display: "grid",
+          placeItems: "center",
+          flexShrink: 0,
+        }}
+      >
+        {statusData?.icon &&
+          React.cloneElement(statusData.icon, {
+            sx: { color: statusData.iconColor },
+          })}
+      </Box>
+
+      <Box sx={{ flex: 1 }}>
+        {/* Header: title + pending count (admin only) */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography
+            variant="subtitle1"
+            fontWeight="600"
+            sx={{
+              color: statusData.titleColor,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            {statusData.title}
+          </Typography>
+
+          {userRole === "admin" && (
+            <Chip
+              label={`${(() => {
+                const backend = Array.isArray(selectedActivity?.editedFields)
+                  ? selectedActivity.editedFields
+                  : [];
+                const local = Array.isArray(editedFields) ? editedFields : [];
+                const localOnly = local.filter((f) => !backend.includes(f));
+                return backend.length + localOnly.length;
+              })()} pending changes`}
+              size="small"
+              color="warning"
+              variant="outlined"
+            />
+          )}
+        </Box>
+
+        {/* Pending / New fields list */}
+        <Box sx={{ mt: 1.5 }}>
+          {(() => {
+            const backendChanges = Array.isArray(selectedActivity?.editedFields)
+              ? selectedActivity.editedFields
+              : [];
+            const localChanges = Array.isArray(editedFields) ? editedFields : [];
+            const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
+
+            if (!hasChanges) {
+              return (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "text.disabled",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  {typeof id !== "undefined" && id
+                    ? "No pending changes"
+                    : "Fill in the form to create a new activity"}
+                </Typography>
+              );
+            }
+
+            return (
+              <>
+                {/* Backend pending changes */}
+                {backendChanges.length > 0 && (
                   <Box
                     sx={{
-                      p: 1,
-                      borderRadius: "50%",
-                      backgroundColor: `rgba(${
-                        currentStatus === "draft"
-                          ? "66, 165, 245"
-                          : currentStatus === "review"
-                          ? "255, 193, 7"
-                          : currentStatus === "published"
-                          ? "76, 175, 80"
-                          : "244, 67, 54"
-                      }, 0.2)`,
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
+                      backgroundColor: "background.paper",
+                      borderRadius: 1,
+                      p: 1.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      mb: 2,
                     }}
                   >
-                    {/* apply icon color here */}
-                    {statusData?.icon
-                      ? React.cloneElement(statusData.icon, {
-                          sx: { color: statusData.iconColor },
-                        })
-                      : null}
-                  </Box>
-
-                  <Box sx={{ flex: 1 }}>
-                    {/* Header: title + pending count (admin only) */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
+                    <Typography
+                      variant="overline"
+                      sx={{ color: "text.secondary", mb: 1 }}
                     >
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight="600"
-                        sx={{
-                          color: statusData.titleColor,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        {statusData.title}
-                      </Typography>
-
-                      {userRole === "admin" && (
-                        <Chip
-                          label={`${(() => {
-                            const backend = Array.isArray(
-                              selectedActivity?.editedFields
-                            )
-                              ? selectedActivity.editedFields
-                              : [];
-                            const local = Array.isArray(editedFields)
-                              ? editedFields
-                              : [];
-                            // don't double count fields present in both
-                            const localOnly = local.filter(
-                              (f) => !backend.includes(f)
-                            );
-                            return backend.length;
-                          })()} pending changes`}
-                          size="small"
-                          color="warning"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-
-                    {/* Pending / New fields list */}
-                    <Box sx={{ mt: 1.5 }}>
-                      {(() => {
-                        const backend = Array.isArray(
-                          selectedActivity?.editedFields
-                        )
-                          ? selectedActivity.editedFields
-                          : [];
-                        const local = Array.isArray(editedFields)
-                          ? editedFields
-                          : [];
-                        const hasAny = backend.length > 0 || local.length > 0;
-
-                        if (!hasAny) {
-                          return (
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                // fontStyle: "italic",
-                                color: "text.disabled",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
-                            >
-                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
-                              {typeof id !== "undefined" && id
-                                ? "No pending changes"
-                                : "Fill in the form to create a new activity"}
-                            </Typography>
-                          );
-                        }
+                      {id ? "Saved Changes" : "New Fields"}
+                    </Typography>
+                    <List dense sx={{ py: 0 }}>
+                      {backendChanges.map((field) => {
+                        const editorInfo = selectedActivity?.fieldEditors?.[field];
+                        const editor = editorInfo?.editorName || "Unknown Editor";
+                        const editTime = editorInfo?.editedAt
+                          ? new Date(editorInfo.editedAt).toLocaleString([], {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "unknown time";
 
                         return (
-                          <Box
-                            sx={{
-                              backgroundColor: "background.paper",
-                              borderRadius: 1,
-                              p: 1.5,
-                              border: "1px solid",
-                              borderColor: "divider",
-                            }}
+                          <ListItem
+                            key={`backend-${field}`}
+                            sx={{ py: 0.5, px: 1 }}
                           >
-                            <Typography
-                              variant="overline"
-                              sx={{ color: "text.secondary", mb: 1 }}
-                            >
-                              {typeof id !== "undefined" && id
-                                ? "Saved Changes"
-                                : "New Fields"}
-                            </Typography>
-
-                            <List dense sx={{ py: 0 }}>
-                              {/* Backend-edited fields (with timestamps) */}
-                              {backend.map((field) => {
-                                const editorInfo =
-                                  selectedActivity?.fieldEditors?.[field];
-                                const editor = editorInfo
-                                  ? editorInfo.editorName || "Unknown Editor"
-                                  : "Unknown Editor";
-                                const editTime = editorInfo?.editedAt
-                                  ? new Date(
-                                      editorInfo.editedAt
-                                    ).toLocaleString([], {
-                                      month: "short",
-                                      day: "numeric",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
-                                  : "unknown time";
-
-                                return (
-                                  <ListItem
-                                    key={`backend-${field}`}
-                                    sx={{ py: 0.5, px: 1 }}
-                                  >
-                                    <ListItemText
-                                      primary={
-                                        <Box
-                                          sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 1,
-                                          }}
-                                        >
-                                          <Box
-                                            sx={{
-                                              width: 8,
-                                              height: 8,
-                                              borderRadius: "50%",
-                                              backgroundColor:
-                                                statusData.iconColor,
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="body2"
-                                            fontWeight="500"
-                                          >
-                                            {fieldLabels?.[field] || field}
-                                          </Typography>
-                                        </Box>
-                                      }
-                                      secondary={
-                                        <Typography
-                                          variant="caption"
-                                          color="text.secondary"
-                                        >
-                                          Updated by {editor} on {editTime}
-                                        </Typography>
-                                      }
-                                      sx={{ my: 0 }}
-                                    />
-                                  </ListItem>
-                                );
-                              })}
-                            </List>
-                          </Box>
-                        );
-                      })()}
-                    </Box>
-
-                    {/* Unsaved (local) changes chips */}
-                    {(userRole === "admin" || userRole === "editor") &&
-                      Array.isArray(editedFields) &&
-                      editedFields.length > 0 && (
-                        <Box
-                          sx={{
-                            mt: 2,
-                            backgroundColor: "background.paper",
-                            borderRadius: 1,
-                            p: 1.5,
-                            border: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        >
-                          <Typography
-                            variant="overline"
-                            sx={{ color: "text.secondary" }}
-                          >
-                            Unsaved Changes
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: 1,
-                              mt: 1,
-                              p: 1.5,
-                              backgroundColor: "action.hover",
-                              borderRadius: 1,
-                              border: "1px solid",
-                              borderColor: "divider",
-                            }}
-                          >
-                            {editedFields.map((field) => (
-                              <Chip
-                                key={field}
-                                label={
+                            <ListItemText
+                              primary={
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                   <Box
                                     sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 0.5,
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: "50%",
+                                      backgroundColor: statusData.iconColor,
                                     }}
-                                  >
-                                    <span>{fieldLabels?.[field] || field}</span>
-                                    <span>•</span>
-                                    <span>just now</span>
-                                  </Box>
-                                }
-                                size="small"
-                                color="warning"
-                                variant="outlined"
-                                sx={{
-                                  "& .MuiChip-label": {
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 0.5,
-                                  },
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-                      )}
+                                  />
+                                  <Typography variant="body2" fontWeight="500">
+                                    {fieldLabels?.[field] || field}
+                                  </Typography>
+                                </Box>
+                              }
+                              secondary={
+                                <Typography variant="caption" color="text.secondary">
+                                  Updated by {editor} on {editTime}
+                                </Typography>
+                              }
+                              sx={{ my: 0 }}
+                            />
+                          </ListItem>
+                        );
+                      })}
+                    </List>
                   </Box>
-                </Box>
-              </Box>
-            )}
+                )}
+
+                {/* Local unsaved changes - now matches senator style */}
+                {localChanges.length > 0 && (
+                  <Box
+                    sx={{
+                      backgroundColor: "background.paper",
+                      borderRadius: 1,
+                      p: 1.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    <Typography
+                      variant="overline"
+                      sx={{ color: "text.secondary", mb: 1 }}
+                    >
+                      Unsaved Changes
+                    </Typography>
+                    <List dense sx={{ py: 0 }}>
+                      {localChanges.map((field) => (
+                        <ListItem
+                          key={`local-${field}`}
+                          sx={{ py: 0.5, px: 1 }}
+                        >
+                          <ListItemText
+                            primary={
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                <Box
+                                  sx={{
+                                    width: 8,
+                                    height: 8,
+                                    borderRadius: "50%",
+                                    backgroundColor: statusData.iconColor,
+                                  }}
+                                />
+                                <Typography variant="body2" fontWeight="500">
+                                  {fieldLabels?.[field] || field}
+                                </Typography>
+                              </Box>
+                            }
+                            secondary={
+                              <Typography variant="caption" color="text.secondary">
+                                Edited just now
+                              </Typography>
+                            }
+                            sx={{ my: 0 }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+              </>
+            );
+          })()}
+        </Box>
+      </Box>
+    </Box>
+  </Box>
+)}
             <Stack
               direction="row"
               spacing={2}
