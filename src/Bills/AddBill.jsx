@@ -10,12 +10,14 @@ import {
   createVote,
   discardVoteChanges,
 } from "../redux/reducer/voteSlice";
-import { Alert,
+import {
+  Alert,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,} from '@mui/material';
+  DialogTitle,
+} from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -316,7 +318,7 @@ export default function AddBill(props) {
       setLoading(false);
     }
   };
-    const handleDiscard = () => {
+  const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
       setSnackbarSeverity("error");
@@ -325,10 +327,10 @@ export default function AddBill(props) {
     }
     setOpenDiscardDialog(true);
   };
-  
+
   const handleConfirmDiscard = async () => {
     setOpenDiscardDialog(false);
-  
+
     try {
       setLoading(true);
       const result = await dispatch(discardVoteChanges(id)).unwrap();
@@ -350,8 +352,6 @@ export default function AddBill(props) {
       setLoading(false);
     }
   };
-
-
 
   const getStatusConfig = (editedFields, currentStatus) => {
     const configs = {
@@ -521,8 +521,7 @@ export default function AddBill(props) {
                       {userRole === "admin" && (
                         <Chip
                           label={`${
-                            (selectedVote?.editedFields?.length || 0) +
-                            editedFields.length
+                            selectedVote?.editedFields?.length || 0
                           } pending changes`}
                           size="small"
                           color="warning"
@@ -571,13 +570,15 @@ export default function AddBill(props) {
                               p: 1.5,
                               border: "1px solid",
                               borderColor: "divider",
+                              // maxHeight: 120, // Set a maximum height for the scrollable area
+                              // overflow: "auto", // Enable scrolling
                             }}
                           >
                             <Typography
                               variant="overline"
                               sx={{ color: "text.secondary", mb: 1 }}
                             >
-                              {id ? "Pending Changes" : "New Fields"}
+                              {id ? "Saved Changes" : "New Fields"}
                             </Typography>
 
                             <List dense sx={{ py: 0 }}>
@@ -633,7 +634,7 @@ export default function AddBill(props) {
                                           variant="caption"
                                           color="text.secondary"
                                         >
-                                          Edited by {editor} on {editTime}
+                                          Updated by {editor} on {editTime}
                                         </Typography>
                                       }
                                       sx={{ my: 0 }}
@@ -650,12 +651,16 @@ export default function AddBill(props) {
                     {/* Unsaved Changes Section */}
                     {(userRole === "admin" || userRole === "editor") &&
                       editedFields.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ mt: 2 ,       backgroundColor: "background.paper",
+                              borderRadius: 1,
+                              p: 1.5,
+                              border: "1px solid",
+                              borderColor: "divider",}}>
                           <Typography
                             variant="overline"
                             sx={{ color: "text.secondary" }}
                           >
-                            Your Unsaved Changes
+                            Unsaved Changes
                           </Typography>
                           <Box
                             sx={{
@@ -717,21 +722,6 @@ export default function AddBill(props) {
             >
               <Button
                 variant="outlined"
-                onClick={handleSubmit}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
-              <Button
-                variant="outlined"
                 onClick={handleDiscard}
                 sx={{
                   backgroundColor: "#4a90e2 !important",
@@ -744,6 +734,21 @@ export default function AddBill(props) {
                 }}
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleSubmit}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
             </Stack>
 
@@ -765,7 +770,7 @@ export default function AddBill(props) {
                 >
                   Discard Changes?
                 </DialogTitle>
-              
+
                 <DialogContent>
                   <DialogContentText
                     sx={{
@@ -778,12 +783,16 @@ export default function AddBill(props) {
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
-              
+
                 <DialogActions>
                   <Stack
                     direction="row"
                     spacing={2}
-                    sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                    sx={{
+                      width: "100%",
+                      justifyContent: "center",
+                      paddingBottom: 2,
+                    }}
                   >
                     <Button
                       onClick={() => setOpenDiscardDialog(false)}
@@ -793,7 +802,7 @@ export default function AddBill(props) {
                     >
                       Cancel
                     </Button>
-              
+
                     <Button
                       onClick={handleConfirmDiscard}
                       variant="contained"
@@ -1205,64 +1214,62 @@ export default function AddBill(props) {
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                          justifyContent: "end",
-                          fontWeight: 700,
-                          my: 0,
-                          width: "100%",
-                          fontFamily: "'Be Vietnam Pro', sans-serif",
-                          fontSize: "13px",
-                        }}
-                      >
-                        SBA Position
-                      </InputLabel>
-                    </Grid>
+                        justifyContent: "end",
+                        fontWeight: 700,
+                        my: 0,
+                        width: "100%",
+                        fontFamily: "'Be Vietnam Pro', sans-serif",
+                        fontSize: "13px",
+                      }}
+                    >
+                      SBA Position
+                    </InputLabel>
+                  </Grid>
 
-                   <Grid size={10}>
-                      <FormControl fullWidth
-                        sx={{
+                  <Grid size={10}>
+                    <FormControl
+                      fullWidth
+                      sx={{
+                        fontFamily: "'Be Vietnam Pro', sans-serif",
+                        "& .MuiFormControlLabel-label": {
+                          fontSize: "15px",
                           fontFamily: "'Be Vietnam Pro', sans-serif",
-                          "& .MuiFormControlLabel-label": {
-                            fontSize: "15px",
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
-                          },
-                        }}
+                        },
+                      }}
+                    >
+                      <RadioGroup
+                        row
+                        name="sbaPosition"
+                        value={formData.sbaPosition}
+                        onChange={handleChange}
                       >
-                        <RadioGroup
-                          row
-                          name="sbaPosition"
-                          value={formData.sbaPosition}
-                          onChange={handleChange}
-                          
-                        >
-                          <FormControlLabel
-                            value="Yes"
-                            control={
-                              <Radio
-                                icon={
-                                  <CheckCircleIcon sx={{ color: "#D3D3D3" }} />
-                                }
-                                checkedIcon={
-                                  <CheckCircleIcon sx={{ color: "green" }} />
-                                }
-                              />
-                            }
-                            label="Yes"
-                          />
-                          <FormControlLabel
-                            value="No"
-                            control={
-                              <Radio
-                                icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
-                                checkedIcon={
-                                  <CancelIcon sx={{ color: "red" }} />
-                                }
-                              />
-                            }
-                            label="No"
-                          />
-                        </RadioGroup>
-                      </FormControl>
-                    </Grid>
+                        <FormControlLabel
+                          value="Yes"
+                          control={
+                            <Radio
+                              icon={
+                                <CheckCircleIcon sx={{ color: "#D3D3D3" }} />
+                              }
+                              checkedIcon={
+                                <CheckCircleIcon sx={{ color: "green" }} />
+                              }
+                            />
+                          }
+                          label="Yes"
+                        />
+                        <FormControlLabel
+                          value="No"
+                          control={
+                            <Radio
+                              icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
+                              checkedIcon={<CancelIcon sx={{ color: "red" }} />}
+                            />
+                          }
+                          label="No"
+                        />
+                      </RadioGroup>
+                    </FormControl>
+                  </Grid>
                 </Grid>
               </Box>
             </Paper>
