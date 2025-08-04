@@ -126,7 +126,7 @@ export default function Senator(props) {
   };
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
-  const statusOptions = ["published", "reviewed", "draft"];
+  const statusOptions = ["published", "under review", "draft"];
 
   useEffect(() => {
     dispatch(getAllSenators());
@@ -326,6 +326,10 @@ export default function Senator(props) {
     setStatusFilter((prev) =>
       prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
     );
+  };
+
+   const handleTermFilter = (term) => {
+    setTermFilter((prev) => (prev === term ? null : term));
   };
   const handleTermMenuOpen = (event) => {
     setTermFilterAnchorEl(event.currentTarget);
@@ -684,7 +688,8 @@ export default function Senator(props) {
                           </Box>
                           {expandedFilter === "state" && (
                             <Box sx={{ py: 2, pt: 0 }}>
-                              <TextField
+                             <Box sx={{ mb: 2 ,px:2}}>
+                               <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search states..."
@@ -699,8 +704,9 @@ export default function Senator(props) {
                                     </InputAdornment>
                                   ),
                                 }}
-                                sx={{ mb: 2 }}
+                                
                               />
+                             </Box>
                               <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredStateOptions.length > 0 ? (
                                   filteredStateOptions.map((state) => (
@@ -866,7 +872,8 @@ export default function Senator(props) {
                           </Box>
                           {expandedFilter === "year" && (
                             <Box sx={{ py: 2, pt: 0 }}>
-                              <TextField
+                             <Box  sx={{ mb: 2, px:2 }}>
+                               <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search years..."
@@ -879,8 +886,9 @@ export default function Senator(props) {
                                     </InputAdornment>
                                   ),
                                 }}
-                                sx={{ mb: 2 }}
+                               
                               />
+                             </Box>
                               <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredYearOptions.length > 0 ? (
                                   filteredYearOptions.map((year) => (
@@ -985,82 +993,65 @@ export default function Senator(props) {
                         </Box>
 
                         {/* Term Filter */}
-                        <Box
-                          sx={{
-
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "term"
-                                ? "action.hover"
-                                : "background.paper",
-                          }}
-                        >
-                          <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
-                            onClick={() => toggleFilterSection("term")}
-                          >
-                            <Typography variant="body1">Term</Typography>
-                            {expandedFilter === "term" ? (
-                              <ExpandLessIcon />
-                            ) : (
-                              <ExpandMoreIcon />
-                            )}
-                          </Box>
-                          {expandedFilter === "term" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
-                                <Box
-                                  onClick={() => setTermFilter('current')}
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    p: 1,
-                                    borderRadius: 1,
-                                    cursor: "pointer",
-                                    "&:hover": {
-                                      bgcolor: "action.hover",
-                                    },
-                                  }}
-                                >
-                                  {termFilter === 'current' ? (
-                                    <CheckIcon color="primary" fontSize="small" />
-                                  ) : (
-                                    <Box sx={{ width: 24, height: 24 }} />
-                                  )}
-                                  <Typography variant="body2" sx={{ ml: 1 }}>
-                                    Current Term
-                                  </Typography>
-                                </Box>
-                                <Box
-                                  onClick={() => setTermFilter('past')}
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    p: 1,
-                                    borderRadius: 1,
-                                    cursor: "pointer",
-                                    "&:hover": {
-                                      bgcolor: "action.hover",
-                                    },
-                                  }}
-                                >
-                                  {termFilter === 'past' ? (
-                                    <CheckIcon color="primary" fontSize="small" />
-                                  ) : (
-                                    <Box sx={{ width: 24, height: 24 }} />
-                                  )}
-                                  <Typography variant="body2" sx={{ ml: 1 }}>
-                                    Past Terms
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </Box>
-                          )}
-                        </Box>
+                         <Box
+                                                  sx={{
+                                                    borderBottom: "1px solid",
+                                                    borderColor: "divider",
+                                                    bgcolor:
+                                                      expandedFilter === "term"
+                                                        ? "action.hover"
+                                                        : "background.paper",
+                                                  }}
+                                                >
+                                                  <Box
+                                                    display="flex"
+                                                    justifyContent="space-between"
+                                                    alignItems="center"
+                                                    sx={{ p: 2, cursor: "pointer" }}
+                                                    onClick={() => toggleFilterSection("term")}
+                                                  >
+                                                    <Typography variant="body1">Term</Typography>
+                                                    {expandedFilter === "term" ? (
+                                                      <ExpandLessIcon />
+                                                    ) : (
+                                                      <ExpandMoreIcon />
+                                                    )}
+                                                  </Box>
+                                                  {expandedFilter === "term" && (
+                                                    <Box sx={{ py: 2, pt: 0 }}>
+                                                      <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
+                                                        {["current"/*, "past"*/].map((term) => (
+                                                          <Box
+                                                            key={term}
+                                                            onClick={() => handleTermFilter(term)}
+                                                            sx={{
+                                                              display: "flex",
+                                                              alignItems: "center",
+                                                              p: 1,
+                                                              borderRadius: 1,
+                                                              cursor: "pointer",
+                                                              "&:hover": {
+                                                                bgcolor: "action.hover",
+                                                              },
+                                                            }}
+                                                          >
+                                                            {termFilter === term ? (
+                                                              <CheckIcon
+                                                                color="primary"
+                                                                fontSize="small"
+                                                              />
+                                                            ) : (
+                                                              <Box sx={{ width: 24, height: 24 }} />
+                                                            )}
+                                                            <Typography variant="body2" sx={{ ml: 1 }}>
+                                                              {term === "current" ? "Current Term" : "Past Terms"}
+                                                            </Typography>
+                                                          </Box>
+                                                        ))}
+                                                      </Box>
+                                                    </Box>
+                                                  )}
+                                                </Box>
 
                         {/* Status Filter */}
                         <Box

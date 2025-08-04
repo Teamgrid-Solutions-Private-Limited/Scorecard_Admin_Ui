@@ -209,14 +209,14 @@ export default function AddSenator(props) {
       // Refresh the data
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenetorId(id));
-      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarMessage(`Changes ${userRole === "admin" ? "discard" : "undo"} successfully`);
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : "Failed to discard changes");
+        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "discard" : "undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -1185,7 +1185,7 @@ export default function AddSenator(props) {
                     color: "warning.main",
                   }}
                 >
-                  Discard Changes?
+                 {userRole === "admin" ? "Discard" : "Undo"} Changes?
                 </DialogTitle>
               
                 <DialogContent>
@@ -1196,7 +1196,7 @@ export default function AddSenator(props) {
                       color: "text.secondary",
                     }}
                   >
-                    Are you sure you want to discard all changes? <br />
+                    Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
@@ -1222,7 +1222,7 @@ export default function AddSenator(props) {
                       color="warning"
                       sx={{ borderRadius: 2, paddingX: 3 }}
                     >
-                      Discard
+                      {userRole === "admin" ? "Discard" : "Undo"}
                     </Button>
                   </Stack>
                 </DialogActions>

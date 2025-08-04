@@ -133,7 +133,7 @@ function AddUser({ open = false, onClose }) {
       setSnackbarMessage("Invite sent successfully!");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
-
+      
       if (onClose) onClose();
     } catch (error) {
       let message = "Failed to send invite. Please try again.";

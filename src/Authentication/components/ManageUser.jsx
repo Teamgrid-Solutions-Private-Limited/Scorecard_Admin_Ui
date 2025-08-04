@@ -9,6 +9,7 @@ import {
   Snackbar,
   IconButton,
   FormLabel,
+  DialogContentText,
 } from "@mui/material";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import CloseIcon from "@mui/icons-material/Close";
@@ -59,6 +60,8 @@ export default function ManageUser(props) {
     role: "",
   });
   const [editErrors, setEditErrors] = useState({});
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Fetch users on component mount
   useEffect(() => {
@@ -132,19 +135,38 @@ export default function ManageUser(props) {
   };
 
   const handleEditUserClose = () => setEditUser(null);
+  const handleDeleteClick = (user) => {
+    setSelectedUser(user);
+    setOpenDeleteDialog(true);
+  };
 
-  const handleDeleteUser = async (userId) => {
+  const handleConfirmDelete = async () => {
+    setOpenDeleteDialog(false);
     try {
-      await dispatch(deleteUser(userId)).unwrap();
+      await dispatch(deleteUser(selectedUser)).unwrap();
       setSnackbarMessage("User deleted successfully");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
+      dispatch(getAllUsers()); // Refresh the user list
     } catch (error) {
       setSnackbarMessage(error.message || "Failed to delete user");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
+
+  // const handleDeleteUser = async (userId) => {
+  //   try {
+  //     await dispatch(deleteUser(userId)).unwrap();
+  //     setSnackbarMessage("User deleted successfully");
+  //     setSnackbarSeverity("success");
+  //     setOpenSnackbar(true);
+  //   } catch (error) {
+  //     setSnackbarMessage(error.message || "Failed to delete user");
+  //     setSnackbarSeverity("error");
+  //     setOpenSnackbar(true);
+  //   }
+  // };
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -206,7 +228,7 @@ export default function ManageUser(props) {
                 type="user"
                 data={users}
                 onEdit={handleEditUser}
-                onDelete={handleDeleteUser}
+                onDelete={handleDeleteClick}
               />
             )}
 
@@ -317,6 +339,62 @@ export default function ManageUser(props) {
                 >
                   Save
                 </Button>
+              </DialogActions>
+            </Dialog>
+
+             {/* Delete Confirmation Dialog */}
+            <Dialog
+              open={openDeleteDialog}
+              onClose={() => setOpenDeleteDialog(false)}
+              PaperProps={{
+                sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+              }}
+            >
+              <DialogTitle
+                sx={{
+                  fontSize: "1.4rem",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  color: "error.main",
+                }}
+              >
+                Confirm Deletion
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText
+                  sx={{
+                    textAlign: "center",
+                    fontSize: "1rem",
+                    color: "text.secondary",
+                  }}
+                >
+                  Are you sure you want to delete{" "}
+                  <strong>{selectedUser?.fullName}</strong>?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                >
+                  <Button
+                    onClick={() => setOpenDeleteDialog(false)}
+                    variant="outlined"
+                    color="secondary"
+                    sx={{ borderRadius: 2, paddingX: 3 }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleConfirmDelete}
+                    variant="contained"
+                    color="error"
+                    sx={{ borderRadius: 2, paddingX: 3 }}
+                  >
+                    Delete
+                  </Button>
+                </Stack>
               </DialogActions>
             </Dialog>
 
