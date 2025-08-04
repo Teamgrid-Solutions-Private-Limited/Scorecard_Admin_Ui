@@ -1101,7 +1101,11 @@ export default function Representative(props) {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%", bgcolor: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? '#FF474D' : undefined }}
+            sx={{ width: "100%", bgcolor: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? '#FF474D' : undefined ,
+              '& .MuiAlert-icon': {
+        color: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? 'white' : undefined
+      }
+          }}
           >
             {snackbarMessage}
           </Alert>

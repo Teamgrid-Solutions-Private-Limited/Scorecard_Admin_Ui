@@ -117,9 +117,8 @@ export default function Addrepresentative(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -138,7 +137,7 @@ export default function Addrepresentative(props) {
       houseId: id,
       summary: "",
       rating: "",
-      votesScore: [{ voteId: null, score: "" }],
+      votesScore: [{ voteId: "", score: "" }],
       activitiesScore: [{ activityId: null, score: "" }],
       currentTerm: false,
       termId: null,
@@ -178,9 +177,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: " ", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -310,7 +309,7 @@ export default function Addrepresentative(props) {
         houseId: id,
         summary: "",
         rating: "",
-        votesScore: [{ voteId: null, score: "" }],
+        votesScore: [{ voteId: "", score: "" }],
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
@@ -343,6 +342,34 @@ export default function Addrepresentative(props) {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+ // Transform votesScore with the same logic as house data
+      let votesScore =
+        Array.isArray(term.votesScore) && term.votesScore.length > 0
+          ? term.votesScore.map((vote) => {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+
+              if (dbScore?.includes("yea_votes")) {
+                scoreValue = "Yes";
+              } else if (dbScore?.includes("nay_votes")) {
+                scoreValue = "No";
+              } else if (dbScore?.includes("other_votes")) {
+                scoreValue = "Neutral";
+              } else {
+                scoreValue = vote.score || "";
+              }
+
+              return {
+                voteId: vote.voteId?._id || vote.voteId || null,
+                score: scoreValue,
+              };
+            })
+          : [{ voteId: null, score: "" }]; // Changed from empty string to null
+
+      // If all voteId are null or array is empty, add a blank row
+      if (votesScore.length === 0 || votesScore.every((v) => v.voteId == null)) {
+        votesScore = [{ voteId: "", score: "" }]; // Use null instead of empty string
+      }
 
         return {
           _id: term._id,
@@ -352,28 +379,29 @@ export default function Addrepresentative(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          votesScore:
-            term.votesScore?.length > 0
-              ? term.votesScore.map((vote) => {
-                  let scoreValue = "";
-                  const dbScore = vote.score?.toLowerCase();
+          votesScore,
+          // :
+          //   term.votesScore?.length > 0
+          //     ? term.votesScore.map((vote) => {
+          //       let scoreValue = "";
+          //       const dbScore = vote.score?.toLowerCase();
 
-                  if (dbScore?.includes("yea_votes")) {
-                    scoreValue = "Yes";
-                  } else if (dbScore?.includes("nay_votes")) {
-                    scoreValue = "No";
-                  } else if (dbScore?.includes("other_votes")) {
-                    scoreValue = "Neutral";
-                  } else {
-                    scoreValue = vote.score || "";
-                  }
+          //       if (dbScore?.includes("yea_votes")) {
+          //         scoreValue = "Yes";
+          //       } else if (dbScore?.includes("nay_votes")) {
+          //         scoreValue = "No";
+          //       } else if (dbScore?.includes("other_votes")) {
+          //         scoreValue = "Neutral";
+          //       } else {
+          //         scoreValue = vote.score || "";
+          //       }
 
-                  return {
-                    voteId: vote.voteId?._id || vote.voteId || null,
-                    score: scoreValue,
-                  };
-                })
-              : [{ voteId: null, score: "" }],
+          //       return {
+          //         voteId: vote.voteId?._id || vote.voteId || null,
+          //         score: scoreValue,
+          //       };
+          //     })
+          //     : [{ voteId: "", score: "" }],
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
@@ -393,7 +421,7 @@ export default function Addrepresentative(props) {
           houseId: id,
           summary: "",
           rating: "",
-          votesScore: [{ voteId: null, score: "" }],
+          votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
@@ -541,6 +569,8 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
+
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -607,8 +637,16 @@ export default function Addrepresentative(props) {
 
       // Update terms
       const termPromises = houseTermData.map((term, index) => {
+        // Clean votesScore - remove entries with empty/null voteId and transform empty strings
+        const cleanVotesScore = term.votesScore
+          .filter(vote => vote.voteId && vote.voteId.toString().trim() !== "")
+          .map(vote => ({
+            voteId: vote.voteId.toString().trim() === "" ? null : vote.voteId,
+            score: vote.score
+          }));
         const termUpdate = {
           ...term,
+          votesScore: cleanVotesScore,
           houseId: id,
           editedFields: editedFields.filter((f) =>
             f.startsWith(`term${index}_`)

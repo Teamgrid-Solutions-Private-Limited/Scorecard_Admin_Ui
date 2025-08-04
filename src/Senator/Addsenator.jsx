@@ -168,7 +168,7 @@ export default function AddSenator(props) {
       senateId: id,
       summary: "",
       rating: "",
-      votesScore: [{ voteId: null, score: "" }],
+      votesScore: [{ voteId: "", score: "" }],
       activitiesScore: [{ activityId: null, score: "" }],
       currentTerm: false,
       termId: null,
@@ -207,9 +207,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: " ", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -377,7 +377,7 @@ export default function AddSenator(props) {
         senateId: id,
         summary: "",
         rating: "",
-        votesScore: [{ voteId: null, score: "" }],
+        votesScore: [{ voteId: "", score: "" }],
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
@@ -411,7 +411,22 @@ export default function AddSenator(props) {
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+        // Prepare votesScore, always at least one blank row
+        let votesScore =
+          Array.isArray(term.votesScore) && term.votesScore.length > 0
+            ? term.votesScore.map((vote) => ({
+              voteId: vote.voteId?._id || vote.voteId || null,
+              score: vote.score || "",
+            }))
+            : [];
 
+        // If all voteId are null or array is empty, add a blank row
+        if (
+          votesScore.length === 0 ||
+          votesScore.every((v) => v.voteId == null)
+        ) {
+          votesScore = [{ voteId: "", score: "" }];
+        }
         return {
           _id: term._id,
           summary: term.summary || "",
@@ -420,28 +435,30 @@ export default function AddSenator(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          votesScore:
-            term.votesScore?.length > 0
-              ? term.votesScore.map((vote) => {
-                  let scoreValue = "";
-                  const dbScore = vote.score?.toLowerCase();
+          votesScore
+          // :
+          //   term.votesScore?.length > 0
+          //     ? term.votesScore.map((vote) => {
+          //       let scoreValue = "";
+          //       const dbScore = vote.score?.toLowerCase();
 
-                  if (dbScore?.includes("yea")) {
-                    scoreValue = "Yes";
-                  } else if (dbScore?.includes("nay")) {
-                    scoreValue = "No";
-                  } else if (dbScore?.includes("other")) {
-                    scoreValue = "Neutral";
-                  } else {
-                    scoreValue = vote.score || "";
-                  }
+          //       if (dbScore?.includes("yea")) {
+          //         scoreValue = "Yes";
+          //       } else if (dbScore?.includes("nay")) {
+          //         scoreValue = "No";
+          //       } else if (dbScore?.includes("other")) {
+          //         scoreValue = "Neutral";
+          //       } else {
+          //         scoreValue = vote.score || "";
+          //       }
 
-                  return {
-                    voteId: vote.voteId?._id || vote.voteId || null,
-                    score: scoreValue,
-                  };
-                })
-              : [{ voteId: null, score: "" }],
+          //       return {
+          //         voteId: vote.voteId?._id || vote.voteId || null,
+          //         score: scoreValue,
+          //       };
+          //     })
+          //     : [{ voteId: "", score: "" }]
+          ,
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
@@ -461,7 +478,7 @@ export default function AddSenator(props) {
           senateId: id,
           summary: "",
           rating: "",
-          votesScore: [{ voteId: null, score: "" }],
+          votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
@@ -604,6 +621,7 @@ export default function AddSenator(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
+
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
 
@@ -681,8 +699,14 @@ export default function AddSenator(props) {
 
       // Update terms
       const termPromises = senatorTermData.map((term, index) => {
+        const transformedVotesScore = term.votesScore.map(vote => ({
+          ...vote,
+          voteId: vote.voteId === "" ? null : vote.voteId
+        })).filter(vote => vote.voteId !== null); // Optional: remove null entries 
+
         const termUpdate = {
           ...term,
+          votesScore: transformedVotesScore, // Use the transformed array
           senateId: id, //explicitly add it
           editedFields: editedFields.filter((f) =>
             f.startsWith(`term${index}_`)
@@ -697,7 +721,7 @@ export default function AddSenator(props) {
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
-      //     await Promise.all(termPromises);
+      await Promise.all(termPromises);
 
       // Clear local changes
       setEditedFields([]);

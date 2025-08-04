@@ -521,6 +521,11 @@ export default function Bills(props) {
               snackbarMessage === "This bill has been successfully deleted."
                 ? "#FF474D"
                 : undefined,
+            "& .MuiAlert-icon": {
+              color: snackbarMessage === "This bill has been successfully deleted."
+                ? "white"
+                : undefined
+            }
           }}
         >
           {snackbarMessage}

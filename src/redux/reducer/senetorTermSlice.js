@@ -53,6 +53,7 @@ export const getSenatorDataBySenetorId = createAsyncThunk(
       const response = await axios.get(`${API_URL}/senatorData/senator-data/viewbysenator/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
+      console.log("getSenatorDataBySenetorId",response.data.info);
       return response.data.info;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -81,7 +82,9 @@ export const deleteSenatorData = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`${API_URL}/senatorData/senator-data/delete/${id}`);
+      console.log("deleteSenatorData",response.data);
       return response.data;
+
     } catch (error) {
       return rejectWithValue(error.response.data);
     }

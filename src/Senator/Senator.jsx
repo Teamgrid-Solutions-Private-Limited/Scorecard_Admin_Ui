@@ -1185,7 +1185,10 @@ export default function Senator(props) {
             severity={snackbarSeverity}
             sx={{ width: "100%",
               //  bgcolor: "#FF474D"
-               bgcolor: snackbarMessage === `${selectedSenator?.name} deleted successfully.` ? '#FF474D' : undefined
+               bgcolor: snackbarMessage === `${selectedSenator?.name} deleted successfully.` ? '#FF474D' : undefined,
+                 '& .MuiAlert-icon': {
+        color: snackbarMessage === `${selectedSenator?.name} deleted successfully.` ? 'white' : undefined
+      }
                }}
           >
             {snackbarMessage}
