@@ -874,7 +874,7 @@ export default function Addrepresentative(props) {
                           formData.publishStatus === "draft"
                             ? "66, 165, 245"
                             : formData.publishStatus === "under review"
-                            ? "255, 193, 7"
+                            ? "230, 81, 0"
                             : formData.publishStatus === "published"
                             ? "76, 175, 80"
                             : "244, 67, 54"
