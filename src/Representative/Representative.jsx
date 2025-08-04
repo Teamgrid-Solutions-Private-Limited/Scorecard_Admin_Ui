@@ -94,7 +94,7 @@ export default function Representative(props) {
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
   const [statusFilter, setStatusFilter] = useState([]);
-  const statusOptions = ["published", "reviewed", "draft"];
+  const statusOptions = ["published", "under review", "draft"];
 
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -670,7 +670,8 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "district" && (
                             <Box sx={{ py: 2, pt: 0 }}>
-                              <TextField
+                             <Box  sx={{ mb: 2,px:2 }}>
+                               <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search districts..."
@@ -685,8 +686,9 @@ export default function Representative(props) {
                                     </InputAdornment>
                                   ),
                                 }}
-                                sx={{ mb: 2 }}
+                               
                               />
+                             </Box>
                               <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredDistrictOptions.length > 0 ? (
                                   filteredDistrictOptions.map((district) => (
@@ -846,7 +848,8 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "year" && (
                             <Box sx={{ py: 2, pt: 0 }}>
-                              <TextField
+                              <Box sx={{ mb: 2,px:2 }}>
+                                <TextField
                                 fullWidth
                                 size="small"
                                 placeholder="Search years..."
@@ -861,8 +864,9 @@ export default function Representative(props) {
                                     </InputAdornment>
                                   ),
                                 }}
-                                sx={{ mb: 2 }}
+                                
                               />
+                              </Box>
                               <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
                                 {filteredYearOptions.length > 0 ? (
                                   filteredYearOptions.map((year) => (
@@ -937,7 +941,7 @@ export default function Representative(props) {
                           {expandedFilter === "term" && (
                             <Box sx={{ py: 2, pt: 0 }}>
                               <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
-                                {["current", "past"].map((term) => (
+                                {["current"/*, "past"*/].map((term) => (
                                   <Box
                                     key={term}
                                     onClick={() => handleTermFilter(term)}
@@ -1097,7 +1101,11 @@ export default function Representative(props) {
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%", bgcolor: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? '#FF474D' : undefined }}
+            sx={{ width: "100%", bgcolor: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? '#FF474D' : undefined ,
+              '& .MuiAlert-icon': {
+        color: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? 'white' : undefined
+      }
+          }}
           >
             {snackbarMessage}
           </Alert>

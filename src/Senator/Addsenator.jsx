@@ -120,6 +120,28 @@ export default function AddSenator(props) {
 
   console.log("User Role:", userRole);
 
+  const formatRelativeTime = (date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) {
+      return "just now";
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min${diffInMinutes !== 1 ? "s" : ""} ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+  };
+
   // Helper function to get display name
   const getFieldDisplayName = (field) => {
     // Handle term fields (term0_fieldName)
@@ -146,7 +168,7 @@ export default function AddSenator(props) {
       senateId: id,
       summary: "",
       rating: "",
-      votesScore: [{ voteId: null, score: "" }],
+      votesScore: [{ voteId: "", score: "" }],
       activitiesScore: [{ activityId: null, score: "" }],
       currentTerm: false,
       termId: null,
@@ -185,9 +207,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: " ", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -212,14 +234,14 @@ export default function AddSenator(props) {
       // Refresh the data
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenetorId(id));
-      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : "Failed to discard changes");
+        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -355,7 +377,7 @@ export default function AddSenator(props) {
         senateId: id,
         summary: "",
         rating: "",
-        votesScore: [{ voteId: null, score: "" }],
+        votesScore: [{ voteId: "", score: "" }],
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
@@ -389,7 +411,22 @@ export default function AddSenator(props) {
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+        // Prepare votesScore, always at least one blank row
+        let votesScore =
+          Array.isArray(term.votesScore) && term.votesScore.length > 0
+            ? term.votesScore.map((vote) => ({
+              voteId: vote.voteId?._id || vote.voteId || null,
+              score: vote.score || "",
+            }))
+            : [];
 
+        // If all voteId are null or array is empty, add a blank row
+        if (
+          votesScore.length === 0 ||
+          votesScore.every((v) => v.voteId == null)
+        ) {
+          votesScore = [{ voteId: "", score: "" }];
+        }
         return {
           _id: term._id,
           summary: term.summary || "",
@@ -398,28 +435,30 @@ export default function AddSenator(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          votesScore:
-            term.votesScore?.length > 0
-              ? term.votesScore.map((vote) => {
-                  let scoreValue = "";
-                  const dbScore = vote.score?.toLowerCase();
+          votesScore
+          // :
+          //   term.votesScore?.length > 0
+          //     ? term.votesScore.map((vote) => {
+          //       let scoreValue = "";
+          //       const dbScore = vote.score?.toLowerCase();
 
-                  if (dbScore?.includes("yea")) {
-                    scoreValue = "Yes";
-                  } else if (dbScore?.includes("nay")) {
-                    scoreValue = "No";
-                  } else if (dbScore?.includes("other")) {
-                    scoreValue = "Neutral";
-                  } else {
-                    scoreValue = vote.score || "";
-                  }
+          //       if (dbScore?.includes("yea")) {
+          //         scoreValue = "Yes";
+          //       } else if (dbScore?.includes("nay")) {
+          //         scoreValue = "No";
+          //       } else if (dbScore?.includes("other")) {
+          //         scoreValue = "Neutral";
+          //       } else {
+          //         scoreValue = vote.score || "";
+          //       }
 
-                  return {
-                    voteId: vote.voteId?._id || vote.voteId || null,
-                    score: scoreValue,
-                  };
-                })
-              : [{ voteId: null, score: "" }],
+          //       return {
+          //         voteId: vote.voteId?._id || vote.voteId || null,
+          //         score: scoreValue,
+          //       };
+          //     })
+          //     : [{ voteId: "", score: "" }]
+          ,
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
@@ -439,7 +478,7 @@ export default function AddSenator(props) {
           senateId: id,
           summary: "",
           rating: "",
-          votesScore: [{ voteId: null, score: "" }],
+          votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
@@ -582,6 +621,7 @@ export default function AddSenator(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
+
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
 
@@ -659,8 +699,14 @@ export default function AddSenator(props) {
 
       // Update terms
       const termPromises = senatorTermData.map((term, index) => {
+        const transformedVotesScore = term.votesScore.map(vote => ({
+          ...vote,
+          voteId: vote.voteId === "" ? null : vote.voteId
+        })).filter(vote => vote.voteId !== null); // Optional: remove null entries 
+
         const termUpdate = {
           ...term,
+          votesScore: transformedVotesScore, // Use the transformed array
           senateId: id, //explicitly add it
           editedFields: editedFields.filter((f) =>
             f.startsWith(`term${index}_`)
@@ -675,7 +721,7 @@ export default function AddSenator(props) {
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
-      //     await Promise.all(termPromises);
+      await Promise.all(termPromises);
 
       // Clear local changes
       setEditedFields([]);
@@ -936,7 +982,7 @@ export default function AddSenator(props) {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    Pending Review Changes
+                                    Saved Changes
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {backendChanges.map((field) => {
@@ -1018,7 +1064,8 @@ export default function AddSenator(props) {
                                                 variant="caption"
                                                 color="text.secondary"
                                               >
-                                                Edited by {editor} on {editTime}
+                                                Updated by {editor} on{" "}
+                                                {editTime}
                                               </Typography>
                                             }
                                             sx={{ my: 0 }}
@@ -1032,12 +1079,21 @@ export default function AddSenator(props) {
 
                               {/* Local unsaved changes */}
                               {localChanges.length > 0 && (
-                                <Box sx={{ mt: 1 }}>
+                                <Box
+                                  sx={{
+                                    backgroundColor: "background.paper",
+                                    borderRadius: 1,
+                                    p: 1.5,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    mb: 2,
+                                  }}
+                                >
                                   <Typography
                                     variant="overline"
                                     sx={{ color: "text.secondary" }}
                                   >
-                                    Your Unsaved Changes
+                                    Unsaved Changes
                                   </Typography>
                                   <Box
                                     sx={{
@@ -1194,7 +1250,7 @@ export default function AddSenator(props) {
                     color: "warning.main",
                   }}
                 >
-                  Discard Changes?
+                 {userRole === "admin" ? "Discard" : "Undo"} Changes?
                 </DialogTitle>
 
                 <DialogContent>
@@ -1205,7 +1261,7 @@ export default function AddSenator(props) {
                       color: "text.secondary",
                     }}
                   >
-                    Are you sure you want to discard all changes? <br />
+                    Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
@@ -1235,7 +1291,7 @@ export default function AddSenator(props) {
                       color="warning"
                       sx={{ borderRadius: 2, paddingX: 3 }}
                     >
-                      Discard
+                      {userRole === "admin" ? "Discard" : "Undo"}
                     </Button>
                   </Stack>
                 </DialogActions>

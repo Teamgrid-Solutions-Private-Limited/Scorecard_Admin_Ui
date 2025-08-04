@@ -337,14 +337,14 @@ export default function AddBill(props) {
 
       // Refresh the data
       await dispatch(getVoteById(id));
-      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : "Failed to discard changes");
+        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -521,8 +521,7 @@ export default function AddBill(props) {
                       {userRole === "admin" && (
                         <Chip
                           label={`${
-                            (selectedVote?.editedFields?.length || 0) +
-                            editedFields.length
+                            selectedVote?.editedFields?.length || 0
                           } pending changes`}
                           size="small"
                           color="warning"
@@ -571,13 +570,15 @@ export default function AddBill(props) {
                               p: 1.5,
                               border: "1px solid",
                               borderColor: "divider",
+                              // maxHeight: 120, // Set a maximum height for the scrollable area
+                              // overflow: "auto", // Enable scrolling
                             }}
                           >
                             <Typography
                               variant="overline"
                               sx={{ color: "text.secondary", mb: 1 }}
                             >
-                              {id ? "Pending Changes" : "New Fields"}
+                              {id ? "Saved Changes" : "New Fields"}
                             </Typography>
 
                             <List dense sx={{ py: 0 }}>
@@ -633,7 +634,7 @@ export default function AddBill(props) {
                                           variant="caption"
                                           color="text.secondary"
                                         >
-                                          Edited by {editor} on {editTime}
+                                          Updated by {editor} on {editTime}
                                         </Typography>
                                       }
                                       sx={{ my: 0 }}
@@ -650,12 +651,16 @@ export default function AddBill(props) {
                     {/* Unsaved Changes Section */}
                     {(userRole === "admin" || userRole === "editor") &&
                       editedFields.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ mt: 2 ,       backgroundColor: "background.paper",
+                              borderRadius: 1,
+                              p: 1.5,
+                              border: "1px solid",
+                              borderColor: "divider",}}>
                           <Typography
                             variant="overline"
                             sx={{ color: "text.secondary" }}
                           >
-                            Your Unsaved Changes
+                            Unsaved Changes
                           </Typography>
                           <Box
                             sx={{
@@ -717,21 +722,6 @@ export default function AddBill(props) {
             >
               <Button
                 variant="outlined"
-                onClick={handleSubmit}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
-              <Button
-                variant="outlined"
                 onClick={handleDiscard}
                 sx={{
                   backgroundColor: "#4a90e2 !important",
@@ -745,6 +735,36 @@ export default function AddBill(props) {
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
+              <Button
+                variant="outlined"
+                onClick={handleSubmit}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
+              </Button>
+              {/* <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
@@ -763,7 +783,7 @@ export default function AddBill(props) {
                     color: "warning.main",
                   }}
                 >
-                  Discard Changes?
+                  {userRole === "admin" ? "Discard" : "Undo"} Changes?
                 </DialogTitle>
 
                 <DialogContent>
@@ -774,7 +794,7 @@ export default function AddBill(props) {
                       color: "text.secondary",
                     }}
                   >
-                    Are you sure you want to discard all changes? <br />
+                    Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
@@ -804,7 +824,7 @@ export default function AddBill(props) {
                       color="warning"
                       sx={{ borderRadius: 2, paddingX: 3 }}
                     >
-                      Discard
+                      {userRole === "admin" ? "Discard" : "Undo"}
                     </Button>
                   </Stack>
                 </DialogActions>

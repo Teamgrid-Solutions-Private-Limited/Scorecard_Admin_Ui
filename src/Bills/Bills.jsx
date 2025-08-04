@@ -30,9 +30,15 @@ import {
   DialogContentText,
   DialogActions,
   MenuItem,
+  Badge, IconButton, Paper, ClickAwayListener
 } from "@mui/material";
 import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import CloseIcon from "@mui/icons-material/Close";
+import CheckIcon from "@mui/icons-material/Check";
 const xThemeComponents = {
   ...chartsCustomizations,
   ...dataGridCustomizations,
@@ -53,13 +59,17 @@ export default function Bills(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("all"); // 'all', 'published', 'draft'
   const token = localStorage.getItem("token");
   // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
   console.log("User Role:", userRole);
+
+   // Filter state
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState([]);
+  const statusOptions = ["published", "draft", "under review"];
   const [selectedBills, setSelectedBills] = useState([]); // Store selected bill IDs
   const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
   const [bulkSbaPosition, setBulkSbaPosition] = useState(""); // Store bulk SBA position value
@@ -103,9 +113,10 @@ export default function Bills(props) {
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
-  const filteredVotes = votes.filter((vote) => {
-    if (statusFilter === "all") return true;
-    return vote.status === statusFilter;
+ const filteredVotes = votes.filter((vote) => {
+    // Status filter
+    return statusFilter.length === 0 || 
+      (vote.status && statusFilter.includes(vote.status));
   });
 
   const billsData = filteredVotes.map((vote, index) => ({
@@ -123,6 +134,26 @@ export default function Bills(props) {
   }));
 
   console.log("bills:", billsData);
+
+   // Filter handlers
+  const toggleFilter = () => {
+    setFilterOpen(!filterOpen);
+  };
+
+  const handleStatusFilter = (status) => {
+    setStatusFilter(prev =>
+      prev.includes(status)
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setStatusFilter([]);
+  };
+
+  const activeFilterCount = statusFilter.length;
+
 
   const handleEdit = (row) => {
     navigate(`edit-bill/${row._id}`);
@@ -206,7 +237,7 @@ export default function Bills(props) {
           <FixedHeader />
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
+            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 1 } }}
           >
             {/* <Typography
               variant="h4"
@@ -235,29 +266,129 @@ export default function Bills(props) {
                 alignItems="center"
                 sx={{ ml: "auto" }}
               >
-                <TextField
-                  select
-                  variant="outlined"
-                  // label="Filter by Status"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  SelectProps={{ native: true }}
-                  size="small"
-                  sx={{
-                    minWidth: 180,
-                    "& .MuiOutlinedInput-root": {
-                      "&:hover fieldset": {
-                        borderColor: "primary.light",
+                <Box sx={{ position: "relative", display: "inline-block" }}>
+                  <Badge
+                    badgeContent={activeFilterCount}
+                    color="primary"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        top: 6, 
+                        right: 6, 
                       },
-                    },
-                  }}
-                >
-                  <option value="all">All</option>
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      startIcon={<FilterListIcon />}
+                      endIcon={
+                        filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                      }
+                      onClick={toggleFilter}
+                      sx={{
+                        height: "40px",
+                        minWidth: "120px",
+                        borderColor: filterOpen ? "primary.main" : "divider",
+                        backgroundColor: filterOpen
+                          ? "primary.light"
+                          : "background.paper",
+                        "&:hover": {
+                          backgroundColor: filterOpen
+                            ? "primary.light"
+                            : "action.hover",
+                        },
+                      }}
+                    >
+                      Filters
+                    </Button>
+                  </Badge>
 
-                  <option value="reviewed">Reviewed</option>
-                </TextField>
+                  {filterOpen && (
+                    <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
+                      <Paper
+                        sx={{
+                          position: "absolute",
+                          right: 0,
+                          top: "100%",
+                          mt: 1,
+                          width: 200,
+                          zIndex: 1,
+                          boxShadow: 3,
+                          borderRadius: 2,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Typography variant="subtitle1" fontWeight="bold">
+                              Status
+                            </Typography>
+                            <IconButton size="small" onClick={toggleFilter}>
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+
+                        {/* Status Filter */}
+                        <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
+                          {statusOptions.map((status) => (
+                            <Box
+                              key={status}
+                              onClick={() => handleStatusFilter(status)}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                p: 1,
+                                borderRadius: 1,
+                                cursor: "pointer",
+                                "&:hover": {
+                                  bgcolor: "action.hover",
+                                },
+                              }}
+                            >
+                              {statusFilter.includes(status) ? (
+                                <CheckIcon color="primary" fontSize="small" />
+                              ) : (
+                                <Box sx={{ width: 24, height: 24 }} />
+                              )}
+                              <Typography variant="body2" sx={{ ml: 1 }}>
+                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+
+                        {/* Clear All Button */}
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderTop: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            color="secondary"
+                            onClick={clearAllFilters}
+                            disabled={!statusFilter.length}
+                          >
+                            Clear Filters
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </ClickAwayListener>
+                  )}
+                </Box>
               </Stack>
 
               <Stack direction="row" spacing={2} alignItems="center">
@@ -390,6 +521,11 @@ export default function Bills(props) {
               snackbarMessage === "This bill has been successfully deleted."
                 ? "#FF474D"
                 : undefined,
+            "& .MuiAlert-icon": {
+              color: snackbarMessage === "This bill has been successfully deleted."
+                ? "white"
+                : undefined
+            }
           }}
         >
           {snackbarMessage}
