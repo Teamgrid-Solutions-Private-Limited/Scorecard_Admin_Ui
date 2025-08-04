@@ -656,8 +656,8 @@ export default function Addrepresentative(props) {
 
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateHouseData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -671,9 +671,9 @@ export default function Addrepresentative(props) {
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -788,14 +788,14 @@ export default function Addrepresentative(props) {
     await dispatch(discardHouseChanges(id)).unwrap();
     await dispatch(getHouseById(id));
     await dispatch(getHouseDataByHouseId(id));
-    setSnackbarMessage(`Changes ${userRole === "admin" ? "discard" : "undo"} successfully`);
+    setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
     setSnackbarSeverity("success");
   } catch (error) {
     console.error("Discard failed:", error);
     const errorMessage =
       error?.payload?.message ||
       error?.message ||
-      (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "discard" : "undo"} changes`);
+      (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
     setSnackbarMessage(errorMessage);
     setSnackbarSeverity("error");
   } finally {

@@ -234,14 +234,14 @@ export default function AddSenator(props) {
       // Refresh the data
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenetorId(id));
-      setSnackbarMessage(`Changes ${userRole === "admin" ? "discard" : "undo"} successfully`);
+      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "discard" : "undo"} changes`);
+        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -1686,6 +1686,7 @@ export default function AddSenator(props) {
                         }
                         onBlur={() => handleBlur(termIndex)}
                         init={{
+                          base_url: "/scorecard/admin/tinymce",
                           height: 250,
                           menubar: false,
                           plugins: [

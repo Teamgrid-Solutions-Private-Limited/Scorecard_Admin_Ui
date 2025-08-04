@@ -795,6 +795,22 @@ export default function AddActivity(props) {
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
 
+              {/* <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button> */}
+
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 

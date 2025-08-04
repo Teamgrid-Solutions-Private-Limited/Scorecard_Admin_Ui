@@ -26,7 +26,7 @@ import IconButton from "@mui/material/IconButton";
 import axios from "axios";
 import { API_URL } from "../../redux/API";
 import { useDispatch } from "react-redux";
-import { addUser } from "../../redux/reducer/loginSlice";
+import { addUser ,getAllUsers} from "../../redux/reducer/loginSlice";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -133,6 +133,7 @@ function AddUser({ open = false, onClose }) {
       setSnackbarMessage("Invite sent successfully!");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
+      dispatch(getAllUsers()); 
       
       if (onClose) onClose();
     } catch (error) {
