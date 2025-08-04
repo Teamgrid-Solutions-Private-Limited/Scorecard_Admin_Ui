@@ -31,12 +31,14 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { Alert,
+import {
+  Alert,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,} from '@mui/material';
+  DialogTitle,
+} from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -315,10 +317,10 @@ export default function AddActivity(props) {
     }
     setOpenDiscardDialog(true);
   };
-  
+
   const handleConfirmDiscard = async () => {
     setOpenDiscardDialog(false);
-  
+
     try {
       setLoading(true);
      await dispatch(discardActivityChanges(id)).unwrap();
@@ -340,8 +342,6 @@ export default function AddActivity(props) {
       setLoading(false);
     }
   };
-
-
 
   const getStatusConfig = (editedFields, currentStatus) => {
     const configs = {
@@ -540,7 +540,7 @@ export default function AddActivity(props) {
                             const localOnly = local.filter(
                               (f) => !backend.includes(f)
                             );
-                            return backend.length + localOnly.length;
+                            return backend.length;
                           })()} pending changes`}
                           size="small"
                           color="warning"
@@ -597,7 +597,7 @@ export default function AddActivity(props) {
                               sx={{ color: "text.secondary", mb: 1 }}
                             >
                               {typeof id !== "undefined" && id
-                                ? "Pending Changes"
+                                ? "Saved Changes"
                                 : "New Fields"}
                             </Typography>
 
@@ -656,7 +656,7 @@ export default function AddActivity(props) {
                                           variant="caption"
                                           color="text.secondary"
                                         >
-                                          Edited by {editor} on {editTime}
+                                          Updated by {editor} on {editTime}
                                         </Typography>
                                       }
                                       sx={{ my: 0 }}
@@ -674,12 +674,21 @@ export default function AddActivity(props) {
                     {(userRole === "admin" || userRole === "editor") &&
                       Array.isArray(editedFields) &&
                       editedFields.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            backgroundColor: "background.paper",
+                            borderRadius: 1,
+                            p: 1.5,
+                            border: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
                           <Typography
                             variant="overline"
                             sx={{ color: "text.secondary" }}
                           >
-                            Your Unsaved Changes
+                            Unsaved Changes
                           </Typography>
                           <Box
                             sx={{
@@ -754,21 +763,6 @@ export default function AddActivity(props) {
               >
                 Review
               </Button> */}
-              <Button
-                variant="outlined"
-                onClick={handleSubmit}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
 
               <Button
                 variant="outlined"
@@ -784,6 +778,21 @@ export default function AddActivity(props) {
                 }}
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleSubmit}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
 
               {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
@@ -807,7 +816,7 @@ export default function AddActivity(props) {
                 >
                   {userRole === "admin" ? "Discard" : "Undo"} Changes?
                 </DialogTitle>
-              
+
                 <DialogContent>
                   <DialogContentText
                     sx={{
@@ -820,12 +829,16 @@ export default function AddActivity(props) {
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
-              
+
                 <DialogActions>
                   <Stack
                     direction="row"
                     spacing={2}
-                    sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                    sx={{
+                      width: "100%",
+                      justifyContent: "center",
+                      paddingBottom: 2,
+                    }}
                   >
                     <Button
                       onClick={() => setOpenDiscardDialog(false)}
@@ -835,7 +848,7 @@ export default function AddActivity(props) {
                     >
                       Cancel
                     </Button>
-              
+
                     <Button
                       onClick={handleConfirmDiscard}
                       variant="contained"

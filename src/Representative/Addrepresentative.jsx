@@ -38,12 +38,14 @@ import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import { Alert,
+import {
+  Alert,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,} from '@mui/material';
+  DialogTitle,
+} from "@mui/material";
 
 import {
   getVoteById,
@@ -85,8 +87,8 @@ export default function Addrepresentative(props) {
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
-const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-  
+  const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
 
@@ -144,7 +146,6 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   ]);
 
   const handleTermChange = (e, termIndex) => {
-
     const fieldName = `term${termIndex}_${e.target.name}`;
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -177,9 +178,9 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: [...term.votesScore, { voteId: " ", score: "" }],
-          }
+              ...term,
+              votesScore: [...term.votesScore, { voteId: " ", score: "" }],
+            }
           : term
       )
     );
@@ -190,16 +191,15 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-          }
+              ...term,
+              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+            }
           : term
       )
     );
   };
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
-
     // Construct the field name for change tracking
     const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
 
@@ -211,11 +211,11 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
           : term
       )
     );
@@ -226,12 +226,12 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: null, score: "" },
-            ],
-          }
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: null, score: "" },
+              ],
+            }
           : term
       )
     );
@@ -242,18 +242,17 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.filter(
-              (_, i) => i !== activityIndex
-            ),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
+            }
           : term
       )
     );
   };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-
     // Construct the field name for change tracking
     const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
 
@@ -265,11 +264,11 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.map((activity, i) =>
-              i === activityIndex ? { ...activity, [field]: value } : activity
-            ),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.map((activity, i) =>
+                i === activityIndex ? { ...activity, [field]: value } : activity
+              ),
+            }
           : term
       )
     );
@@ -278,10 +277,10 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const contentRefs = useRef([]);
 
   const handleEditorChange = useCallback((content, termIndex) => {
-     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
+    const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
 
     // Track the change if not already tracked
-    setLocalChanges((prev) => 
+    setLocalChanges((prev) =>
       prev.includes(fieldName) ? prev : [...prev, fieldName]
     );
     if (!contentRefs.current[termIndex]) {
@@ -295,9 +294,9 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            summary: contentRefs.current[termIndex]?.content || "",
-          }
+              ...term,
+              summary: contentRefs.current[termIndex]?.content || "",
+            }
           : term
       )
     );
@@ -356,8 +355,8 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
           votesScore:
             term.votesScore?.length > 0
               ? term.votesScore.map((vote) => {
-                let scoreValue = "";
-                const dbScore = vote.score?.toLowerCase();
+                  let scoreValue = "";
+                  const dbScore = vote.score?.toLowerCase();
 
                   if (dbScore?.includes("yea_votes")) {
                     scoreValue = "Yes";
@@ -369,19 +368,19 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
                     scoreValue = vote.score || "";
                   }
 
-                return {
-                  voteId: vote.voteId?._id || vote.voteId || null,
-                  score: scoreValue,
-                };
-              })
+                  return {
+                    voteId: vote.voteId?._id || vote.voteId || null,
+                    score: scoreValue,
+                  };
+                })
               : [{ voteId: null, score: "" }],
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || null,
-                score: activity.score || "",
-              }))
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                }))
               : [{ activityId: null, score: "" }],
         };
       });
@@ -542,8 +541,6 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-  
-
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -563,7 +560,7 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
         setDeletedTermIds([]); // clear after delete
       }
 
-       const allChanges = [
+      const allChanges = [
         ...new Set([
           ...(Array.isArray(formData.editedFields)
             ? formData.editedFields
@@ -621,24 +618,24 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
 
         return term._id
           ? dispatch(
-            updateHouseData({ id: term._id, data: termUpdate })
-          ).unwrap()
+              updateHouseData({ id: term._id, data: termUpdate })
+            ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
       await Promise.all(termPromises);
 
       // Reload data
-     
+
       await dispatch(getHouseDataByHouseId(id)).unwrap();
-       setLocalChanges([]);
-       await dispatch(getHouseById(id)).unwrap();
+      setLocalChanges([]);
+      await dispatch(getHouseById(id)).unwrap();
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
-          "info"
-        );
+            'Status changed to "Under Review" for admin to moderate.',
+            "info"
+          );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -674,7 +671,6 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   });
 
   const handleStatusChange = (status) => {
-
     const fieldName = "status"; // The field being changed
 
     // Update local changes if not already tracked
@@ -737,17 +733,17 @@ const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   );
 
   const handleDiscard = () => {
-  if (!id) {
-    setSnackbarMessage("No house selected");
-    setSnackbarSeverity("error");
-    setOpenSnackbar(true);
-    return;
-  }
-  setOpenDiscardDialog(true);
-};
+    if (!id) {
+      setSnackbarMessage("No house selected");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    setOpenDiscardDialog(true);
+  };
 
-const handleConfirmDiscard = async () => {
-  setOpenDiscardDialog(false);
+  const handleConfirmDiscard = async () => {
+    setOpenDiscardDialog(false);
 
   try {
     setLoading(true);
@@ -814,110 +810,220 @@ const handleConfirmDiscard = async () => {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && formData.publishStatus !== "published" && statusData && (
-              <Box
-                sx={{
-                  width: "98%",
-                  p: 2,
-                  backgroundColor: statusData.backgroundColor,
-                  borderLeft: `4px solid ${statusData.borderColor}`,
-                  borderRadius: "0 8px 8px 0",
-                  boxShadow: 1,
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                  {/* Status icon */}
+            {userRole &&
+              formData.publishStatus !== "published" &&
+              statusData && (
+                <Box
+                  sx={{
+                    width: "98%",
+                    p: 2,
+                    backgroundColor: statusData.backgroundColor,
+                    borderLeft: `4px solid ${statusData.borderColor}`,
+                    borderRadius: "0 8px 8px 0",
+                    boxShadow: 1,
+                    mb: 2,
+                  }}
+                >
                   <Box
-                    sx={{
-                      p: 1,
-                      borderRadius: "50%",
-                      backgroundColor: `rgba(${
-                        formData.publishStatus === "draft"
-                          ? "66, 165, 245"
-                          : formData.publishStatus === "under review"
-                          ? "255, 193, 7"
-                          : formData.publishStatus === "published"
-                          ? "76, 175, 80"
-                          : "244, 67, 54"
-                      }, 0.2)`,
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
-                    }}
+                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
                   >
-                    {React.cloneElement(statusData.icon, {
-                      sx: { color: statusData.iconColor },
-                    })}
-                  </Box>
-
-      <Box sx={{ flex: 1 }}>
-        {/* Header: title + pending count (admin only) */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography
-            variant="subtitle1"
-            fontWeight="600"
-            sx={{
-              color: statusData.titleColor,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            {statusData.title}
-          </Typography>
-
-                      {userRole === "admin" && (
-                        <Chip
-                          label={`${
-                            (Array.isArray(formData?.editedFields)
-                              ? formData.editedFields.length
-                              : 0) + localChanges.length
-                          } pending changes`}
-                          size="small"
-                          color="warning"
-                          variant="outlined"
-                        />
-                      )}
+                    {/* Status icon */}
+                    <Box
+                      sx={{
+                        p: 1,
+                        borderRadius: "50%",
+                        backgroundColor: `rgba(${
+                          formData.publishStatus === "draft"
+                            ? "66, 165, 245"
+                            : formData.publishStatus === "under review"
+                            ? "255, 193, 7"
+                            : formData.publishStatus === "published"
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {React.cloneElement(statusData.icon, {
+                        sx: { color: statusData.iconColor },
+                      })}
                     </Box>
 
-                    <Box sx={{ mt: 1.5 }}>
-                      {(() => {
-                        const backendChanges = Array.isArray(
-                          formData?.editedFields
-                        )
-                          ? formData.editedFields
-                          : [];
-                        const hasChanges =
-                          backendChanges.length > 0 || localChanges.length > 0;
+                    <Box sx={{ flex: 1 }}>
+                      {/* Header: title + pending count (admin only) */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="600"
+                          sx={{
+                            color: statusData.titleColor,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          {statusData.title}
+                        </Typography>
 
-                        if (!hasChanges) {
+                        {userRole === "admin" && (
+                          <Chip
+                            label={`${
+                              Array.isArray(formData?.editedFields)
+                                ? formData.editedFields.length
+                                : 0
+                            } pending changes`}
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+
+                      <Box sx={{ mt: 1.5 }}>
+                        {(() => {
+                          const backendChanges = Array.isArray(
+                            formData?.editedFields
+                          )
+                            ? formData.editedFields
+                            : [];
+                          const hasChanges =
+                            backendChanges.length > 0 ||
+                            localChanges.length > 0;
+
+                          if (!hasChanges) {
+                            return (
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  // fontStyle: "italic",
+                                  color: "text.disabled",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
+                                No Pending changes
+                              </Typography>
+                            );
+                          }
+
                           return (
-                            <Typography
-                              variant="body2"
+                            <Box
                               sx={{
-                                // fontStyle: "italic",
-                                color: "text.disabled",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
+                                backgroundColor: "background.paper",
+                                borderRadius: 1,
+                                p: 1.5,
+                                border: "1px solid",
+                                borderColor: "divider",
                               }}
                             >
-                              {/* <HourglassEmpty sx={{ fontSize: 16 }} /> */}
-                              No Pending changes
-                            </Typography>
-                          );
-                        }
+                              <Typography
+                                variant="overline"
+                                sx={{ color: "text.secondary", mb: 1 }}
+                              >
+                                Saved Changes
+                              </Typography>
 
-                        return (
+                              <List dense sx={{ py: 0 }}>
+                                {backendChanges.map((field) => {
+                                  const parts = field.split("_");
+                                  const isTermField = field.startsWith("term");
+                                  const editorInfo =
+                                    formData?.fieldEditors?.[field];
+                                  const editor =
+                                    editorInfo?.editorName || "Unknown Editor";
+                                   const editTime = editorInfo?.editedAt
+                                        ? new Date(
+                                            editorInfo.editedAt
+                                          ).toLocaleString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
+                                        : "unknown time";
+
+                                  return (
+                                    <ListItem
+                                      key={field}
+                                      sx={{ py: 0.5, px: 1 }}
+                                    >
+                                      <ListItemText
+                                        primary={
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 1,
+                                            }}
+                                          >
+                                            <Box
+                                              sx={{
+                                                width: 8,
+                                                height: 8,
+                                                borderRadius: "50%",
+                                                backgroundColor:
+                                                  statusData.iconColor,
+                                              }}
+                                            />
+                                            <Typography
+                                              variant="body2"
+                                              fontWeight="500"
+                                            >
+                                              {isTermField
+                                                ? `Term ${
+                                                    +parts[0].replace(
+                                                      "term",
+                                                      ""
+                                                    ) + 1
+                                                  } • ${
+                                                    parts[1]
+                                                      ?.charAt(0)
+                                                      .toUpperCase() +
+                                                    parts[1]?.slice(1)
+                                                  }`
+                                                : field
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                  field.slice(1)}
+                                            </Typography>
+                                          </Box>
+                                        }
+                                        secondary={
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            Updated by {editor} on {editTime}
+                                          </Typography>
+                                        }
+                                        sx={{ my: 0 }}
+                                      />
+                                    </ListItem>
+                                  );
+                                })}
+                              </List>
+                            </Box>
+                          );
+                        })()}
+                      </Box>
+
+                      {/* Unsaved (local) changes chips */}
+                      {(userRole === "admin" || userRole === "editor") &&
+                        Array.isArray(editedFields) &&
+                        localChanges.length > 0 && (
                           <Box
                             sx={{
+                              mt: 2,
                               backgroundColor: "background.paper",
                               borderRadius: 1,
                               p: 1.5,
@@ -927,156 +1033,72 @@ const handleConfirmDiscard = async () => {
                           >
                             <Typography
                               variant="overline"
-                              sx={{ color: "text.secondary", mb: 1 }}
+                              sx={{ color: "text.secondary" }}
                             >
-                              Pending Changes
+                              Unsaved Changes
                             </Typography>
-
-                            <List dense sx={{ py: 0 }}>
-                              {backendChanges.map((field) => {
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 1,
+                                mt: 1,
+                                p: 1.5,
+                                backgroundColor: "action.hover",
+                                borderRadius: 1,
+                                border: "1px solid",
+                                borderColor: "divider",
+                              }}
+                            >
+                              {localChanges.map((field) => {
                                 const parts = field.split("_");
                                 const isTermField = field.startsWith("term");
-                                const editorInfo =
-                                  formData?.fieldEditors?.[field];
-                                const editor = editorInfo?.editorName || "Unknown Editor";
-                                const editTime = editorInfo?.editedAt
-                                  ? new Date(
-                                      editorInfo.editedAt
-                                    ).toLocaleString("en-GB", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      day: "2-digit",
-                                      month: "short",
-                                    })
-                                  : "unknown time";
+                                const displayLabel = isTermField
+                                  ? `Term ${
+                                      +parts[0].replace("term", "") + 1
+                                    } • ${
+                                      parts[1]?.charAt(0).toUpperCase() +
+                                      parts[1]?.slice(1)
+                                    }`
+                                  : field.charAt(0).toUpperCase() +
+                                    field.slice(1);
 
                                 return (
-                                  <ListItem key={field} sx={{ py: 0.5, px: 1 }}>
-                                    <ListItemText
-                                      primary={
-                                        <Box
-                                          sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 1,
-                                          }}
-                                        >
-                                          <Box
-                                            sx={{
-                                              width: 8,
-                                              height: 8,
-                                              borderRadius: "50%",
-                                              backgroundColor:
-                                                statusData.iconColor,
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="body2"
-                                            fontWeight="500"
-                                          >
-                                            {isTermField
-                                              ? `Term ${+parts[0].replace(
-                                                "term",
-                                                ""
-                                              ) + 1
-                                              } • ${parts[1]
-                                                ?.charAt(0)
-                                                .toUpperCase() +
-                                              parts[1]?.slice(1)
-                                              }`
-                                              : field.charAt(0).toUpperCase() +
-                                              field.slice(1)}
-                                          </Typography>
-                                        </Box>
-                                      }
-                                      secondary={
-                                        <Typography
-                                          variant="caption"
-                                          color="text.secondary"
-                                        >
-                                          Edited by {editor} on {editTime}
-                                        </Typography>
-                                      }
-                                      sx={{ my: 0 }}
-                                    />
-                                  </ListItem>
-                                );
-                              })}
-                            </List>
-                          </Box>
-                        );
-                      })()}
-                    </Box>
-
-                    {/* Unsaved (local) changes chips */}
-                    {(userRole === "admin" || userRole === "editor") &&
-                      Array.isArray(editedFields) &&
-                      localChanges.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                          <Typography
-                            variant="overline"
-                            sx={{ color: "text.secondary" }}
-                          >
-                            Your Unsaved Changes
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: 1,
-                              mt: 1,
-                              p: 1,
-                              backgroundColor: "action.hover",
-                              borderRadius: 1,
-                            }}
-                          >
-                            {localChanges.map((field) => {
-                              const parts = field.split("_");
-                              const isTermField = field.startsWith("term");
-                              const displayLabel = isTermField
-                                ? `Term ${+parts[0].replace("term", "") + 1
-                                } • ${parts[1]?.charAt(0).toUpperCase() +
-                                parts[1]?.slice(1)
-                                }`
-                                : field.charAt(0).toUpperCase() +
-                                field.slice(1);
-
-                              return (
-                                <Chip
-                                  key={field}
-                                  label={
-                                    <Box
-                                      sx={{
+                                  <Chip
+                                    key={field}
+                                    label={
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 0.5,
+                                        }}
+                                      >
+                                        <span>{displayLabel}</span>
+                                        <span>•</span>
+                                        <span>just now</span>
+                                      </Box>
+                                    }
+                                    size="small"
+                                    color="warning"
+                                    variant="outlined"
+                                    sx={{
+                                      "& .MuiChip-label": {
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 0.5,
-                                      }}
-                                    >
-                                      <span>{displayLabel}</span>
-                                      <span>•</span>
-                                      <span>just now</span>
-                                    </Box>
-                                  }
-                                  size="small"
-                                  color="warning"
-                                  variant="outlined"
-                                  sx={{
-                                    "& .MuiChip-label": {
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 0.5,
-                                    },
-                                  }}
-                                />
-                              );
-                            })}
+                                      },
+                                    }}
+                                  />
+                                );
+                              })}
+                            </Box>
                           </Box>
-                        </Box>
-                      )}
+                        )}
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
-            )}
+              )}
 
             <Stack
               direction="row"
@@ -1087,7 +1109,7 @@ const handleConfirmDiscard = async () => {
                 alignItems: "center",
               }}
             >
-            <Button
+              <Button
                 variant="outlined"
                 onClick={handleDiscard}
                 sx={{
@@ -1151,20 +1173,24 @@ const handleConfirmDiscard = async () => {
     </DialogContentText>
   </DialogContent>
 
-  <DialogActions>
-    <Stack
-      direction="row"
-      spacing={2}
-      sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
-    >
-      <Button
-        onClick={() => setOpenDiscardDialog(false)}
-        variant="outlined"
-        color="secondary"
-        sx={{ borderRadius: 2, paddingX: 3 }}
-      >
-        Cancel
-      </Button>
+                <DialogActions>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      width: "100%",
+                      justifyContent: "center",
+                      paddingBottom: 2,
+                    }}
+                  >
+                    <Button
+                      onClick={() => setOpenDiscardDialog(false)}
+                      variant="outlined"
+                      color="secondary"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Cancel
+                    </Button>
 
       <Button
         onClick={handleConfirmDiscard}
@@ -1196,9 +1222,9 @@ const handleConfirmDiscard = async () => {
                         justifyContent: "flex-end", // align left
                         fontWeight: 700,
                         my: 0,
-                        whiteSpace: "normal",         // allow wrapping
-                        overflowWrap: "break-word",   // break long words
-                        width: "100%",                // take full width of grid cell
+                        whiteSpace: "normal", // allow wrapping
+                        overflowWrap: "break-word", // break long words
+                        width: "100%", // take full width of grid cell
                       }}
                     >
                       Representative's Name
@@ -1294,7 +1320,7 @@ const handleConfirmDiscard = async () => {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2} sx={{ minWidth: 165 }} >
+                  <Grid size={2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1353,8 +1379,8 @@ const handleConfirmDiscard = async () => {
                         justifyContent: "flex-end", // align left
                         fontWeight: 700,
                         my: 0,
-                        whiteSpace: "normal",         // allow wrapping
-                        overflowWrap: "break-word",   // break long words
+                        whiteSpace: "normal", // allow wrapping
+                        overflowWrap: "break-word", // break long words
                         width: "100%",
                       }}
                     >
@@ -1607,137 +1633,136 @@ const handleConfirmDiscard = async () => {
                     </Grid>
 
                     {/* Vote Repeater Start */}
-                    {term.votesScore
-                      .map((vote, voteIndex) => (
-                        vote.voteId != null ? ( // Only render if voteId is not null
+                    {term.votesScore.map((vote, voteIndex) =>
+                      vote.voteId != null ? ( // Only render if voteId is not null
+                        <Grid
+                          rowSpacing={2}
+                          sx={{ width: "100%" }}
+                          key={voteIndex}
+                        >
                           <Grid
-                            rowSpacing={2}
-                            sx={{ width: "100%" }}
-                            key={voteIndex}
+                            size={12}
+                            display="flex"
+                            alignItems="center"
+                            columnGap={"15px"}
                           >
-                            <Grid
-                              size={12}
-                              display="flex"
-                              alignItems="center"
-                              columnGap={"15px"}
-                            >
-                              <Grid size={2}>
-                                <InputLabel
+                            <Grid size={2}>
+                              <InputLabel
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "end",
+                                  fontWeight: 700,
+                                  my: 0,
+                                }}
+                              >
+                                Scored Vote
+                              </InputLabel>
+                            </Grid>
+                            <Grid size={7.5}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={vote.voteId || ""}
+                                  onChange={(event) =>
+                                    handleVoteChange(
+                                      termIndex,
+                                      voteIndex,
+                                      "voteId",
+                                      event.target.value
+                                    )
+                                  }
                                   sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "end",
-                                    fontWeight: 700,
-                                    my: 0,
+                                    background: "#fff",
+                                    width: "100%",
                                   }}
-                                >
-                                  Scored Vote
-                                </InputLabel>
-                              </Grid>
-                              <Grid size={7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.voteId || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "voteId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      background: "#fff",
-                                      width: "100%",
-                                    }}
-                                    renderValue={(selected) => {
-                                      const selectedVote = votes.find(
-                                        (v) => v._id === selected
-                                      );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedVote?.title || "Select a Bill"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
+                                  renderValue={(selected) => {
+                                    const selectedVote = votes.find(
+                                      (v) => v._id === selected
+                                    );
+                                    return (
+                                      <Typography
+                                        sx={{
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                          textOverflow: "ellipsis",
+                                        }}
+                                      >
+                                        {selectedVote?.title || "Select a Bill"}
+                                      </Typography>
+                                    );
+                                  }}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 300,
+                                        width: 400,
+                                        "& .MuiMenuItem-root": {
+                                          minHeight: "48px",
                                         },
                                       },
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select a Bill
-                                    </MenuItem>
-                                    {votes && votes.length > 0 ? (
-                                      votes.map((voteItem) => (
-                                        <MenuItem
-                                          key={voteItem._id}
-                                          value={voteItem._id}
-                                          sx={{ py: 1.5 }}
+                                    },
+                                  }}
+                                >
+                                  <MenuItem value="" disabled>
+                                    Select a Bill
+                                  </MenuItem>
+                                  {votes && votes.length > 0 ? (
+                                    votes.map((voteItem) => (
+                                      <MenuItem
+                                        key={voteItem._id}
+                                        value={voteItem._id}
+                                        sx={{ py: 1.5 }}
+                                      >
+                                        <Typography
+                                          sx={{
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                          }}
                                         >
-                                          <Typography
-                                            sx={{
-                                              whiteSpace: "normal",
-                                              overflowWrap: "break-word",
-                                            }}
-                                          >
-                                            {voteItem.title}
-                                          </Typography>
-                                        </MenuItem>
-                                      ))
-                                    ) : (
-                                      <MenuItem value="" disabled>
-                                        No bills available
+                                          {voteItem.title}
+                                        </Typography>
                                       </MenuItem>
-                                    )}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={1.6}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.score || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "score",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff" }}
-                                  >
-                                    <MenuItem value="Yes">Yea</MenuItem>
-                                    <MenuItem value="No">Nay</MenuItem>
-                                    <MenuItem value="Neutral">Other</MenuItem>
-                                    {/* <MenuItem value="None">None</MenuItem> */}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={1}>
-                                <DeleteForeverIcon
-                                  onClick={() =>
-                                    handleRemoveVote(termIndex, voteIndex)
+                                    ))
+                                  ) : (
+                                    <MenuItem value="" disabled>
+                                      No bills available
+                                    </MenuItem>
+                                  )}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1.6}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={vote.score || ""}
+                                  onChange={(event) =>
+                                    handleVoteChange(
+                                      termIndex,
+                                      voteIndex,
+                                      "score",
+                                      event.target.value
+                                    )
                                   }
-                                />
-                              </Grid>
+                                  sx={{ background: "#fff" }}
+                                >
+                                  <MenuItem value="Yes">Yea</MenuItem>
+                                  <MenuItem value="No">Nay</MenuItem>
+                                  <MenuItem value="Neutral">Other</MenuItem>
+                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1}>
+                              <DeleteForeverIcon
+                                onClick={() =>
+                                  handleRemoveVote(termIndex, voteIndex)
+                                }
+                              />
                             </Grid>
                           </Grid>
-                        ) : null
-                      ))}
+                        </Grid>
+                      ) : null
+                    )}
                     {/* Vote Repeater Ends */}
 
                     <Grid size={1}></Grid>
@@ -1836,7 +1861,7 @@ const handleConfirmDiscard = async () => {
                                   Select an Activity
                                 </MenuItem>
                                 {houseActivities &&
-                                  houseActivities.length > 0 ? (
+                                houseActivities.length > 0 ? (
                                   houseActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
