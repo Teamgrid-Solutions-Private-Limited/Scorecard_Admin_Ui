@@ -49,7 +49,14 @@ import {
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
-
+import {
+  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 import { createSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
   clearSenatorDataState,
@@ -80,6 +87,7 @@ export default function AddSenator(props) {
   const [originalTermData, setOriginalTermData] = useState([]);
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
+  const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
 
   // console.log("User Role:", userRole);
   let senatorActivities =
@@ -100,8 +108,8 @@ export default function AddSenator(props) {
     senateId: "Senate ID",
     summary: "Term Summary",
     rating: "SBA Rating",
-    votesScore: "Voted Bills",
-    activitiesScore: "Tracked Activities",
+    votesScore: "Scored Vote",
+    activitiesScore: "Tracked Activity",
     currentTerm: "Current Term",
     termId: "Term",
   };
@@ -112,13 +120,36 @@ export default function AddSenator(props) {
 
   console.log("User Role:", userRole);
 
+  const formatRelativeTime = (date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) {
+      return "just now";
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min${diffInMinutes !== 1 ? "s" : ""} ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+  };
+
   // Helper function to get display name
   const getFieldDisplayName = (field) => {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
     }
     return fieldLabels[field] || field;
   };
@@ -183,45 +214,34 @@ export default function AddSenator(props) {
       )
     );
   };
-  const handleDiscard = async () => {
+  const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No senator selected");
+      setSnackbarMessage("No house selected");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
+    setOpenDiscardDialog(true);
+  };
+
+  const handleConfirmDiscard = async () => {
+    setOpenDiscardDialog(false);
 
     try {
       setLoading(true);
-
-      const confirmDiscard = window.confirm(
-        "Are you sure you want to discard all changes? This cannot be undone."
-      );
-      if (!confirmDiscard) {
-        setLoading(false);
-        return;
-      }
-
       await dispatch(discardSenatorChanges(id)).unwrap();
 
       // Refresh the data
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenetorId(id));
-
-      setSnackbarMessage("Changes discarded successfully");
+      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
-      let errorMessage = "Failed to discard changes";
-
-      if (typeof error === "string") {
-        errorMessage = error;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (error?.payload?.message) {
-        errorMessage = error.payload.message;
-      }
-
+      const errorMessage =
+        error?.payload?.message ||
+        error?.message ||
+        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -229,14 +249,15 @@ export default function AddSenator(props) {
       setLoading(false);
     }
   };
+
   const handleRemoveVote = (termIndex, voteIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-          }
+              ...term,
+              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+            }
           : term
       )
     );
@@ -255,11 +276,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
           : term
       )
     );
@@ -270,12 +291,12 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: null, score: "" },
-            ],
-          }
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: null, score: "" },
+              ],
+            }
           : term
       )
     );
@@ -286,11 +307,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.filter(
-              (_, i) => i !== activityIndex
-            ),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
+            }
           : term
       )
     );
@@ -309,11 +330,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.map((activity, i) =>
-              i === activityIndex ? { ...activity, [field]: value } : activity
-            ),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.map((activity, i) =>
+                i === activityIndex ? { ...activity, [field]: value } : activity
+              ),
+            }
           : term
       )
     );
@@ -340,9 +361,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            summary: contentRefs.current[termIndex]?.content || "",
-          }
+              ...term,
+              summary: contentRefs.current[termIndex]?.content || "",
+            }
           : term
       )
     );
@@ -360,6 +381,7 @@ export default function AddSenator(props) {
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
+        isNew: true,
       },
     ]);
   };
@@ -393,19 +415,25 @@ export default function AddSenator(props) {
         // Prepare votesScore, always at least one blank row
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
-            ? term.votesScore.map((vote) => ({
-              voteId: vote.voteId?._id || vote.voteId || null,
-              score: vote.score || "",
-            }))
-            : [];
-
-        // If all voteId are null or array is empty, add a blank row
-        if (
-          votesScore.length === 0 ||
-          votesScore.every((v) => v.voteId == null)
-        ) {
-          votesScore = [{ voteId: "", score: "" }];
-        }
+            ? term.votesScore.map((vote) => {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
+ 
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+              };
+            })
+            : [{ voteId: "", score: "" }]; // Changed from empty string to null
         return {
           _id: term._id,
           summary: term.summary || "",
@@ -414,6 +442,7 @@ export default function AddSenator(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
+          isNew: false,
           votesScore
           // :
           //   term.votesScore?.length > 0
@@ -441,10 +470,10 @@ export default function AddSenator(props) {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || null,
-                score: activity.score || "",
-              }))
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                }))
               : [{ activityId: null, score: "" }],
         };
       });
@@ -463,6 +492,7 @@ export default function AddSenator(props) {
           termId: null,
           editedFields: [],
           fieldEditors: {},
+          isNew: true, // Mark as new for tracking
         },
       ];
 
@@ -498,6 +528,7 @@ export default function AddSenator(props) {
 
       // Track term-level changes
       senatorTermData.forEach((term, termIndex) => {
+        if (term.isNew) return;
         const originalTerm = originalTermData[termIndex] || {};
 
         Object.keys(term).forEach((key) => {
@@ -553,7 +584,7 @@ export default function AddSenator(props) {
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
-        publishStatus: senator.publishStatus || "draft",
+        publishStatus: senator.publishStatus || "",
         editedFields: senator.editedFields || [],
         fieldEditors: senator.fieldEditors || {},
       };
@@ -686,6 +717,7 @@ export default function AddSenator(props) {
         const termUpdate = {
           ...term,
           votesScore: transformedVotesScore, // Use the transformed array
+          isNew: false,
           senateId: id, //explicitly add it
           editedFields: editedFields.filter((f) =>
             f.startsWith(`term${index}_`)
@@ -695,8 +727,8 @@ export default function AddSenator(props) {
 
         return term._id
           ? dispatch(
-            updateSenatorData({ id: term._id, data: termUpdate })
-          ).unwrap()
+              updateSenatorData({ id: term._id, data: termUpdate })
+            ).unwrap()
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
@@ -713,9 +745,9 @@ export default function AddSenator(props) {
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
-          "info"
-        );
+            'Status changed to "Under Review" for admin to moderate.',
+            "info"
+          );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -750,7 +782,6 @@ export default function AddSenator(props) {
     width: 1,
   });
 
-
   const label = { inputProps: { "aria-label": "Color switch demo" } };
   // Update your status config
   const getStatusConfig = (editedFields, currentStatus) => {
@@ -782,7 +813,7 @@ export default function AddSenator(props) {
         descColor: "#795548",
       },
     };
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -835,303 +866,262 @@ export default function AddSenator(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && formData.publishStatus !== "published" && (
-              <Box
-                sx={{
-                  width: "98%",
-                  p: 2,
-                  backgroundColor: statusData.backgroundColor,
-                  borderLeft: `4px solid ${statusData.borderColor}`,
-                  borderRadius: "0 8px 8px 0",
-                  boxShadow: 1,
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                  {/* Status icon bubble */}
-                  <Box
+   {userRole &&
+  formData.publishStatus !== "published" &&
+  statusData && (
+    <Box
+      sx={{
+        width: "98%",
+        p: 2,
+        backgroundColor: statusData.backgroundColor,
+        borderLeft: `4px solid ${statusData.borderColor}`,
+        borderRadius: "0 8px 8px 0",
+        boxShadow: 1,
+        mb: 2,
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+        {/* Status icon bubble (unchanged) */}
+        <Box
+          sx={{
+            p: 1,
+            borderRadius: "50%",
+            backgroundColor: `rgba(${
+              formData.publishStatus === "draft"
+                ? "66, 165, 245"
+                : formData.publishStatus === "under review"
+                ? "230, 81, 0"
+                : formData.publishStatus === "published"
+                ? "76, 175, 80"
+                : "244, 67, 54"
+            }, 0.2)`,
+            display: "grid",
+            placeItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          {React.cloneElement(statusData.icon, {
+            sx: { color: statusData.iconColor },
+          })}
+        </Box>
+
+        <Box sx={{ flex: 1 }}>
+          {/* Header (unchanged) */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              fontWeight="600"
+              sx={{
+                color: statusData.titleColor,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              {statusData.title}
+            </Typography>
+
+            {userRole === "admin" && (
+              <Chip
+                label={`${
+                  Array.isArray(formData?.editedFields)
+                    ? formData.editedFields.length
+                    : 0
+                } pending changes`}
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            )}
+          </Box>
+
+          {/* Pending / New fields list */}
+          <Box sx={{ mt: 1.5 }}>
+            {(() => {
+              const backendChanges = Array.isArray(formData?.editedFields)
+                ? formData.editedFields
+                : [];
+              const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
+
+              if (!hasChanges) {
+                return (
+                  <Typography
+                    variant="body2"
                     sx={{
-                      p: 1,
-                      borderRadius: "50%",
-                      backgroundColor: `rgba(${formData.publishStatus === "draft"
-                          ? "66, 165, 245"
-                          : formData.publishStatus === "under review"
-                            ? "230, 81, 0"
-                            : formData.publishStatus === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                        }, 0.2)`,
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
+                      color: "text.disabled",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
                     }}
                   >
-                    {React.cloneElement(statusData.icon, {
-                      sx: { color: statusData.iconColor },
-                    })}
-                  </Box>
+                    {id ? "No pending changes" : "Fill in the form to create a new senator"}
+                  </Typography>
+                );
+              }
 
-                  <Box sx={{ flex: 1 }}>
-                    {/* Header: title + pending count (admin only) */}
+              // Enhanced field name formatter
+              const formatFieldName = (field) => {
+                // Handle term array items (e.g., "term2_votesScore_0_voteId")
+                const termArrayMatch = field.match(/^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/);
+                if (termArrayMatch) {
+                  const [, termIdx, category, itemIdx, subField] = termArrayMatch;
+                  const termNumber = parseInt(termIdx) + 1;
+                  // const itemNumber = parseInt(itemIdx) + 1;
+                  
+                  if (category === "votesScore") {
+                    return `Term ${termNumber}: Scored Vote`;
+                  }
+                  if (category === "activitiesScore") {
+                    return `Term ${termNumber}: Tracked Activity`;
+                  }
+                  return `Term ${termNumber}: ${fieldLabels[category] || category} Item ${itemNumber}`;
+                }
+
+                // Handle regular term fields (e.g., "term2_votesScore")
+                if (field.startsWith("term")) {
+                  const parts = field.split('_');
+                  const termNumber = parseInt(parts[0].replace("term", "")) + 1;
+                  const fieldKey = parts.slice(1).join('_');
+                  return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey}`;
+                }
+
+                // Handle non-term fields
+                return fieldLabels[field] || field;
+              };
+
+              return (
+                <>
+                  {/* Backend pending changes */}
+                  {backendChanges.length > 0 && (
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
+                        backgroundColor: "background.paper",
+                        borderRadius: 1,
+                        p: 1.5,
+                        border: "1px solid",
+                        borderColor: "divider",
+                        mb: 2,
                       }}
                     >
                       <Typography
-                        variant="subtitle1"
-                        fontWeight="600"
-                        sx={{
-                          color: statusData.titleColor,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
+                        variant="overline"
+                        sx={{ color: "text.secondary", mb: 1 }}
                       >
-                        {statusData.title}
+                        Saved Changes
                       </Typography>
+                      <List dense sx={{ py: 0 }}>
+                        {backendChanges.map((field) => {
+                          const editorInfo = formData?.fieldEditors?.[field];
+                          const editor = editorInfo?.editorName || "Unknown Editor";
+                          const editTime = editorInfo?.editedAt
+                            ? new Date(editorInfo.editedAt).toLocaleString([], {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "unknown time";
 
-                      {userRole === "admin" && (
-                        <Chip
-                          label={`${Array.isArray(formData?.editedFields)
-                              ? formData.editedFields.length
-                              : 0
-                            } pending changes`}
-                          size="small"
-                          color="warning"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-
-                    {/* Pending / New fields list */}
-                    <Box sx={{ mt: 1.5 }}>
-                      {(() => {
-                        const backendChanges = Array.isArray(
-                          formData?.editedFields
-                        )
-                          ? formData.editedFields
-                          : [];
-                        const hasChanges =
-                          backendChanges.length > 0 || localChanges.length > 0;
-
-                        if (!hasChanges) {
                           return (
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontStyle: "italic",
-                                color: "text.disabled",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
+                            <ListItem
+                              key={`backend-${field}`}
+                              sx={{ py: 0.5, px: 1 }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
-                              {id
-                                ? "No pending changes"
-                                : "Fill in the form to create a new senator"}
-                            </Typography>
+                              <ListItemText
+                                primary={
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    <Box
+                                      sx={{
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: "50%",
+                                        backgroundColor: statusData.iconColor,
+                                      }}
+                                    />
+                                    <Typography variant="body2" fontWeight="500">
+                                      {formatFieldName(field)}
+                                    </Typography>
+                                  </Box>
+                                }
+                                secondary={
+                                  <Typography variant="caption" color="text.secondary">
+                                    Updated by {editor} on {editTime}
+                                  </Typography>
+                                }
+                                sx={{ my: 0 }}
+                              />
+                            </ListItem>
                           );
-                        }
-
-                        return (
-                          <>
-                            {/* Backend pending changes */}
-                            {backendChanges.length > 0 && (
-                              <Box
-                                sx={{
-                                  backgroundColor: "background.paper",
-                                  borderRadius: 1,
-                                  p: 1.5,
-                                  border: "1px solid",
-                                  borderColor: "divider",
-                                  mb: 2,
-                                }}
-                              >
-                                <Typography
-                                  variant="overline"
-                                  sx={{ color: "text.secondary", mb: 1 }}
-                                >
-                                  Pending Review Changes
-                                </Typography>
-                                <List dense sx={{ py: 0 }}>
-                                  {backendChanges.map((field) => {
-                                    // Extract term information if it's a term field
-                                    const isTermField =
-                                      field.startsWith("term");
-                                    let termInfo = null;
-                                    if (isTermField) {
-                                      const parts = field.split("_");
-                                      const termNumber =
-                                        parseInt(parts[0].replace("term", "")) +
-                                        1;
-                                      const fieldName = parts
-                                        .slice(1)
-                                        .join("_");
-                                      termInfo = { termNumber, fieldName };
-                                    }
-
-                                    const editorInfo =
-                                      formData?.fieldEditors?.[field];
-                                    const editor = editorInfo
-                                      ? editorInfo.editorName ||
-                                      "Unknown Editor"
-                                      : "Unknown Editor";
-                                    const editTime = editorInfo?.editedAt
-                                      ? new Date(
-                                        editorInfo.editedAt
-                                      ).toLocaleString([], {
-                                        month: "short",
-                                        day: "numeric",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })
-                                      : "unknown time";
-
-                                    return (
-                                      <ListItem
-                                        key={`backend-${field}`}
-                                        sx={{ py: 0.5, px: 1 }}
-                                      >
-                                        <ListItemText
-                                          primary={
-                                            <Box
-                                              sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: 1,
-                                              }}
-                                            >
-                                              <Box
-                                                sx={{
-                                                  width: 8,
-                                                  height: 8,
-                                                  borderRadius: "50%",
-                                                  backgroundColor:
-                                                    statusData.iconColor,
-                                                }}
-                                              />
-                                              <Typography
-                                                variant="body2"
-                                                fontWeight="500"
-                                              >
-                                                {isTermField
-                                                  ? `Term ${termInfo.termNumber
-                                                  }: ${fieldLabels?.[
-                                                  termInfo.fieldName
-                                                  ] || termInfo.fieldName
-                                                  }`
-                                                  : fieldLabels?.[field] ||
-                                                  field}
-                                              </Typography>
-                                            </Box>
-                                          }
-                                          secondary={
-                                            <Typography
-                                              variant="caption"
-                                              color="text.secondary"
-                                            >
-                                              Edited by {editor} on {editTime}
-                                            </Typography>
-                                          }
-                                          sx={{ my: 0 }}
-                                        />
-                                      </ListItem>
-                                    );
-                                  })}
-                                </List>
-                              </Box>
-                            )}
-
-                            {/* Local unsaved changes */}
-                            {localChanges.length > 0 && (
-                              <Box sx={{ mt: 1 }}>
-                                <Typography
-                                  variant="overline"
-                                  sx={{ color: "text.secondary" }}
-                                >
-                                  Your Unsaved Changes
-                                </Typography>
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    flexWrap: "wrap",
-                                    gap: 1,
-                                    mt: 1,
-                                    p: 1.5,
-                                    backgroundColor: "action.hover",
-                                    borderRadius: 1,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                  }}
-                                >
-                                  {localChanges.map((field) => {
-                                    // Extract term information if it's a term field
-                                    const isTermField =
-                                      field.startsWith("term");
-                                    let termInfo = null;
-                                    if (isTermField) {
-                                      const parts = field.split("_");
-                                      const termNumber =
-                                        parseInt(parts[0].replace("term", "")) +
-                                        1;
-                                      const fieldName = parts
-                                        .slice(1)
-                                        .join("_");
-                                      termInfo = { termNumber, fieldName };
-                                    }
-
-                                    return (
-                                      <Chip
-                                        key={`local-${field}`}
-                                        label={
-                                          <Box
-                                            sx={{
-                                              display: "flex",
-                                              alignItems: "center",
-                                              gap: 0.5,
-                                            }}
-                                          >
-                                            <span>
-                                              {isTermField
-                                                ? `Term ${termInfo.termNumber
-                                                }: ${fieldLabels?.[
-                                                termInfo.fieldName
-                                                ] || termInfo.fieldName
-                                                }`
-                                                : fieldLabels?.[field] || field}
-                                            </span>
-                                            <span>•</span>
-                                            <span>just now</span>
-                                          </Box>
-                                        }
-                                        size="small"
-                                        color="warning"
-                                        variant="outlined"
-                                        sx={{
-                                          "& .MuiChip-label": {
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 0.5,
-                                          },
-                                        }}
-                                      />
-                                    );
-                                  })}
-                                </Box>
-                              </Box>
-                            )}
-                          </>
-                        );
-                      })()}
+                        })}
+                      </List>
                     </Box>
-                  </Box>
-                </Box>
-              </Box>
-            )}
+                  )}
+
+                  {/* Local unsaved changes */}
+                  {localChanges.length > 0 && (
+                    <Box
+                      sx={{
+                        backgroundColor: "background.paper",
+                        borderRadius: 1,
+                        p: 1.5,
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      <Typography
+                        variant="overline"
+                        sx={{ color: "text.secondary", mb: 1 }}
+                      >
+                        Unsaved Changes
+                      </Typography>
+                      <List dense sx={{ py: 0 }}>
+                        {localChanges.map((field) => (
+                          <ListItem
+                            key={`local-${field}`}
+                            sx={{ py: 0.5, px: 1 }}
+                          >
+                            <ListItemText
+                              primary={
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                  <Box
+                                    sx={{
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: "50%",
+                                      backgroundColor: statusData.iconColor,
+                                    }}
+                                  />
+                                  <Typography variant="body2" fontWeight="500">
+                                    {formatFieldName(field)}
+                                  </Typography>
+                                </Box>
+                              }
+                              secondary={
+                                <Typography variant="caption" color="text.secondary">
+                                  Edited just now
+                                </Typography>
+                              }
+                              sx={{ my: 0 }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  )}
+                </>
+              );
+            })()}
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  )}
             <Stack
               direction="row"
               spacing={2}
@@ -1191,6 +1181,67 @@ export default function AddSenator(props) {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
+              <Dialog
+                open={openDiscardDialog}
+                onClose={() => setOpenDiscardDialog(false)}
+                PaperProps={{
+                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+                }}
+              >
+                <DialogTitle
+                  sx={{
+                    fontSize: "1.4rem",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    color: "warning.main",
+                  }}
+                >
+                 {userRole === "admin" ? "Discard" : "Undo"} Changes?
+                </DialogTitle>
+
+                <DialogContent>
+                  <DialogContentText
+                    sx={{
+                      textAlign: "center",
+                      fontSize: "1rem",
+                      color: "text.secondary",
+                    }}
+                  >
+                    Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
+                    <strong>This action cannot be undone.</strong>
+                  </DialogContentText>
+                </DialogContent>
+
+                <DialogActions>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      width: "100%",
+                      justifyContent: "center",
+                      paddingBottom: 2,
+                    }}
+                  >
+                    <Button
+                      onClick={() => setOpenDiscardDialog(false)}
+                      variant="outlined"
+                      color="secondary"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      Cancel
+                    </Button>
+
+                    <Button
+                      onClick={handleConfirmDiscard}
+                      variant="contained"
+                      color="warning"
+                      sx={{ borderRadius: 2, paddingX: 3 }}
+                    >
+                      {userRole === "admin" ? "Discard" : "Undo"}
+                    </Button>
+                  </Stack>
+                </DialogActions>
+              </Dialog>
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Senator's Information
@@ -1581,6 +1632,7 @@ export default function AddSenator(props) {
                         }
                         onBlur={() => handleBlur(termIndex)}
                         init={{
+                          base_url: "/scorecard/admin/tinymce",
                           height: 250,
                           menubar: false,
                           plugins: [
@@ -1613,7 +1665,7 @@ export default function AddSenator(props) {
                     </Grid>
 
                     {/* Vote Repeater Start */}
-                    {term.votesScore.map((vote, voteIndex) => (
+                    {term.votesScore.map((vote, voteIndex) =>
                       vote.voteId != null ? ( // Only render if voteId is not null
                         <Grid
                           rowSpacing={2}
@@ -1725,9 +1777,9 @@ export default function AddSenator(props) {
                                   }
                                   sx={{ background: "#fff" }}
                                 >
-                                  <MenuItem value="Yes">Yea</MenuItem>
-                                  <MenuItem value="No">Nay</MenuItem>
-                                  <MenuItem value="Neutral">Other</MenuItem>
+                                  <MenuItem value="yea">Yea</MenuItem>
+                                    <MenuItem value="nay">Nay</MenuItem>
+                                    <MenuItem value="other">Other</MenuItem>
                                   {/* <MenuItem value="None">None</MenuItem> */}
                                 </Select>
                               </FormControl>
@@ -1742,7 +1794,7 @@ export default function AddSenator(props) {
                           </Grid>
                         </Grid>
                       ) : null
-                    ))}
+                    )}
                     {/* Vote Repeater Ends */}
 
                     <Grid size={1}></Grid>
@@ -1842,7 +1894,7 @@ export default function AddSenator(props) {
                                   Select an Activity
                                 </MenuItem>
                                 {senatorActivities &&
-                                  senatorActivities.length > 0 ? (
+                                senatorActivities.length > 0 ? (
                                   senatorActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
