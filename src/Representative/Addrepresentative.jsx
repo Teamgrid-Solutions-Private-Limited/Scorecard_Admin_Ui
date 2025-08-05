@@ -45,7 +45,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-} from '@mui/material';
+} from "@mui/material";
 
 import {
   getVoteById,
@@ -106,8 +106,8 @@ export default function Addrepresentative(props) {
     houseId: "House ID",
     summary: "Term Summary",
     rating: "SBA Rating",
-    votesScore: "Voted Bills",
-    activitiesScore: "Tracked Activities",
+    votesScore: "Scored Vote",
+    activitiesScore: "Tracked Activity",
     currentTerm: "Current Term",
     termId: "Term",
   };
@@ -129,7 +129,7 @@ export default function Addrepresentative(props) {
     party: "",
     photo: null,
     status: "Active",
-    publishStatus: "draft",
+    publishStatus: "",
   });
 
   const [houseTermData, setHouseTermData] = useState([
@@ -145,7 +145,6 @@ export default function Addrepresentative(props) {
   ]);
 
   const handleTermChange = (e, termIndex) => {
-
     const fieldName = `term${termIndex}_${e.target.name}`;
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -191,16 +190,15 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-          }
+              ...term,
+              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+            }
           : term
       )
     );
   };
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
-
     // Construct the field name for change tracking
     const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
 
@@ -212,11 +210,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
           : term
       )
     );
@@ -227,12 +225,12 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: null, score: "" },
-            ],
-          }
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: null, score: "" },
+              ],
+            }
           : term
       )
     );
@@ -243,18 +241,17 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.filter(
-              (_, i) => i !== activityIndex
-            ),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
+            }
           : term
       )
     );
   };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-
     // Construct the field name for change tracking
     const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
 
@@ -266,11 +263,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.map((activity, i) =>
-              i === activityIndex ? { ...activity, [field]: value } : activity
-            ),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.map((activity, i) =>
+                i === activityIndex ? { ...activity, [field]: value } : activity
+              ),
+            }
           : term
       )
     );
@@ -296,9 +293,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            summary: contentRefs.current[termIndex]?.content || "",
-          }
+              ...term,
+              summary: contentRefs.current[termIndex]?.content || "",
+            }
           : term
       )
     );
@@ -316,6 +313,7 @@ export default function Addrepresentative(props) {
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
+        isNew: true, // Mark as new for tracking
       },
     ]);
   };
@@ -346,28 +344,27 @@ export default function Addrepresentative(props) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
  // Transform votesScore with the same logic as house data
-      let votesScore =
-        Array.isArray(term.votesScore) && term.votesScore.length > 0
-          ? term.votesScore.map((vote) => {
+     let votesScore =
+          Array.isArray(term.votesScore) && term.votesScore.length > 0
+            ? term.votesScore.map((vote) => {
               let scoreValue = "";
               const dbScore = vote.score?.toLowerCase();
-
-              if (dbScore?.includes("yea_votes")) {
-                scoreValue = "Yes";
-              } else if (dbScore?.includes("nay_votes")) {
-                scoreValue = "No";
-              } else if (dbScore?.includes("other_votes")) {
-                scoreValue = "Neutral";
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
               } else {
                 scoreValue = vote.score || "";
               }
-
+ 
               return {
-                voteId: vote.voteId?._id || vote.voteId || null,
+                voteId: vote.voteId?._id || vote.voteId || "",
                 score: scoreValue,
               };
             })
-          : [{ voteId: null, score: "" }]; // Changed from empty string to null
+            : [{ voteId: "", score: "" }]; // Changed from empty string to null
 
       // If all voteId are null or array is empty, add a blank row
       if (votesScore.length === 0 || votesScore.every((v) => v.voteId == null)) {
@@ -382,6 +379,7 @@ export default function Addrepresentative(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
+          isNew: false, // Mark as not new
           votesScore,
           // :
           //   term.votesScore?.length > 0
@@ -408,10 +406,10 @@ export default function Addrepresentative(props) {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || null,
-                score: activity.score || "",
-              }))
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                }))
               : [{ activityId: null, score: "" }],
         };
       });
@@ -430,6 +428,7 @@ export default function Addrepresentative(props) {
           termId: null,
           editedFields: [],
           fieldEditors: {},
+          isNew: true, // Mark as new for tracking
         },
       ];
 
@@ -465,6 +464,7 @@ export default function Addrepresentative(props) {
 
       // Track term-level changes
       houseTermData.forEach((term, termIndex) => {
+        if (term.isNew) return;
         const originalTerm = originalTermData[termIndex] || {};
 
         Object.keys(term).forEach((key) => {
@@ -518,7 +518,7 @@ export default function Addrepresentative(props) {
         party: house.party || "",
         photo: house.photo || null,
         status: house.status || "Active",
-        publishStatus: house.publishStatus || "draft",
+        publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
       };
@@ -650,6 +650,7 @@ export default function Addrepresentative(props) {
         const termUpdate = {
           ...term,
           votesScore: cleanVotesScore,
+          isNew: false,
           houseId: id,
           editedFields: editedFields.filter((f) =>
             f.startsWith(`term${index}_`)
@@ -712,7 +713,6 @@ export default function Addrepresentative(props) {
   });
 
   const handleStatusChange = (status) => {
-
     const fieldName = "status"; // The field being changed
 
     // Update local changes if not already tracked
@@ -752,19 +752,19 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
-        description: "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
-      },
+      // published: {
+      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+      //   borderColor: "#4CAF50",
+      //   iconColor: "#2E7D32",
+      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+      //   title: "Published",
+      //   description: "Published and live",
+      //   titleColor: "#2E7D32",
+      //   descColor: "#388E3C",
+      // },
     };
 
-    return configs[currentStatus] || configs.draft;
+    return configs[currentStatus];
   };
 
   const currentStatus =
@@ -787,26 +787,26 @@ export default function Addrepresentative(props) {
   const handleConfirmDiscard = async () => {
     setOpenDiscardDialog(false);
 
-    try {
-      setLoading(true);
-      await dispatch(discardHouseChanges(id)).unwrap();
-      await dispatch(getHouseById(id));
-      await dispatch(getHouseDataByHouseId(id));
-      setSnackbarMessage("Changes discarded successfully");
-      setSnackbarSeverity("success");
-    } catch (error) {
-      console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string" ? error : "Failed to discard changes");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-    } finally {
-      setOpenSnackbar(true);
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    await dispatch(discardHouseChanges(id)).unwrap();
+    await dispatch(getHouseById(id));
+    await dispatch(getHouseDataByHouseId(id));
+    setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+    setSnackbarSeverity("success");
+  } catch (error) {
+    console.error("Discard failed:", error);
+    const errorMessage =
+      error?.payload?.message ||
+      error?.message ||
+      (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+    setSnackbarMessage(errorMessage);
+    setSnackbarSeverity("error");
+  } finally {
+    setOpenSnackbar(true);
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -852,267 +852,263 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && formData.publishStatus !== "published" && (
-              <Box
-                sx={{
-                  width: "98%",
-                  p: 2,
-                  backgroundColor: statusData.backgroundColor,
-                  borderLeft: `4px solid ${statusData.borderColor}`,
-                  borderRadius: "0 8px 8px 0",
-                  boxShadow: 1,
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                  {/* Status icon bubble */}
-                  <Box
+          {userRole &&
+  formData.publishStatus !== "published" &&
+  statusData && (
+    <Box
+      sx={{
+        width: "98%",
+        p: 2,
+        backgroundColor: statusData.backgroundColor,
+        borderLeft: `4px solid ${statusData.borderColor}`,
+        borderRadius: "0 8px 8px 0",
+        boxShadow: 1,
+        mb: 2,
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+        {/* Status icon bubble */}
+        <Box
+          sx={{
+            p: 1,
+            borderRadius: "50%",
+            backgroundColor: `rgba(${
+              formData.publishStatus === "draft"
+                ? "66, 165, 245"
+                : formData.publishStatus === "under review"
+                ? "230, 81, 0"
+                : formData.publishStatus === "published"
+                ? "76, 175, 80"
+                : "244, 67, 54"
+            }, 0.2)`,
+            display: "grid",
+            placeItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          {React.cloneElement(statusData.icon, {
+            sx: { color: statusData.iconColor },
+          })}
+        </Box>
+
+        <Box sx={{ flex: 1 }}>
+          {/* Header: title + pending count (admin only) */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              fontWeight="600"
+              sx={{
+                color: statusData.titleColor,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              {statusData.title}
+            </Typography>
+
+            {userRole === "admin" && (
+              <Chip
+                label={`${
+                  Array.isArray(formData?.editedFields)
+                    ? formData.editedFields.length
+                    : 0
+                } pending changes`}
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            )}
+          </Box>
+
+          {/* Pending / New fields list */}
+          <Box sx={{ mt: 1.5 }}>
+            {(() => {
+              const backendChanges = Array.isArray(formData?.editedFields)
+                ? formData.editedFields
+                : [];
+              const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
+
+              if (!hasChanges) {
+                return (
+                  <Typography
+                    variant="body2"
                     sx={{
-                      p: 1,
-                      borderRadius: "50%",
-                      backgroundColor: `rgba(${formData.publishStatus === "draft"
-                        ? "66, 165, 245"
-                        : formData.publishStatus === "under review"
-                          ? "255, 193, 7"
-                          : formData.publishStatus === "published"
-                            ? "76, 175, 80"
-                            : "244, 67, 54"
-                        }, 0.2)`,
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
+                      color: "text.disabled",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
                     }}
                   >
-                    {React.cloneElement(statusData.icon, {
-                      sx: { color: statusData.iconColor },
-                    })}
-                  </Box>
+                    No pending changes
+                  </Typography>
+                );
+              }
 
-                  <Box sx={{ flex: 1 }}>
-                    {/* Header: title + pending count (admin only) */}
+              // Field name formatter function
+              const formatFieldName = (field) => {
+                // Handle term array items
+                const termArrayMatch = field.match(/^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/);
+                if (termArrayMatch) {
+                  const [, termIdx, category] = termArrayMatch;
+                  const termNumber = parseInt(termIdx) + 1;
+                  
+                  if (category === "votesScore") {
+                    return `Term ${termNumber}: Scored Vote`;
+                  }
+                  if (category === "activitiesScore") {
+                    const itemIdx = termArrayMatch[3];
+                    const itemNumber = parseInt(itemIdx) + 1;
+                    return `Term ${termNumber}: Tracked Activity`;
+                  }
+                  return `Term ${termNumber}: ${fieldLabels[category] || category}`;
+                }
+
+                // Handle regular term fields
+                if (field.startsWith("term")) {
+                  const parts = field.split('_');
+                  const termNumber = parseInt(parts[0].replace("term", "")) + 1;
+                  const fieldKey = parts.slice(1).join('_');
+                  return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey}`;
+                }
+
+                // Handle non-term fields
+                return fieldLabels[field] || field;
+              };
+
+              return (
+                <>
+                  {/* Backend pending changes */}
+                  {backendChanges.length > 0 && (
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
+                        backgroundColor: "background.paper",
+                        borderRadius: 1,
+                        p: 1.5,
+                        border: "1px solid",
+                        borderColor: "divider",
+                        mb: 2,
                       }}
                     >
                       <Typography
-                        variant="subtitle1"
-                        fontWeight="600"
-                        sx={{
-                          color: statusData.titleColor,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
+                        variant="overline"
+                        sx={{ color: "text.secondary", mb: 1 }}
                       >
-                        {statusData.title}
+                        Saved Changes
                       </Typography>
+                      <List dense sx={{ py: 0 }}>
+                        {backendChanges.map((field) => {
+                          const editorInfo = formData?.fieldEditors?.[field];
+                          const editor = editorInfo?.editorName || "Unknown Editor";
+                          const editTime = editorInfo?.editedAt
+                            ? new Date(editorInfo.editedAt).toLocaleString([], {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "unknown time";
 
-                      {userRole === "admin" && (
-                        <Chip
-                          label={`${(Array.isArray(formData?.editedFields)
-                            ? formData.editedFields.length
-                            : 0) + localChanges.length
-                            } pending changes`}
-                          size="small"
-                          color="warning"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-
-                    <Box sx={{ mt: 1.5 }}>
-                      {(() => {
-                        const backendChanges = Array.isArray(
-                          formData?.editedFields
-                        )
-                          ? formData.editedFields
-                          : [];
-                        const hasChanges =
-                          backendChanges.length > 0 || localChanges.length > 0;
-
-                        if (!hasChanges) {
                           return (
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontStyle: "italic",
-                                color: "text.disabled",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
+                            <ListItem
+                              key={`backend-${field}`}
+                              sx={{ py: 0.5, px: 1 }}
                             >
-                              <HourglassEmpty sx={{ fontSize: 16 }} />
-                              No recent changes
-                            </Typography>
-                          );
-                        }
-
-                        return (
-                          <Box
-                            sx={{
-                              backgroundColor: "background.paper",
-                              borderRadius: 1,
-                              p: 1.5,
-                              border: "1px solid",
-                              borderColor: "divider",
-                            }}
-                          >
-                            <Typography
-                              variant="overline"
-                              sx={{ color: "text.secondary", mb: 1 }}
-                            >
-                              Pending Changes
-                            </Typography>
-
-                            <List dense sx={{ py: 0 }}>
-                              {backendChanges.map((field) => {
-                                const parts = field.split("_");
-                                const isTermField = field.startsWith("term");
-                                const editorInfo =
-                                  formData?.fieldEditors?.[field];
-                                const editor = editorInfo?.editorName || "Unknown Editor";
-                                const editTime = editorInfo?.editedAt
-                                  ? new Date(
-                                    editorInfo.editedAt
-                                  ).toLocaleString("en-GB", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    day: "2-digit",
-                                    month: "short",
-                                  })
-                                  : "unknown time";
-
-                                return (
-                                  <ListItem key={field} sx={{ py: 0.5, px: 1 }}>
-                                    <ListItemText
-                                      primary={
-                                        <Box
-                                          sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 1,
-                                          }}
-                                        >
-                                          <Box
-                                            sx={{
-                                              width: 8,
-                                              height: 8,
-                                              borderRadius: "50%",
-                                              backgroundColor:
-                                                statusData.iconColor,
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="body2"
-                                            fontWeight="500"
-                                          >
-                                            {isTermField
-                                              ? `Term ${+parts[0].replace(
-                                                "term",
-                                                ""
-                                              ) + 1
-                                              } • ${parts[1]
-                                                ?.charAt(0)
-                                                .toUpperCase() +
-                                              parts[1]?.slice(1)
-                                              }`
-                                              : field.charAt(0).toUpperCase() +
-                                              field.slice(1)}
-                                          </Typography>
-                                        </Box>
-                                      }
-                                      secondary={
-                                        <Typography
-                                          variant="caption"
-                                          color="text.secondary"
-                                        >
-                                          Edited by {editor} on {editTime}
-                                        </Typography>
-                                      }
-                                      sx={{ my: 0 }}
-                                    />
-                                  </ListItem>
-                                );
-                              })}
-                            </List>
-                          </Box>
-                        );
-                      })()}
-                    </Box>
-
-                    {/* Unsaved (local) changes chips */}
-                    {(userRole === "admin" || userRole === "editor") &&
-                      Array.isArray(editedFields) &&
-                      localChanges.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                          <Typography
-                            variant="overline"
-                            sx={{ color: "text.secondary" }}
-                          >
-                            Your Unsaved Changes
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: 1,
-                              mt: 1,
-                              p: 1,
-                              backgroundColor: "action.hover",
-                              borderRadius: 1,
-                            }}
-                          >
-                            {localChanges.map((field) => {
-                              const parts = field.split("_");
-                              const isTermField = field.startsWith("term");
-                              const displayLabel = isTermField
-                                ? `Term ${+parts[0].replace("term", "") + 1
-                                } • ${parts[1]?.charAt(0).toUpperCase() +
-                                parts[1]?.slice(1)
-                                }`
-                                : field.charAt(0).toUpperCase() +
-                                field.slice(1);
-
-                              return (
-                                <Chip
-                                  key={field}
-                                  label={
+                              <ListItemText
+                                primary={
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <Box
                                       sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 0.5,
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: "50%",
+                                        backgroundColor: statusData.iconColor,
                                       }}
-                                    >
-                                      <span>{displayLabel}</span>
-                                      <span>•</span>
-                                      <span>just now</span>
-                                    </Box>
-                                  }
-                                  size="small"
-                                  color="warning"
-                                  variant="outlined"
-                                  sx={{
-                                    "& .MuiChip-label": {
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 0.5,
-                                    },
-                                  }}
-                                />
-                              );
-                            })}
-                          </Box>
-                        </Box>
-                      )}
-                  </Box>
-                </Box>
-              </Box>
-            )}
+                                    />
+                                    <Typography variant="body2" fontWeight="500">
+                                      {formatFieldName(field)}
+                                    </Typography>
+                                  </Box>
+                                }
+                                secondary={
+                                  <Typography variant="caption" color="text.secondary">
+                                    Updated by {editor} on {editTime}
+                                  </Typography>
+                                }
+                                sx={{ my: 0 }}
+                              />
+                            </ListItem>
+                          );
+                        })}
+                      </List>
+                    </Box>
+                  )}
+
+                  {/* Local unsaved changes - now matches senator style */}
+                  {localChanges.length > 0 && (
+                    <Box
+                      sx={{
+                        backgroundColor: "background.paper",
+                        borderRadius: 1,
+                        p: 1.5,
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      <Typography
+                        variant="overline"
+                        sx={{ color: "text.secondary", mb: 1 }}
+                      >
+                        Unsaved Changes
+                      </Typography>
+                      <List dense sx={{ py: 0 }}>
+                        {localChanges.map((field) => (
+                          <ListItem
+                            key={`local-${field}`}
+                            sx={{ py: 0.5, px: 1 }}
+                          >
+                            <ListItemText
+                              primary={
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                  <Box
+                                    sx={{
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: "50%",
+                                      backgroundColor: statusData.iconColor,
+                                    }}
+                                  />
+                                  <Typography variant="body2" fontWeight="500">
+                                    {formatFieldName(field)}
+                                  </Typography>
+                                </Box>
+                              }
+                              secondary={
+                                <Typography variant="caption" color="text.secondary">
+                                  Edited just now
+                                </Typography>
+                              }
+                              sx={{ my: 0 }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  )}
+                </>
+              );
+            })()}
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  )}
 
             <Stack
               direction="row"
@@ -1156,42 +1152,46 @@ export default function Addrepresentative(props) {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
-              <Dialog
-                open={openDiscardDialog}
-                onClose={() => setOpenDiscardDialog(false)}
-                PaperProps={{
-                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
-                }}
-              >
-                <DialogTitle
-                  sx={{
-                    fontSize: "1.4rem",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    color: "warning.main",
-                  }}
-                >
-                  Discard Changes?
-                </DialogTitle>
+            <Dialog
+  open={openDiscardDialog}
+  onClose={() => setOpenDiscardDialog(false)}
+  PaperProps={{
+    sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontSize: "1.4rem",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "warning.main",
+    }}
+  >
+   {userRole === "admin" ? "Discard" : "Undo"} Changes?
+  </DialogTitle>
 
-                <DialogContent>
-                  <DialogContentText
-                    sx={{
-                      textAlign: "center",
-                      fontSize: "1rem",
-                      color: "text.secondary",
-                    }}
-                  >
-                    Are you sure you want to discard all changes? <br />
-                    <strong>This action cannot be undone.</strong>
-                  </DialogContentText>
-                </DialogContent>
+  <DialogContent>
+    <DialogContentText
+      sx={{
+        textAlign: "center",
+        fontSize: "1rem",
+        color: "text.secondary",
+      }}
+    >
+      Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
+      <strong>This action cannot be undone.</strong>
+    </DialogContentText>
+  </DialogContent>
 
                 <DialogActions>
                   <Stack
                     direction="row"
                     spacing={2}
-                    sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                    sx={{
+                      width: "100%",
+                      justifyContent: "center",
+                      paddingBottom: 2,
+                    }}
                   >
                     <Button
                       onClick={() => setOpenDiscardDialog(false)}
@@ -1202,17 +1202,17 @@ export default function Addrepresentative(props) {
                       Cancel
                     </Button>
 
-                    <Button
-                      onClick={handleConfirmDiscard}
-                      variant="contained"
-                      color="warning"
-                      sx={{ borderRadius: 2, paddingX: 3 }}
-                    >
-                      Discard
-                    </Button>
-                  </Stack>
-                </DialogActions>
-              </Dialog>
+      <Button
+        onClick={handleConfirmDiscard}
+        variant="contained"
+        color="warning"
+        sx={{ borderRadius: 2, paddingX: 3 }}
+      >
+        {userRole === "admin" ? "Discard" : "Undo"}
+      </Button>
+    </Stack>
+  </DialogActions>
+</Dialog>
 
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
@@ -1232,9 +1232,9 @@ export default function Addrepresentative(props) {
                         justifyContent: "flex-end", // align left
                         fontWeight: 700,
                         my: 0,
-                        whiteSpace: "normal",         // allow wrapping
-                        overflowWrap: "break-word",   // break long words
-                        width: "100%",                // take full width of grid cell
+                        whiteSpace: "normal", // allow wrapping
+                        overflowWrap: "break-word", // break long words
+                        width: "100%", // take full width of grid cell
                       }}
                     >
                       Representative's Name
@@ -1330,7 +1330,7 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2} sx={{ minWidth: 165 }} >
+                  <Grid size={2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1389,8 +1389,8 @@ export default function Addrepresentative(props) {
                         justifyContent: "flex-end", // align left
                         fontWeight: 700,
                         my: 0,
-                        whiteSpace: "normal",         // allow wrapping
-                        overflowWrap: "break-word",   // break long words
+                        whiteSpace: "normal", // allow wrapping
+                        overflowWrap: "break-word", // break long words
                         width: "100%",
                       }}
                     >
@@ -1643,137 +1643,136 @@ export default function Addrepresentative(props) {
                     </Grid>
 
                     {/* Vote Repeater Start */}
-                    {term.votesScore
-                      .map((vote, voteIndex) => (
-                        vote.voteId != null ? ( // Only render if voteId is not null
+                    {term.votesScore.map((vote, voteIndex) =>
+                      vote.voteId != null ? ( // Only render if voteId is not null
+                        <Grid
+                          rowSpacing={2}
+                          sx={{ width: "100%" }}
+                          key={voteIndex}
+                        >
                           <Grid
-                            rowSpacing={2}
-                            sx={{ width: "100%" }}
-                            key={voteIndex}
+                            size={12}
+                            display="flex"
+                            alignItems="center"
+                            columnGap={"15px"}
                           >
-                            <Grid
-                              size={12}
-                              display="flex"
-                              alignItems="center"
-                              columnGap={"15px"}
-                            >
-                              <Grid size={2}>
-                                <InputLabel
+                            <Grid size={2}>
+                              <InputLabel
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "end",
+                                  fontWeight: 700,
+                                  my: 0,
+                                }}
+                              >
+                                Scored Vote
+                              </InputLabel>
+                            </Grid>
+                            <Grid size={7.5}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={vote.voteId || ""}
+                                  onChange={(event) =>
+                                    handleVoteChange(
+                                      termIndex,
+                                      voteIndex,
+                                      "voteId",
+                                      event.target.value
+                                    )
+                                  }
                                   sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "end",
-                                    fontWeight: 700,
-                                    my: 0,
+                                    background: "#fff",
+                                    width: "100%",
                                   }}
-                                >
-                                  Scored Vote
-                                </InputLabel>
-                              </Grid>
-                              <Grid size={7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.voteId || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "voteId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      background: "#fff",
-                                      width: "100%",
-                                    }}
-                                    renderValue={(selected) => {
-                                      const selectedVote = votes.find(
-                                        (v) => v._id === selected
-                                      );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedVote?.title || "Select a Bill"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
+                                  renderValue={(selected) => {
+                                    const selectedVote = votes.find(
+                                      (v) => v._id === selected
+                                    );
+                                    return (
+                                      <Typography
+                                        sx={{
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                          textOverflow: "ellipsis",
+                                        }}
+                                      >
+                                        {selectedVote?.title || "Select a Bill"}
+                                      </Typography>
+                                    );
+                                  }}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 300,
+                                        width: 400,
+                                        "& .MuiMenuItem-root": {
+                                          minHeight: "48px",
                                         },
                                       },
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select a Bill
-                                    </MenuItem>
-                                    {votes && votes.length > 0 ? (
-                                      votes.map((voteItem) => (
-                                        <MenuItem
-                                          key={voteItem._id}
-                                          value={voteItem._id}
-                                          sx={{ py: 1.5 }}
+                                    },
+                                  }}
+                                >
+                                  <MenuItem value="" disabled>
+                                    Select a Bill
+                                  </MenuItem>
+                                  {votes && votes.length > 0 ? (
+                                    votes.map((voteItem) => (
+                                      <MenuItem
+                                        key={voteItem._id}
+                                        value={voteItem._id}
+                                        sx={{ py: 1.5 }}
+                                      >
+                                        <Typography
+                                          sx={{
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                          }}
                                         >
-                                          <Typography
-                                            sx={{
-                                              whiteSpace: "normal",
-                                              overflowWrap: "break-word",
-                                            }}
-                                          >
-                                            {voteItem.title}
-                                          </Typography>
-                                        </MenuItem>
-                                      ))
-                                    ) : (
-                                      <MenuItem value="" disabled>
-                                        No bills available
+                                          {voteItem.title}
+                                        </Typography>
                                       </MenuItem>
-                                    )}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={1.6}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.score || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "score",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff" }}
-                                  >
-                                    <MenuItem value="Yes">Yea</MenuItem>
-                                    <MenuItem value="No">Nay</MenuItem>
-                                    <MenuItem value="Neutral">Other</MenuItem>
-                                    {/* <MenuItem value="None">None</MenuItem> */}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={1}>
-                                <DeleteForeverIcon
-                                  onClick={() =>
-                                    handleRemoveVote(termIndex, voteIndex)
+                                    ))
+                                  ) : (
+                                    <MenuItem value="" disabled>
+                                      No bills available
+                                    </MenuItem>
+                                  )}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1.6}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={vote.score || ""}
+                                  onChange={(event) =>
+                                    handleVoteChange(
+                                      termIndex,
+                                      voteIndex,
+                                      "score",
+                                      event.target.value
+                                    )
                                   }
-                                />
-                              </Grid>
+                                  sx={{ background: "#fff" }}
+                                >
+                                 <MenuItem value="yea">Yea</MenuItem>
+                                    <MenuItem value="nay">Nay</MenuItem>
+                                    <MenuItem value="other">Other</MenuItem>
+                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1}>
+                              <DeleteForeverIcon
+                                onClick={() =>
+                                  handleRemoveVote(termIndex, voteIndex)
+                                }
+                              />
                             </Grid>
                           </Grid>
-                        ) : null
-                      ))}
+                        </Grid>
+                      ) : null
+                    )}
                     {/* Vote Repeater Ends */}
 
                     <Grid size={1}></Grid>
@@ -1872,7 +1871,7 @@ export default function Addrepresentative(props) {
                                   Select an Activity
                                 </MenuItem>
                                 {houseActivities &&
-                                  houseActivities.length > 0 ? (
+                                houseActivities.length > 0 ? (
                                   houseActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}

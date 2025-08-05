@@ -93,56 +93,64 @@ export default function CustomizedDataGrid({
   const columns =
     type === "bills"
       ? [
-        {
-          field: "date",
-          flex: 1,
-          headerName: "Date",
-          minWidth: 150,
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
-        {
-          field: "bill",
-          flex: 3,
-          headerName: "Bill",
-          minWidth: 150,
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
-        {
-          field: "billsType",
-          flex: 2,
-          headerName: "Type",
-          minWidth: 150,
-          headerAlign: "center",
-          align: "center",
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-        },
-        {
-          field: "status",
-          headerName: "Status",
-          flex: 1,
-          minWidth: 140, renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
+          {
+            field: "date",
+            flex: 1,
+            headerName: "Date",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "bill",
+            flex: 3,
+            headerName: "Bill",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "billsType",
+            flex: 2,
+            headerName: "Type",
+            minWidth: 150,
+            headerAlign: "center",
+            align: "center",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "status",
+            headerName: "Status",
+            flex: 1,
+            minWidth: 140,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
 
-          renderCell: (params) => {
-            const status = params?.row?.status;
-            const displayStatus = status
-              ? status.charAt(0).toUpperCase() + status.slice(1)
-              : "N/A";
+            renderCell: (params) => {
+              const status = params?.row?.status;
+              const displayStatus = status
+                ? status
+                    .split(" ")
+                    .map(
+                      (word) =>
+                        word.charAt(0).toUpperCase() +
+                        word.slice(1).toLowerCase()
+                    )
+                    .join(" ")
+                : "N/A";
 
             return (
               <Box
@@ -193,7 +201,7 @@ export default function CustomizedDataGrid({
         },
       ]
       : type === "activities"
-        ? [
+      ? [
           {
             field: "date",
             flex: 1,
@@ -241,9 +249,18 @@ export default function CustomizedDataGrid({
             ),
             renderCell: (params) => {
               const status = params?.row?.status;
-              const capitalized = status
-                ? status.charAt(0).toUpperCase() + status.slice(1)
+              const displayStatus = status
+                ? status
+                    .split(" ")
+                    .map(
+                      (word) =>
+                        word.charAt(0).toUpperCase() +
+                        word.slice(1).toLowerCase()
+                    )
+                    .join(" ")
                 : "N/A";
+
+              return displayStatus;
 
               return (
                 <Box
@@ -300,38 +317,39 @@ export default function CustomizedDataGrid({
             ),
           },
         ]
-        : type === "user"
-          ? [
-            {
-              field: "fullName",
-              flex: 1.5,
-              headerName: "Name",
-              minWidth: 150,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
+      : type === "user"
+      ? [
+          {
+            field: "fullName",
+            flex: 1.5,
+            headerName: "Name",
+            minWidth: 150,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => {
+              const name = params.value || "";
+              return (
+                <Typography
+                  sx={{ height: "100%", display: "flex", alignItems: "center" }}
+                >
+                  {name?.charAt(0).toUpperCase() + name?.slice(1)}
                 </Typography>
-              ),
-              renderCell: (params) => {
-                const name = params.value || "";
-                return (
-                  <Typography sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
-                    {name?.charAt(0).toUpperCase() + name?.slice(1)}
-                  </Typography>
-                );
-              }
-
+              );
             },
-            {
-              field: "nickName",
-              flex: 1.5,
-              headerName: "Nick Name",
-              minWidth: 120,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
+          },
+          {
+            field: "nickName",
+            flex: 1.5,
+            headerName: "Nick Name",
+            minWidth: 120,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
 
               renderCell: (params) => {
                 const nickName = params.value || "";
@@ -493,7 +511,7 @@ export default function CustomizedDataGrid({
                   ),
                 },
               ]
-              : [
+            : [
                 {
                   field: "state",
                   flex: 1,
@@ -508,40 +526,40 @@ export default function CustomizedDataGrid({
                   ),
                 },
               ]),
-            {
-              field: "party",
-              flex: 1,
-              headerName: "Party",
-              minWidth: 120,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-              valueGetter: (params) => {
-                if (!params) return "N/A";
-                return (
-                  params.charAt(0).toUpperCase() + params.slice(1).toLowerCase()
-                );
-              },
+          {
+            field: "party",
+            flex: 1,
+            headerName: "Party",
+            minWidth: 120,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            valueGetter: (params) => {
+              if (!params) return "N/A";
+              return (
+                params.charAt(0).toUpperCase() + params.slice(1).toLowerCase()
+              );
             },
-            {
-              field: "rating",
-              // flex: 0.7,
-              headerName: "Rating",
-              minHeight: 200,
-              minWidth: 140,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-              valueGetter: (params) => {
-                return params || "N/A";
-              },
+          },
+          {
+            field: "rating",
+            // flex: 0.7,
+            headerName: "Rating",
+            minHeight: 200,
+            minWidth: 140,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            valueGetter: (params) => {
+              return params || "N/A";
             },
-            ...(type === "representative"
-              ? [
+          },
+          ...(type === "representative"
+            ? [
                 {
                   field: "publishStatus",
                   headerName: "Status",
@@ -555,11 +573,18 @@ export default function CustomizedDataGrid({
 
                   renderCell: (params) => {
                     const status = params?.row?.publishStatus;
-
                     const displayStatus = status
-                      ? status.charAt(0).toUpperCase() + status.slice(1)
+                      ? status
+                          .split(" ")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() +
+                              word.slice(1).toLowerCase()
+                          )
+                          .join(" ")
                       : "N/A";
 
+                    return displayStatus;
                     return (
                       <Box
                         sx={{
@@ -574,7 +599,7 @@ export default function CustomizedDataGrid({
                   },
                 },
               ]
-              : [
+            : [
                 {
                   field: "publishStatus",
                   headerName: "Status",
@@ -584,12 +609,20 @@ export default function CustomizedDataGrid({
                       {params.colDef.headerName}
                     </Typography>
                   ),
-
                   renderCell: (params) => {
                     const status = params?.row?.publishStatus;
                     const displayStatus = status
-                      ? status.charAt(0).toUpperCase() + status.slice(1)
+                      ? status
+                          .split(" ")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() +
+                              word.slice(1).toLowerCase()
+                          )
+                          .join(" ")
                       : "N/A";
+
+                    return displayStatus;
 
                     return (
                       <Box
