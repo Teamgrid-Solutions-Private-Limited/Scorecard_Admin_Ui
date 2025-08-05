@@ -476,7 +476,7 @@ export default function Addrepresentative(props) {
 
       // Track term-level changes
       houseTermData.forEach((term, termIndex) => {
-        if (term.isNew) return;
+        // if (term.isNew) return;
         const originalTerm = originalTermData[termIndex] || {};
 
         Object.keys(term).forEach((key) => {
