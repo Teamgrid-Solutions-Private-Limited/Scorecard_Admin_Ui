@@ -200,12 +200,19 @@ export default function Addrepresentative(props) {
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     // Construct the field name for change tracking
-    const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
+     // Construct the field name for change tracking
+    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
 
     // Update local changes if not already tracked
     setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
+      prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
     );
+
+    // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
+
+    // setLocalChanges((prev) =>
+    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+    // );
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -253,12 +260,17 @@ export default function Addrepresentative(props) {
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     // Construct the field name for change tracking
-    const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
-
+     const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex+1}`;
+    
     // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
+    setLocalChanges((prev) => 
+      prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
     );
+    // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
+
+    // setLocalChanges((prev) =>
+    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+    // );
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
