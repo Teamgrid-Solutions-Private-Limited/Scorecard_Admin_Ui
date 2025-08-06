@@ -350,43 +350,6 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
-          },
-        ]
-
-      : type === "user"
-      
-      ? [
-          {
-            field: "fullName",
-            flex: 1.5,
-            headerName: "Name",
-            minWidth: 150,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => {
-              const name = params.value || "";
-              return (
-                <Typography
-                  sx={{ height: "100%", display: "flex", alignItems: "center" }}
-                >
-                  {name?.charAt(0).toUpperCase() + name?.slice(1)}
-                </Typography>
-              );
-            },
-          },
-          {
-            field: "nickName",
-            flex: 1.5,
-            headerName: "Nick Name",
-            minWidth: 120,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
 
               renderCell: (params) => {
                 const nickName = params.value || "";

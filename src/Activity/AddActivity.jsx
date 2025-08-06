@@ -788,7 +788,7 @@ export default function AddActivity(props) {
                     color: "warning.main",
                   }}
                 >
-                  Discard Changes?
+                  {userRole === "admin" ? "Discard" : "Undo"} Changes?
                 </DialogTitle>
 
                 <DialogContent>
@@ -799,7 +799,7 @@ export default function AddActivity(props) {
                       color: "text.secondary",
                     }}
                   >
-                    Are you sure you want to discard all changes? <br />
+                    Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
@@ -829,7 +829,7 @@ export default function AddActivity(props) {
                       color="warning"
                       sx={{ borderRadius: 2, paddingX: 3 }}
                     >
-                      Discard
+                      {userRole === "admin" ? "Discard" : "Undo"}
                     </Button>
                   </Stack>
                 </DialogActions>

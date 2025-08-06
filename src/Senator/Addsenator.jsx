@@ -88,6 +88,7 @@ export default function AddSenator(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+   const [componentKey, setComponentKey] = useState(0);
 
   // console.log("User Role:", userRole);
   let senatorActivities =
@@ -147,6 +148,8 @@ export default function AddSenator(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
       return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
         }`;
     }
@@ -235,6 +238,7 @@ export default function AddSenator(props) {
       await dispatch(getSenatorDataBySenetorId(id));
       setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
       setSnackbarSeverity("success");
+       setComponentKey(prev => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
@@ -254,9 +258,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       )
     );
@@ -281,11 +285,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
           : term
       )
     );
@@ -296,12 +300,12 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: null, score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: null, score: "" },
+            ],
+          }
           : term
       )
     );
@@ -312,11 +316,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       )
     );
@@ -342,11 +346,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.map((activity, i) =>
-                i === activityIndex ? { ...activity, [field]: value } : activity
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.map((activity, i) =>
+              i === activityIndex ? { ...activity, [field]: value } : activity
+            ),
+          }
           : term
       )
     );
@@ -373,9 +377,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              summary: contentRefs.current[termIndex]?.content || "",
-            }
+            ...term,
+            summary: contentRefs.current[termIndex]?.content || "",
+          }
           : term
       )
     );
@@ -484,10 +488,10 @@ export default function AddSenator(props) {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId:
-                    activity.activityId?._id || activity.activityId || null,
-                  score: activity.score || "",
-                }))
+                activityId:
+                  activity.activityId?._id || activity.activityId || null,
+                score: activity.score || "",
+              }))
               : [{ activityId: null, score: "" }],
         };
       });
@@ -760,13 +764,19 @@ export default function AddSenator(props) {
 
       await Promise.all(termPromises);
 
-      // Clear local changes
-      setEditedFields([]);
-      setLocalChanges([]);
-      // Reload data
 
-      await dispatch(getSenatorById(id)).unwrap();
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+      await dispatch(getSenatorById(id)).unwrap();
+
+
+      // Update originals to match latest backend data
+      if (senatorData?.currentSenator) {
+        setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
+      }
+      if (senator) {
+        setOriginalFormData(JSON.parse(JSON.stringify(senator)));
+      }
+      setLocalChanges([]);
 
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -850,7 +860,7 @@ export default function AddSenator(props) {
   );
 
   return (
-    <AppTheme>
+    <AppTheme key={componentKey}>
       {loading && (
         <Box
           sx={{
@@ -1002,6 +1012,7 @@ export default function AddSenator(props) {
                                 return `Term ${termNumber}: Scored Vote`;
                               }
                               if (category === "activitiesScore") {
+                                
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
                               return `Term ${termNumber}: ${fieldLabels[category] || category} Item ${itemNumber}`;
@@ -1650,11 +1661,21 @@ export default function AddSenator(props) {
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
-                        initialValue={term.summary || ""}
-                        onEditorChange={(content) =>
-                          handleEditorChange(content, termIndex)
-                        }
-                        onBlur={() => handleBlur(termIndex)}
+                        // initialValue={term.summary || ""}
+                       value={term.summary}
+                        onEditorChange={(content) => {
+                          setSenatorTermData(prev =>
+                            prev.map((t, idx) =>
+                              idx === termIndex ? { ...t, summary: content } : t
+                            )
+                          );
+                          // Optionally update localChanges here too
+                          const fieldName = `term${termIndex}_summary`;
+                          setLocalChanges(prev =>
+                            prev.includes(fieldName) ? prev : [...prev, fieldName]
+                          );
+                        }}
+                        onBlur={() => {}}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -1918,7 +1939,7 @@ export default function AddSenator(props) {
                                   Select an Activity
                                 </MenuItem>
                                 {senatorActivities &&
-                                senatorActivities.length > 0 ? (
+                                  senatorActivities.length > 0 ? (
                                   senatorActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
