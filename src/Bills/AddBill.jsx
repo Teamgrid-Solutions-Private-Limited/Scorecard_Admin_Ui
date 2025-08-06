@@ -74,6 +74,7 @@ export default function AddBill(props) {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
 
+
   const fieldLabels = {
     type: "Type",
     title: "Title",
@@ -309,10 +310,12 @@ export default function AddBill(props) {
       }
 
       setOpenSnackbar(true);
+      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       setSnackbarMessage(`Operation failed: ${error.message || error}`);
       setSnackbarSeverity("error");
+      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
@@ -725,6 +728,21 @@ export default function AddBill(props) {
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
+              {/* <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
@@ -878,6 +896,8 @@ export default function AddBill(props) {
                         handleEditorChange(content, "shortDesc")
                       }
                       init={{
+                        base_url: "/scorecard/admin/tinymce",
+                        suffix: ".min",
                         height: 250,
                         menubar: false,
                         plugins: [
@@ -901,7 +921,9 @@ export default function AddBill(props) {
                           "wordcount",
                         ],
                         toolbar:
-                          "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                          "undo redo | bold italic | alignleft aligncenter alignright | code",
+                        skin: "oxide",
+                        content_css: "default",
                         content_style:
                           "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                       }}
@@ -922,11 +944,14 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <Editor
+                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
                       value={formData.longDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "longDesc")
                       }
                       init={{
+                        base_url: "/scorecard/admin/tinymce", suffix: ".min",
                         height: 250,
                         menubar: false,
                         plugins: [

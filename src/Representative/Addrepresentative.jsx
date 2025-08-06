@@ -117,9 +117,8 @@ export default function Addrepresentative(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -138,7 +137,7 @@ export default function Addrepresentative(props) {
       houseId: id,
       summary: "",
       rating: "",
-      votesScore: [{ voteId: null, score: "" }],
+      votesScore: [{ voteId: "", score: "" }],
       activitiesScore: [{ activityId: null, score: "" }],
       currentTerm: false,
       termId: null,
@@ -178,9 +177,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: " ", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -201,12 +200,19 @@ export default function Addrepresentative(props) {
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     // Construct the field name for change tracking
-    const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
+     // Construct the field name for change tracking
+    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
 
     // Update local changes if not already tracked
     setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
+      prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
     );
+
+    // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
+
+    // setLocalChanges((prev) =>
+    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+    // );
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -254,12 +260,17 @@ export default function Addrepresentative(props) {
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     // Construct the field name for change tracking
-    const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
-
+     const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex+1}`;
+    
     // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
+    setLocalChanges((prev) => 
+      prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
     );
+    // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
+
+    // setLocalChanges((prev) =>
+    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+    // );
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
@@ -310,10 +321,12 @@ export default function Addrepresentative(props) {
         houseId: id,
         summary: "",
         rating: "",
-        votesScore: [{ voteId: null, score: "" }],
+        votesScore: [{ voteId: "", score: "" }],
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
+        editedFields: [], // Initialize empty
+      fieldEditors: {}, // Initialize empty
         isNew: true, // Mark as new for tracking
       },
     ]);
@@ -344,6 +357,33 @@ export default function Addrepresentative(props) {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+ // Transform votesScore with the same logic as house data
+     let votesScore =
+          Array.isArray(term.votesScore) && term.votesScore.length > 0
+            ? term.votesScore.map((vote) => {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
+ 
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+              };
+            })
+            : [{ voteId: "", score: "" }]; // Changed from empty string to null
+
+      // If all voteId are null or array is empty, add a blank row
+      if (votesScore.length === 0 || votesScore.every((v) => v.voteId == null)) {
+        votesScore = [{ voteId: "", score: "" }]; // Use null instead of empty string
+      }
 
         return {
           _id: term._id,
@@ -354,28 +394,29 @@ export default function Addrepresentative(props) {
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
           isNew: false, // Mark as not new
-          votesScore:
-            term.votesScore?.length > 0
-              ? term.votesScore.map((vote) => {
-                  let scoreValue = "";
-                  const dbScore = vote.score?.toLowerCase();
+          votesScore,
+          // :
+          //   term.votesScore?.length > 0
+          //     ? term.votesScore.map((vote) => {
+          //       let scoreValue = "";
+          //       const dbScore = vote.score?.toLowerCase();
 
-                  if (dbScore?.includes("yea_votes")) {
-                    scoreValue = "Yes";
-                  } else if (dbScore?.includes("nay_votes")) {
-                    scoreValue = "No";
-                  } else if (dbScore?.includes("other_votes")) {
-                    scoreValue = "Neutral";
-                  } else {
-                    scoreValue = vote.score || "";
-                  }
+          //       if (dbScore?.includes("yea_votes")) {
+          //         scoreValue = "Yes";
+          //       } else if (dbScore?.includes("nay_votes")) {
+          //         scoreValue = "No";
+          //       } else if (dbScore?.includes("other_votes")) {
+          //         scoreValue = "Neutral";
+          //       } else {
+          //         scoreValue = vote.score || "";
+          //       }
 
-                  return {
-                    voteId: vote.voteId?._id || vote.voteId || null,
-                    score: scoreValue,
-                  };
-                })
-              : [{ voteId: null, score: "" }],
+          //       return {
+          //         voteId: vote.voteId?._id || vote.voteId || null,
+          //         score: scoreValue,
+          //       };
+          //     })
+          //     : [{ voteId: "", score: "" }],
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
@@ -395,7 +436,7 @@ export default function Addrepresentative(props) {
           houseId: id,
           summary: "",
           rating: "",
-          votesScore: [{ voteId: null, score: "" }],
+          votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: null, score: "" }],
           currentTerm: false,
           termId: null,
@@ -423,52 +464,64 @@ export default function Addrepresentative(props) {
   }, [formData, originalFormData]);
 
   // Update your change tracking useEffect
-  useEffect(() => {
-    if (originalFormData && formData && originalTermData && houseTermData) {
-      const changes = [];
+ useEffect(() => {
+  if (originalFormData && formData && originalTermData && houseTermData) {
+    const changes = [];
 
-      // Track representative-level changes
-      Object.keys(formData).forEach((key) => {
-        if (key === "editedFields" || key === "fieldEditors") return;
-        if (compareValues(formData[key], originalFormData[key])) {
-          changes.push(key);
-        }
-      });
+    // Track house-level changes
+    Object.keys(formData).forEach((key) => {
+      if (key === "editedFields" || key === "fieldEditors") return;
+      if (compareValues(formData[key], originalFormData[key])) {
+        changes.push(key);
+      }
+    });
 
-      // Track term-level changes
-      houseTermData.forEach((term, termIndex) => {
-        // if (term.isNew) return;
-        const originalTerm = originalTermData[termIndex] || {};
-
+    // Track term-level changes
+    houseTermData.forEach((term, termIndex) => {
+      // For new terms, track all fields that have values
+      if (term.isNew) {
         Object.keys(term).forEach((key) => {
-          // Skip internal and tracking fields
+          if (["_id", "houseId", "editedFields", "fieldEditors", "isNew"].includes(key))
+            return;
+
+          if (key === "votesScore" || key === "activitiesScore") {
+            if (term[key].some(item => Object.values(item).some(val => val !== "" && val !== null))) {
+              changes.push(`term${termIndex}_${key}`);
+            }
+          } else if (term[key] !== "" && term[key] !== null && term[key] !== false) {
+            changes.push(`term${termIndex}_${key}`);
+          }
+        });
+      } else {
+        // Existing term logic
+        const originalTerm = originalTermData[termIndex] || {};
+        Object.keys(term).forEach((key) => {
           if (["_id", "houseId", "editedFields", "fieldEditors"].includes(key))
             return;
 
-          // Handle array fields
           if (key === "votesScore" || key === "activitiesScore") {
             const current = JSON.stringify(term[key]);
             const original = JSON.stringify(originalTerm[key] || []);
             if (current !== original) {
               changes.push(`term${termIndex}_${key}`);
             }
-          }
-          // Handle regular fields
-          else if (compareValues(term[key], originalTerm[key])) {
+          } else if (compareValues(term[key], originalTerm[key])) {
             changes.push(`term${termIndex}_${key}`);
           }
         });
-      });
+      }
+    });
 
-      // Merge with any existing editedFields from backend
-      const backendEditedFields = Array.isArray(formData.editedFields)
-        ? formData.editedFields
-        : [];
-      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
+    // Merge with any existing editedFields from backend
+    const backendEditedFields = Array.isArray(formData.editedFields)
+      ? formData.editedFields
+      : [];
+    const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
 
-      setEditedFields(mergedChanges);
-    }
-  }, [formData, originalFormData, houseTermData, originalTermData]);
+    setEditedFields(mergedChanges);
+  }
+}, [formData, originalFormData, houseTermData, originalTermData]);
+
 
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token);
@@ -545,6 +598,8 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
+
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -611,8 +666,16 @@ export default function Addrepresentative(props) {
 
       // Update terms
       const termPromises = houseTermData.map((term, index) => {
+        // Clean votesScore - remove entries with empty/null voteId and transform empty strings
+        const cleanVotesScore = term.votesScore
+          .filter(vote => vote.voteId && vote.voteId.toString().trim() !== "")
+          .map(vote => ({
+            voteId: vote.voteId.toString().trim() === "" ? null : vote.voteId,
+            score: vote.score
+          }));
         const termUpdate = {
           ...term,
+          votesScore: cleanVotesScore,
           isNew: false,
           houseId: id,
           editedFields: editedFields.filter((f) =>
@@ -623,8 +686,8 @@ export default function Addrepresentative(props) {
 
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateHouseData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -638,9 +701,9 @@ export default function Addrepresentative(props) {
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -750,26 +813,27 @@ export default function Addrepresentative(props) {
   const handleConfirmDiscard = async () => {
     setOpenDiscardDialog(false);
 
-    try {
-      setLoading(true);
-      await dispatch(discardHouseChanges(id)).unwrap();
-      await dispatch(getHouseById(id));
-      await dispatch(getHouseDataByHouseId(id));
-      setSnackbarMessage("Changes discarded successfully");
-      setSnackbarSeverity("success");
-    } catch (error) {
-      console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string" ? error : "Failed to discard changes");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-    } finally {
-      setOpenSnackbar(true);
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    await dispatch(discardHouseChanges(id)).unwrap();
+    await dispatch(getHouseById(id));
+    await dispatch(getHouseDataByHouseId(id));
+    setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+    setSnackbarSeverity("success");
+  } catch (error) {
+    console.error("Discard failed:", error);
+    const errorMessage =
+      error?.payload?.message ||
+      error?.message ||
+      (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+    setSnackbarMessage(errorMessage);
+    setSnackbarSeverity("error");
+  } finally {
+    setOpenSnackbar(true);
+    setLoading(false);
+  }
+};
+
 
   return (
     <AppTheme>
@@ -1114,36 +1178,36 @@ export default function Addrepresentative(props) {
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%" }}>
-              <Dialog
-                open={openDiscardDialog}
-                onClose={() => setOpenDiscardDialog(false)}
-                PaperProps={{
-                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
-                }}
-              >
-                <DialogTitle
-                  sx={{
-                    fontSize: "1.4rem",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    color: "warning.main",
-                  }}
-                >
-                  Discard Changes?
-                </DialogTitle>
+            <Dialog
+  open={openDiscardDialog}
+  onClose={() => setOpenDiscardDialog(false)}
+  PaperProps={{
+    sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontSize: "1.4rem",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "warning.main",
+    }}
+  >
+   {userRole === "admin" ? "Discard" : "Undo"} Changes?
+  </DialogTitle>
 
-                <DialogContent>
-                  <DialogContentText
-                    sx={{
-                      textAlign: "center",
-                      fontSize: "1rem",
-                      color: "text.secondary",
-                    }}
-                  >
-                    Are you sure you want to discard all changes? <br />
-                    <strong>This action cannot be undone.</strong>
-                  </DialogContentText>
-                </DialogContent>
+  <DialogContent>
+    <DialogContentText
+      sx={{
+        textAlign: "center",
+        fontSize: "1rem",
+        color: "text.secondary",
+      }}
+    >
+      Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
+      <strong>This action cannot be undone.</strong>
+    </DialogContentText>
+  </DialogContent>
 
                 <DialogActions>
                   <Stack
@@ -1164,17 +1228,17 @@ export default function Addrepresentative(props) {
                       Cancel
                     </Button>
 
-                    <Button
-                      onClick={handleConfirmDiscard}
-                      variant="contained"
-                      color="warning"
-                      sx={{ borderRadius: 2, paddingX: 3 }}
-                    >
-                      Discard
-                    </Button>
-                  </Stack>
-                </DialogActions>
-              </Dialog>
+      <Button
+        onClick={handleConfirmDiscard}
+        variant="contained"
+        color="warning"
+        sx={{ borderRadius: 2, paddingX: 3 }}
+      >
+        {userRole === "admin" ? "Discard" : "Undo"}
+      </Button>
+    </Stack>
+  </DialogActions>
+</Dialog>
 
               <Box sx={{ p: 5 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
@@ -1717,9 +1781,9 @@ export default function Addrepresentative(props) {
                                   }
                                   sx={{ background: "#fff" }}
                                 >
-                                  <MenuItem value="Yes">Yea</MenuItem>
-                                  <MenuItem value="No">Nay</MenuItem>
-                                  <MenuItem value="Neutral">Other</MenuItem>
+                                 <MenuItem value="yea">Yea</MenuItem>
+                                    <MenuItem value="nay">Nay</MenuItem>
+                                    <MenuItem value="other">Other</MenuItem>
                                   {/* <MenuItem value="None">None</MenuItem> */}
                                 </Select>
                               </FormControl>

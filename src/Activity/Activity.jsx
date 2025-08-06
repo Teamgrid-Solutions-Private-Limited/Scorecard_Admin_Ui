@@ -29,8 +29,15 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  MenuItem
+  MenuItem,
+  Badge,
+  IconButton, Paper, ClickAwayListener
 } from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import CloseIcon from "@mui/icons-material/Close";
+import CheckIcon from "@mui/icons-material/Check";
 import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
 const xThemeComponents = {
@@ -53,13 +60,16 @@ export default function Activity(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("all");
  const token = localStorage.getItem("token");
 // Decode token to get user role
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role;
 
       console.log("User Role:", userRole);
+
+      const [filterOpen, setFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState([]);
+const statusOptions = ["published", "draft", "under review"];
   const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); // Store selected activity IDs
   const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
   const [bulkTrackActivity, setBulkTrackActivity] = useState(""); // Store bulk track activity value
@@ -71,9 +81,13 @@ export default function Activity(props) {
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
+
   const filteredActivities = activities.filter((activity) => {
-    if (statusFilter === "all") return true;
-    return activity.status === statusFilter;
+    // Status filter
+    const statusMatch = statusFilter.length === 0 || 
+      (activity.status && statusFilter.includes(activity.status));
+
+    return statusMatch;
   });
 
   const activitiesData = filteredActivities.map((activity, index) => ({
@@ -89,6 +103,25 @@ export default function Activity(props) {
       : "Other",
     status: activity.status,
   }));
+
+  // Filter handlers
+  const toggleFilter = () => {
+    setFilterOpen(!filterOpen);
+  };
+
+  const handleStatusFilter = (status) => {
+    setStatusFilter(prev =>
+      prev.includes(status)
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setStatusFilter([]);
+  };
+
+  const activeFilterCount = statusFilter.length;
 
   const handleEdit = (row) => {
     navigate(`/edit-activity/${row._id}`);
@@ -238,7 +271,7 @@ export default function Activity(props) {
           <FixedHeader />
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 0 } }}
+            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 1 } }}
           >
             <Box
               sx={{
@@ -259,30 +292,129 @@ export default function Activity(props) {
                 alignItems="center"
                 sx={{ ml: "auto" }}
               >
-                <TextField
-                  select
-                  variant="outlined"
-                  // label="Filter by Status"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  SelectProps={{ native: true }}
-                  size="small"
-                  sx={{
-                    minWidth: 180,
-                    "& .MuiOutlinedInput-root": {
-                      "&:hover fieldset": {
-                        borderColor: "primary.light",
+                <Box sx={{ position: "relative", display: "inline-block" }}>
+                  <Badge
+                    badgeContent={activeFilterCount}
+                    color="primary"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        top: 6, 
+                        right: 6, 
                       },
-                    },
-                  }}
-                >
-                  <option value="all">All</option>
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
-                  <option value="reviewed">Reviewed</option>
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      startIcon={<FilterListIcon />}
+                      endIcon={
+                        filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                      }
+                      onClick={toggleFilter}
+                      sx={{
+                        height: "40px",
+                        minWidth: "120px",
+                        borderColor: filterOpen ? "primary.main" : "divider",
+                        backgroundColor: filterOpen
+                          ? "primary.light"
+                          : "background.paper",
+                        "&:hover": {
+                          backgroundColor: filterOpen
+                            ? "primary.light"
+                            : "action.hover",
+                        },
+                      }}
+                    >
+                      Filters
+                    </Button>
+                  </Badge>
 
+                  {filterOpen && (
+                    <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
+                      <Paper
+                        sx={{
+                          position: "absolute",
+                          right: 0,
+                          top: "100%",
+                          mt: 1,
+                          width: 200,
+                          zIndex: 1,
+                          boxShadow: 3,
+                          borderRadius: 2,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Typography variant="subtitle1" fontWeight="bold">
+                              Status
+                            </Typography>
+                            <IconButton size="small" onClick={toggleFilter}>
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
 
-                </TextField>
+                        {/* Status Filter */}
+                        <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
+                          {statusOptions.map((status) => (
+                            <Box
+                              key={status}
+                              onClick={() => handleStatusFilter(status)}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                p: 1,
+                                borderRadius: 1,
+                                cursor: "pointer",
+                                "&:hover": {
+                                  bgcolor: "action.hover",
+                                },
+                              }}
+                            >
+                              {statusFilter.includes(status) ? (
+                                <CheckIcon color="primary" fontSize="small" />
+                              ) : (
+                                <Box sx={{ width: 24, height: 24 }} />
+                              )}
+                              <Typography variant="body2" sx={{ ml: 1 }}>
+                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+
+                        {/* Clear All Button */}
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderTop: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            color="secondary"
+                            onClick={clearAllFilters}
+                            disabled={!statusFilter.length}
+                          >
+                            Clear Filters
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </ClickAwayListener>
+                  )}
+                </Box>
               </Stack>
 
               <Stack direction="row" spacing={2} alignItems="center">
@@ -411,6 +543,11 @@ export default function Activity(props) {
               snackbarMessage === "This activity has been successfully deleted."
                 ? "#FF474D"
                 : undefined,
+            "& .MuiAlert-icon": {
+              color: snackbarMessage === "This activity has been successfully deleted."
+                ? "white"
+                : undefined
+            }
           }}
         >
           {snackbarMessage}
