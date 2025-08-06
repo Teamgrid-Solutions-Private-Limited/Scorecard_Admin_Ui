@@ -88,6 +88,7 @@ export default function Addrepresentative(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+   const [componentKey, setComponentKey] = useState(0);
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -285,7 +286,7 @@ export default function Addrepresentative(props) {
     );
   };
 
-  const contentRefs = useRef([]);
+  // Remove contentRefs for summary
 
   const handleEditorChange = useCallback((content, termIndex) => {
     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
@@ -294,23 +295,19 @@ export default function Addrepresentative(props) {
     setLocalChanges((prev) =>
       prev.includes(fieldName) ? prev : [...prev, fieldName]
     );
-    if (!contentRefs.current[termIndex]) {
-      contentRefs.current[termIndex] = {};
-    }
-    contentRefs.current[termIndex].content = content;
   }, []);
 
   const handleBlur = useCallback((termIndex) => {
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-              ...term,
-              summary: contentRefs.current[termIndex]?.content || "",
-            }
-          : term
-      )
-    );
+    // setHouseTermData((prev) =>
+    //   prev.map((term, index) =>
+    //     index === termIndex
+    //       ? {
+    //           ...term,
+    //           summary: contentRefs.current[termIndex]?.content || "",
+    //         }
+    //       : term
+    //   )
+    // );
   }, []);
 
   // Add a new empty term
@@ -694,10 +691,17 @@ export default function Addrepresentative(props) {
       await Promise.all(termPromises);
 
       // Reload data
-
       await dispatch(getHouseDataByHouseId(id)).unwrap();
-      setLocalChanges([]);
       await dispatch(getHouseById(id)).unwrap();
+
+      // Update originals to match latest backend data
+      if (houseData?.currentHouse) {
+        setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
+      }
+      if (house) {
+        setOriginalFormData(JSON.parse(JSON.stringify(house)));
+      }
+      setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
@@ -820,6 +824,7 @@ export default function Addrepresentative(props) {
     await dispatch(getHouseDataByHouseId(id));
     setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
     setSnackbarSeverity("success");
+    setComponentKey(prev => prev + 1);
   } catch (error) {
     console.error("Discard failed:", error);
     const errorMessage =
@@ -836,7 +841,7 @@ export default function Addrepresentative(props) {
 
 
   return (
-    <AppTheme>
+    <AppTheme key={componentKey}>
       {loading && (
         <Box
           sx={{
@@ -1631,12 +1636,22 @@ export default function Addrepresentative(props) {
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
-                        initialValue={term.summary || ""}
-                        onEditorChange={(content) =>
-                          handleEditorChange(content, termIndex)
-                        }
-                        onBlur={() => handleBlur(termIndex)}
+                        value={term.summary}
+                        onEditorChange={(content) => {
+                          setHouseTermData(prev =>
+                            prev.map((t, idx) =>
+                              idx === termIndex ? { ...t, summary: content } : t
+                            )
+                          );
+                          // Optionally update localChanges here too
+                          const fieldName = `term${termIndex}_summary`;
+                          setLocalChanges(prev =>
+                            prev.includes(fieldName) ? prev : [...prev, fieldName]
+                          );
+                        }}
+                        onBlur={() => {}}
                         init={{
+                          base_url: "/scorecard/admin/tinymce",
                           height: 250,
                           menubar: false,
                           plugins: [

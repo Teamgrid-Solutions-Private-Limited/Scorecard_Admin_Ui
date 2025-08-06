@@ -88,6 +88,7 @@ export default function AddSenator(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+   const [componentKey, setComponentKey] = useState(0);
 
   // console.log("User Role:", userRole);
   let senatorActivities =
@@ -235,6 +236,7 @@ export default function AddSenator(props) {
       await dispatch(getSenatorDataBySenetorId(id));
       setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
       setSnackbarSeverity("success");
+       setComponentKey(prev => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
@@ -760,13 +762,19 @@ export default function AddSenator(props) {
 
       await Promise.all(termPromises);
 
-      // Clear local changes
-      setEditedFields([]);
-      setLocalChanges([]);
-      // Reload data
 
-      await dispatch(getSenatorById(id)).unwrap();
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+      await dispatch(getSenatorById(id)).unwrap();
+
+
+      // Update originals to match latest backend data
+      if (senatorData?.currentSenator) {
+        setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
+      }
+      if (senator) {
+        setOriginalFormData(JSON.parse(JSON.stringify(senator)));
+      }
+      setLocalChanges([]);
 
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -850,7 +858,7 @@ export default function AddSenator(props) {
   );
 
   return (
-    <AppTheme>
+    <AppTheme key={componentKey}>
       {loading && (
         <Box
           sx={{
@@ -1002,6 +1010,7 @@ export default function AddSenator(props) {
                                 return `Term ${termNumber}: Scored Vote`;
                               }
                               if (category === "activitiesScore") {
+                                
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
                               return `Term ${termNumber}: ${fieldLabels[category] || category} Item ${itemNumber}`;
@@ -1650,11 +1659,21 @@ export default function AddSenator(props) {
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
-                        initialValue={term.summary || ""}
-                        onEditorChange={(content) =>
-                          handleEditorChange(content, termIndex)
-                        }
-                        onBlur={() => handleBlur(termIndex)}
+                        // initialValue={term.summary || ""}
+                       value={term.summary}
+                        onEditorChange={(content) => {
+                          setSenatorTermData(prev =>
+                            prev.map((t, idx) =>
+                              idx === termIndex ? { ...t, summary: content } : t
+                            )
+                          );
+                          // Optionally update localChanges here too
+                          const fieldName = `term${termIndex}_summary`;
+                          setLocalChanges(prev =>
+                            prev.includes(fieldName) ? prev : [...prev, fieldName]
+                          );
+                        }}
+                        onBlur={() => {}}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
