@@ -325,6 +325,8 @@ export default function Addrepresentative(props) {
         activitiesScore: [{ activityId: null, score: "" }],
         currentTerm: false,
         termId: null,
+        editedFields: [], // Initialize empty
+      fieldEditors: {}, // Initialize empty
         isNew: true, // Mark as new for tracking
       },
     ]);
@@ -462,52 +464,64 @@ export default function Addrepresentative(props) {
   }, [formData, originalFormData]);
 
   // Update your change tracking useEffect
-  useEffect(() => {
-    if (originalFormData && formData && originalTermData && houseTermData) {
-      const changes = [];
+ useEffect(() => {
+  if (originalFormData && formData && originalTermData && houseTermData) {
+    const changes = [];
 
-      // Track representative-level changes
-      Object.keys(formData).forEach((key) => {
-        if (key === "editedFields" || key === "fieldEditors") return;
-        if (compareValues(formData[key], originalFormData[key])) {
-          changes.push(key);
-        }
-      });
+    // Track house-level changes
+    Object.keys(formData).forEach((key) => {
+      if (key === "editedFields" || key === "fieldEditors") return;
+      if (compareValues(formData[key], originalFormData[key])) {
+        changes.push(key);
+      }
+    });
 
-      // Track term-level changes
-      houseTermData.forEach((term, termIndex) => {
-        if (term.isNew) return;
-        const originalTerm = originalTermData[termIndex] || {};
-
+    // Track term-level changes
+    houseTermData.forEach((term, termIndex) => {
+      // For new terms, track all fields that have values
+      if (term.isNew) {
         Object.keys(term).forEach((key) => {
-          // Skip internal and tracking fields
+          if (["_id", "houseId", "editedFields", "fieldEditors", "isNew"].includes(key))
+            return;
+
+          if (key === "votesScore" || key === "activitiesScore") {
+            if (term[key].some(item => Object.values(item).some(val => val !== "" && val !== null))) {
+              changes.push(`term${termIndex}_${key}`);
+            }
+          } else if (term[key] !== "" && term[key] !== null && term[key] !== false) {
+            changes.push(`term${termIndex}_${key}`);
+          }
+        });
+      } else {
+        // Existing term logic
+        const originalTerm = originalTermData[termIndex] || {};
+        Object.keys(term).forEach((key) => {
           if (["_id", "houseId", "editedFields", "fieldEditors"].includes(key))
             return;
 
-          // Handle array fields
           if (key === "votesScore" || key === "activitiesScore") {
             const current = JSON.stringify(term[key]);
             const original = JSON.stringify(originalTerm[key] || []);
             if (current !== original) {
               changes.push(`term${termIndex}_${key}`);
             }
-          }
-          // Handle regular fields
-          else if (compareValues(term[key], originalTerm[key])) {
+          } else if (compareValues(term[key], originalTerm[key])) {
             changes.push(`term${termIndex}_${key}`);
           }
         });
-      });
+      }
+    });
 
-      // Merge with any existing editedFields from backend
-      const backendEditedFields = Array.isArray(formData.editedFields)
-        ? formData.editedFields
-        : [];
-      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
+    // Merge with any existing editedFields from backend
+    const backendEditedFields = Array.isArray(formData.editedFields)
+      ? formData.editedFields
+      : [];
+    const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
 
-      setEditedFields(mergedChanges);
-    }
-  }, [formData, originalFormData, houseTermData, originalTermData]);
+    setEditedFields(mergedChanges);
+  }
+}, [formData, originalFormData, houseTermData, originalTermData]);
+
 
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token);
