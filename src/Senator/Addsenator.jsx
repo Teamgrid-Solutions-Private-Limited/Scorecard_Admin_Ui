@@ -690,28 +690,55 @@ export default function AddSenator(props) {
         setDeletedTermIds([]); // clear after delete
       }
 
-      const allChanges = [
-        ...new Set([
-          ...(Array.isArray(formData.editedFields)
-            ? formData.editedFields
-            : []),
-          ...localChanges,
-        ]),
-      ];
+          // Transform localChanges to track individual vote/activity edits
+    const detailedChanges = localChanges.map(change => {
+      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId")
+      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
+      if (voteMatch) {
+        const [, termIdx, voteIdx] = voteMatch;
+        return `term${termIdx}_votesScore_${voteIdx}`;
+      }
+     
+      // Handle activitiesScore changes
+      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
+      if (activityMatch) {
+        const [, termIdx, activityIdx] = activityMatch;
+        return `term${termIdx}_activitiesScore_${activityIdx}`;
+      }
+     
+      return change;
+    });
+ 
+    const allChanges = [
+      ...new Set([
+        ...(Array.isArray(formData.editedFields) ? formData.editedFields : []),
+        ...detailedChanges,
+      ]),
+    ];
+
+      // const allChanges = [
+      //   ...new Set([
+      //     ...(Array.isArray(formData.editedFields)
+      //       ? formData.editedFields
+      //       : []),
+      //     ...localChanges,
+      //   ]),
+      // ];
 
       // Update field editors with current changes
-      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      editedFields.forEach((field) => {
-        updatedFieldEditors[field] = currentEditor;
-      });
+     const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+    allChanges.forEach((field) => {
+      updatedFieldEditors[field] = currentEditor;
+    });
+ 
 
       // Prepare senator update
       const senatorUpdate = {
-        ...formData,
-        editedFields,
-        fieldEditors: updatedFieldEditors,
-        publishStatus: userRole === "admin" ? "published" : "under review",
-      };
+      ...formData,
+      editedFields: allChanges,
+      fieldEditors: updatedFieldEditors,
+      publishStatus: userRole === "admin" ? "published" : "under review",
+    };
 
       // Clear editedFields if publishing
       if (senatorUpdate.publishStatus === "published") {
@@ -742,14 +769,15 @@ export default function AddSenator(props) {
           voteId: vote.voteId === "" ? null : vote.voteId
         })).filter(vote => vote.voteId !== null); // Optional: remove null entries 
 
+              // Get changes specific to this term
+      const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
+
         const termUpdate = {
           ...term,
           votesScore: transformedVotesScore, // Use the transformed array
           isNew: false,
           senateId: id, //explicitly add it
-          editedFields: editedFields.filter((f) =>
-            f.startsWith(`term${index}_`)
-          ),
+          editedFields: termChanges,
           fieldEditors: updatedFieldEditors,
         };
 
@@ -1976,9 +2004,9 @@ export default function AddSenator(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yea</MenuItem>
-                                <MenuItem value="No">Nay</MenuItem>
-                                <MenuItem value="Neutral">Other</MenuItem>
+                                <MenuItem value="yes">Yea</MenuItem>
+                                <MenuItem value="no">Nay</MenuItem>
+                                <MenuItem value="other">Other</MenuItem>
                                 {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>

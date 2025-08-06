@@ -616,25 +616,53 @@ export default function Addrepresentative(props) {
         setDeletedTermIds([]); // clear after delete
       }
 
-      const allChanges = [
+       // Transform localChanges to track individual vote/activity edits
+    const detailedChanges = localChanges.map(change => {
+      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId" or "term1_votesScore_0_score")
+      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
+      if (voteMatch) {
+        const [, termIdx, voteIdx] = voteMatch;
+        return `term${termIdx}_votesScore_${voteIdx}`;
+      }
+     
+      // Handle activitiesScore changes
+      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
+      if (activityMatch) {
+        const [, termIdx, activityIdx] = activityMatch;
+        return `term${termIdx}_activitiesScore_${activityIdx}`;
+      }
+     
+      return change;
+    });
+
+    const allChanges = [
         ...new Set([
           ...(Array.isArray(formData.editedFields)
             ? formData.editedFields
             : []),
-          ...localChanges,
+          ...detailedChanges,
         ]),
       ];
 
+      // const allChanges = [
+      //   ...new Set([
+      //     ...(Array.isArray(formData.editedFields)
+      //       ? formData.editedFields
+      //       : []),
+      //     ...localChanges,
+      //   ]),
+      // ];
+
       // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      editedFields.forEach((field) => {
+      allChanges.forEach((field) => {
         updatedFieldEditors[field] = currentEditor;
       });
 
       // Prepare representative update
       const representativeUpdate = {
         ...formData,
-        editedFields,
+        editedFields:allChanges,
         fieldEditors: updatedFieldEditors,
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
@@ -670,14 +698,16 @@ export default function Addrepresentative(props) {
             voteId: vote.voteId.toString().trim() === "" ? null : vote.voteId,
             score: vote.score
           }));
+
+          // Get changes specific to this term
+      const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
+
         const termUpdate = {
           ...term,
           votesScore: cleanVotesScore,
           isNew: false,
           houseId: id,
-          editedFields: editedFields.filter((f) =>
-            f.startsWith(`term${index}_`)
-          ),
+          editedFields: termChanges,
           fieldEditors: updatedFieldEditors,
         };
 
@@ -1951,9 +1981,9 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yea</MenuItem>
-                                <MenuItem value="No">Nay</MenuItem>
-                                <MenuItem value="Neutral">Other</MenuItem>
+                                <MenuItem value="yes">Yea</MenuItem>
+                                <MenuItem value="no">Nay</MenuItem>
+                                <MenuItem value="other">Other</MenuItem>
                                 {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>
