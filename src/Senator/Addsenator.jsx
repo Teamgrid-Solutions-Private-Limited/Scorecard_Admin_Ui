@@ -88,6 +88,7 @@ export default function AddSenator(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+   const [componentKey, setComponentKey] = useState(0);
 
   // console.log("User Role:", userRole);
   let senatorActivities =
@@ -235,6 +236,7 @@ export default function AddSenator(props) {
       await dispatch(getSenatorDataBySenetorId(id));
       setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
       setSnackbarSeverity("success");
+       setComponentKey(prev => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
@@ -688,28 +690,55 @@ export default function AddSenator(props) {
         setDeletedTermIds([]); // clear after delete
       }
 
-      const allChanges = [
-        ...new Set([
-          ...(Array.isArray(formData.editedFields)
-            ? formData.editedFields
-            : []),
-          ...localChanges,
-        ]),
-      ];
+          // Transform localChanges to track individual vote/activity edits
+    const detailedChanges = localChanges.map(change => {
+      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId")
+      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
+      if (voteMatch) {
+        const [, termIdx, voteIdx] = voteMatch;
+        return `term${termIdx}_votesScore_${voteIdx}`;
+      }
+     
+      // Handle activitiesScore changes
+      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
+      if (activityMatch) {
+        const [, termIdx, activityIdx] = activityMatch;
+        return `term${termIdx}_activitiesScore_${activityIdx}`;
+      }
+     
+      return change;
+    });
+ 
+    const allChanges = [
+      ...new Set([
+        ...(Array.isArray(formData.editedFields) ? formData.editedFields : []),
+        ...detailedChanges,
+      ]),
+    ];
+
+      // const allChanges = [
+      //   ...new Set([
+      //     ...(Array.isArray(formData.editedFields)
+      //       ? formData.editedFields
+      //       : []),
+      //     ...localChanges,
+      //   ]),
+      // ];
 
       // Update field editors with current changes
-      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      editedFields.forEach((field) => {
-        updatedFieldEditors[field] = currentEditor;
-      });
+     const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+    allChanges.forEach((field) => {
+      updatedFieldEditors[field] = currentEditor;
+    });
+ 
 
       // Prepare senator update
       const senatorUpdate = {
-        ...formData,
-        editedFields,
-        fieldEditors: updatedFieldEditors,
-        publishStatus: userRole === "admin" ? "published" : "under review",
-      };
+      ...formData,
+      editedFields: allChanges,
+      fieldEditors: updatedFieldEditors,
+      publishStatus: userRole === "admin" ? "published" : "under review",
+    };
 
       // Clear editedFields if publishing
       if (senatorUpdate.publishStatus === "published") {
@@ -740,14 +769,15 @@ export default function AddSenator(props) {
           voteId: vote.voteId === "" ? null : vote.voteId
         })).filter(vote => vote.voteId !== null); // Optional: remove null entries 
 
+              // Get changes specific to this term
+      const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
+
         const termUpdate = {
           ...term,
           votesScore: transformedVotesScore, // Use the transformed array
           isNew: false,
           senateId: id, //explicitly add it
-          editedFields: editedFields.filter((f) =>
-            f.startsWith(`term${index}_`)
-          ),
+          editedFields: termChanges,
           fieldEditors: updatedFieldEditors,
         };
 
@@ -760,13 +790,19 @@ export default function AddSenator(props) {
 
       await Promise.all(termPromises);
 
-      // Clear local changes
-      setEditedFields([]);
-      setLocalChanges([]);
-      // Reload data
 
-      await dispatch(getSenatorById(id)).unwrap();
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+      await dispatch(getSenatorById(id)).unwrap();
+
+
+      // Update originals to match latest backend data
+      if (senatorData?.currentSenator) {
+        setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
+      }
+      if (senator) {
+        setOriginalFormData(JSON.parse(JSON.stringify(senator)));
+      }
+      setLocalChanges([]);
 
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -850,7 +886,7 @@ export default function AddSenator(props) {
   );
 
   return (
-    <AppTheme>
+    <AppTheme key={componentKey}>
       {loading && (
         <Box
           sx={{
@@ -1002,6 +1038,7 @@ export default function AddSenator(props) {
                                 return `Term ${termNumber}: Scored Vote`;
                               }
                               if (category === "activitiesScore") {
+                                
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
                               return `Term ${termNumber}: ${fieldLabels[category] || category} Item ${itemNumber}`;
@@ -1650,11 +1687,21 @@ export default function AddSenator(props) {
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
-                        initialValue={term.summary || ""}
-                        onEditorChange={(content) =>
-                          handleEditorChange(content, termIndex)
-                        }
-                        onBlur={() => handleBlur(termIndex)}
+                        // initialValue={term.summary || ""}
+                       value={term.summary}
+                        onEditorChange={(content) => {
+                          setSenatorTermData(prev =>
+                            prev.map((t, idx) =>
+                              idx === termIndex ? { ...t, summary: content } : t
+                            )
+                          );
+                          // Optionally update localChanges here too
+                          const fieldName = `term${termIndex}_summary`;
+                          setLocalChanges(prev =>
+                            prev.includes(fieldName) ? prev : [...prev, fieldName]
+                          );
+                        }}
+                        onBlur={() => {}}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -1957,9 +2004,9 @@ export default function AddSenator(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yea</MenuItem>
-                                <MenuItem value="No">Nay</MenuItem>
-                                <MenuItem value="Neutral">Other</MenuItem>
+                                <MenuItem value="yes">Yea</MenuItem>
+                                <MenuItem value="no">Nay</MenuItem>
+                                <MenuItem value="other">Other</MenuItem>
                                 {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>

@@ -88,6 +88,7 @@ export default function Addrepresentative(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+   const [componentKey, setComponentKey] = useState(0);
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -285,7 +286,7 @@ export default function Addrepresentative(props) {
     );
   };
 
-  const contentRefs = useRef([]);
+  // Remove contentRefs for summary
 
   const handleEditorChange = useCallback((content, termIndex) => {
     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
@@ -294,23 +295,19 @@ export default function Addrepresentative(props) {
     setLocalChanges((prev) =>
       prev.includes(fieldName) ? prev : [...prev, fieldName]
     );
-    if (!contentRefs.current[termIndex]) {
-      contentRefs.current[termIndex] = {};
-    }
-    contentRefs.current[termIndex].content = content;
   }, []);
 
   const handleBlur = useCallback((termIndex) => {
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-              ...term,
-              summary: contentRefs.current[termIndex]?.content || "",
-            }
-          : term
-      )
-    );
+    // setHouseTermData((prev) =>
+    //   prev.map((term, index) =>
+    //     index === termIndex
+    //       ? {
+    //           ...term,
+    //           summary: contentRefs.current[termIndex]?.content || "",
+    //         }
+    //       : term
+    //   )
+    // );
   }, []);
 
   // Add a new empty term
@@ -619,25 +616,53 @@ export default function Addrepresentative(props) {
         setDeletedTermIds([]); // clear after delete
       }
 
-      const allChanges = [
+       // Transform localChanges to track individual vote/activity edits
+    const detailedChanges = localChanges.map(change => {
+      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId" or "term1_votesScore_0_score")
+      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
+      if (voteMatch) {
+        const [, termIdx, voteIdx] = voteMatch;
+        return `term${termIdx}_votesScore_${voteIdx}`;
+      }
+     
+      // Handle activitiesScore changes
+      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
+      if (activityMatch) {
+        const [, termIdx, activityIdx] = activityMatch;
+        return `term${termIdx}_activitiesScore_${activityIdx}`;
+      }
+     
+      return change;
+    });
+
+    const allChanges = [
         ...new Set([
           ...(Array.isArray(formData.editedFields)
             ? formData.editedFields
             : []),
-          ...localChanges,
+          ...detailedChanges,
         ]),
       ];
 
+      // const allChanges = [
+      //   ...new Set([
+      //     ...(Array.isArray(formData.editedFields)
+      //       ? formData.editedFields
+      //       : []),
+      //     ...localChanges,
+      //   ]),
+      // ];
+
       // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      editedFields.forEach((field) => {
+      allChanges.forEach((field) => {
         updatedFieldEditors[field] = currentEditor;
       });
 
       // Prepare representative update
       const representativeUpdate = {
         ...formData,
-        editedFields,
+        editedFields:allChanges,
         fieldEditors: updatedFieldEditors,
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
@@ -673,14 +698,16 @@ export default function Addrepresentative(props) {
             voteId: vote.voteId.toString().trim() === "" ? null : vote.voteId,
             score: vote.score
           }));
+
+          // Get changes specific to this term
+      const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
+
         const termUpdate = {
           ...term,
           votesScore: cleanVotesScore,
           isNew: false,
           houseId: id,
-          editedFields: editedFields.filter((f) =>
-            f.startsWith(`term${index}_`)
-          ),
+          editedFields: termChanges,
           fieldEditors: updatedFieldEditors,
         };
 
@@ -694,10 +721,17 @@ export default function Addrepresentative(props) {
       await Promise.all(termPromises);
 
       // Reload data
-
       await dispatch(getHouseDataByHouseId(id)).unwrap();
-      setLocalChanges([]);
       await dispatch(getHouseById(id)).unwrap();
+
+      // Update originals to match latest backend data
+      if (houseData?.currentHouse) {
+        setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
+      }
+      if (house) {
+        setOriginalFormData(JSON.parse(JSON.stringify(house)));
+      }
+      setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
@@ -820,6 +854,7 @@ export default function Addrepresentative(props) {
     await dispatch(getHouseDataByHouseId(id));
     setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
     setSnackbarSeverity("success");
+    setComponentKey(prev => prev + 1);
   } catch (error) {
     console.error("Discard failed:", error);
     const errorMessage =
@@ -836,7 +871,7 @@ export default function Addrepresentative(props) {
 
 
   return (
-    <AppTheme>
+    <AppTheme key={componentKey}>
       {loading && (
         <Box
           sx={{
@@ -1631,12 +1666,22 @@ export default function Addrepresentative(props) {
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
-                        initialValue={term.summary || ""}
-                        onEditorChange={(content) =>
-                          handleEditorChange(content, termIndex)
-                        }
-                        onBlur={() => handleBlur(termIndex)}
+                        value={term.summary}
+                        onEditorChange={(content) => {
+                          setHouseTermData(prev =>
+                            prev.map((t, idx) =>
+                              idx === termIndex ? { ...t, summary: content } : t
+                            )
+                          );
+                          // Optionally update localChanges here too
+                          const fieldName = `term${termIndex}_summary`;
+                          setLocalChanges(prev =>
+                            prev.includes(fieldName) ? prev : [...prev, fieldName]
+                          );
+                        }}
+                        onBlur={() => {}}
                         init={{
+                          base_url: "/scorecard/admin/tinymce",
                           height: 250,
                           menubar: false,
                           plugins: [
@@ -1936,9 +1981,9 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yea</MenuItem>
-                                <MenuItem value="No">Nay</MenuItem>
-                                <MenuItem value="Neutral">Other</MenuItem>
+                                <MenuItem value="yes">Yea</MenuItem>
+                                <MenuItem value="no">Nay</MenuItem>
+                                <MenuItem value="other">Other</MenuItem>
                                 {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>
