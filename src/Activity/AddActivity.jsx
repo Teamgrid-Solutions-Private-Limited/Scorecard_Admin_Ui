@@ -298,10 +298,12 @@ export default function AddActivity(props) {
       }
 
       setOpenSnackbar(true);
+      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       setSnackbarMessage(`Operation failed: ${error.message || error}`);
       setSnackbarSeverity("error");
+      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
@@ -323,18 +325,18 @@ export default function AddActivity(props) {
 
     try {
       setLoading(true);
-     await dispatch(discardActivityChanges(id)).unwrap();
-    
-    // Refresh the data
-    await dispatch(getActivityById(id));
-      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+      await dispatch(discardActivityChanges(id)).unwrap();
+
+      // Refresh the data
+      await dispatch(getActivityById(id));
+      setSnackbarMessage("Changes discarded successfully");
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+        (typeof error === "string" ? error : "Failed to discard changes");
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -656,7 +658,7 @@ export default function AddActivity(props) {
                       {localChanges.map((field) => (
                         <ListItem
                           key={`local-${field}`}
-                          sx={{ py: 0.5, px: 1 }}
+                          sx={{ py: 0, px: 1 }}
                         >
                           <ListItemText
                             primary={
@@ -674,12 +676,7 @@ export default function AddActivity(props) {
                                 </Typography>
                               </Box>
                             }
-                            secondary={
-                              <Typography variant="caption" color="text.secondary">
-                                Edited just now
-                              </Typography>
-                            }
-                            sx={{ my: 0 }}
+                            
                           />
                         </ListItem>
                       ))}

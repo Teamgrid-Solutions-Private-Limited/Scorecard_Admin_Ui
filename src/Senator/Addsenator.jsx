@@ -150,6 +150,8 @@ export default function AddSenator(props) {
       const [termPrefix, actualField] = field.split("_");
       return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
         }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -169,7 +171,7 @@ export default function AddSenator(props) {
       summary: "",
       rating: "",
       votesScore: [{ voteId: "", score: "" }],
-      activitiesScore: [{ activityId: null, score: "" }],
+      activitiesScore: [{ activityId: "", score: "" }],
       currentTerm: false,
       termId: null,
     },
@@ -301,7 +303,7 @@ export default function AddSenator(props) {
             ...term,
             activitiesScore: [
               ...term.activitiesScore,
-              { activityId: null, score: "" },
+              { activityId: "", score: "" },
             ],
           }
           : term
@@ -392,7 +394,7 @@ export default function AddSenator(props) {
         summary: "",
         rating: "",
         votesScore: [{ voteId: "", score: "" }],
-        activitiesScore: [{ activityId: null, score: "" }],
+        activitiesScore: [{ activityId: "", score: "" }],
         currentTerm: false,
         termId: null,
         editedFields: [], // Initialize empty
@@ -487,10 +489,10 @@ export default function AddSenator(props) {
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
                 activityId:
-                  activity.activityId?._id || activity.activityId || null,
+                  activity.activityId?._id || activity.activityId || "",
                 score: activity.score || "",
               }))
-              : [{ activityId: null, score: "" }],
+              : [{ activityId: "", score: "" }],
         };
       });
 
@@ -503,7 +505,7 @@ export default function AddSenator(props) {
           summary: "",
           rating: "",
           votesScore: [{ voteId: "", score: "" }],
-          activitiesScore: [{ activityId: null, score: "" }],
+          activitiesScore: [{ activityId: "", score: "" }],
           currentTerm: false,
           termId: null,
           editedFields: [],
@@ -654,12 +656,16 @@ export default function AddSenator(props) {
     });
   };
 
-  const handleFileChange = (event) => {
+const handleFileChange = (event) => {
     const file = event.target.files[0];
+    const fieldName = "Photo"; // The field name you want to track
+    
+    if (!localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    }
+    
     setFormData((prev) => ({ ...prev, photo: file }));
-  };
-
-
+};
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
 
@@ -768,13 +774,18 @@ export default function AddSenator(props) {
           ...vote,
           voteId: vote.voteId === "" ? null : vote.voteId
         })).filter(vote => vote.voteId !== null); // Optional: remove null entries 
-
+         const transformedTrackedActivity = term.activitiesScore.map(activity => ({
+          ...activity,
+          activityId: activity.activityId === "" ? null : activity.activityId
+        })).filter(activity => activity.activityId !== null);
+console.log("Transformed Votes Score:", transformedTrackedActivity);
               // Get changes specific to this term
       const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
 
         const termUpdate = {
           ...term,
           votesScore: transformedVotesScore, // Use the transformed array
+            activitiesScore: transformedTrackedActivity,
           isNew: false,
           senateId: id, //explicitly add it
           editedFields: termChanges,
@@ -1145,7 +1156,7 @@ export default function AddSenator(props) {
                                     {localChanges.map((field) => (
                                       <ListItem
                                         key={`local-${field}`}
-                                        sx={{ py: 0.5, px: 1 }}
+                                        sx={{ py: 0, px: 1 }}
                                       >
                                         <ListItemText
                                           primary={
@@ -1163,12 +1174,12 @@ export default function AddSenator(props) {
                                               </Typography>
                                             </Box>
                                           }
-                                          secondary={
-                                            <Typography variant="caption" color="text.secondary">
-                                              Edited just now
-                                            </Typography>
-                                          }
-                                          sx={{ my: 0 }}
+                                          // secondary={
+                                          //   <Typography variant="caption" color="text.secondary">
+                                          //     Edited just now
+                                          //   </Typography>
+                                          // }
+                                          // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
@@ -1891,6 +1902,7 @@ export default function AddSenator(props) {
 
                     {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) => (
+                      activity.activityId != null ? (
                       <Grid
                         rowSpacing={2}
                         sx={{ width: "100%", mt: 2 }}
@@ -2020,6 +2032,7 @@ export default function AddSenator(props) {
                           </Grid>
                         </Grid>
                       </Grid>
+                      ) : null
                     ))}
                     {/* Activities Repeater Ends */}
 
