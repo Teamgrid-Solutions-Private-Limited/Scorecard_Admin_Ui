@@ -140,7 +140,7 @@ export default function Addrepresentative(props) {
       summary: "",
       rating: "",
       votesScore: [{ voteId: "", score: "" }],
-      activitiesScore: [{ activityId: null, score: "" }],
+      activitiesScore: [{ activityId: "", score: "" }],
       currentTerm: false,
       termId: null,
     },
@@ -237,7 +237,7 @@ export default function Addrepresentative(props) {
               ...term,
               activitiesScore: [
                 ...term.activitiesScore,
-                { activityId: null, score: "" },
+                { activityId: "", score: "" },
               ],
             }
           : term
@@ -322,7 +322,7 @@ export default function Addrepresentative(props) {
         summary: "",
         rating: "",
         votesScore: [{ voteId: "", score: "" }],
-        activitiesScore: [{ activityId: null, score: "" }],
+        activitiesScore: [{ activityId: "", score: "" }],
         currentTerm: false,
         termId: null,
         editedFields: [], // Initialize empty
@@ -427,7 +427,7 @@ export default function Addrepresentative(props) {
                     activity.activityId?._id || activity.activityId || null,
                   score: activity.score || "",
                 }))
-              : [{ activityId: null, score: "" }],
+              : [{ activityId: "", score: "" }],
         };
       });
 
@@ -440,7 +440,7 @@ export default function Addrepresentative(props) {
           summary: "",
           rating: "",
           votesScore: [{ voteId: "", score: "" }],
-          activitiesScore: [{ activityId: null, score: "" }],
+          activitiesScore: [{ activityId: "", score: "" }],
           currentTerm: false,
           termId: null,
           editedFields: [],
@@ -725,12 +725,19 @@ export default function Addrepresentative(props) {
             score: vote.score,
           }));
 
+           const transformedTrackedActivity = term.activitiesScore.map(activity => ({
+          ...activity,
+          activityId: activity.activityId === "" ? null : activity.activityId
+        })).filter(activity => activity.activityId !== null);
+console.log("Transformed Votes Score:", transformedTrackedActivity);
+
           // Get changes specific to this term
       const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
 
         const termUpdate = {
           ...term,
           votesScore: cleanVotesScore,
+          activitiesScore: transformedTrackedActivity,
           isNew: false,
           houseId: id,
           editedFields: termChanges,
@@ -1942,6 +1949,7 @@ export default function Addrepresentative(props) {
 
                     {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) => (
+                      activity.activityId != null ? (
                       <Grid
                         rowSpacing={2}
                         sx={{ width: "100%", mt: 2 }}
@@ -2070,6 +2078,7 @@ export default function Addrepresentative(props) {
                           </Grid>
                         </Grid>
                       </Grid>
+                      ) : null
                     ))}
                     {/* Activities Repeater Ends */}
 
