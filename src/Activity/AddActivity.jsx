@@ -658,7 +658,7 @@ export default function AddActivity(props) {
                       {localChanges.map((field) => (
                         <ListItem
                           key={`local-${field}`}
-                          sx={{ py: 0.5, px: 1 }}
+                          sx={{ py: 0, px: 1 }}
                         >
                           <ListItemText
                             primary={
@@ -676,12 +676,7 @@ export default function AddActivity(props) {
                                 </Typography>
                               </Box>
                             }
-                            secondary={
-                              <Typography variant="caption" color="text.secondary">
-                                Edited just now
-                              </Typography>
-                            }
-                            sx={{ my: 0 }}
+                            
                           />
                         </ListItem>
                       ))}

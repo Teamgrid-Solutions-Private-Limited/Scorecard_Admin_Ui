@@ -656,12 +656,16 @@ export default function AddSenator(props) {
     });
   };
 
-  const handleFileChange = (event) => {
+const handleFileChange = (event) => {
     const file = event.target.files[0];
+    const fieldName = "Photo"; // The field name you want to track
+    
+    if (!localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    }
+    
     setFormData((prev) => ({ ...prev, photo: file }));
-  };
-
-
+};
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
 
@@ -1119,7 +1123,7 @@ export default function AddSenator(props) {
                                     {localChanges.map((field) => (
                                       <ListItem
                                         key={`local-${field}`}
-                                        sx={{ py: 0.5, px: 1 }}
+                                        sx={{ py: 0, px: 1 }}
                                       >
                                         <ListItemText
                                           primary={
@@ -1137,12 +1141,12 @@ export default function AddSenator(props) {
                                               </Typography>
                                             </Box>
                                           }
-                                          secondary={
-                                            <Typography variant="caption" color="text.secondary">
-                                              Edited just now
-                                            </Typography>
-                                          }
-                                          sx={{ my: 0 }}
+                                          // secondary={
+                                          //   <Typography variant="caption" color="text.secondary">
+                                          //     Edited just now
+                                          //   </Typography>
+                                          // }
+                                          // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
