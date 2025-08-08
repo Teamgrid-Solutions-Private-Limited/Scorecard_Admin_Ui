@@ -88,7 +88,7 @@ export default function Addrepresentative(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-  const [componentKey, setComponentKey] = useState(0);
+   const [componentKey, setComponentKey] = useState(0);
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -873,31 +873,28 @@ export default function Addrepresentative(props) {
   const handleConfirmDiscard = async () => {
     setOpenDiscardDialog(false);
 
-    try {
-      setLoading(true);
-      await dispatch(discardHouseChanges(id)).unwrap();
-      await dispatch(getHouseById(id));
-      await dispatch(getHouseDataByHouseId(id));
-      setSnackbarMessage(
-        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
-      );
-      setSnackbarSeverity("success");
-      setComponentKey((prev) => prev + 1);
-    } catch (error) {
-      console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string"
-          ? error
-          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-    } finally {
-      setOpenSnackbar(true);
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    await dispatch(discardHouseChanges(id)).unwrap();
+    await dispatch(getHouseById(id));
+    await dispatch(getHouseDataByHouseId(id));
+    setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+    setSnackbarSeverity("success");
+    setComponentKey(prev => prev + 1);
+  } catch (error) {
+    console.error("Discard failed:", error);
+    const errorMessage =
+      error?.payload?.message ||
+      error?.message ||
+      (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+    setSnackbarMessage(errorMessage);
+    setSnackbarSeverity("error");
+  } finally {
+    setOpenSnackbar(true);
+    setLoading(false);
+  }
+};
+
 
   return (
     <AppTheme key={componentKey}>
@@ -1744,17 +1741,15 @@ export default function Addrepresentative(props) {
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term.summary}
                         onEditorChange={(content) => {
-                          setHouseTermData((prev) =>
+                          setHouseTermData(prev =>
                             prev.map((t, idx) =>
                               idx === termIndex ? { ...t, summary: content } : t
                             )
                           );
                           // Optionally update localChanges here too
                           const fieldName = `term${termIndex}_summary`;
-                          setLocalChanges((prev) =>
-                            prev.includes(fieldName)
-                              ? prev
-                              : [...prev, fieldName]
+                          setLocalChanges(prev =>
+                            prev.includes(fieldName) ? prev : [...prev, fieldName]
                           );
                         }}
                         onBlur={() => {}}

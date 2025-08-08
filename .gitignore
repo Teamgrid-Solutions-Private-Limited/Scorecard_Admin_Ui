@@ -9,5 +9,8 @@ dist
 dist-ssr
 *.local
 .env
+.env.development
+.env.production
+.env.local
 # ... other rules omitted for brevity ...
 /public/tinymce/
