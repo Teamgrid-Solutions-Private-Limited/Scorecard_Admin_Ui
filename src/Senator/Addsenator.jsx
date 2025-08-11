@@ -90,7 +90,7 @@ export default function AddSenator(props) {
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
    const [componentKey, setComponentKey] = useState(0);
 
-  // console.log("User Role:", userRole);
+
   let senatorActivities =
     activities?.filter((activity) => activity.type === "senate") || [];
 
@@ -119,7 +119,7 @@ export default function AddSenator(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-  console.log("User Role:", userRole);
+
 
   const formatRelativeTime = (date) => {
     const now = new Date();
@@ -778,7 +778,7 @@ const handleFileChange = (event) => {
           ...activity,
           activityId: activity.activityId === "" ? null : activity.activityId
         })).filter(activity => activity.activityId !== null);
-console.log("Transformed Votes Score:", transformedTrackedActivity);
+
               // Get changes specific to this term
       const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
 
