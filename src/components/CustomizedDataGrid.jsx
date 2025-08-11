@@ -42,7 +42,7 @@ export default function CustomizedDataGrid({
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-  console.log("User Role:", userRole);
+  
   useEffect(() => {
     dispatch(getAllSenatorData());
     dispatch(getAllHouseData());

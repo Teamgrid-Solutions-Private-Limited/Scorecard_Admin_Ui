@@ -80,7 +80,7 @@ export default function AddActivity(props) {
     userRole = "";
   }
 
-  console.log("User Role:", userRole);
+ 
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
@@ -103,7 +103,7 @@ export default function AddActivity(props) {
     return newVal !== oldVal;
   };
 
-  console.log("User Role:", userRole);
+  
   const preFillForm = () => {
     if (selectedActivity) {
       const newFormData = {
@@ -401,10 +401,7 @@ export default function AddActivity(props) {
 
   // 5. The banner already uses editedFields, so no change needed there
   useEffect(() => {
-    console.log("Current status:", currentStatus);
-    console.log("Edited fields:", editedFields);
-    console.log("Original data:", originalFormData);
-    console.log("data:", formData);
+    
   }, [currentStatus, editedFields, originalFormData, formData]);
   return (
     <AppTheme>

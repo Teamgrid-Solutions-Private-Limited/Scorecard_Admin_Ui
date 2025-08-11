@@ -74,7 +74,7 @@ export default function Representative(props) {
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+    
   const [partyFilter, setPartyFilter] = useState([]);
   const [districtFilter, setDistrictFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
@@ -139,7 +139,7 @@ export default function Representative(props) {
         };
       });
 
-      console.log("Merged Houses with termName:", merged);
+      
       setMergedHouses(merged);
     }
   }, [houses, houseData, terms]);

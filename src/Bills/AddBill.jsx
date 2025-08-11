@@ -106,7 +106,7 @@ export default function AddBill(props) {
     return newVal !== oldVal;
   };
 
-  console.log("User Role:", userRole);
+
   const preFillForm = () => {
     if (selectedVote) {
       const termId = selectedVote.termId?._id || "";
@@ -401,10 +401,7 @@ export default function AddBill(props) {
   );
 
   useEffect(() => {
-    console.log("Current status:", currentStatus);
-    console.log("Edited fields:", editedFields);
-    console.log("Original data:", originalFormData);
-    console.log("Form data:", formData);
+    
   }, [currentStatus, editedFields, originalFormData, formData]);
 
   return (
