@@ -32,7 +32,6 @@ import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import {
-  Alert,
   Dialog,
   DialogActions,
   DialogContent,
@@ -52,6 +51,11 @@ import { jwtDecode } from "jwt-decode";
 import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  const { ownerState, ...alertProps } = props;
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...alertProps} />;
+});
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -429,8 +433,9 @@ export default function AddActivity(props) {
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        sx={{ "& .MuiClickAwayListener-root": { all: "inherit" } }}
       >
-        <MuiAlert
+        <Alert
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
           sx={{ width: "100%" }}
@@ -438,7 +443,7 @@ export default function AddActivity(props) {
           variant="filled"
         >
           {snackbarMessage}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
