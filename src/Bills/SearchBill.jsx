@@ -148,7 +148,7 @@ const handleSearch = async () => {
         bills: [bill],
         
       });
-      // console.log("Bill saved successfully:", response.data);
+      
 
       // alert("Bill saved successfully");
 

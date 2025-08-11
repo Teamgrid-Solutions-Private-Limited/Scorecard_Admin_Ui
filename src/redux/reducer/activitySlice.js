@@ -50,7 +50,7 @@ export const getActivityById = createAsyncThunk(
           headers: { "x-protected-key": "MySuperSecretApiKey123" },
         }
       );
-      console.log("GetActivityById", response.data);
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -253,7 +253,7 @@ const activitySlice = createSlice({
       state.error = null;
     });
     builder.addCase(updateActivityStatus.fulfilled, (state, action) => {
-      console.log("Payload:", action.payload);
+      
       state.loading = false;
       const updated = action.payload.activity;
 

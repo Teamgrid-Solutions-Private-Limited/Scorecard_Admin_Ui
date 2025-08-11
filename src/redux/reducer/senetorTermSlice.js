@@ -6,11 +6,11 @@ import { API_URL } from '../API';
 export const createSenatorData = createAsyncThunk(
   'senatorData/createSenatorData',
   async (data, { rejectWithValue }) => {
-    console.log("createSenatorData",data);
+   
     
     try {
       const response = await axios.post(`${API_URL}/senatorData/senator-data/create/`, data);
-      console.log(response);
+     
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -53,7 +53,7 @@ export const getSenatorDataBySenetorId = createAsyncThunk(
       const response = await axios.get(`${API_URL}/senatorData/senator-data/viewbysenator/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-      console.log("getSenatorDataBySenetorId",response.data.info);
+     
       return response.data.info;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -64,11 +64,11 @@ export const getSenatorDataBySenetorId = createAsyncThunk(
 export const updateSenatorData = createAsyncThunk(
   'senatorData/updateSenatorData',
   async ({ id, data }, { rejectWithValue }) => {
-    console.log("updateSenatorData",id,data);
+   
     
     try {
       const response = await axios.put(`${API_URL}/senatorData/senator-data/update/${id}`, data);
-      console.log(response);
+      
       
       return response.data;
     } catch (error) {
@@ -82,7 +82,7 @@ export const deleteSenatorData = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`${API_URL}/senatorData/senator-data/delete/${id}`);
-      console.log("deleteSenatorData",response.data);
+     
       return response.data;
 
     } catch (error) {

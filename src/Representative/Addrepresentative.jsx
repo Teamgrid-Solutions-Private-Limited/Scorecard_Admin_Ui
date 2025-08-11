@@ -729,7 +729,7 @@ export default function Addrepresentative(props) {
           ...activity,
           activityId: activity.activityId === "" ? null : activity.activityId
         })).filter(activity => activity.activityId !== null);
-console.log("Transformed Votes Score:", transformedTrackedActivity);
+
 
           // Get changes specific to this term
       const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));

@@ -71,7 +71,7 @@ export default function Senator(props) {
     loading,
     error,
   } = useSelector((state) => state.senator || {});
-  // console.log("Redux State:", { senators, loading, error });
+
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,7 +86,7 @@ export default function Senator(props) {
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+     
   const [partyFilter, setPartyFilter] = useState([]);
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
@@ -150,10 +150,10 @@ export default function Senator(props) {
         };
       });
       setMergedSenators(merged);
-      console.log("Merged Senators with termname:", merged);
+  
     }
   }, [senators, senatorData, terms]);
-  console.log(" Senators:", senators);
+ 
   // Build list of years from 2015 to current year
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -411,7 +411,7 @@ export default function Senator(props) {
     statusFilter.length;
    const handleToggleStatusSenator = (senator) => {
     const newStatus = senator.publishStatus === "published" ? "draft" : "published";
-    console.log("Toggling status:", senator.publishStatus, "→", newStatus);
+   
 
     dispatch(updateSenatorStatus({ id: senator._id, publishStatus: newStatus }))
       .then(() => {
