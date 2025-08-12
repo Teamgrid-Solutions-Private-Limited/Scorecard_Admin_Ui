@@ -1,39 +1,90 @@
-# Scorecard Admin UI - Vite.js example
+# Scorecard Admin UI
 
-## How to use
+A comprehensive admin dashboard built with React, Material-UI, and Vite.js for managing legislative scorecards, representatives, senators, and bills.
 
-Download the example [or clone the repo](https://github.com/your-repo/scorecard-admin-ui):
+## Features
 
-<!-- #repo-reference -->
+- **Authentication System**: User login and management
+- **Dashboard**: Overview with statistics and charts
+- **Bills Management**: Add, search, and manage legislative bills
+- **Representatives/Senators**: Manage legislative representatives and senators
+- **Redux State Management**: Centralized state management
+- **Custom Themes**: Light/dark mode and extensive theme customization
+- **Responsive Design**: Works on desktop and mobile devices
 
+## Technology Stack
+
+- React 18
+- Material-UI (MUI) v6
+- Vite.js
+- Redux Toolkit
+- React Router
+- Emotion (CSS-in-JS)
+- TinyMCE (rich text editor)
+
+## Installation
+
+1. Clone the repository:
 ```bash
-curl https://codeload.github.com/your-repo/scorecard-admin-ui/tar.gz/master | tar -xz --strip=2 scorecard-admin-ui-master/examples/scorecard-admin-ui-vite
-cd scorecard-admin-ui-vite
+git clone https://github.com/Teamgrid-Solutions-Private-Limited/Scorecard_Admin_Ui.git
+cd Scorecard_Admin_Ui
 ```
 
-Install it and run:
-
+2. Install dependencies:
 ```bash
 npm install
+```
+
+3. Start development server:
+```bash
 npm run dev
 ```
 
-or:
+## Available Scripts
 
-<!-- #repo-reference -->
+- `npm run dev`: Starts development server
+- `npm run build`: Builds for production
+- `npm run preview`: Previews production build locally
+- `npm run lint`: Runs ESLint
+- `npm run format`: Formats code with Prettier
 
-[![Edit on StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/your-repo/scorecard-admin-ui/tree/master/examples/scorecard-admin-ui-vite)
+## Project Structure
 
-[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/github/your-repo/scorecard-admin-ui/tree/master/examples/scorecard-admin-ui-vite)
+```
+scorecard_admin_ui/
+├── src/
+│   ├── App.jsx            # Main application component
+│   ├── main.jsx           # Application entry point
+│   ├── Authentication/    # Auth components
+│   ├── Dashboard/         # Dashboard components
+│   ├── Bills/             # Bills management
+│   ├── Representative/    # Representative management
+│   ├── Senator/           # Senator management
+│   ├── redux/             # Redux store and slices
+│   ├── shared-theme/      # Theme configuration
+│   └── assets/            # Static assets
+├── public/                # Public assets
+└── vite.config.js         # Vite configuration
+```
 
-## The idea behind the example
+## Configuration
+The project includes environment files (.env.production, .env.development) in version control as they only contain:
 
-This example uses [Vite.js](https://github.com/vitejs/vite).
-It includes `@mui/material` and its peer dependencies, including [Emotion](https://emotion.sh/docs/introduction), the default style engine in Material UI v6.
+Public-facing backend URLs
 
-## What's next?
+Environment variables should be placed in `.env` file:
 
-<!-- #host-reference -->
+```env
+VITE_API_BASE_URL=https://api.example.com
+VITE_AUTH_ENDPOINT=/auth
+```
 
-You now have a working example project.
-You can head back to the documentation and continue by browsing the [templates](https://next.mui.com/material-ui/getting-started/templates/) section.
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+
