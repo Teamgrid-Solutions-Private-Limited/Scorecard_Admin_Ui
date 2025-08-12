@@ -9,7 +9,7 @@ import { jwtDecode } from "jwt-decode";
 export const createHouse = createAsyncThunk(
   "house/createHouse",
   async (formData, { rejectWithValue }) => {
-    console.log("createHouse", formData);
+   
 
     try {
       const response = await axios.post(`${API_URL}/house/house/create`, formData, {
@@ -17,7 +17,7 @@ export const createHouse = createAsyncThunk(
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log(response);
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -33,7 +33,7 @@ export const getAllHouses = createAsyncThunk(
       const response = await axios.get(`${API_URL}/house/house/view`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-      console.log(response);
+   
 
       return response.data;
     } catch (error) {
@@ -50,7 +50,7 @@ export const getHouseById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/house/house/viewId/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-      console.log("GetHouseById", response.data);
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -105,7 +105,7 @@ export const deleteHouse = createAsyncThunk(
           },
         }
       );
-      console.log("DeleteHouse", response.data);
+      
       return response.data;
     } catch (error) {
       console.error("DeleteHouseError", error);

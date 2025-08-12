@@ -6,11 +6,11 @@ import { API_URL } from '../API';
 export const createHouseData = createAsyncThunk(
   'houseData/createHouseData',
   async (data, { rejectWithValue }) => {
-    console.log("createHouseData",data);
+    
     
     try {
       const response = await axios.post(`${API_URL}/houseData/house-data/create/`, data);
-      console.log(response);
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -53,10 +53,10 @@ export const getHouseDataByHouseId = createAsyncThunk(
       const response = await axios.get(`${API_URL}/houseData/house-data/viewbyhouse/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-      console.log("house tERM",response.data.info)
+     
       return response.data.info;
     } catch (error) {
-      console.log("house ERROR",error.response.data)
+      
       return rejectWithValue(error.response.data);
     }
   }
@@ -64,11 +64,11 @@ export const getHouseDataByHouseId = createAsyncThunk(
 export const updateHouseData = createAsyncThunk(
   'houseData/updateHouseData',
   async ({ id, data }, { rejectWithValue }) => {
-    console.log("updateHouseData",id,data);
+    
     
     try {
       const response = await axios.put(`${API_URL}/houseData/house-data/update/${id}`, data);
-      console.log(response);
+      
       
       return response.data;
     } catch (error) {

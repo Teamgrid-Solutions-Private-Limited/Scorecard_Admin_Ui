@@ -9,7 +9,7 @@ import { jwtDecode } from "jwt-decode";
 export const createSenator = createAsyncThunk(
   "senators/createSenator",
   async (formData, { rejectWithValue }) => {
-    console.log("slice", formData);
+   
 
     try {
       const response = await axios.post(
@@ -21,7 +21,7 @@ export const createSenator = createAsyncThunk(
           },
         }
       );
-      console.log(response);
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -34,20 +34,18 @@ export const getAllSenators = createAsyncThunk(
   "senators/getAllSenators",
   async (_, { rejectWithValue }) => {
     try {
-      //  console.log('Making API request to:', `${API_URL}/senator/senators/view`);
+     
       const response = await axios.get(`${API_URL}/senator/senators/view`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-      //console.log('Full API Response:', response);
-      //console.log('Response Data:', response.data);
-      //console.log('Response Info:', response.data?.info);
+     
 
       if (!response.data) {
         throw new Error('No data received from API');
       }
 
       const senators = response.data;
-      //console.log('Processed Senators Data:', senators);
+     
 
       if (!Array.isArray(senators)) {
         throw new Error('Received data is not an array');
@@ -227,7 +225,7 @@ const senatorSlice = createSlice({
       .addCase(getAllSenators.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
-        // console.log('Reducer: Setting senators with payload:', action.payload);
+       
         state.senators = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(getAllSenators.rejected, (state, action) => {

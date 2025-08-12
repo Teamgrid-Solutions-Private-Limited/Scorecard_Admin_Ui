@@ -65,7 +65,7 @@ export default function Activity(props) {
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+
 
       const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
@@ -156,7 +156,7 @@ const statusOptions = ["published", "draft", "under review"];
 
   const handleToggleStatusAct = (activity) => {
     const newStatus = activity.status === "published" ? "draft" : "published";
-    console.log("Toggling status:", activity.status, "→", newStatus);
+ 
 
     dispatch(updateActivityStatus({ id: activity._id, status: newStatus }))
       .then(() => {

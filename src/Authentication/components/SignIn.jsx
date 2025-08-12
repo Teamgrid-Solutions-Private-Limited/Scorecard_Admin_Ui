@@ -109,7 +109,7 @@ export default function SignIn() {
     axios
       .post(`${API_URL}/user/login`, info)
       .then((res) => {
-        console.log(res.data);
+        
 
         if (res.data.message === "Login successful" && res.data.token) {
           localStorage.setItem("token", res.data.token);
@@ -121,7 +121,7 @@ export default function SignIn() {
         }
       })
       .catch((err) => {
-        console.log(err);
+       
         handleSnackbarOpen("Invalid username or password","warning")
       });
   };

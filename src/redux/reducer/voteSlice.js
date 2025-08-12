@@ -7,7 +7,7 @@ import { jwtDecode } from "jwt-decode";
 export const createVote = createAsyncThunk(
   "votes/createVote",
   async (formData, { rejectWithValue }) => {
-    console.log("CreateVote", formData);
+   
 
     try {
       const response = await axios.post(
@@ -17,7 +17,7 @@ export const createVote = createAsyncThunk(
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      console.log(response);
+      
 
       return response.data;
     } catch (error) {
@@ -49,7 +49,7 @@ export const getVoteById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/vote/votes/viewId/${id}`, {
         headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
-      console.log("GetVoteById", response.data);
+     
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -61,14 +61,14 @@ export const getVoteById = createAsyncThunk(
 export const updateVote = createAsyncThunk(
   "votes/updateVote",
   async ({ id, updatedData }, { rejectWithValue }) => {
-    console.log("UpdateVote", id, updatedData);
+  
 
     try {
       const response = await axios.put(
         `${API_URL}/vote/votes/update/${id}`,
         updatedData
       );
-      console.log(response);
+     
 
       return response.data;
     } catch (error) {

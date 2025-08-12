@@ -74,6 +74,7 @@ export default function AddBill(props) {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
 
+
   const fieldLabels = {
     type: "Type",
     title: "Title",
@@ -105,7 +106,7 @@ export default function AddBill(props) {
     return newVal !== oldVal;
   };
 
-  console.log("User Role:", userRole);
+
   const preFillForm = () => {
     if (selectedVote) {
       const termId = selectedVote.termId?._id || "";
@@ -309,10 +310,12 @@ export default function AddBill(props) {
       }
 
       setOpenSnackbar(true);
+      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       setSnackbarMessage(`Operation failed: ${error.message || error}`);
       setSnackbarSeverity("error");
+      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
@@ -398,10 +401,7 @@ export default function AddBill(props) {
   );
 
   useEffect(() => {
-    console.log("Current status:", currentStatus);
-    console.log("Edited fields:", editedFields);
-    console.log("Original data:", originalFormData);
-    console.log("Form data:", formData);
+    
   }, [currentStatus, editedFields, originalFormData, formData]);
 
   return (
@@ -647,7 +647,7 @@ export default function AddBill(props) {
                       {localChanges.map((field) => (
                         <ListItem
                           key={`local-${field}`}
-                          sx={{ py: 0.5, px: 1 }}
+                          sx={{ py: 0, px: 1 }}
                         >
                           <ListItemText
                             primary={
@@ -665,12 +665,12 @@ export default function AddBill(props) {
                                 </Typography>
                               </Box>
                             }
-                            secondary={
-                              <Typography variant="caption" color="text.secondary">
-                                Edited just now
-                              </Typography>
-                            }
-                            sx={{ my: 0 }}
+                            // secondary={
+                            //   <Typography variant="caption" color="text.secondary">
+                            //     Edited just now
+                            //   </Typography>
+                            // }
+                            // sx={{ my: 0 }}
                           />
                         </ListItem>
                       ))}
