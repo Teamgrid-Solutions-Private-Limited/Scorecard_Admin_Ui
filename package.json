@@ -27,6 +27,7 @@
     "clsx": "latest",
     "date-fns": "^4.1.0",
     "dayjs": "latest",
+    "form-data": "4.0.4",
     "fs-extra": "^11.3.1",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
