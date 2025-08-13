@@ -178,30 +178,48 @@ export default function AddSenator(props) {
   ]);
 
   const handleTermChange = (e, termIndex) => {
+    const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
-    if (!localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    }
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? { ...term, [e.target.name]: e.target.value }
-          : term
-      )
+       setSenatorTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex ? { ...term, [name]: value } : term
     );
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const isActualChange = compareValues(value, originalTerm[name]);
+    
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+    }
+    
+    return newTerms;
+  });
+   
   };
   const handleSwitchChange = (e, termIndex) => {
-    const fieldName = `term${termIndex}_${e.target.name}`;
-    if (!localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    }
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? { ...term, [e.target.name]: e.target.checked }
-          : term
-      )
+    const { name, checked } = e.target;
+     const fieldName = `term${termIndex}_${name}`;
+    
+    setSenatorTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex ? { ...term, [name]: checked } : term
     );
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const isActualChange = compareValues(checked, originalTerm[name]);
+    
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+    }
+    
+    return newTerms;
+  });
   };
 
   const handleAddVote = (termIndex) => {
@@ -265,35 +283,66 @@ export default function AddSenator(props) {
       )
     );
   };
+  // const handleVoteChange = (termIndex, voteIndex, field, value) => {
+  //   // Construct the field name for change tracking
+  //   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
+
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) =>
+  //     prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
+  //   );
+
+  //   // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
+
+  //   // setLocalChanges((prev) =>
+  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   // );
+
+  //   // Update the actual term data
+  //   setSenatorTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //           ...term,
+  //           votesScore: term.votesScore.map((vote, i) =>
+  //             i === voteIndex ? { ...vote, [field]: value } : vote
+  //           ),
+  //         }
+  //         : term
+  //     )
+  //   );
+  // };
+
+
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
-    // Construct the field name for change tracking
-    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
-
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
-    );
-
-    // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
-
-    // setLocalChanges((prev) =>
-    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-    // );
-
-    // Update the actual term data
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+  const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
+  
+  setSenatorTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
             votesScore: term.votesScore.map((vote, i) =>
               i === voteIndex ? { ...vote, [field]: value } : vote
             ),
           }
-          : term
-      )
+        : term
     );
-  };
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalVote = originalTerm.votesScore?.[voteIndex] || {};
+    const isActualChange = compareValues(value, originalVote[field]);
+    
+    if (isActualChange && !localChanges.includes(voteChangeId)) {
+      setLocalChanges((prev) => [...prev, voteChangeId]);
+    } else if (!isActualChange && localChanges.includes(voteChangeId)) {
+      setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
+    }
+    
+    return newTerms;
+  });
+};
 
   const handleAddActivity = (termIndex) => {
     setSenatorTermData((prev) =>
@@ -325,36 +374,68 @@ export default function AddSenator(props) {
       )
     );
   };
-  const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    // Construct the field name for change tracking
-    // Construct a unique identifier for this activity change
-    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex+1}`;
+  // const handleActivityChange = (termIndex, activityIndex, field, value) => {
+  //   // Construct the field name for change tracking
+  //   // Construct a unique identifier for this activity change
+  //   const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex+1}`;
     
-    // Update local changes if not already tracked
-    setLocalChanges((prev) => 
-      prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
-    );
-    // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) => 
+  //     prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
+  //   );
+  //   // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
 
-    // Update local changes if not already tracked
-    // setLocalChanges((prev) =>
-    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-    // );
+  //   // Update local changes if not already tracked
+  //   // setLocalChanges((prev) =>
+  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   // );
 
-    // Update the actual term data
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-            ...term,
-            activitiesScore: term.activitiesScore.map((activity, i) =>
-              i === activityIndex ? { ...activity, [field]: value } : activity
-            ),
-          }
-          : term
-      )
-    );
-  };
+  //   // Update the actual term data
+  //   setSenatorTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //           ...term,
+  //           activitiesScore: term.activitiesScore.map((activity, i) =>
+  //             i === activityIndex ? { ...activity, [field]: value } : activity
+  //           ),
+  //         }
+  //         : term
+  //     )
+  //   );
+  // };
+
+const handleActivityChange = (termIndex, activityIndex, field, value) => {
+  const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
+
+  setSenatorTermData((prev) => {
+    const newTerms = prev.map((term, idx) => {
+      if (idx !== termIndex) return term;
+
+      const newActivities = term.activitiesScore.map((activity, i) => 
+        i === activityIndex ? { ...activity, [field]: value } : activity
+      );
+
+      return { ...term, activitiesScore: newActivities };
+    });
+
+    // Compare with original data if available
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
+    const isActualChange = compareValues(value, originalActivity[field]);
+
+    setLocalChanges((prevChanges) => {
+      if (isActualChange && !prevChanges.includes(activityChangeId)) {
+        return [...prevChanges, activityChangeId];
+      } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
+        return prevChanges.filter(f => f !== activityChangeId);
+      }
+      return prevChanges;
+    });
+
+    return newTerms;
+  });
+};
 
   const contentRefs = useRef([]);
   const handleEditorChange = useCallback((content, termIndex) => {
@@ -410,6 +491,14 @@ export default function AddSenator(props) {
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
       }
+
+       // Remove any tracked changes for this term
+    setLocalChanges((prevChanges) => 
+      prevChanges.filter(
+        change => !change.startsWith(`term${termIndex}_`)
+      )
+    );
+
       return prev.filter((_, index) => index !== termIndex);
     });
   };
@@ -644,16 +733,25 @@ export default function AddSenator(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    // Track the changed field
-    if (!localChanges.includes(name)) {
+
+     setFormData((prev) => {
+    const newData = { ...prev, [name]: value };
+    
+    // Compare with original data to determine if this is an actual change
+    const isActualChange = originalFormData 
+      ? compareValues(newData[name], originalFormData[name])
+      : true;
+    
+    // Update local changes only if it's a real change
+    if (isActualChange && !localChanges.includes(name)) {
       setLocalChanges((prev) => [...prev, name]);
+    } else if (!isActualChange && localChanges.includes(name)) {
+      // If it's reverted to original, remove from changes
+      setLocalChanges((prev) => prev.filter(field => field !== name));
     }
-
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-
-      return newData;
-    });
+    
+    return newData;
+  });
   };
 
 const handleFileChange = (event) => {
@@ -666,17 +764,42 @@ const handleFileChange = (event) => {
     
     setFormData((prev) => ({ ...prev, photo: file }));
 };
+  // const handleStatusChange = (status) => {
+  //   const fieldName = "status"; // The field being changed
+
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) =>
+  //     prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   );
+
+  //   // Update the form data
+  //   setFormData((prev) => ({ ...prev, status }));
+  // };
+
   const handleStatusChange = (status) => {
-    const fieldName = "status"; // The field being changed
+  const fieldName = "status"; // The field being changed
 
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
-    );
+  setFormData((prev) => {
+    const newData = { ...prev, status };
+    
+    // Compare with original value to determine if this is an actual change
+    const isActualChange = originalFormData 
+      ? status !== originalFormData.status
+      : true;
 
-    // Update the form data
-    setFormData((prev) => ({ ...prev, status }));
-  };
+    // Update local changes based on whether it's an actual change
+    setLocalChanges((prevChanges) => {
+      if (isActualChange && !prevChanges.includes(fieldName)) {
+        return [...prevChanges, fieldName];
+      } else if (!isActualChange && prevChanges.includes(fieldName)) {
+        return prevChanges.filter(field => field !== fieldName);
+      }
+      return prevChanges;
+    });
+
+    return newData;
+  });
+};
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -1599,6 +1722,7 @@ const handleFileChange = (event) => {
                       <FormControl fullWidth>
                         <Select
                           value={term.termId || ""}
+                          // value={terms.some(t => t._id === term.termId) ? term.termId : ''}
                           id="term"
                           name="termId"
                           onChange={(event) =>
