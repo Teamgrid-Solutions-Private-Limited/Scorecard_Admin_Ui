@@ -1018,6 +1018,19 @@ const handleFileChange = (event) => {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+ 
+const getValidTermId = (termId) => {
+    const termExists = terms?.some(t => t._id === termId);
+    return termExists ? termId : "";
+  };
+
+   // Add this helper function to validate activity IDs
+  const getValidVoteId = (voteId) => {
+  if (!votes || votes.length === 0) return "";
+  const voteExists = votes.some(v => v._id === voteId);
+  return voteExists ? voteId : "";
+};
+ 
 
   return (
     <AppTheme key={componentKey}>
@@ -1721,7 +1734,8 @@ const handleFileChange = (event) => {
                     <Grid size={2.2}>
                       <FormControl fullWidth>
                         <Select
-                          value={term.termId || ""}
+                          // value={term.termId || ""}
+                          value={getValidTermId(term.termId?._id || term.termId || "")}
                           // value={terms.some(t => t._id === term.termId) ? term.termId : ''}
                           id="term"
                           name="termId"
@@ -1900,7 +1914,8 @@ const handleFileChange = (event) => {
                             <Grid size={7.5}>
                               <FormControl fullWidth>
                                 <Select
-                                  value={vote.voteId || ""}
+                                  // value={vote.voteId || ""}
+                                   value={getValidVoteId(vote.voteId)}
                                   onChange={(event) =>
                                     handleVoteChange(
                                       termIndex,
@@ -1972,7 +1987,7 @@ const handleFileChange = (event) => {
                             <Grid size={1.6}>
                               <FormControl fullWidth>
                                 <Select
-                                  value={vote.score || ""}
+                                  value={vote.score || ""}                                  
                                   onChange={(event) =>
                                     handleVoteChange(
                                       termIndex,
@@ -2054,7 +2069,11 @@ const handleFileChange = (event) => {
                           <Grid size={7.5}>
                             <FormControl fullWidth>
                               <Select
-                                value={activity.activityId || ""}
+                                // value={activity.activityId || ""}
+                                 value={senatorActivities.some(a => a._id === activity.activityId)
+                                    ? activity.activityId
+                                    : ""}
+ 
                                 onChange={(event) =>
                                   handleActivityChange(
                                     termIndex,
