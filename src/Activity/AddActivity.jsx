@@ -11,6 +11,7 @@ import {
   discardActivityChanges,
 } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { API_URL } from "../redux/API";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -52,6 +53,7 @@ import { jwtDecode } from "jwt-decode";
 import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -70,6 +72,7 @@ export default function AddActivity(props) {
   });
   const [fieldEditors, setFieldEditors] = useState({});
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   // Defensive userRole extraction
   const token = localStorage.getItem("token");
   let userRole = "";
@@ -124,6 +127,12 @@ export default function AddActivity(props) {
 
       setFormData(newFormData);
       setOriginalFormData(newFormData); // Store the original data
+      
+      // Reset selectedFile when editing existing activity
+      setSelectedFile(null);
+      
+      // Reset editedFields when editing existing activity
+      setEditedFields([]);
     }
   };
 
@@ -131,11 +140,16 @@ export default function AddActivity(props) {
   useEffect(() => {
     if (selectedActivity) {
       preFillForm();
-      setEditedFields(
-        Array.isArray(selectedActivity.editedFields)
-          ? selectedActivity.editedFields
-          : []
-      );
+      // Only set editedFields from backend on initial load
+      // This prevents overwriting local unsaved changes
+      if (isInitialLoad.current) {
+        setEditedFields(
+          Array.isArray(selectedActivity.editedFields)
+            ? selectedActivity.editedFields
+            : []
+        );
+        isInitialLoad.current = false;
+      }
     }
   }, [selectedActivity]);
 
@@ -160,10 +174,12 @@ export default function AddActivity(props) {
 
     return () => {
       dispatch(clearActivityState());
+      setSelectedFile(null);
     };
   }, [id, dispatch]);
 
   const editorRef = useRef(null);
+  const isInitialLoad = useRef(true);
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
     clipPath: "inset(50%)",
@@ -207,6 +223,29 @@ export default function AddActivity(props) {
       return newData;
     });
   };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      // Set the file path in the readMore field
+      setFormData(prev => ({
+        ...prev,
+        readMore: file.name
+      }));
+      
+      // Update editedFields if this is a change
+      if (originalFormData && file.name !== originalFormData.readMore) {
+        const changes = Object.keys(formData).filter(key => {
+          if (key === 'readMore') {
+            return file.name !== originalFormData.readMore;
+          }
+          return compareValues(formData[key], originalFormData[key]);
+        });
+        setEditedFields(changes);
+      }
+    }
+  };
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -223,6 +262,19 @@ export default function AddActivity(props) {
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Add all form fields EXCEPT status (we'll add it separately)
+      Object.keys(formData).forEach(key => {
+        if (key === 'readMore' && selectedFile) {
+          // If there's a selected file, append it
+          formDataToSend.append('readMore', selectedFile);
+        } else if (key !== 'status') { // Don't add status here
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
       // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
         ? selectedActivity.editedFields
@@ -243,16 +295,24 @@ export default function AddActivity(props) {
         updatedFieldEditors[field] = currentEditor;
       });
 
-      const updatedFormData = {
-        ...formData,
-        status: userRole === "admin" ? "published" : "under review",
-        editedFields: mergedEditedFields, // always send the merged array!
-        fieldEditors: updatedFieldEditors,
-      };
+      // Add editedFields and fieldEditors to FormData
+      formDataToSend.append('editedFields', JSON.stringify(mergedEditedFields));
+      formDataToSend.append('fieldEditors', JSON.stringify(updatedFieldEditors));
+      
+      // Add status ONLY ONCE
+      const finalStatus = userRole === "admin" ? "published" : "under review";
+      formDataToSend.append('status', finalStatus);
+
+      // Debug: Log what we're sending
+      console.log("Sending FormData:", {
+        formData: Object.fromEntries(formDataToSend.entries()),
+        selectedFile: selectedFile?.name,
+        status: finalStatus
+      });
 
       if (id) {
         await dispatch(
-          updateActivity({ id, updatedData: updatedFormData })
+          updateActivity({ id, updatedData: formDataToSend })
         ).unwrap();
         await dispatch(getActivityById(id)).unwrap();
 
@@ -265,13 +325,13 @@ export default function AddActivity(props) {
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
-          setOriginalFormData(updatedFormData); // Keep tracking changes
+          // setOriginalFormData({ ...formData, status: "under review" }); // Keep tracking changes
         } else {
-          // After admin publishes, reload activity to get cleared editedFields
-
           // Only clear locally if status is published
-          if (updatedFormData.status === "published") {
+          if (finalStatus === "published") {
             setEditedFields([]);
+            // Update originalFormData to current form data to stop tracking changes
+            setOriginalFormData({ ...formData, status: "published" });
           }
         }
       } else {
@@ -279,7 +339,7 @@ export default function AddActivity(props) {
           !formData.type ||
           !formData.title ||
           !formData.shortDesc ||
-          !formData.readMore
+          (!formData.readMore && !selectedFile)
         ) {
           setSnackbarMessage("Please fill all fields!");
           setSnackbarSeverity("warning");
@@ -288,22 +348,25 @@ export default function AddActivity(props) {
           return;
         }
 
-        await dispatch(createActivity(updatedFormData)).unwrap();
+        await dispatch(createActivity(formDataToSend)).unwrap();
         setSnackbarMessage(
           userRole === "admin"
             ? "Activity created and published!"
             : "Activity created successfully!"
         );
         setSnackbarSeverity("success");
+        
+        // Reset editedFields after successful creation
+        setEditedFields([]);
+        // Update originalFormData to current form data
+        setOriginalFormData({ ...formData, status: finalStatus });
       }
 
-      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       setSnackbarMessage(`Operation failed: ${error.message || error}`);
       setSnackbarSeverity("error");
-      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
@@ -331,6 +394,9 @@ export default function AddActivity(props) {
       await dispatch(getActivityById(id));
       setSnackbarMessage("Changes discarded successfully");
       setSnackbarSeverity("success");
+      
+      // Reset selectedFile state
+      setSelectedFile(null);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
@@ -1022,50 +1088,91 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
-                      <TextField
-                        sx={{
-                          fontFamily: "'Be Vietnam Pro', sans-serif",
-                          height: 38,
-                          "& .MuiOutlinedInput-root": {
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <TextField
+                          sx={{
                             fontFamily: "'Be Vietnam Pro', sans-serif",
-                            fontSize: "13px",
                             height: 38,
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            alignItems: "center",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
+                            flex: 1,
+                            "& .MuiOutlinedInput-root": {
+                              fontFamily: "'Be Vietnam Pro', sans-serif",
+                              fontSize: "13px",
+                              height: 38,
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              alignItems: "center",
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#D3D3D3 !important",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#D3D3D3 !important",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#CC9A3A !important",
+                                borderWidth: "1px",
+                              },
                             },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
+                          }}
+                          fullWidth
+                          variant="outlined"
+                          name="readMore"
+                          value={formData.readMore ? `${API_URL}/uploads/documents/${formData.readMore.split('/').pop()}` : ""}
+                          onChange={handleChange}
+                          placeholder="File will be uploaded here"
+                          InputProps={{
+                            readOnly: true,
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Typography
+                                  fontWeight="500"
+                                  sx={{
+                                    fontSize: "13px",
+                                    backgroundColor: "#F9F9F9",
+                                  }}
+                                >
+                                  URL:
+                                </Typography>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          startIcon={<CloudUploadIcon />}
+                          sx={{
+                            height: 38,
+                            minWidth: 'auto',
+                            px: 2,
+                            borderColor: "#CC9A3A",
+                            color: "#CC9A3A",
+                            "&:hover": {
+                              borderColor: "#B8860B",
+                              backgroundColor: "rgba(204, 154, 58, 0.04)",
                             },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#CC9A3A !important",
-                              borderWidth: "1px",
-                            },
-                          },
-                        }}
-                        fullWidth
-                        variant="outlined"
-                        name="readMore"
-                        value={formData.readMore}
-                        onChange={handleChange}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Typography
-                                fontWeight="500"
-                                sx={{
-                                  fontSize: "13px",
-                                  backgroundColor: "#F9F9F9",
-                                }}
-                              >
-                                URL:
-                              </Typography>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
+                          }}
+                        >
+                          Upload
+                          <input
+                            type="file"
+                            hidden
+                            onChange={handleFileUpload}
+                            accept=".pdf,.doc,.docx,.txt,.rtf"
+                          />
+                        </Button>
+                      </Box>
+                      {selectedFile && (
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: "success.main", 
+                            mt: 0.5, 
+                            display: "block" 
+                          }}
+                        >
+                          File selected: {selectedFile.name}
+                        </Typography>
+                      )}
                     </FormControl>
                   </Grid>
                   <Grid
