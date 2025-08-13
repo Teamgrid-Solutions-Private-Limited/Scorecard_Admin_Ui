@@ -10,6 +10,7 @@ import {
   createVote,
   discardVoteChanges,
 } from "../redux/reducer/voteSlice";
+import { API_URL } from "../redux/API";
 import {
   Alert,
   Dialog,
@@ -49,6 +50,7 @@ import { jwtDecode } from "jwt-decode";
 import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -73,7 +75,7 @@ export default function AddBill(props) {
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const fieldLabels = {
     type: "Type",
@@ -107,6 +109,19 @@ export default function AddBill(props) {
   };
 
   console.log("User Role:", userRole);
+
+  const [loading, setLoading] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
+
   const preFillForm = () => {
     if (selectedVote) {
       const termId = selectedVote.termId?._id || "";
@@ -213,16 +228,27 @@ export default function AddBill(props) {
     });
   };
 
-  const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      // Set the file path in the readMore field
+      setFormData(prev => ({
+        ...prev,
+        readMore: file.name
+      }));
+      
+      // Update editedFields if this is a change
+      if (originalFormData && file.name !== originalFormData.readMore) {
+        const changes = Object.keys(formData).filter(key => {
+          if (key === 'readMore') {
+            return file.name !== originalFormData.readMore;
+          }
+          return compareValues(formData[key], originalFormData[key]);
+        });
+        setEditedFields(changes);
+      }
     }
-    setOpenSnackbar(false);
   };
 
   const handleSubmit = async () => {
@@ -235,87 +261,121 @@ export default function AddBill(props) {
 
     setLoading(true);
     try {
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Add all form fields EXCEPT status (we'll add it separately)
+      Object.keys(formData).forEach(key => {
+        if (key === 'readMore' && selectedFile) {
+          // If there's a selected file, append it
+          formDataToSend.append('readMore', selectedFile);
+        } else if (key !== 'status') { // Don't add status here
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
       // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedVote?.editedFields)
         ? selectedVote.editedFields
         : [];
-      const mergedEditedFields = Array.from(
-        new Set([...backendEditedFields, ...editedFields])
+     
+ const filteredEditedFields = editedFields.filter(field => field !== 'status');
+    const mergedEditedFields = Array.from(
+      new Set([...backendEditedFields, ...filteredEditedFields])
+    );
+
+    const decodedToken = jwtDecode(token);
+    const currentEditor = {
+      editorId: decodedToken.userId,
+      editorName: localStorage.getItem("user") || "Unknown Editor",
+      editedAt: new Date(),
+    };
+
+    // Create updated fieldEditors map
+    const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
+    filteredEditedFields.forEach((field) => {
+      updatedFieldEditors[field] = currentEditor;
+    });
+
+    // Add editedFields and fieldEditors to FormData
+    formDataToSend.append('editedFields', JSON.stringify(mergedEditedFields));
+    formDataToSend.append('fieldEditors', JSON.stringify(updatedFieldEditors));
+    
+    // Add status ONLY ONCE
+    const finalStatus = userRole === "admin" ? "published" : "under review";
+    formDataToSend.append('status', finalStatus);
+
+    if (id) {
+      await dispatch(
+        updateVote({ id, updatedData: formDataToSend })
+      ).unwrap();
+      // After admin publishes, reload vote to get cleared editedFields
+      await dispatch(getVoteById(id)).unwrap();
+
+      setSnackbarMessage(
+        userRole === "admin"
+          ? "Changes published successfully!"
+          : 'Status changed to "Under Review" for admin to moderate.'
       );
+      setSnackbarSeverity("success");
 
-      const decodedToken = jwtDecode(token);
-      const currentEditor = {
-        editorId: decodedToken.userId,
-        editorName: localStorage.getItem("user") || "Unknown Editor",
-        editedAt: new Date(),
-      };
-
-      // Create updated fieldEditors map
-      const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
-      editedFields.forEach((field) => {
-        updatedFieldEditors[field] = currentEditor;
-      });
-
-      const updatedFormData = {
-        ...formData,
-        status: userRole === "admin" ? "published" : "under review",
-        editedFields: mergedEditedFields,
-        fieldEditors: updatedFieldEditors,
-      };
-
-      if (id) {
-        await dispatch(
-          updateVote({ id, updatedData: updatedFormData })
-        ).unwrap();
-        // After admin publishes, reload vote to get cleared editedFields
-        await dispatch(getVoteById(id)).unwrap();
-
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
-        );
-        setSnackbarSeverity("success");
-
-        if (userRole !== "admin") {
-          setFormData((prev) => ({ ...prev, status: "under review" }));
-          setOriginalFormData(updatedFormData);
-        } else {
-          // Only clear locally if status is published
-          if (updatedFormData.status === "published") {
-            setEditedFields([]);
-          }
-        }
+      if (userRole !== "admin") {
+        setFormData((prev) => ({ ...prev, status: "under review" }));
+        // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
+        // Remove status from editedFields after update
+        setEditedFields(prev => prev.filter(field => field !== 'status'));
       } else {
-        if (
-          !formData.type ||
-          !formData.title ||
-          !formData.shortDesc ||
-          !formData.readMore
-        ) {
-          setSnackbarMessage("Please fill all required fields!");
-          setSnackbarSeverity("warning");
-          setOpenSnackbar(true);
-          setLoading(false);
-          return;
+        // Only clear locally if status is published
+        if (finalStatus === "published") {
+          setEditedFields([]);
         }
-
-        await dispatch(createVote(updatedFormData)).unwrap();
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Bill created and published!"
-            : "Bill created successfully!"
-        );
-        setSnackbarSeverity("success");
+      }
+    } else {
+      if (
+        !formData.type ||
+        !formData.title ||
+        !formData.shortDesc ||
+        !formData.readMore
+      ) {
+        setSnackbarMessage("Please fill all required fields!");
+        setSnackbarSeverity("warning");
+        setOpenSnackbar(true);
+        setLoading(false);
+        return;
       }
 
-      setOpenSnackbar(true);
+      await dispatch(createVote(formDataToSend)).unwrap();
+      setSnackbarMessage(
+        userRole === "admin"
+          ? "Bill created and published!"
+          : "Bill created successfully!"
+      );
+      setSnackbarSeverity("success");
+    }
+
       setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
-      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      
+      // Better error handling
+      let errorMessage = "Operation failed";
+      
+      if (error?.payload?.message) {
+        errorMessage = error.payload.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === "string") {
+        errorMessage = error;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.status === 400) {
+        errorMessage = "Bad Request: Please check your input data";
+      } else if (error?.response?.status === 500) {
+        errorMessage = "Server Error: Please try again later";
+      }
+      
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
-      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
@@ -1163,50 +1223,91 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
-                      <TextField
-                        sx={{
-                          fontFamily: "'Be Vietnam Pro', sans-serif",
-                          height: 38,
-                          "& .MuiOutlinedInput-root": {
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <TextField
+                          sx={{
                             fontFamily: "'Be Vietnam Pro', sans-serif",
-                            fontSize: "13px",
                             height: 38,
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            alignItems: "center",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
+                            flex: 1,
+                            "& .MuiOutlinedInput-root": {
+                              fontFamily: "'Be Vietnam Pro', sans-serif",
+                              fontSize: "13px",
+                              height: 38,
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              alignItems: "center",
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#D3D3D3 !important",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#D3D3D3 !important",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#CC9A3A !important",
+                                borderWidth: "1px",
+                              },
                             },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
+                          }}
+                          fullWidth
+                          variant="outlined"
+                          name="readMore"
+                          value={formData.readMore ? `${API_URL}/uploads/documents/${formData.readMore.split('/').pop()}` : ""}
+                          onChange={handleChange}
+                          placeholder="File will be uploaded here"
+                          InputProps={{
+                            readOnly: true,
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Typography
+                                  fontWeight="500"
+                                  sx={{
+                                    fontSize: "13px",
+                                    backgroundColor: "#F9F9F9",
+                                  }}
+                                >
+                                  URL:
+                                </Typography>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          startIcon={<CloudUploadIcon />}
+                          sx={{
+                            height: 38,
+                            minWidth: 'auto',
+                            px: 2,
+                            borderColor: "#CC9A3A",
+                            color: "#CC9A3A",
+                            "&:hover": {
+                              borderColor: "#B8860B",
+                              backgroundColor: "rgba(204, 154, 58, 0.04)",
                             },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#CC9A3A !important",
-                              borderWidth: "1px",
-                            },
-                          },
-                        }}
-                        fullWidth
-                        variant="outlined"
-                        name="readMore"
-                        value={formData.readMore}
-                        onChange={handleChange}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Typography
-                                fontWeight="500"
-                                sx={{
-                                  fontSize: "13px",
-                                  backgroundColor: "#F9F9F9",
-                                }}
-                              >
-                                URL:
-                              </Typography>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
+                          }}
+                        >
+                          Upload
+                          <input
+                            type="file"
+                            hidden
+                            onChange={handleFileUpload}
+                            accept=".pdf,.doc,.docx,.txt,.rtf"
+                          />
+                        </Button>
+                      </Box>
+                      {selectedFile && (
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: "success.main", 
+                            mt: 0.5, 
+                            display: "block" 
+                          }}
+                        >
+                          File selected: {selectedFile.name}
+                        </Typography>
+                      )}
                     </FormControl>
                   </Grid>
                   <Grid size={2}>
