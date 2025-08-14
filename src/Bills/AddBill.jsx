@@ -108,12 +108,12 @@ export default function AddBill(props) {
     return newVal !== oldVal;
   };
 
-  console.log("User Role:", userRole);
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {

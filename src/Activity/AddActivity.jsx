@@ -306,12 +306,7 @@ export default function AddActivity(props) {
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append('status', finalStatus);
 
-      // Debug: Log what we're sending
-      console.log("Sending FormData:", {
-        formData: Object.fromEntries(formDataToSend.entries()),
-        selectedFile: selectedFile?.name,
-        status: finalStatus
-      });
+     
 
       if (id) {
         await dispatch(
@@ -1222,13 +1217,8 @@ export default function AddActivity(props) {
                       )}
                     </FormControl>
                   </Grid>
-                  <Grid
-                    container
-                    spacing={2}
-                    alignItems="center"
-                    sx={{ ml: { xs: 0, sm: 5.6 } }}
-                  >
-                    <Grid size={{ xs: 12, sm: 2 }}>
+                
+                    <Grid size={2}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1243,7 +1233,7 @@ export default function AddActivity(props) {
                       </InputLabel>
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 10 }}>
+                    <Grid size={10}>
                       <FormControl
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
@@ -1306,7 +1296,7 @@ export default function AddActivity(props) {
                           />
                         </RadioGroup>
                       </FormControl>
-                    </Grid>
+                  
                   </Grid>
                 </Grid>
               </Box>
