@@ -108,7 +108,6 @@ export default function AddBill(props) {
     return newVal !== oldVal;
   };
 
-  console.log("User Role:", userRole);
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);

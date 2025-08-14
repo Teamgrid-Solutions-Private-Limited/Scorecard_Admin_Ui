@@ -67,7 +67,6 @@ export const deleteTerm = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`${API_URL}/term/terms/delete/${id}`);
-      console.log(response);
       
       return response.data;
     } catch (error) {
