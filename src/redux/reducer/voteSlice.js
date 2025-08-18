@@ -11,7 +11,7 @@ export const createVote = createAsyncThunk(
 
     try {
       const response = await axios.post(
-        `${API_URL}/vote/votes/create/`,
+        `${API_URL}/api/v1/admin/votes/`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -31,7 +31,7 @@ export const getAllVotes = createAsyncThunk(
   "votes/getAllVotes",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/vote/votes/viewAll/`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/votes/`, {
         headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
       return response.data;
@@ -46,7 +46,7 @@ export const getVoteById = createAsyncThunk(
   "votes/getVoteById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/vote/votes/viewId/${id}`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/votes/${id}`, {
         headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
      
@@ -61,18 +61,19 @@ export const getVoteById = createAsyncThunk(
 export const updateVote = createAsyncThunk(
   "votes/updateVote",
   async ({ id, updatedData }, { rejectWithValue }) => {
-  
 
     try {
       const response = await axios.put(
-        `${API_URL}/vote/votes/update/${id}`,
-        updatedData
+        `${API_URL}/api/v1/admin/votes/${id}`,
+        updatedData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
-     
 
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.daa);
+      return rejectWithValue(error.response.data);
     }
   }
 );
@@ -100,7 +101,7 @@ export const deleteVote = createAsyncThunk(
       }
 
       const response = await axios.delete(
-        `${API_URL}/vote/votes/delete/${id}`,
+        `${API_URL}/api/v1/admin/votes/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -120,9 +121,12 @@ export const updateVoteStatus = createAsyncThunk(
   "votes/updateStatus",
   async ({ id, status }, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`${API_URL}/vote/votes/status/${id}`, {
-        status,
-      });
+      const response = await axios.patch(
+        `${API_URL}/api/v1/admin/votes/status/${id}`,
+        {
+          status,
+        }
+      );
       return response.data.vote; // return updated vote object
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -131,21 +135,22 @@ export const updateVoteStatus = createAsyncThunk(
 );
 // Add this to your existing voteSlice.js
 export const bulkUpdateSbaPosition = createAsyncThunk(
-  'votes/bulkUpdateSbaPosition',
+  "votes/bulkUpdateSbaPosition",
   async ({ ids, sbaPosition }, { rejectWithValue }) => {
     try {
       // Ensure sbaPosition is capitalized as expected by backend
       const formattedSbaPosition =
-        sbaPosition && typeof sbaPosition === 'string'
-          ? sbaPosition.charAt(0).toUpperCase() + sbaPosition.slice(1).toLowerCase()
+        sbaPosition && typeof sbaPosition === "string"
+          ? sbaPosition.charAt(0).toUpperCase() +
+            sbaPosition.slice(1).toLowerCase()
           : sbaPosition;
       const response = await axios.put(
-        'http://localhost:4000/vote/update/bulk-update-sbaPosition',
+        `${API_URL}/api/v1/admin/votes/bulk-update`,
         { ids, sbaPosition: formattedSbaPosition },
         {
           headers: {
-            'Content-Type': 'application/json',
-            'x-protected-key': 'MySuperSecretApiKey123',
+            "Content-Type": "application/json",
+            "x-protected-key": "MySuperSecretApiKey123",
           },
         }
       );
@@ -158,11 +163,11 @@ export const bulkUpdateSbaPosition = createAsyncThunk(
 
 // Discard changes and revert to previous state
 export const discardVoteChanges = createAsyncThunk(
-  'votes/discardChanges',
+  "votes/discardChanges",
   async (voteId, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/vote/discard/${voteId}`
+        `${API_URL}/api/v1/admin/votes/discard/${voteId}`
       );
       return response.data;
     } catch (error) {
@@ -177,7 +182,6 @@ export const discardVoteChanges = createAsyncThunk(
     }
   }
 );
-
 
 // Slice
 const voteSlice = createSlice({
@@ -284,8 +288,8 @@ const voteSlice = createSlice({
       state.loading = false;
       // Update the local state with the modified bills
       const updatedBills = action.payload.updatedBills;
-      updatedBills.forEach(updatedBill => {
-        const index = state.votes.findIndex(v => v._id === updatedBill._id);
+      updatedBills.forEach((updatedBill) => {
+        const index = state.votes.findIndex((v) => v._id === updatedBill._id);
         if (index !== -1) {
           state.votes[index] = updatedBill;
         }
@@ -294,9 +298,9 @@ const voteSlice = createSlice({
 
     builder.addCase(bulkUpdateSbaPosition.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload?.message || 'Failed to update bills';
+      state.error = action.payload?.message || "Failed to update bills";
     });
-       builder.addCase(discardVoteChanges.pending, (state) => {
+    builder.addCase(discardVoteChanges.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
@@ -308,7 +312,7 @@ const voteSlice = createSlice({
         state.vote = action.payload;
       }
       // Update in votes list
-      const index = state.votes.findIndex(v => v._id === action.payload._id);
+      const index = state.votes.findIndex((v) => v._id === action.payload._id);
       if (index !== -1) {
         state.votes[index] = action.payload;
       }
@@ -318,8 +322,6 @@ const voteSlice = createSlice({
       state.loading = false;
       state.error = action.payload?.message || "Failed to discard changes";
     });
-
-    
   },
 });
 
