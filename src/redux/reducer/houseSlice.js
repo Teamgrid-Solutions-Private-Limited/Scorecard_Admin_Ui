@@ -12,7 +12,7 @@ export const createHouse = createAsyncThunk(
    
 
     try {
-      const response = await axios.post(`${API_URL}/house/house/create`, formData, {
+      const response = await axios.post(`${API_URL}/api/v1/admin/houses/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -30,7 +30,7 @@ export const getAllHouses = createAsyncThunk(
   "house/getAllHouses",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/house/house/view`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/houses/`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
    
@@ -47,7 +47,7 @@ export const getHouseById = createAsyncThunk(
   "house/getHouseById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/house/house/viewId/${id}`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/houses/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
       
@@ -63,7 +63,7 @@ export const updateHouse = createAsyncThunk(
   "house/updateHouse",
   async ({ id, formData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/house/house/update/${id}`, formData, {
+      const response = await axios.put(`${API_URL}/api/v1/admin/houses/update/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -98,7 +98,7 @@ export const deleteHouse = createAsyncThunk(
       }
 
       const response = await axios.delete(
-        `${API_URL}/house/house/delete/${id}`,
+        `${API_URL}/api/v1/admin/houses/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -120,7 +120,7 @@ export const updateRepresentativeStatus = createAsyncThunk(
   async ({ id, publishStatus }, { rejectWithValue }) => {
     try {
       const response = await axios.patch(
-        `${API_URL}/house/representatives/status/${id}`,
+        `${API_URL}/api/v1/admin/houses/status/${id}`,
         { publishStatus }
       );
       return response.data.representative;
@@ -137,7 +137,7 @@ export const discardHouseChanges = createAsyncThunk(
   "house/discardChanges",
   async (houseId, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/house/discard/${houseId}`);
+      const response = await axios.post(`${API_URL}/api/v1/admin/houses/discard/${houseId}`);
       return response.data;
     } catch (error) {
       if (error.response) {
