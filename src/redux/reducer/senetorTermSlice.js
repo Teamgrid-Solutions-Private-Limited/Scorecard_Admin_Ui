@@ -9,7 +9,7 @@ export const createSenatorData = createAsyncThunk(
    
     
     try {
-      const response = await axios.post(`${API_URL}/senatorData/senator-data/create/`, data);
+      const response = await axios.post(`${API_URL}/api/v1/admin/senator-data/`, data);
      
       return response.data;
     } catch (error) {
@@ -22,7 +22,7 @@ export const getAllSenatorData = createAsyncThunk(
   'senatorData/getAllSenatorData',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewAll/`,{
+      const response = await axios.get(`${API_URL}/api/v1/admin/senator-data/`,{
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
       return response.data;
@@ -36,7 +36,7 @@ export const getSenatorDataById = createAsyncThunk(
   'senatorData/getSenatorDataById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewID/${id}`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/senator-data/viewID/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
       return response.data;
@@ -50,7 +50,7 @@ export const getSenatorDataBySenetorId = createAsyncThunk(
   'senatorData/getSenatorDataBySenetorId',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/senatorData/senator-data/viewbysenator/${id}`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/senator-data/viewbysenator/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
      
@@ -67,7 +67,7 @@ export const updateSenatorData = createAsyncThunk(
    
     
     try {
-      const response = await axios.put(`${API_URL}/senatorData/senator-data/update/${id}`, data);
+      const response = await axios.put(`${API_URL}/api/v1/admin/senator-data/${id}`, data);
       
       
       return response.data;
@@ -81,7 +81,7 @@ export const deleteSenatorData = createAsyncThunk(
   'senatorData/deleteSenatorData',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${API_URL}/senatorData/senator-data/delete/${id}`);
+      const response = await axios.delete(`${API_URL}/api/v1/admin/senator-data/${id}`);
      
       return response.data;
 
