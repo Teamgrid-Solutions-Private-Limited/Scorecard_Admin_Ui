@@ -87,6 +87,7 @@ export default function AddActivity(props) {
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
+  
 
   const fieldLabels = {
     type: "Type",
@@ -338,9 +339,9 @@ export default function AddActivity(props) {
         if (
           !formData.type ||
           !formData.title ||
-          !formData.shortDesc ||
-          (!formData.readMore && !selectedFile)
-        ) {
+          !formData.shortDesc 
+        )
+         {
           setSnackbarMessage("Please fill all fields!");
           setSnackbarSeverity("warning");
           setOpenSnackbar(true);
@@ -349,11 +350,7 @@ export default function AddActivity(props) {
         }
 
         await dispatch(createActivity(formDataToSend)).unwrap();
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Activity created and published!"
-            : "Activity created successfully!"
-        );
+        setSnackbarMessage( "Activity created successfully!");
         setSnackbarSeverity("success");
         
         // Reset editedFields after successful creation
@@ -766,38 +763,25 @@ export default function AddActivity(props) {
                 alignItems: "center",
               }}
             >
-              {/* <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: "#CC9A3A !important",
-
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#c38f2fff !important",
-                  },
-                }}
-                onClick={handleReview}
-              >
-                Review
-              </Button> */}
-
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
+              {/* Show Discard button only for existing activities */}
+              {id && (
+                <Button
+                  variant="outlined"
+                  onClick={handleDiscard}
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                >
+                  {userRole === "admin" ? "Discard" : "Undo"}
+                </Button>
+              )}
+              
               <Button
                 variant="outlined"
                 onClick={handleSubmit}
@@ -811,26 +795,8 @@ export default function AddActivity(props) {
                   },
                 }}
               >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
+                {id ? (userRole === "admin" ? "Publish" : "Save Changes") : "Create"}
               </Button>
-
-              {/* <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button> */}
-
-              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
