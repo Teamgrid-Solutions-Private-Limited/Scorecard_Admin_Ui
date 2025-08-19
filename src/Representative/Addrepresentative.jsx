@@ -89,6 +89,7 @@ export default function Addrepresentative(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -148,6 +149,9 @@ export default function Addrepresentative(props) {
 
   const handleTermChange = (e, termIndex) => {
     const fieldName = `term${termIndex}_${e.target.name}`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
@@ -162,6 +166,9 @@ export default function Addrepresentative(props) {
 
   const handleSwitchChange = (e, termIndex) => {
     const fieldName = `term${termIndex}_${e.target.name}`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
@@ -204,7 +211,9 @@ export default function Addrepresentative(props) {
     // Construct the field name for change tracking
     // Construct the field name for change tracking
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
-
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     // Update local changes if not already tracked
     setLocalChanges((prev) =>
       prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
@@ -265,7 +274,9 @@ export default function Addrepresentative(props) {
     const activityChangeId = `term${termIndex}_TrackedActivity_${
       activityIndex + 1
     }`;
-
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     // Update local changes if not already tracked
     setLocalChanges((prev) =>
       prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
@@ -533,13 +544,8 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // Merge with any existing editedFields from backend
-      const backendEditedFields = Array.isArray(formData.editedFields)
-        ? formData.editedFields
-        : [];
-      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
-
-      setEditedFields(mergedChanges);
+      // Use only local diffs for editedFields so reverting removes from list
+      setEditedFields(changes);
     }
   }, [formData, originalFormData, houseTermData, originalTermData]);
 
@@ -594,6 +600,9 @@ export default function Addrepresentative(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
     // Track the changed field
     if (!localChanges.includes(name)) {
@@ -616,7 +625,9 @@ export default function Addrepresentative(props) {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
-
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
@@ -727,6 +738,7 @@ export default function Addrepresentative(props) {
       if (house) {
         setOriginalFormData(JSON.parse(JSON.stringify(house)));
       }
+      setHasLocalChanges(false); // Reset after save
       setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -770,7 +782,9 @@ export default function Addrepresentative(props) {
 
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
-
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     // Update local changes if not already tracked
     setLocalChanges((prev) =>
       prev.includes(fieldName) ? prev : [...prev, fieldName]
@@ -808,16 +822,21 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      // published: {
-      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
-      //   borderColor: "#4CAF50",
-      //   iconColor: "#2E7D32",
-      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-      //   title: "Published",
-      //   description: "Published and live",
-      //   titleColor: "#2E7D32",
-      //   descColor: "#388E3C",
-      // },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: "",
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -829,6 +848,14 @@ export default function Addrepresentative(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+  const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
 
   const handleDiscard = () => {
     if (!id) {
@@ -913,7 +940,8 @@ export default function Addrepresentative(props) {
             }}
           >
             {userRole &&
-              formData.publishStatus !== "published" &&
+              isStatusReady &&
+              (hasAnyChanges || formData.publishStatus !== "published") &&
               statusData && (
                 <Box
                   sx={{
@@ -940,7 +968,7 @@ export default function Addrepresentative(props) {
                             : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                            ? "76, 175, 80"
+                            ? ""
                             : "244, 67, 54"
                         }, 0.2)`,
                         display: "grid",
@@ -948,7 +976,7 @@ export default function Addrepresentative(props) {
                         flexShrink: 0,
                       }}
                     >
-                      {React.cloneElement(statusData.icon, {
+                      {statusData.icon && React.cloneElement(statusData.icon, {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
@@ -977,11 +1005,7 @@ export default function Addrepresentative(props) {
 
                         {userRole === "admin" && (
                           <Chip
-                            label={`${
-                              Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length
-                                : 0
-                            } pending changes`}
+                            label={`${backendChanges.length + localOnlyChanges.length} pending changes`}
                             size="small"
                             color="warning"
                             variant="outlined"
@@ -997,9 +1021,7 @@ export default function Addrepresentative(props) {
                           )
                             ? formData.editedFields
                             : [];
-                          const hasChanges =
-                            backendChanges.length > 0 ||
-                            localChanges.length > 0;
+                          const hasChanges = hasAnyChanges;
 
                           if (!hasChanges) {
                             return (
@@ -1143,7 +1165,7 @@ export default function Addrepresentative(props) {
                               )}
 
                               {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
+                              {localOnlyChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "background.paper",
@@ -1160,7 +1182,7 @@ export default function Addrepresentative(props) {
                                     Unsaved Changes
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
-                                    {localChanges.map((field) => (
+                                    {localOnlyChanges.map((field) => (
                                       <ListItem
                                         key={`local-${field}`}
                                         sx={{ py: 0, px: 1 }}

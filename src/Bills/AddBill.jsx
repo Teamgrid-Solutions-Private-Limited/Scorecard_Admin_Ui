@@ -233,15 +233,15 @@ export default function AddBill(props) {
     if (file) {
       setSelectedFile(file);
       // Set the file path in the readMore field
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        readMore: file.name
+        readMore: file.name,
       }));
-      
+
       // Update editedFields if this is a change
       if (originalFormData && file.name !== originalFormData.readMore) {
-        const changes = Object.keys(formData).filter(key => {
-          if (key === 'readMore') {
+        const changes = Object.keys(formData).filter((key) => {
+          if (key === "readMore") {
             return file.name !== originalFormData.readMore;
           }
           return compareValues(formData[key], originalFormData[key]);
@@ -263,13 +263,14 @@ export default function AddBill(props) {
     try {
       // Create FormData for file upload
       const formDataToSend = new FormData();
-      
+
       // Add all form fields EXCEPT status (we'll add it separately)
-      Object.keys(formData).forEach(key => {
-        if (key === 'readMore' && selectedFile) {
+      Object.keys(formData).forEach((key) => {
+        if (key === "readMore" && selectedFile) {
           // If there's a selected file, append it
-          formDataToSend.append('readMore', selectedFile);
-        } else if (key !== 'status') { // Don't add status here
+          formDataToSend.append("readMore", selectedFile);
+        } else if (key !== "status") {
+          // Don't add status here
           formDataToSend.append(key, formData[key]);
         }
       });
@@ -278,88 +279,93 @@ export default function AddBill(props) {
       const backendEditedFields = Array.isArray(selectedVote?.editedFields)
         ? selectedVote.editedFields
         : [];
-     
- const filteredEditedFields = editedFields.filter(field => field !== 'status');
-    const mergedEditedFields = Array.from(
-      new Set([...backendEditedFields, ...filteredEditedFields])
-    );
 
-    const decodedToken = jwtDecode(token);
-    const currentEditor = {
-      editorId: decodedToken.userId,
-      editorName: localStorage.getItem("user") || "Unknown Editor",
-      editedAt: new Date(),
-    };
-
-    // Create updated fieldEditors map
-    const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
-    filteredEditedFields.forEach((field) => {
-      updatedFieldEditors[field] = currentEditor;
-    });
-
-    // Add editedFields and fieldEditors to FormData
-    formDataToSend.append('editedFields', JSON.stringify(mergedEditedFields));
-    formDataToSend.append('fieldEditors', JSON.stringify(updatedFieldEditors));
-    
-    // Add status ONLY ONCE
-    const finalStatus = userRole === "admin" ? "published" : "under review";
-    formDataToSend.append('status', finalStatus);
-
-    if (id) {
-      await dispatch(
-        updateVote({ id, updatedData: formDataToSend })
-      ).unwrap();
-      // After admin publishes, reload vote to get cleared editedFields
-      await dispatch(getVoteById(id)).unwrap();
-
-      setSnackbarMessage(
-        userRole === "admin"
-          ? "Changes published successfully!"
-          : 'Status changed to "Under Review" for admin to moderate.'
+      const filteredEditedFields = editedFields.filter(
+        (field) => field !== "status"
       );
-      setSnackbarSeverity("success");
+      const mergedEditedFields = Array.from(
+        new Set([...backendEditedFields, ...filteredEditedFields])
+      );
 
-      if (userRole !== "admin") {
-        setFormData((prev) => ({ ...prev, status: "under review" }));
-        // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
-        // Remove status from editedFields after update
-        setEditedFields(prev => prev.filter(field => field !== 'status'));
-      } else {
-        // Only clear locally if status is published
-        if (finalStatus === "published") {
-          setEditedFields([]);
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: localStorage.getItem("user") || "Unknown Editor",
+        editedAt: new Date(),
+      };
+
+      // Create updated fieldEditors map
+      const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
+      filteredEditedFields.forEach((field) => {
+        updatedFieldEditors[field] = currentEditor;
+      });
+
+      // Add editedFields and fieldEditors to FormData
+      formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
+      formDataToSend.append(
+        "fieldEditors",
+        JSON.stringify(updatedFieldEditors)
+      );
+
+      // Add status ONLY ONCE
+      const finalStatus = userRole === "admin" ? "published" : "under review";
+      formDataToSend.append("status", finalStatus);
+
+      if (id) {
+        await dispatch(
+          updateVote({ id, updatedData: formDataToSend })
+        ).unwrap();
+        // After admin publishes, reload vote to get cleared editedFields
+        await dispatch(getVoteById(id)).unwrap();
+
+        setSnackbarMessage(
+          userRole === "admin"
+            ? "Changes published successfully!"
+            : 'Status changed to "Under Review" for admin to moderate.'
+        );
+        setSnackbarSeverity("success");
+
+        if (userRole !== "admin") {
+          setFormData((prev) => ({ ...prev, status: "under review" }));
+          // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
+          // Remove status from editedFields after update
+          setEditedFields((prev) => prev.filter((field) => field !== "status"));
+        } else {
+          // Only clear locally if status is published
+          if (finalStatus === "published") {
+            setEditedFields([]);
+          }
         }
-      }
-    } else {
-      if (
-        !formData.type ||
-        !formData.title ||
-        !formData.shortDesc ||
-        !formData.readMore
-      ) {
-        setSnackbarMessage("Please fill all required fields!");
-        setSnackbarSeverity("warning");
-        setOpenSnackbar(true);
-        setLoading(false);
-        return;
-      }
+      } else {
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.readMore
+        ) {
+          setSnackbarMessage("Please fill all required fields!");
+          setSnackbarSeverity("warning");
+          setOpenSnackbar(true);
+          setLoading(false);
+          return;
+        }
 
-      await dispatch(createVote(formDataToSend)).unwrap();
-      setSnackbarMessage(
-        userRole === "admin"
-          ? "Bill created and published!"
-          : "Bill created successfully!"
-      );
-      setSnackbarSeverity("success");
-    }
+        await dispatch(createVote(formDataToSend)).unwrap();
+        setSnackbarMessage(
+          userRole === "admin"
+            ? "Bill created and published!"
+            : "Bill created successfully!"
+        );
+        setSnackbarSeverity("success");
+      }
 
       setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
-      
+
       // Better error handling
       let errorMessage = "Operation failed";
-      
+
       if (error?.payload?.message) {
         errorMessage = error.payload.message;
       } else if (error?.message) {
@@ -373,7 +379,7 @@ export default function AddBill(props) {
       } else if (error?.response?.status === 500) {
         errorMessage = "Server Error: Please try again later";
       }
-      
+
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -400,14 +406,18 @@ export default function AddBill(props) {
 
       // Refresh the data
       await dispatch(getVoteById(id));
-      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+      setSnackbarMessage(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      );
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+        (typeof error === "string"
+          ? error
+          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -448,6 +458,22 @@ export default function AddBill(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: "",
+
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -459,6 +485,11 @@ export default function AddBill(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+  const backendChanges = Array.isArray(selectedVote?.editedFields)
+    ? selectedVote.editedFields
+    : [];
+  const localChanges = Array.isArray(editedFields) ? editedFields : [];
+  const hasAnyChanges = backendChanges.length > 0 || localChanges.length > 0;
 
   useEffect(() => {
     console.log("Current status:", currentStatus);
@@ -524,230 +555,282 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-           {userRole && currentStatus !== "published" && statusData && (
-  <Box
-    sx={{
-      width: "98%",
-      p: 2,
-      backgroundColor: statusData.backgroundColor,
-      borderLeft: `4px solid ${statusData.borderColor}`,
-      borderRadius: "0 8px 8px 0",
-      boxShadow: 1,
-      mb: 2,
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-      {/* Status icon bubble */}
-      <Box
-        sx={{
-          p: 1,
-          borderRadius: "50%",
-          backgroundColor: `rgba(${
-            currentStatus === "draft"
-              ? "66, 165, 245"
-              : currentStatus === "review"
-              ? "255, 193, 7"
-              : currentStatus === "published"
-              ? "76, 175, 80"
-              : "244, 67, 54"
-          }, 0.2)`,
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        {React.cloneElement(statusData.icon, {
-          sx: { color: statusData.iconColor },
-        })}
-      </Box>
-
-      <Box sx={{ flex: 1 }}>
-        {/* Header: title + pending count (admin only) */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography
-            variant="subtitle1"
-            fontWeight="600"
-            sx={{
-              color: statusData.titleColor,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            {statusData.title}
-          </Typography>
-
-          {userRole === "admin" && (
-            <Chip
-              label={`${
-                (Array.isArray(selectedVote?.editedFields) ? selectedVote.editedFields.length : 0) +
-                (Array.isArray(editedFields) ? editedFields.length : 0)
-              } pending changes`}
-              size="small"
-              color="warning"
-              variant="outlined"
-            />
-          )}
-        </Box>
-
-        {/* Pending / New fields list */}
-        <Box sx={{ mt: 1.5 }}>
-          {(() => {
-            const backendChanges = Array.isArray(selectedVote?.editedFields)
-              ? selectedVote.editedFields
-              : [];
-            const localChanges = Array.isArray(editedFields) ? editedFields : [];
-            const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
-
-            if (!hasChanges) {
-              return (
-                <Typography
-                  variant="body2"
+            {userRole &&
+              statusData &&
+              (currentStatus !== "published" || hasAnyChanges) && (
+                <Box
                   sx={{
-                    color: "text.disabled",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
+                    width: "98%",
+                    p: 2,
+                    backgroundColor: statusData.backgroundColor,
+                    borderLeft: `4px solid ${statusData.borderColor}`,
+                    borderRadius: "0 8px 8px 0",
+                    boxShadow: 1,
+                    mb: 2,
                   }}
                 >
-                  {id ? "No pending changes" : "Fill in the form to create a new bill"}
-                </Typography>
-              );
-            }
-
-            return (
-              <>
-                {/* Backend pending changes */}
-                {backendChanges.length > 0 && (
                   <Box
-                    sx={{
-                      backgroundColor: "background.paper",
-                      borderRadius: 1,
-                      p: 1.5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      mb: 2,
-                    }}
+                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
                   >
-                    <Typography
-                      variant="overline"
-                      sx={{ color: "text.secondary", mb: 1 }}
+                    {/* Status icon bubble */}
+                    <Box
+                      sx={{
+                        p: 1,
+                        borderRadius: "50%",
+                        backgroundColor: `rgba(${
+                          currentStatus === "draft"
+                            ? "66, 165, 245"
+                            : currentStatus === "review"
+                            ? "255, 193, 7"
+                            : currentStatus === "published"
+                            ? ""
+                            : "244, 67, 54"
+                        }, 0.2)`,
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
+                      }}
                     >
-                      {id ? "Saved Changes" : "New Fields"}
-                    </Typography>
-                    <List dense sx={{ py: 0 }}>
-                      {backendChanges.map((field) => {
-                        const editorInfo = selectedVote?.fieldEditors?.[field];
-                        const editor = editorInfo?.editorName || "Unknown Editor";
-                        const editTime = editorInfo?.editedAt
-                          ? new Date(editorInfo.editedAt).toLocaleString([], {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "unknown time";
+                      {statusData.icon &&
+                        React.cloneElement(statusData.icon, {
+                          sx: { color: statusData.iconColor },
+                        })}
+                    </Box>
 
-                        return (
-                          <ListItem
-                            key={`backend-${field}`}
-                            sx={{ py: 0.5, px: 1 }}
-                          >
-                            <ListItemText
-                              primary={
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                  <Box
-                                    sx={{
-                                      width: 8,
-                                      height: 8,
-                                      borderRadius: "50%",
-                                      backgroundColor: statusData.iconColor,
-                                    }}
-                                  />
-                                  <Typography variant="body2" fontWeight="500">
-                                    {fieldLabels[field] || field}
-                                  </Typography>
-                                </Box>
-                              }
-                              secondary={
-                                <Typography variant="caption" color="text.secondary">
-                                  Updated by {editor} on {editTime}
-                                </Typography>
-                              }
-                              sx={{ my: 0 }}
-                            />
-                          </ListItem>
-                        );
-                      })}
-                    </List>
-                  </Box>
-                )}
-
-                {/* Local unsaved changes - now matches senator style */}
-                {localChanges.length > 0 && (
-                  <Box
-                    sx={{
-                      backgroundColor: "background.paper",
-                      borderRadius: 1,
-                      p: 1.5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                    }}
-                  >
-                    <Typography
-                      variant="overline"
-                      sx={{ color: "text.secondary", mb: 1 }}
-                    >
-                      Unsaved Changes
-                    </Typography>
-                    <List dense sx={{ py: 0 }}>
-                      {localChanges.map((field) => (
-                        <ListItem
-                          key={`local-${field}`}
-                          sx={{ py: 0, px: 1 }}
+                    <Box sx={{ flex: 1 }}>
+                      {/* Header: title + pending count (admin only) */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="600"
+                          sx={{
+                            color: statusData.titleColor,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
                         >
-                          <ListItemText
-                            primary={
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          {statusData.title}
+                        </Typography>
+
+                        {userRole === "admin" && (
+                          <Chip
+                            label={`${(() => {
+                              const backend = Array.isArray(
+                                selectedVote?.editedFields
+                              )
+                                ? selectedVote.editedFields
+                                : [];
+                              const local = Array.isArray(editedFields)
+                                ? editedFields
+                                : [];
+                              const localOnly = local.filter(
+                                (f) => !backend.includes(f)
+                              );
+                              return backend.length + localOnly.length;
+                            })()} pending changes`}
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+
+                      {/* Pending / New fields list */}
+                      <Box sx={{ mt: 1.5 }}>
+                        {(() => {
+                          const backendChanges = Array.isArray(
+                            selectedVote?.editedFields
+                          )
+                            ? selectedVote.editedFields
+                            : [];
+                          const localChanges = Array.isArray(editedFields)
+                            ? editedFields
+                            : [];
+                          const hasChanges =
+                            backendChanges.length > 0 ||
+                            localChanges.length > 0;
+
+                          if (!hasChanges) {
+                            return (
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: "text.disabled",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                {id
+                                  ? "No pending changes"
+                                  : "Fill in the form to create a new bill"}
+                              </Typography>
+                            );
+                          }
+
+                          return (
+                            <>
+                              {/* Backend pending changes */}
+                              {backendChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    width: 8,
-                                    height: 8,
-                                    borderRadius: "50%",
-                                    backgroundColor: statusData.iconColor,
+                                    backgroundColor: "background.paper",
+                                    borderRadius: 1,
+                                    p: 1.5,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    mb: 2,
                                   }}
-                                />
-                                <Typography variant="body2" fontWeight="500">
-                                  {fieldLabels[field] || field}
-                                </Typography>
-                              </Box>
-                            }
-                            // secondary={
-                            //   <Typography variant="caption" color="text.secondary">
-                            //     Edited just now
-                            //   </Typography>
-                            // }
-                            // sx={{ my: 0 }}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
+                                >
+                                  <Typography
+                                    variant="overline"
+                                    sx={{ color: "text.secondary", mb: 1 }}
+                                  >
+                                    {id ? "Saved Changes" : "New Fields"}
+                                  </Typography>
+                                  <List dense sx={{ py: 0 }}>
+                                    {backendChanges.map((field) => {
+                                      const editorInfo =
+                                        selectedVote?.fieldEditors?.[field];
+                                      const editor =
+                                        editorInfo?.editorName ||
+                                        "Unknown Editor";
+                                      const editTime = editorInfo?.editedAt
+                                        ? new Date(
+                                            editorInfo.editedAt
+                                          ).toLocaleString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
+                                        : "unknown time";
+
+                                      return (
+                                        <ListItem
+                                          key={`backend-${field}`}
+                                          sx={{ py: 0.5, px: 1 }}
+                                        >
+                                          <ListItemText
+                                            primary={
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  gap: 1,
+                                                }}
+                                              >
+                                                <Box
+                                                  sx={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: "50%",
+                                                    backgroundColor:
+                                                      statusData.iconColor,
+                                                  }}
+                                                />
+                                                <Typography
+                                                  variant="body2"
+                                                  fontWeight="500"
+                                                >
+                                                  {fieldLabels[field] || field}
+                                                </Typography>
+                                              </Box>
+                                            }
+                                            secondary={
+                                              <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                              >
+                                                Updated by {editor} on{" "}
+                                                {editTime}
+                                              </Typography>
+                                            }
+                                            sx={{ my: 0 }}
+                                          />
+                                        </ListItem>
+                                      );
+                                    })}
+                                  </List>
+                                </Box>
+                              )}
+
+                              {/* Local unsaved changes - now matches senator style */}
+                              {localChanges.length > 0 && (
+                                <Box
+                                  sx={{
+                                    backgroundColor: "background.paper",
+                                    borderRadius: 1,
+                                    p: 1.5,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                  }}
+                                >
+                                  <Typography
+                                    variant="overline"
+                                    sx={{ color: "text.secondary", mb: 1 }}
+                                  >
+                                    Unsaved Changes
+                                  </Typography>
+                                  <List dense sx={{ py: 0 }}>
+                                    {localChanges.map((field) => (
+                                      <ListItem
+                                        key={`local-${field}`}
+                                        sx={{ py: 0, px: 1 }}
+                                      >
+                                        <ListItemText
+                                          primary={
+                                            <Box
+                                              sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 1,
+                                              }}
+                                            >
+                                              <Box
+                                                sx={{
+                                                  width: 8,
+                                                  height: 8,
+                                                  borderRadius: "50%",
+                                                  backgroundColor:
+                                                    statusData.iconColor,
+                                                }}
+                                              />
+                                              <Typography
+                                                variant="body2"
+                                                fontWeight="500"
+                                              >
+                                                {fieldLabels[field] || field}
+                                              </Typography>
+                                            </Box>
+                                          }
+                                          // secondary={
+                                          //   <Typography variant="caption" color="text.secondary">
+                                          //     Edited just now
+                                          //   </Typography>
+                                          // }
+                                          // sx={{ my: 0 }}
+                                        />
+                                      </ListItem>
+                                    ))}
+                                  </List>
+                                </Box>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </Box>
+                    </Box>
                   </Box>
-                )}
-              </>
-            );
-          })()}
-        </Box>
-      </Box>
-    </Box>
-  </Box>
-)}
+                </Box>
+              )}
 
             <Stack
               direction="row"
@@ -832,7 +915,9 @@ export default function AddBill(props) {
                       color: "text.secondary",
                     }}
                   >
-                    Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
+                    Are you sure you want to{" "}
+                    {userRole === "admin" ? "discard" : "undo"} all changes?{" "}
+                    <br />
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
@@ -1011,7 +1096,8 @@ export default function AddBill(props) {
                         handleEditorChange(content, "longDesc")
                       }
                       init={{
-                        base_url: "/scorecard/admin/tinymce", suffix: ".min",
+                        base_url: "/scorecard/admin/tinymce",
+                        suffix: ".min",
                         height: 250,
                         menubar: false,
                         plugins: [
@@ -1223,7 +1309,7 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Box sx={{ display: "flex", gap: 1 }}>
                         <TextField
                           sx={{
                             fontFamily: "'Be Vietnam Pro', sans-serif",
@@ -1242,16 +1328,23 @@ export default function AddBill(props) {
                               "&:hover .MuiOutlinedInput-notchedOutline": {
                                 borderColor: "#D3D3D3 !important",
                               },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#CC9A3A !important",
-                                borderWidth: "1px",
-                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "#CC9A3A !important",
+                                  borderWidth: "1px",
+                                },
                             },
                           }}
                           fullWidth
                           variant="outlined"
                           name="readMore"
-                          value={formData.readMore ? `${API_URL}/uploads/documents/${formData.readMore.split('/').pop()}` : ""}
+                          value={
+                            formData.readMore
+                              ? `${API_URL}/uploads/documents/${formData.readMore
+                                  .split("/")
+                                  .pop()}`
+                              : ""
+                          }
                           onChange={handleChange}
                           placeholder="File will be uploaded here"
                           InputProps={{
@@ -1277,7 +1370,7 @@ export default function AddBill(props) {
                           startIcon={<CloudUploadIcon />}
                           sx={{
                             height: 38,
-                            minWidth: 'auto',
+                            minWidth: "auto",
                             px: 2,
                             borderColor: "#CC9A3A",
                             color: "#CC9A3A",
@@ -1297,12 +1390,12 @@ export default function AddBill(props) {
                         </Button>
                       </Box>
                       {selectedFile && (
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: "success.main", 
-                            mt: 0.5, 
-                            display: "block" 
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "success.main",
+                            mt: 0.5,
+                            display: "block",
                           }}
                         >
                           File selected: {selectedFile.name}

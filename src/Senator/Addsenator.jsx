@@ -88,7 +88,8 @@ export default function AddSenator(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-   const [componentKey, setComponentKey] = useState(0);
+  const [componentKey, setComponentKey] = useState(0);
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   // console.log("User Role:", userRole);
   let senatorActivities =
@@ -148,10 +149,12 @@ export default function AddSenator(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
     }
     return fieldLabels[field] || field;
   };
@@ -179,6 +182,9 @@ export default function AddSenator(props) {
 
   const handleTermChange = (e, termIndex) => {
     const fieldName = `term${termIndex}_${e.target.name}`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
@@ -192,6 +198,10 @@ export default function AddSenator(props) {
   };
   const handleSwitchChange = (e, termIndex) => {
     const fieldName = `term${termIndex}_${e.target.name}`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
+
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
@@ -209,9 +219,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: [...term.votesScore, { voteId: "", score: "" }],
-          }
+              ...term,
+              votesScore: [...term.votesScore, { voteId: "", score: "" }],
+            }
           : term
       )
     );
@@ -236,15 +246,19 @@ export default function AddSenator(props) {
       // Refresh the data
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenetorId(id));
-      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+      setSnackbarMessage(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      );
       setSnackbarSeverity("success");
-       setComponentKey(prev => prev + 1);
+      setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+        (typeof error === "string"
+          ? error
+          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -258,17 +272,19 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-          }
+              ...term,
+              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+            }
           : term
       )
     );
   };
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     // Construct the field name for change tracking
-    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
-
+    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     // Update local changes if not already tracked
     setLocalChanges((prev) =>
       prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
@@ -285,11 +301,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
           : term
       )
     );
@@ -300,12 +316,12 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: null, score: "" },
-            ],
-          }
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: null, score: "" },
+              ],
+            }
           : term
       )
     );
@@ -316,11 +332,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.filter(
-              (_, i) => i !== activityIndex
-            ),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
+            }
           : term
       )
     );
@@ -328,10 +344,14 @@ export default function AddSenator(props) {
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     // Construct the field name for change tracking
     // Construct a unique identifier for this activity change
-    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex+1}`;
-    
+    const activityChangeId = `term${termIndex}_TrackedActivity_${
+      activityIndex + 1
+    }`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     // Update local changes if not already tracked
-    setLocalChanges((prev) => 
+    setLocalChanges((prev) =>
       prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
     );
     // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
@@ -346,11 +366,11 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.map((activity, i) =>
-              i === activityIndex ? { ...activity, [field]: value } : activity
-            ),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.map((activity, i) =>
+                i === activityIndex ? { ...activity, [field]: value } : activity
+              ),
+            }
           : term
       )
     );
@@ -377,9 +397,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            summary: contentRefs.current[termIndex]?.content || "",
-          }
+              ...term,
+              summary: contentRefs.current[termIndex]?.content || "",
+            }
           : term
       )
     );
@@ -398,7 +418,7 @@ export default function AddSenator(props) {
         currentTerm: false,
         termId: null,
         editedFields: [], // Initialize empty
-      fieldEditors: {}, // Initialize empty
+        fieldEditors: {}, // Initialize empty
         isNew: true,
       },
     ]);
@@ -434,23 +454,23 @@ export default function AddSenator(props) {
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
             ? term.votesScore.map((vote) => {
-              let scoreValue = "";
-              const dbScore = vote.score?.toLowerCase();
-              if (dbScore?.includes("yea")) {
-                scoreValue = "yea";
-              } else if (dbScore?.includes("nay")) {
-                scoreValue = "nay";
-              } else if (dbScore?.includes("other")) {
-                scoreValue = "other";
-              } else {
-                scoreValue = vote.score || "";
-              }
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase();
+                if (dbScore?.includes("yea")) {
+                  scoreValue = "yea";
+                } else if (dbScore?.includes("nay")) {
+                  scoreValue = "nay";
+                } else if (dbScore?.includes("other")) {
+                  scoreValue = "other";
+                } else {
+                  scoreValue = vote.score || "";
+                }
 
-              return {
-                voteId: vote.voteId?._id || vote.voteId || "",
-                score: scoreValue,
-              };
-            })
+                return {
+                  voteId: vote.voteId?._id || vote.voteId || "",
+                  score: scoreValue,
+                };
+              })
             : [{ voteId: "", score: "" }]; // Changed from empty string to null
         return {
           _id: term._id,
@@ -461,7 +481,7 @@ export default function AddSenator(props) {
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
           isNew: false,
-          votesScore
+          votesScore,
           // :
           //   term.votesScore?.length > 0
           //     ? term.votesScore.map((vote) => {
@@ -484,14 +504,13 @@ export default function AddSenator(props) {
           //       };
           //     })
           //     : [{ voteId: "", score: "" }]
-          ,
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || null,
-                score: activity.score || "",
-              }))
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                }))
               : [{ activityId: null, score: "" }],
         };
       });
@@ -533,63 +552,75 @@ export default function AddSenator(props) {
 
   // Update your change tracking useEffect
   useEffect(() => {
-  if (originalFormData && formData && originalTermData && senatorTermData) {
-    const changes = [];
- 
-    // Track senator-level changes
-    Object.keys(formData).forEach((key) => {
-      if (key === "editedFields" || key === "fieldEditors") return;
-      if (compareValues(formData[key], originalFormData[key])) {
-        changes.push(key);
-      }
-    });
- 
-    // Track term-level changes
-    senatorTermData.forEach((term, termIndex) => {
-      // For new terms, track all fields that have values
-      if (term.isNew) {
-        Object.keys(term).forEach((key) => {
-          if (["_id", "senateId", "editedFields", "fieldEditors", "isNew"].includes(key))
-            return;
-         
-          if (key === "votesScore" || key === "activitiesScore") {
-            if (term[key].some(item => Object.values(item).some(val => val !== "" && val !== null))) {
+    if (originalFormData && formData && originalTermData && senatorTermData) {
+      const changes = [];
+
+      // Track senator-level changes
+      Object.keys(formData).forEach((key) => {
+        if (key === "editedFields" || key === "fieldEditors") return;
+        if (compareValues(formData[key], originalFormData[key])) {
+          changes.push(key);
+        }
+      });
+
+      // Track term-level changes
+      senatorTermData.forEach((term, termIndex) => {
+        // For new terms, track all fields that have values
+        if (term.isNew) {
+          Object.keys(term).forEach((key) => {
+            if (
+              [
+                "_id",
+                "senateId",
+                "editedFields",
+                "fieldEditors",
+                "isNew",
+              ].includes(key)
+            )
+              return;
+
+            if (key === "votesScore" || key === "activitiesScore") {
+              if (
+                term[key].some((item) =>
+                  Object.values(item).some((val) => val !== "" && val !== null)
+                )
+              ) {
+                changes.push(`term${termIndex}_${key}`);
+              }
+            } else if (
+              term[key] !== "" &&
+              term[key] !== null &&
+              term[key] !== false
+            ) {
               changes.push(`term${termIndex}_${key}`);
             }
-          } else if (term[key] !== "" && term[key] !== null && term[key] !== false) {
-            changes.push(`term${termIndex}_${key}`);
-          }
-        });
-      } else {
-        // Existing term logic
-        const originalTerm = originalTermData[termIndex] || {};
-        Object.keys(term).forEach((key) => {
-          if (["_id", "senateId", "editedFields", "fieldEditors"].includes(key))
-            return;
- 
-          if (key === "votesScore" || key === "activitiesScore") {
-            const current = JSON.stringify(term[key]);
-            const original = JSON.stringify(originalTerm[key] || []);
-            if (current !== original) {
+          });
+        } else {
+          // Existing term logic
+          const originalTerm = originalTermData[termIndex] || {};
+          Object.keys(term).forEach((key) => {
+            if (
+              ["_id", "senateId", "editedFields", "fieldEditors"].includes(key)
+            )
+              return;
+
+            if (key === "votesScore" || key === "activitiesScore") {
+              const current = JSON.stringify(term[key]);
+              const original = JSON.stringify(originalTerm[key] || []);
+              if (current !== original) {
+                changes.push(`term${termIndex}_${key}`);
+              }
+            } else if (compareValues(term[key], originalTerm[key])) {
               changes.push(`term${termIndex}_${key}`);
             }
-          } else if (compareValues(term[key], originalTerm[key])) {
-            changes.push(`term${termIndex}_${key}`);
-          }
-        });
-      }
-    });
- 
-    // Merge with any existing editedFields from backend
-    const backendEditedFields = Array.isArray(formData.editedFields)
-      ? formData.editedFields
-      : [];
-    const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
- 
-    setEditedFields(mergedChanges);
-  }
-}, [formData, originalFormData, senatorTermData, originalTermData]);
-  
+          });
+        }
+      });
+
+      // Use only local diffs for editedFields so reverting removes from list
+      setEditedFields(changes);
+    }
+  }, [formData, originalFormData, senatorTermData, originalTermData]);
 
   useEffect(() => {
     termPreFill();
@@ -644,6 +675,9 @@ export default function AddSenator(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     // Track the changed field
     if (!localChanges.includes(name)) {
       setLocalChanges((prev) => [...prev, name]);
@@ -656,18 +690,25 @@ export default function AddSenator(props) {
     });
   };
 
-const handleFileChange = (event) => {
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
-    
+
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
+
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
-    
+
     setFormData((prev) => ({ ...prev, photo: file }));
-};
+  };
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
     // Update local changes if not already tracked
     setLocalChanges((prev) =>
@@ -743,10 +784,12 @@ const handleFileChange = (event) => {
 
       // Update terms
       const termPromises = senatorTermData.map((term, index) => {
-        const transformedVotesScore = term.votesScore.map(vote => ({
-          ...vote,
-          voteId: vote.voteId === "" ? null : vote.voteId
-        })).filter(vote => vote.voteId !== null); // Optional: remove null entries 
+        const transformedVotesScore = term.votesScore
+          .map((vote) => ({
+            ...vote,
+            voteId: vote.voteId === "" ? null : vote.voteId,
+          }))
+          .filter((vote) => vote.voteId !== null); // Optional: remove null entries
 
         const termUpdate = {
           ...term,
@@ -761,33 +804,34 @@ const handleFileChange = (event) => {
 
         return term._id
           ? dispatch(
-            updateSenatorData({ id: term._id, data: termUpdate })
-          ).unwrap()
+              updateSenatorData({ id: term._id, data: termUpdate })
+            ).unwrap()
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
       await Promise.all(termPromises);
 
-
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
       await dispatch(getSenatorById(id)).unwrap();
 
-
       // Update originals to match latest backend data
       if (senatorData?.currentSenator) {
-        setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
+        setOriginalTermData(
+          JSON.parse(JSON.stringify(senatorData.currentSenator))
+        );
       }
       if (senator) {
         setOriginalFormData(JSON.parse(JSON.stringify(senator)));
       }
+      setHasLocalChanges(false); // Reset after save
       setLocalChanges([]);
 
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
-          "info"
-        );
+            'Status changed to "Under Review" for admin to moderate.',
+            "info"
+          );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -852,6 +896,21 @@ const handleFileChange = (event) => {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: "",
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
     return configs[currentStatus];
   };
@@ -862,6 +921,14 @@ const handleFileChange = (event) => {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+  const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
 
   return (
     <AppTheme key={componentKey}>
@@ -907,7 +974,8 @@ const handleFileChange = (event) => {
             }}
           >
             {userRole &&
-              formData.publishStatus !== "published" &&
+              isStatusReady &&
+              (hasAnyChanges || formData.publishStatus !== "published") &&
               statusData && (
                 <Box
                   sx={{
@@ -920,26 +988,29 @@ const handleFileChange = (event) => {
                     mb: 2,
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  <Box
+                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
+                  >
                     {/* Status icon bubble (unchanged) */}
                     <Box
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${formData.publishStatus === "draft"
+                        backgroundColor: `rgba(${
+                          formData.publishStatus === "draft"
                             ? "66, 165, 245"
                             : formData.publishStatus === "under review"
-                              ? "230, 81, 0"
-                              : formData.publishStatus === "published"
-                                ? "76, 175, 80"
-                                : "244, 67, 54"
-                          }, 0.2)`,
+                            ? "230, 81, 0"
+                            : formData.publishStatus === "published"
+                            ? ""
+                            : "244, 67, 54"
+                        }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
                       }}
                     >
-                      {React.cloneElement(statusData.icon, {
+                      {statusData.icon && React.cloneElement(statusData.icon, {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
@@ -968,10 +1039,7 @@ const handleFileChange = (event) => {
 
                         {userRole === "admin" && (
                           <Chip
-                            label={`${Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length
-                                : 0
-                              } pending changes`}
+                            label={`${backendChanges.length + localOnlyChanges.length} pending changes`}
                             size="small"
                             color="warning"
                             variant="outlined"
@@ -982,10 +1050,7 @@ const handleFileChange = (event) => {
                       {/* Pending / New fields list */}
                       <Box sx={{ mt: 1.5 }}>
                         {(() => {
-                          const backendChanges = Array.isArray(formData?.editedFields)
-                            ? formData.editedFields
-                            : [];
-                          const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
+                          const hasChanges = hasAnyChanges;
 
                           if (!hasChanges) {
                             return (
@@ -998,7 +1063,9 @@ const handleFileChange = (event) => {
                                   gap: 1,
                                 }}
                               >
-                                {id ? "No pending changes" : "Fill in the form to create a new senator"}
+                                {id
+                                  ? "No pending changes"
+                                  : "Fill in the form to create a new senator"}
                               </Typography>
                             );
                           }
@@ -1006,9 +1073,12 @@ const handleFileChange = (event) => {
                           // Enhanced field name formatter
                           const formatFieldName = (field) => {
                             // Handle term array items (e.g., "term2_votesScore_0_voteId")
-                            const termArrayMatch = field.match(/^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/);
+                            const termArrayMatch = field.match(
+                              /^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/
+                            );
                             if (termArrayMatch) {
-                              const [, termIdx, category, itemIdx, subField] = termArrayMatch;
+                              const [, termIdx, category, itemIdx, subField] =
+                                termArrayMatch;
                               const termNumber = parseInt(termIdx) + 1;
                               // const itemNumber = parseInt(itemIdx) + 1;
 
@@ -1016,18 +1086,22 @@ const handleFileChange = (event) => {
                                 return `Term ${termNumber}: Scored Vote`;
                               }
                               if (category === "activitiesScore") {
-                                
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
-                              return `Term ${termNumber}: ${fieldLabels[category] || category} Item ${itemNumber}`;
+                              return `Term ${termNumber}: ${
+                                fieldLabels[category] || category
+                              } Item ${itemNumber}`;
                             }
 
                             // Handle regular term fields (e.g., "term2_votesScore")
                             if (field.startsWith("term")) {
-                              const parts = field.split('_');
-                              const termNumber = parseInt(parts[0].replace("term", "")) + 1;
-                              const fieldKey = parts.slice(1).join('_');
-                              return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey}`;
+                              const parts = field.split("_");
+                              const termNumber =
+                                parseInt(parts[0].replace("term", "")) + 1;
+                              const fieldKey = parts.slice(1).join("_");
+                              return `Term ${termNumber}: ${
+                                fieldLabels[fieldKey] || fieldKey
+                              }`;
                             }
 
                             // Handle non-term fields
@@ -1056,15 +1130,20 @@ const handleFileChange = (event) => {
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {backendChanges.map((field) => {
-                                      const editorInfo = formData?.fieldEditors?.[field];
-                                      const editor = editorInfo?.editorName || "Unknown Editor";
+                                      const editorInfo =
+                                        formData?.fieldEditors?.[field];
+                                      const editor =
+                                        editorInfo?.editorName ||
+                                        "Unknown Editor";
                                       const editTime = editorInfo?.editedAt
-                                        ? new Date(editorInfo.editedAt).toLocaleString([], {
-                                          month: "short",
-                                          day: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
+                                        ? new Date(
+                                            editorInfo.editedAt
+                                          ).toLocaleString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
                                         : "unknown time";
 
                                       return (
@@ -1074,23 +1153,37 @@ const handleFileChange = (event) => {
                                         >
                                           <ListItemText
                                             primary={
-                                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  gap: 1,
+                                                }}
+                                              >
                                                 <Box
                                                   sx={{
                                                     width: 8,
                                                     height: 8,
                                                     borderRadius: "50%",
-                                                    backgroundColor: statusData.iconColor,
+                                                    backgroundColor:
+                                                      statusData.iconColor,
                                                   }}
                                                 />
-                                                <Typography variant="body2" fontWeight="500">
+                                                <Typography
+                                                  variant="body2"
+                                                  fontWeight="500"
+                                                >
                                                   {formatFieldName(field)}
                                                 </Typography>
                                               </Box>
                                             }
                                             secondary={
-                                              <Typography variant="caption" color="text.secondary">
-                                                Updated by {editor} on {editTime}
+                                              <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                              >
+                                                Updated by {editor} on{" "}
+                                                {editTime}
                                               </Typography>
                                             }
                                             sx={{ my: 0 }}
@@ -1103,7 +1196,7 @@ const handleFileChange = (event) => {
                               )}
 
                               {/* Local unsaved changes */}
-                              {localChanges.length > 0 && (
+                              {localOnlyChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "background.paper",
@@ -1120,23 +1213,33 @@ const handleFileChange = (event) => {
                                     Unsaved Changes
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
-                                    {localChanges.map((field) => (
+                                    {localOnlyChanges.map((field) => (
                                       <ListItem
                                         key={`local-${field}`}
                                         sx={{ py: 0, px: 1 }}
                                       >
                                         <ListItemText
                                           primary={
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                            <Box
+                                              sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 1,
+                                              }}
+                                            >
                                               <Box
                                                 sx={{
                                                   width: 8,
                                                   height: 8,
                                                   borderRadius: "50%",
-                                                  backgroundColor: statusData.iconColor,
+                                                  backgroundColor:
+                                                    statusData.iconColor,
                                                 }}
                                               />
-                                              <Typography variant="body2" fontWeight="500">
+                                              <Typography
+                                                variant="body2"
+                                                fontWeight="500"
+                                              >
                                                 {formatFieldName(field)}
                                               </Typography>
                                             </Box>
@@ -1246,7 +1349,9 @@ const handleFileChange = (event) => {
                       color: "text.secondary",
                     }}
                   >
-                    Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
+                    Are you sure you want to{" "}
+                    {userRole === "admin" ? "discard" : "undo"} all changes?{" "}
+                    <br />
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
@@ -1666,17 +1771,19 @@ const handleFileChange = (event) => {
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         // initialValue={term.summary || ""}
-                       value={term.summary}
+                        value={term.summary}
                         onEditorChange={(content) => {
-                          setSenatorTermData(prev =>
+                          setSenatorTermData((prev) =>
                             prev.map((t, idx) =>
                               idx === termIndex ? { ...t, summary: content } : t
                             )
                           );
                           // Optionally update localChanges here too
                           const fieldName = `term${termIndex}_summary`;
-                          setLocalChanges(prev =>
-                            prev.includes(fieldName) ? prev : [...prev, fieldName]
+                          setLocalChanges((prev) =>
+                            prev.includes(fieldName)
+                              ? prev
+                              : [...prev, fieldName]
                           );
                         }}
                         onBlur={() => {}}
@@ -1943,7 +2050,7 @@ const handleFileChange = (event) => {
                                   Select an Activity
                                 </MenuItem>
                                 {senatorActivities &&
-                                  senatorActivities.length > 0 ? (
+                                senatorActivities.length > 0 ? (
                                   senatorActivities.map((activityItem) => (
                                     <MenuItem
                                       key={activityItem._id}
