@@ -911,12 +911,14 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseById(id)).unwrap();
 
       // Update originals to match latest backend data
-      if (houseData?.currentHouse) {
-        setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
-      }
-      if (house) {
-        setOriginalFormData(JSON.parse(JSON.stringify(house)));
-      }
+      // if (houseData?.currentHouse) {
+      //   setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
+      // }
+      // if (house) {
+      //   setOriginalFormData(JSON.parse(JSON.stringify(house)));
+      // }
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
       setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")

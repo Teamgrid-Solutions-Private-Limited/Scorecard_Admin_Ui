@@ -73,6 +73,8 @@ import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 // import { jwtDecode } from "jwt-decode";
 import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; // adjust path as needed
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -89,6 +91,8 @@ export default function AddSenator(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
    const [componentKey, setComponentKey] = useState(0);
+    const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
 
 
   let senatorActivities =
@@ -930,12 +934,14 @@ const handleFileChange = (event) => {
 
 
       // Update originals to match latest backend data
-      if (senatorData?.currentSenator) {
-        setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
-      }
-      if (senator) {
-        setOriginalFormData(JSON.parse(JSON.stringify(senator)));
-      }
+      // if (senatorData?.currentSenator) {
+      //   setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
+      // }
+      // if (senator) {
+      //   setOriginalFormData(JSON.parse(JSON.stringify(senator)));
+      // }
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
       setLocalChanges([]);
 
       userRole === "admin"
@@ -1459,21 +1465,23 @@ const getValidTermId = (termId) => {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
+                  // flexDirection={isMobile ? "column" : "row"}
                 >
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
+                      
                     >
                       Senator's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4} >
                     <TextField
                       required
                       id="title"
@@ -1486,11 +1494,11 @@ const getValidTermId = (termId) => {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1}>
+                  <Grid size={isMobile?12:1}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1498,7 +1506,7 @@ const getValidTermId = (termId) => {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -1563,11 +1571,11 @@ const getValidTermId = (termId) => {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1575,7 +1583,7 @@ const getValidTermId = (termId) => {
                       State
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       id="state"
                       name="state"
@@ -1587,11 +1595,11 @@ const getValidTermId = (termId) => {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1} sx={{ alignContent: "center" }}>
+                  <Grid size={isMobile?12:1} sx={{ alignContent: "center" }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1599,7 +1607,7 @@ const getValidTermId = (termId) => {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <FormControl fullWidth>
                       <Select
                         name="party"
@@ -1614,11 +1622,11 @@ const getValidTermId = (termId) => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1718,12 +1726,12 @@ const getValidTermId = (termId) => {
                     columnSpacing={2}
                     alignItems={"center"}
                   >
-                    <Grid size={2}>
+                    <Grid size={isMobile? 12 : 2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1731,7 +1739,7 @@ const getValidTermId = (termId) => {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile? 12 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           // value={term.termId || ""}
@@ -1761,11 +1769,11 @@ const getValidTermId = (termId) => {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={2.1} sx={{ alignContent: "center" }}>
+                    <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1773,7 +1781,7 @@ const getValidTermId = (termId) => {
                         Current Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={0}>
+                    <Grid size={isMobile?6:0}>
                       <Switch
                         {...label}
                         name="currentTerm"
@@ -1783,12 +1791,12 @@ const getValidTermId = (termId) => {
                       />
                     </Grid>
 
-                    <Grid size={2.39}>
+                    <Grid size={isMobile?6:2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1796,7 +1804,7 @@ const getValidTermId = (termId) => {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?6:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -1819,11 +1827,11 @@ const getValidTermId = (termId) => {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1831,7 +1839,7 @@ const getValidTermId = (termId) => {
                         Term Summary
                       </InputLabel>
                     </Grid>
-                    <Grid size={9.05}>
+                    <Grid size={isMobile?12:9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
@@ -1897,13 +1905,14 @@ const getValidTermId = (termId) => {
                             display="flex"
                             alignItems="center"
                             columnGap={"15px"}
+                            // flexDirection={isMobile ? "column" : "row"}
                           >
-                            <Grid size={2}>
+                            <Grid size={isMobile?12:2} >
                               <InputLabel
                                 sx={{
                                   display: "flex",
                                   alignItems: "center",
-                                  justifyContent: "end",
+                                  justifyContent: isMobile ? "flex-start" : "flex-end",                                  
                                   fontWeight: 700,
                                   my: 0,
                                 }}
@@ -1911,7 +1920,7 @@ const getValidTermId = (termId) => {
                                 Scored Vote
                               </InputLabel>
                             </Grid>
-                            <Grid size={7.5}>
+                            <Grid size={isMobile?12:7.5}>
                               <FormControl fullWidth>
                                 <Select
                                   // value={vote.voteId || ""}
@@ -1984,8 +1993,8 @@ const getValidTermId = (termId) => {
                                 </Select>
                               </FormControl>
                             </Grid>
-                            <Grid size={1.6}>
-                              <FormControl fullWidth>
+                            <Grid size={isMobile?12:1.6}>
+                              <FormControl fullWidth >
                                 <Select
                                   value={vote.score || ""}                                  
                                   onChange={(event) =>
@@ -2053,12 +2062,12 @@ const getValidTermId = (termId) => {
                           alignItems="center"
                           columnGap={"15px"}
                         >
-                          <Grid size={2}>
+                          <Grid size={isMobile?12:2}>
                             <InputLabel
                               sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "end",
+                                justifyContent: isMobile ? "flex-start" : "flex-end",
                                 fontWeight: 700,
                                 my: 0,
                               }}
@@ -2066,8 +2075,8 @@ const getValidTermId = (termId) => {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={7.5}>
-                            <FormControl fullWidth>
+                          <Grid size={isMobile?8:7.5}>
+                            <FormControl fullWidth >
                               <Select
                                 // value={activity.activityId || ""}
                                  value={senatorActivities.some(a => a._id === activity.activityId)
@@ -2145,7 +2154,7 @@ const getValidTermId = (termId) => {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1.6}>
+                          <Grid size={isMobile?6:1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity?.score || ""}
