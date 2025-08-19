@@ -5,11 +5,11 @@ import {jwtDecode} from "jwt-decode";
 
 // Async thunk for user login
 export const loginUser = createAsyncThunk("auth/loginUser", async (credentials, { rejectWithValue }) => {
-    console.log(credentials);
+   
     
   try {
     const response = await axios.post(`${API_URL}/user/login`, credentials);
-    console.log(response.data);
+  
     
     return response.data; // Includes token and user details
   } catch (error) {

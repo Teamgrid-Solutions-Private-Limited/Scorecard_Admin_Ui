@@ -88,8 +88,8 @@ export default function Addrepresentative(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-  const [componentKey, setComponentKey] = useState(0);
-  const [hasLocalChanges, setHasLocalChanges] = useState(false);
+   const [componentKey, setComponentKey] = useState(0);
+    const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -141,45 +141,93 @@ export default function Addrepresentative(props) {
       summary: "",
       rating: "",
       votesScore: [{ voteId: "", score: "" }],
-      activitiesScore: [{ activityId: null, score: "" }],
+      activitiesScore: [{ activityId: "", score: "" }],
       currentTerm: false,
       termId: null,
     },
   ]);
 
-  const handleTermChange = (e, termIndex) => {
+  // const handleTermChange = (e, termIndex) => {
+  //   const fieldName = `term${termIndex}_${e.target.name}`;
+  //   if (!localChanges.includes(fieldName)) {
+  //     setLocalChanges((prev) => [...prev, fieldName]);
+  //   }
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? { ...term, [e.target.name]: e.target.value }
+  //         : term
+  //     )
+  //   );
+  // };
+
+    const handleTermChange = (e, termIndex) => {
+    const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
     if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-    if (!localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    }
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? { ...term, [e.target.name]: e.target.value }
-          : term
-      )
+       setHouseTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex ? { ...term, [name]: value } : term
     );
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const isActualChange = compareValues(value, originalTerm[name]);
+    
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+    }
+    
+    return newTerms;
+  });
+   
   };
+  // const handleSwitchChange = (e, termIndex) => {
+  //   const fieldName = `term${termIndex}_${e.target.name}`;
+  //   if (!localChanges.includes(fieldName)) {
+  //     setLocalChanges((prev) => [...prev, fieldName]);
+  //   }
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? { ...term, [e.target.name]: e.target.checked }
+  //         : term
+  //     )
+  //   );
+  // };
+
 
   const handleSwitchChange = (e, termIndex) => {
-    const fieldName = `term${termIndex}_${e.target.name}`;
-    if (!hasLocalChanges) {
+    const { name, checked } = e.target;
+     const fieldName = `term${termIndex}_${name}`;
+     if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-    if (!localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    }
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? { ...term, [e.target.name]: e.target.checked }
-          : term
-      )
+    
+    setHouseTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex ? { ...term, [name]: checked } : term
     );
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const isActualChange = compareValues(checked, originalTerm[name]);
+    
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+    }
+    
+    return newTerms;
+  });
   };
+
+
 
   const handleAddVote = (termIndex) => {
     setHouseTermData((prev) =>
@@ -207,36 +255,67 @@ export default function Addrepresentative(props) {
     );
   };
 
+  // const handleVoteChange = (termIndex, voteIndex, field, value) => {
+  //   // Construct the field name for change tracking
+  //   // Construct the field name for change tracking
+  //   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
+
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) =>
+  //     prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
+  //   );
+
+  //   // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
+
+  //   // setLocalChanges((prev) =>
+  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   // );
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //             ...term,
+  //             votesScore: term.votesScore.map((vote, i) =>
+  //               i === voteIndex ? { ...vote, [field]: value } : vote
+  //             ),
+  //           }
+  //         : term
+  //     )
+  //   );
+  // };
+
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
-    // Construct the field name for change tracking
-    // Construct the field name for change tracking
-    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
-    if (!hasLocalChanges) {
+  const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
+  if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
+  
+  setHouseTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
+        : term
     );
-
-    // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
-
-    // setLocalChanges((prev) =>
-    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-    // );
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
-          : term
-      )
-    );
-  };
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalVote = originalTerm.votesScore?.[voteIndex] || {};
+    const isActualChange = compareValues(value, originalVote[field]);
+    
+    if (isActualChange && !localChanges.includes(voteChangeId)) {
+      setLocalChanges((prev) => [...prev, voteChangeId]);
+    } else if (!isActualChange && localChanges.includes(voteChangeId)) {
+      setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
+    }
+    
+    return newTerms;
+  });
+};
 
   const handleAddActivity = (termIndex) => {
     setHouseTermData((prev) =>
@@ -246,7 +325,7 @@ export default function Addrepresentative(props) {
               ...term,
               activitiesScore: [
                 ...term.activitiesScore,
-                { activityId: null, score: "" },
+                { activityId: "", score: "" },
               ],
             }
           : term
@@ -269,36 +348,69 @@ export default function Addrepresentative(props) {
     );
   };
 
+  // const handleActivityChange = (termIndex, activityIndex, field, value) => {
+  //   // Construct the field name for change tracking
+  //   const activityChangeId = `term${termIndex}_TrackedActivity_${
+  //     activityIndex + 1
+  //   }`;
+
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) =>
+  //     prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
+  //   );
+  //   // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
+
+  //   // setLocalChanges((prev) =>
+  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   // );
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //             ...term,
+  //             activitiesScore: term.activitiesScore.map((activity, i) =>
+  //               i === activityIndex ? { ...activity, [field]: value } : activity
+  //             ),
+  //           }
+  //         : term
+  //     )
+  //   );
+  // };
+
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    // Construct the field name for change tracking
-    const activityChangeId = `term${termIndex}_TrackedActivity_${
-      activityIndex + 1
-    }`;
-    if (!hasLocalChanges) {
+  const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
+  if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
-    );
-    // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
 
-    // setLocalChanges((prev) =>
-    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-    // );
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-              ...term,
-              activitiesScore: term.activitiesScore.map((activity, i) =>
-                i === activityIndex ? { ...activity, [field]: value } : activity
-              ),
-            }
-          : term
-      )
-    );
-  };
+  setHouseTermData((prev) => {
+    const newTerms = prev.map((term, idx) => {
+      if (idx !== termIndex) return term;
+
+      const newActivities = term.activitiesScore.map((activity, i) => 
+        i === activityIndex ? { ...activity, [field]: value } : activity
+      );
+
+      return { ...term, activitiesScore: newActivities };
+    });
+
+    // Compare with original data if available
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
+    const isActualChange = compareValues(value, originalActivity[field]);
+
+    setLocalChanges((prevChanges) => {
+      if (isActualChange && !prevChanges.includes(activityChangeId)) {
+        return [...prevChanges, activityChangeId];
+      } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
+        return prevChanges.filter(f => f !== activityChangeId);
+      }
+      return prevChanges;
+    });
+
+    return newTerms;
+  });
+};
 
   // Remove contentRefs for summary
 
@@ -333,7 +445,7 @@ export default function Addrepresentative(props) {
         summary: "",
         rating: "",
         votesScore: [{ voteId: "", score: "" }],
-        activitiesScore: [{ activityId: null, score: "" }],
+        activitiesScore: [{ activityId: "", score: "" }],
         currentTerm: false,
         termId: null,
         editedFields: [], // Initialize empty
@@ -350,6 +462,14 @@ export default function Addrepresentative(props) {
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
       }
+
+       // Remove any tracked changes for this term
+    setLocalChanges((prevChanges) => 
+      prevChanges.filter(
+        change => !change.startsWith(`term${termIndex}_`)
+      )
+    );
+    
       return prev.filter((_, index) => index !== termIndex);
     });
   };
@@ -357,12 +477,23 @@ export default function Addrepresentative(props) {
   //   setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
   // };
 
+  // const compareValues = (newVal, oldVal) => {
+  //   if (typeof newVal === "string" && typeof oldVal === "string") {
+  //     return newVal.trim() !== oldVal.trim();
+  //   }
+  //   return newVal !== oldVal;
+  // };
+
   const compareValues = (newVal, oldVal) => {
-    if (typeof newVal === "string" && typeof oldVal === "string") {
-      return newVal.trim() !== oldVal.trim();
-    }
-    return newVal !== oldVal;
-  };
+  // Handle null/undefined cases
+  if (newVal == null || oldVal == null) return newVal !== oldVal;
+  
+  // Handle booleans and other primitives directly
+  if (typeof newVal !== 'object') return newVal !== oldVal;
+  
+  // Handle arrays and objects
+  return JSON.stringify(newVal) !== JSON.stringify(oldVal);
+};
 
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
@@ -438,7 +569,7 @@ export default function Addrepresentative(props) {
                     activity.activityId?._id || activity.activityId || null,
                   score: activity.score || "",
                 }))
-              : [{ activityId: null, score: "" }],
+              : [{ activityId: "", score: "" }],
         };
       });
 
@@ -451,7 +582,7 @@ export default function Addrepresentative(props) {
           summary: "",
           rating: "",
           votesScore: [{ voteId: "", score: "" }],
-          activitiesScore: [{ activityId: null, score: "" }],
+          activitiesScore: [{ activityId: "", score: "" }],
           currentTerm: false,
           termId: null,
           editedFields: [],
@@ -598,29 +729,53 @@ export default function Addrepresentative(props) {
     preFillForm();
   }, [house, terms]);
 
+  // const handleChange = (event) => {
+  //   const { name, value } = event.target;
+
+  //   // Track the changed field
+  //   if (!localChanges.includes(name)) {
+  //     setLocalChanges((prev) => [...prev, name]);
+  //   }
+  //   setFormData((prev) => {
+  //     const newData = { ...prev, [name]: value };
+
+  //     // if (originalFormData) {
+  //     //   const changes = Object.keys(newData).filter((key) =>
+  //     //     compareValues(newData[key], originalFormData[key])
+  //     //   );
+  //     //   setEditedFields(changes);
+  //     // }
+
+  //     return newData;
+  //   });
+  // };
+
   const handleChange = (event) => {
-    const { name, value } = event.target;
-    if (!hasLocalChanges) {
+  const { name, value } = event.target;
+  if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-
-    // Track the changed field
-    if (!localChanges.includes(name)) {
-      setLocalChanges((prev) => [...prev, name]);
+  
+  setFormData(prev => {
+    const newData = { ...prev, [name]: value };
+    
+    // Compare with original data
+    if (originalFormData) {
+      const isActualChange = compareValues(value, originalFormData[name]);
+      
+      setLocalChanges(prevChanges => {
+        if (isActualChange && !prevChanges.includes(name)) {
+          return [...prevChanges, name];
+        } else if (!isActualChange && prevChanges.includes(name)) {
+          return prevChanges.filter(field => field !== name);
+        }
+        return prevChanges;
+      });
     }
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-
-      // if (originalFormData) {
-      //   const changes = Object.keys(newData).filter((key) =>
-      //     compareValues(newData[key], originalFormData[key])
-      //   );
-      //   setEditedFields(changes);
-      // }
-
-      return newData;
-    });
-  };
+    
+    return newData;
+  });
+};
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -628,6 +783,7 @@ export default function Addrepresentative(props) {
     if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
+
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
@@ -653,25 +809,63 @@ export default function Addrepresentative(props) {
         setDeletedTermIds([]); // clear after delete
       }
 
-      const allChanges = [
+       // Transform localChanges to track individual vote/activity edits
+    const detailedChanges = localChanges.map(change => {
+      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId" or "term1_votesScore_0_score")
+      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
+      if (voteMatch) {
+        const [, termIdx, voteIdx] = voteMatch;
+        return `term${termIdx}_votesScore_${voteIdx}`;
+      }
+     
+      // Handle activitiesScore changes
+      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
+      if (activityMatch) {
+        const [, termIdx, activityIdx] = activityMatch;
+        return `term${termIdx}_activitiesScore_${activityIdx}`;
+      }
+     
+      return change;
+    });
+
+    const allChanges = [
         ...new Set([
           ...(Array.isArray(formData.editedFields)
             ? formData.editedFields
             : []),
-          ...localChanges,
+          ...detailedChanges,
         ]),
       ];
 
+      // const allChanges = [
+      //   ...new Set([
+      //     ...(Array.isArray(formData.editedFields)
+      //       ? formData.editedFields
+      //       : []),
+      //     ...localChanges,
+      //   ]),
+      // ];
+
+      // Update field editors with current changes
       // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      editedFields.forEach((field) => {
+       localChanges.forEach((field) => {
+    // For senator-level fields
+    if (field in formData) {
+      if (compareValues(formData[field], originalFormData?.[field] || '')) {
         updatedFieldEditors[field] = currentEditor;
-      });
+      }
+    }
+    // For term-level fields
+    else if (field.startsWith('term')) {
+      updatedFieldEditors[field] = currentEditor;
+    }
+  });
 
       // Prepare representative update
       const representativeUpdate = {
         ...formData,
-        editedFields,
+        editedFields:allChanges,
         fieldEditors: updatedFieldEditors,
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
@@ -707,14 +901,23 @@ export default function Addrepresentative(props) {
             voteId: vote.voteId.toString().trim() === "" ? null : vote.voteId,
             score: vote.score,
           }));
+
+           const transformedTrackedActivity = term.activitiesScore.map(activity => ({
+          ...activity,
+          activityId: activity.activityId === "" ? null : activity.activityId
+        })).filter(activity => activity.activityId !== null);
+
+
+          // Get changes specific to this term
+      const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
+
         const termUpdate = {
           ...term,
           votesScore: cleanVotesScore,
+          activitiesScore: transformedTrackedActivity,
           isNew: false,
           houseId: id,
-          editedFields: editedFields.filter((f) =>
-            f.startsWith(`term${index}_`)
-          ),
+          editedFields: termChanges,
           fieldEditors: updatedFieldEditors,
         };
 
@@ -732,12 +935,14 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseById(id)).unwrap();
 
       // Update originals to match latest backend data
-      if (houseData?.currentHouse) {
-        setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
-      }
-      if (house) {
-        setOriginalFormData(JSON.parse(JSON.stringify(house)));
-      }
+      // if (houseData?.currentHouse) {
+      //   setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
+      // }
+      // if (house) {
+      //   setOriginalFormData(JSON.parse(JSON.stringify(house)));
+      // }
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
       setHasLocalChanges(false); // Reset after save
       setLocalChanges([]);
       userRole === "admin"
@@ -780,17 +985,44 @@ export default function Addrepresentative(props) {
     width: 1,
   });
 
+  // const handleStatusChange = (status) => {
+  //   const fieldName = "status"; // The field being changed
+
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) =>
+  //     prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   );
+  //   setFormData((prev) => ({ ...prev, status }));
+  // };
+
+
   const handleStatusChange = (status) => {
-    const fieldName = "status"; // The field being changed
-    if (!hasLocalChanges) {
+  const fieldName = "status"; // The field being changed
+  if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
-    );
-    setFormData((prev) => ({ ...prev, status }));
-  };
+
+  setFormData((prev) => {
+    const newData = { ...prev, status };
+    
+    // Compare with original value to determine if this is an actual change
+    const isActualChange = originalFormData 
+      ? status !== originalFormData.status
+      : true;
+
+    // Update local changes based on whether it's an actual change
+    setLocalChanges((prevChanges) => {
+      if (isActualChange && !prevChanges.includes(fieldName)) {
+        return [...prevChanges, fieldName];
+      } else if (!isActualChange && prevChanges.includes(fieldName)) {
+        return prevChanges.filter(field => field !== fieldName);
+      }
+      return prevChanges;
+    });
+
+    return newData;
+  });
+};
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
@@ -822,11 +1054,11 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      published: {
+       published: {
         backgroundColor: "rgba(255, 193, 7, 0.12)",
         borderColor: "#FFC107",
         iconColor: "#FFA000",
-        icon: "",
+        icon: null,
         // title: "Published",
         description:
           editedFields.length > 0
@@ -837,6 +1069,16 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+      // published: {
+      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
+      //   borderColor: "#4CAF50",
+      //   iconColor: "#2E7D32",
+      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+      //   title: "Published",
+      //   description: "Published and live",
+      //   titleColor: "#2E7D32",
+      //   descColor: "#388E3C",
+      // },
     };
 
     return configs[currentStatus];
@@ -848,7 +1090,8 @@ export default function Addrepresentative(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
-  const backendChanges = Array.isArray(formData?.editedFields)
+
+    const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
     : [];
   const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
@@ -870,31 +1113,28 @@ export default function Addrepresentative(props) {
   const handleConfirmDiscard = async () => {
     setOpenDiscardDialog(false);
 
-    try {
-      setLoading(true);
-      await dispatch(discardHouseChanges(id)).unwrap();
-      await dispatch(getHouseById(id));
-      await dispatch(getHouseDataByHouseId(id));
-      setSnackbarMessage(
-        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
-      );
-      setSnackbarSeverity("success");
-      setComponentKey((prev) => prev + 1);
-    } catch (error) {
-      console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string"
-          ? error
-          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-    } finally {
-      setOpenSnackbar(true);
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    await dispatch(discardHouseChanges(id)).unwrap();
+    await dispatch(getHouseById(id));
+    await dispatch(getHouseDataByHouseId(id));
+    setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+    setSnackbarSeverity("success");
+    setComponentKey(prev => prev + 1);
+  } catch (error) {
+    console.error("Discard failed:", error);
+    const errorMessage =
+      error?.payload?.message ||
+      error?.message ||
+      (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+    setSnackbarMessage(errorMessage);
+    setSnackbarSeverity("error");
+  } finally {
+    setOpenSnackbar(true);
+    setLoading(false);
+  }
+};
+
 
   return (
     <AppTheme key={componentKey}>
@@ -1005,7 +1245,11 @@ export default function Addrepresentative(props) {
 
                         {userRole === "admin" && (
                           <Chip
-                            label={`${backendChanges.length + localOnlyChanges.length} pending changes`}
+                            label={`${
+                              Array.isArray(formData?.editedFields)
+                                ? formData.editedFields.length + localChanges.length
+                                : 0
+                            } pending changes`}
                             size="small"
                             color="warning"
                             variant="outlined"
@@ -1736,17 +1980,15 @@ export default function Addrepresentative(props) {
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term.summary}
                         onEditorChange={(content) => {
-                          setHouseTermData((prev) =>
+                          setHouseTermData(prev =>
                             prev.map((t, idx) =>
                               idx === termIndex ? { ...t, summary: content } : t
                             )
                           );
                           // Optionally update localChanges here too
                           const fieldName = `term${termIndex}_summary`;
-                          setLocalChanges((prev) =>
-                            prev.includes(fieldName)
-                              ? prev
-                              : [...prev, fieldName]
+                          setLocalChanges(prev =>
+                            prev.includes(fieldName) ? prev : [...prev, fieldName]
                           );
                         }}
                         onBlur={() => {}}
@@ -1939,6 +2181,7 @@ export default function Addrepresentative(props) {
 
                     {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) => (
+                      activity.activityId != null ? (
                       <Grid
                         rowSpacing={2}
                         sx={{ width: "100%", mt: 2 }}
@@ -2051,9 +2294,9 @@ export default function Addrepresentative(props) {
                                 }
                                 sx={{ background: "#fff" }}
                               >
-                                <MenuItem value="Yes">Yea</MenuItem>
-                                <MenuItem value="No">Nay</MenuItem>
-                                <MenuItem value="Neutral">Other</MenuItem>
+                                <MenuItem value="yes">Yea</MenuItem>
+                                <MenuItem value="no">Nay</MenuItem>
+                                <MenuItem value="other">Other</MenuItem>
                                 {/* <MenuItem value="None">None</MenuItem> */}
                               </Select>
                             </FormControl>
@@ -2067,6 +2310,7 @@ export default function Addrepresentative(props) {
                           </Grid>
                         </Grid>
                       </Grid>
+                      ) : null
                     ))}
                     {/* Activities Repeater Ends */}
 

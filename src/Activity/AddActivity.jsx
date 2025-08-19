@@ -33,7 +33,6 @@ import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import {
-  Alert,
   Dialog,
   DialogActions,
   DialogContent,
@@ -54,6 +53,11 @@ import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  const { ownerState, ...alertProps } = props;
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...alertProps} />;
+});
 
 export default function AddActivity(props) {
   const { id } = useParams();
@@ -83,10 +87,13 @@ export default function AddActivity(props) {
     userRole = "";
   }
 
-  console.log("User Role:", userRole);
+ 
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
+   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+ 
+  
 
   const fieldLabels = {
     type: "Type",
@@ -106,7 +113,6 @@ export default function AddActivity(props) {
     return newVal !== oldVal;
   };
 
-  console.log("User Role:", userRole);
   const preFillForm = () => {
     if (selectedActivity) {
       const newFormData = {
@@ -195,6 +201,9 @@ export default function AddActivity(props) {
   // Update your handleChange and handleEditorChange to properly track changes
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
@@ -210,6 +219,9 @@ export default function AddActivity(props) {
   };
 
   const handleEditorChange = (content, fieldName) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: content };
 
@@ -225,6 +237,9 @@ export default function AddActivity(props) {
   };
 
   const handleFileUpload = (event) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
@@ -307,12 +322,7 @@ export default function AddActivity(props) {
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
 
-      // Debug: Log what we're sending
-      console.log("Sending FormData:", {
-        formData: Object.fromEntries(formDataToSend.entries()),
-        selectedFile: selectedFile?.name,
-        status: finalStatus,
-      });
+     
 
       if (id) {
         await dispatch(
@@ -352,6 +362,7 @@ export default function AddActivity(props) {
         setSnackbarSeverity("success");
 
         // Reset editedFields after successful creation
+        setHasLocalChanges(false); // Reset after save
         setEditedFields([]);
         // Update originalFormData to current form data
         setOriginalFormData({ ...formData, status: finalStatus });
@@ -438,11 +449,11 @@ export default function AddActivity(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      published: {
+         published: {
         backgroundColor: "rgba(255, 193, 7, 0.12)",
         borderColor: "#FFC107",
         iconColor: "#FFA000",
-        icon: "",
+        icon: null,
         // title: "Published",
         description:
           editedFields.length > 0
@@ -464,19 +475,22 @@ export default function AddActivity(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
-  const backendChanges = Array.isArray(selectedActivity?.editedFields)
-    ? selectedActivity.editedFields
+    const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
     : [];
-  const localChanges = Array.isArray(editedFields) ? editedFields : [];
-  const hasAnyChanges = backendChanges.length > 0 || localChanges.length > 0;
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
 
   // 5. The banner already uses editedFields, so no change needed there
-  useEffect(() => {
-    console.log("Current status:", currentStatus);
-    console.log("Edited fields:", editedFields);
-    console.log("Original data:", originalFormData);
-    console.log("data:", formData);
-  }, [currentStatus, editedFields, originalFormData, formData]);
+  useEffect(() => {}, [
+    currentStatus,
+    editedFields,
+    originalFormData,
+    formData,
+  ]);
   return (
     <AppTheme>
       {loading && (
@@ -502,8 +516,9 @@ export default function AddActivity(props) {
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        sx={{ "& .MuiClickAwayListener-root": { all: "inherit" } }}
       >
-        <MuiAlert
+        <Alert
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
           sx={{ width: "100%" }}
@@ -511,7 +526,7 @@ export default function AddActivity(props) {
           variant="filled"
         >
           {snackbarMessage}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
@@ -539,233 +554,161 @@ export default function AddActivity(props) {
             {userRole &&
               statusData &&
               (currentStatus !== "published" || hasAnyChanges) && (
-                <Box
-                  sx={{
-                    width: "98%",
-                    p: 2,
-                    backgroundColor: statusData.backgroundColor,
-                    borderLeft: `4px solid ${statusData.borderColor}`,
-                    borderRadius: "0 8px 8px 0",
-                    boxShadow: 1,
-                    mb: 2,
-                  }}
-                >
+              <Box
+                sx={{
+                  width: "98%",
+                  p: 2,
+                  backgroundColor: statusData.backgroundColor,
+                  borderLeft: `4px solid ${statusData.borderColor}`,
+                  borderRadius: "0 8px 8px 0",
+                  boxShadow: 1,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  {/* Status icon bubble */}
                   <Box
-                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
+                    sx={{
+                      p: 1,
+                      borderRadius: "50%",
+                      backgroundColor: `rgba(${
+                        currentStatus === "draft"
+                          ? "66, 165, 245"
+                          : currentStatus === "review"
+                          ? "255, 193, 7"
+                          : currentStatus === "published"
+                          ? ""
+                          : "244, 67, 54"
+                      }, 0.2)`,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
                   >
-                    {/* Status icon bubble */}
+                    {statusData.icon && React.cloneElement(statusData.icon, {
+                        sx: { color: statusData.iconColor },
+                      })}
+                  </Box>
+
+                  <Box sx={{ flex: 1 }}>
+                    {/* Header: title + pending count (admin only) */}
                     <Box
                       sx={{
-                        p: 1,
-                        borderRadius: "50%",
-                        backgroundColor: `rgba(${
-                          currentStatus === "draft"
-                            ? "66, 165, 245"
-                            : currentStatus === "review"
-                            ? "255, 193, 7"
-                            : currentStatus === "published"
-                            ? ""
-                            : "244, 67, 54"
-                        }, 0.2)`,
-                        display: "grid",
-                        placeItems: "center",
-                        flexShrink: 0,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                       }}
                     >
-                      {statusData?.icon &&
-                        React.cloneElement(statusData.icon, {
-                          sx: { color: statusData.iconColor },
-                        })}
-                    </Box>
-
-                    <Box sx={{ flex: 1 }}>
-                      {/* Header: title + pending count (admin only) */}
-                      <Box
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="600"
                         sx={{
+                          color: statusData.titleColor,
                           display: "flex",
-                          justifyContent: "space-between",
                           alignItems: "center",
+                          gap: 1,
                         }}
                       >
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight="600"
-                          sx={{
-                            color: statusData.titleColor,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          {statusData.title}
-                        </Typography>
+                        {statusData.title}
+                      </Typography>
 
-                        {userRole === "admin" && (
-                          <Chip
-                            label={`${(() => {
-                              const backend = Array.isArray(
-                                selectedActivity?.editedFields
-                              )
-                                ? selectedActivity.editedFields
-                                : [];
-                              const local = Array.isArray(editedFields)
-                                ? editedFields
-                                : [];
-                              const localOnly = local.filter(
-                                (f) => !backend.includes(f)
-                              );
-                              return backend.length + localOnly.length;
-                            })()} pending changes`}
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                          />
-                        )}
-                      </Box>
+                      {userRole === "admin" && (
+                        <Chip
+                          label={`${(() => {
+                            const backend = Array.isArray(
+                              selectedActivity?.editedFields
+                            )
+                              ? selectedActivity.editedFields
+                              : [];
+                            const local = Array.isArray(editedFields)
+                              ? editedFields
+                              : [];
+                            const localOnly = local.filter(
+                              (f) => !backend.includes(f)
+                            );
+                            return backend.length + localOnly.length;
+                          })()} pending changes`}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
 
-                      {/* Pending / New fields list */}
-                      <Box sx={{ mt: 1.5 }}>
-                        {(() => {
-                          const backendChanges = Array.isArray(
-                            selectedActivity?.editedFields
-                          )
-                            ? selectedActivity.editedFields
-                            : [];
-                          const localChanges = Array.isArray(editedFields)
-                            ? editedFields
-                            : [];
-                          const hasChanges =
-                            backendChanges.length > 0 ||
-                            localChanges.length > 0;
+                    {/* Pending / New fields list */}
+                    <Box sx={{ mt: 1.5 }}>
+                      {(() => {
+                        const backendChanges = Array.isArray(
+                          selectedActivity?.editedFields
+                        )
+                          ? selectedActivity.editedFields
+                          : [];
+                        const localChanges = Array.isArray(editedFields)
+                          ? editedFields
+                          : [];
+                        const hasChanges =
+                          backendChanges.length > 0 || localChanges.length > 0;
 
-                          if (!hasChanges) {
-                            return (
-                              <Typography
-                                variant="body2"
+                        if (!hasChanges) {
+                          return (
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: "text.disabled",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              {typeof id !== "undefined" && id
+                                ? "No pending changes"
+                                : "Fill in the form to create a new activity"}
+                            </Typography>
+                          );
+                        }
+
+                        return (
+                          <>
+                            {/* Backend pending changes */}
+                            {backendChanges.length > 0 && (
+                              <Box
                                 sx={{
-                                  color: "text.disabled",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 1,
+                                  backgroundColor: "background.paper",
+                                  borderRadius: 1,
+                                  p: 1.5,
+                                  border: "1px solid",
+                                  borderColor: "divider",
+                                  mb: 2,
                                 }}
                               >
-                                {typeof id !== "undefined" && id
-                                  ? "No pending changes"
-                                  : "Fill in the form to create a new activity"}
-                              </Typography>
-                            );
-                          }
-
-                          return (
-                            <>
-                              {/* Backend pending changes */}
-                              {backendChanges.length > 0 && (
-                                <Box
-                                  sx={{
-                                    backgroundColor: "background.paper",
-                                    borderRadius: 1,
-                                    p: 1.5,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    mb: 2,
-                                  }}
+                                <Typography
+                                  variant="overline"
+                                  sx={{ color: "text.secondary", mb: 1 }}
                                 >
-                                  <Typography
-                                    variant="overline"
-                                    sx={{ color: "text.secondary", mb: 1 }}
-                                  >
-                                    {id ? "Saved Changes" : "New Fields"}
-                                  </Typography>
-                                  <List dense sx={{ py: 0 }}>
-                                    {backendChanges.map((field) => {
-                                      const editorInfo =
-                                        selectedActivity?.fieldEditors?.[field];
-                                      const editor =
-                                        editorInfo?.editorName ||
-                                        "Unknown Editor";
-                                      const editTime = editorInfo?.editedAt
-                                        ? new Date(
-                                            editorInfo.editedAt
-                                          ).toLocaleString([], {
-                                            month: "short",
-                                            day: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                          })
-                                        : "unknown time";
+                                  {id ? "Saved Changes" : "New Fields"}
+                                </Typography>
+                                <List dense sx={{ py: 0 }}>
+                                  {backendChanges.map((field) => {
+                                    const editorInfo =
+                                      selectedActivity?.fieldEditors?.[field];
+                                    const editor =
+                                      editorInfo?.editorName ||
+                                      "Unknown Editor";
+                                    const editTime = editorInfo?.editedAt
+                                      ? new Date(
+                                          editorInfo.editedAt
+                                        ).toLocaleString([], {
+                                          month: "short",
+                                          day: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })
+                                      : "unknown time";
 
-                                      return (
-                                        <ListItem
-                                          key={`backend-${field}`}
-                                          sx={{ py: 0.5, px: 1 }}
-                                        >
-                                          <ListItemText
-                                            primary={
-                                              <Box
-                                                sx={{
-                                                  display: "flex",
-                                                  alignItems: "center",
-                                                  gap: 1,
-                                                }}
-                                              >
-                                                <Box
-                                                  sx={{
-                                                    width: 8,
-                                                    height: 8,
-                                                    borderRadius: "50%",
-                                                    backgroundColor:
-                                                      statusData.iconColor,
-                                                  }}
-                                                />
-                                                <Typography
-                                                  variant="body2"
-                                                  fontWeight="500"
-                                                >
-                                                  {fieldLabels?.[field] ||
-                                                    field}
-                                                </Typography>
-                                              </Box>
-                                            }
-                                            secondary={
-                                              <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                              >
-                                                Updated by {editor} on{" "}
-                                                {editTime}
-                                              </Typography>
-                                            }
-                                            sx={{ my: 0 }}
-                                          />
-                                        </ListItem>
-                                      );
-                                    })}
-                                  </List>
-                                </Box>
-                              )}
-
-                              {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
-                                <Box
-                                  sx={{
-                                    backgroundColor: "background.paper",
-                                    borderRadius: 1,
-                                    p: 1.5,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                  }}
-                                >
-                                  <Typography
-                                    variant="overline"
-                                    sx={{ color: "text.secondary", mb: 1 }}
-                                  >
-                                    Unsaved Changes
-                                  </Typography>
-                                  <List dense sx={{ py: 0 }}>
-                                    {localChanges.map((field) => (
+                                    return (
                                       <ListItem
-                                        key={`local-${field}`}
-                                        sx={{ py: 0, px: 1 }}
+                                        key={`backend-${field}`}
+                                        sx={{ py: 0.5, px: 1 }}
                                       >
                                         <ListItemText
                                           primary={
@@ -793,20 +736,86 @@ export default function AddActivity(props) {
                                               </Typography>
                                             </Box>
                                           }
+                                          secondary={
+                                            <Typography
+                                              variant="caption"
+                                              color="text.secondary"
+                                            >
+                                              Updated by {editor} on {editTime}
+                                            </Typography>
+                                          }
+                                          sx={{ my: 0 }}
                                         />
                                       </ListItem>
-                                    ))}
-                                  </List>
-                                </Box>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </Box>
+                                    );
+                                  })}
+                                </List>
+                              </Box>
+                            )}
+
+                            {/* Local unsaved changes - now matches senator style */}
+                            {localChanges.length > 0 && (
+                              <Box
+                                sx={{
+                                  backgroundColor: "background.paper",
+                                  borderRadius: 1,
+                                  p: 1.5,
+                                  border: "1px solid",
+                                  borderColor: "divider",
+                                }}
+                              >
+                                <Typography
+                                  variant="overline"
+                                  sx={{ color: "text.secondary", mb: 1 }}
+                                >
+                                  Unsaved Changes
+                                </Typography>
+                                <List dense sx={{ py: 0 }}>
+                                  {localChanges.map((field) => (
+                                    <ListItem
+                                      key={`local-${field}`}
+                                      sx={{ py: 0, px: 1 }}
+                                    >
+                                      <ListItemText
+                                        primary={
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 1,
+                                            }}
+                                          >
+                                            <Box
+                                              sx={{
+                                                width: 8,
+                                                height: 8,
+                                                borderRadius: "50%",
+                                                backgroundColor:
+                                                  statusData.iconColor,
+                                              }}
+                                            />
+                                            <Typography
+                                              variant="body2"
+                                              fontWeight="500"
+                                            >
+                                              {fieldLabels?.[field] || field}
+                                            </Typography>
+                                          </Box>
+                                        }
+                                      />
+                                    </ListItem>
+                                  ))}
+                                </List>
+                              </Box>
+                            )}
+                          </>
+                        );
+                      })()}
                     </Box>
                   </Box>
                 </Box>
-              )}
+              </Box>
+            )}
             <Stack
               direction="row"
               spacing={2}
@@ -1210,13 +1219,8 @@ export default function AddActivity(props) {
                       )}
                     </FormControl>
                   </Grid>
-                  <Grid
-                    container
-                    spacing={2}
-                    alignItems="center"
-                    sx={{ ml: { xs: 0, sm: 5.6 } }}
-                  >
-                    <Grid item xs={12} sm={2}>
+                
+                    <Grid size={2}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1231,7 +1235,7 @@ export default function AddActivity(props) {
                       </InputLabel>
                     </Grid>
 
-                    <Grid item xs={12} sm={10}>
+                    <Grid size={10}>
                       <FormControl
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
@@ -1294,7 +1298,7 @@ export default function AddActivity(props) {
                           />
                         </RadioGroup>
                       </FormControl>
-                    </Grid>
+                  
                   </Grid>
                 </Grid>
               </Box>

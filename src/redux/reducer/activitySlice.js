@@ -50,6 +50,7 @@ export const getActivityById = createAsyncThunk(
           headers: { "x-protected-key": "MySuperSecretApiKey123" },
         }
       );
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

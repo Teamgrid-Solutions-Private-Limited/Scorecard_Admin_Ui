@@ -8,7 +8,7 @@ export const createTerm = createAsyncThunk(
   async (termData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/term/terms/create/`, termData);
-      console.log(response);
+     
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -52,7 +52,7 @@ export const updateTerm = createAsyncThunk(
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
       const response = await axios.put(`${API_URL}/term/terms/update/${id}`, updatedData);
-      console.log(response);
+     
       
       return response.data;
     } catch (error) {
@@ -67,7 +67,6 @@ export const deleteTerm = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`${API_URL}/term/terms/delete/${id}`);
-      console.log(response);
       
       return response.data;
     } catch (error) {

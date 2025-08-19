@@ -71,7 +71,7 @@ export default function Senator(props) {
     loading,
     error,
   } = useSelector((state) => state.senator || {});
-  // console.log("Redux State:", { senators, loading, error });
+
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,7 +86,7 @@ export default function Senator(props) {
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role;
 
-      console.log("User Role:", userRole);
+     
   const [partyFilter, setPartyFilter] = useState([]);
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
@@ -150,10 +150,10 @@ export default function Senator(props) {
         };
       });
       setMergedSenators(merged);
-      console.log("Merged Senators with termname:", merged);
+  
     }
   }, [senators, senatorData, terms]);
-  console.log(" Senators:", senators);
+ 
   // Build list of years from 2015 to current year
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -411,7 +411,7 @@ export default function Senator(props) {
     statusFilter.length;
    const handleToggleStatusSenator = (senator) => {
     const newStatus = senator.publishStatus === "published" ? "draft" : "published";
-    console.log("Toggling status:", senator.publishStatus, "→", newStatus);
+   
 
     dispatch(updateSenatorStatus({ id: senator._id, publishStatus: newStatus }))
       .then(() => {
@@ -445,48 +445,76 @@ export default function Senator(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" }}>
-        <SideMenu />
+      <Box sx={{ display: { xs: "block", md: "flex" } }}>
+        <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
 
         <Box
           sx={{
             flexGrow: 1,
-            // overflow: "auto",
-            width: "80%",
-            filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
-            pointerEvents: fetching ? "none" : "auto", // Disable interactions
+            width: { xs: "100%", md: "80%" },
+            filter: fetching ? "blur(1px)" : "none",
+            pointerEvents: fetching ? "none" : "auto",
+            px: { xs: 0.5, sm: 2, md: 0 },
+            pt: { xs: 1, md: 0 },
+            minHeight: '100vh',
           }}
         >
-          <FixedHeader />
+          <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
+            sx={{
+              alignItems: { xs: "stretch", md: "center" },
+              mx: { xs: 0, md: 2 },
+              pb: { xs: 2, md: 5 },
+              mt: { xs: 2, md: 0 },
+            }}
           >
-            {/* Search Input - Positioned ABOVE the table */}
             <Box
               sx={{
                 width: "100%",
                 display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
-                alignItems: "center",
-                mt: 4,
+                alignItems: { xs: "stretch", sm: "center" },
+                mt: { xs: 2, md: 4 },
                 gap: 2,
               }}
             >
-              <Typography component="h2" variant="h6">
+              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } }}>
                 All Senators
               </Typography>
 
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center" sx={{ width: { xs: "100%", sm: "auto" } }}>
+                 {/* Mobile: Show Fetch button above search/filter */}
+            {userRole === "admin" && (
+              <Box sx={{ width: "100%", display: { xs: "block", sm: "none" },  }}>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    width: "100%",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                  onClick={fetchSenatorsFromQuorum}
+                  fullWidth
+                >
+                  Fetch Senators from Quorum
+                </Button>
+              </Box>
+            )}
                 <TextField
                   placeholder="Search Senators"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  fullWidth={true}
                   sx={{
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    width: "190px",
+                    padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                    marginLeft: { xs: 0, sm: "0.5rem" },
+                    width: { xs: "100%", sm: "190px" },
                     "& .MuiInputBase-root": {
                       "&.Mui-focused": {
                         boxShadow: "none !important",
@@ -496,20 +524,16 @@ export default function Senator(props) {
                   }}
                 />
 
-                <Box sx={{ position: "relative", display: "inline-block" }}>
-
-
-
-
+                <Box sx={{ position: "relative", display: "inline-block", width: { xs: "100%", sm: "auto" } }}>
                   <Badge
                     badgeContent={activeFilterCount > 0 ? activeFilterCount : null}
                     color="primary"
                     sx={{
-    "& .MuiBadge-badge": {
-      top: 6, 
-      right: 6, 
-    },
-  }}
+                      "& .MuiBadge-badge": {
+                        top: 6,
+                        right: 6,
+                      },
+                    }}
                   >
                     <Button
                       variant="outlined"
@@ -518,17 +542,15 @@ export default function Senator(props) {
                       onClick={toggleFilter}
                       sx={{
                         height: "40px",
-                        minWidth: "120px",
+                        minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
-                        backgroundColor: filterOpen
-                          ? "primary.light"
-                          : "background.paper",
+                        backgroundColor: filterOpen ? "primary.light" : "background.paper",
                         "&:hover": {
-                          backgroundColor: filterOpen
-                            ? "primary.light"
-                            : "action.hover",
+                          backgroundColor: filterOpen ? "primary.light" : "action.hover",
                         },
+                        width: { xs: "100%", sm: "auto" },
                       }}
+                      fullWidth={true}
                     >
                       Filters
                     </Button>
@@ -1141,25 +1163,31 @@ export default function Senator(props) {
                   )}
                 </Box>
 
-
-             {userRole === "admin" && (  <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    "&:hover": {
-                      backgroundColor: "#357ABD !important",
-                    },
-                  }}
-                  onClick={fetchSenatorsFromQuorum}
-                >
-                  Fetch Senators from Quorum
-                </Button>
-              )}
-            </Stack>
-          </Box>
+                {/* Desktop: Show Fetch button inside search/filter stack */}
+                {userRole === "admin" && (
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "#4a90e2 !important",
+                      color: "white !important",
+                      padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                      marginLeft: { xs: 0, sm: "0.5rem" },
+                      width: { xs: "100%", sm: "auto" },
+                      mt: { xs: 1, sm: 0 },
+                      display: { xs: "none", sm: "block" },
+                      "&:hover": {
+                        backgroundColor: "#357ABD !important",
+                      },
+                    }}
+                    onClick={fetchSenatorsFromQuorum}
+                    fullWidth={true}
+                  >
+                    Fetch Senators from Quorum
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+          
 
             <MainGrid
               type="senator"

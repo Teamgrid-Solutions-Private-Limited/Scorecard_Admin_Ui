@@ -38,6 +38,8 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom"; 
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -62,6 +64,24 @@ export default function ManageUser(props) {
   const [editErrors, setEditErrors] = useState({});
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const decoded = jwtDecode(token);
+    if (decoded.role !== "admin") {
+      navigate("/"); // Redirect non-admin users
+    }
+  } catch (err) {
+    navigate("/login");
+  }
+}, []);
 
   // Fetch users on component mount
   useEffect(() => {
@@ -186,7 +206,7 @@ export default function ManageUser(props) {
         <SideMenu />
         <Box sx={{ flexGrow: 1, width: "80%",  }}>
           <FixedHeader />
-          <Box sx={{ maxWidth: "100%", mt: 4,mx:2 }}>
+          <Box sx={{ maxWidth: "100%", mt: 2,mx:2 }}>
             <Stack
               direction="row"
               justifyContent="space-between"
@@ -219,7 +239,22 @@ export default function ManageUser(props) {
               </Alert>
             ) : loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-                <CircularProgress />
+                       <Box
+                         sx={{
+                           position: "fixed",
+                           top: 0,
+                           left: 0,
+                           width: "100%",
+                           height: "100%",
+                           backgroundColor: "rgba(255, 255, 255, 0.5)",
+                           display: "flex",
+                           justifyContent: "center",
+                           alignItems: "center",
+                           zIndex: 9999,
+                         }}
+                       >
+                         <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+                       </Box>
               </Box>
             ) : error ? (
               <Alert severity="error">{error}</Alert>

@@ -64,7 +64,7 @@ export default function Bills(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-  console.log("User Role:", userRole);
+ 
 
    // Filter state
   const [filterOpen, setFilterOpen] = useState(false);
@@ -133,7 +133,7 @@ export default function Bills(props) {
     status: vote.status || "draft", // <== ADD THI
   }));
 
-  console.log("bills:", billsData);
+  
 
    // Filter handlers
   const toggleFilter = () => {

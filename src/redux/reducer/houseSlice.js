@@ -10,14 +10,14 @@ export const createHouse = createAsyncThunk(
   "house/createHouse",
   async (formData, { rejectWithValue }) => {
    
- 
+
     try {
       const response = await axios.post(`${API_URL}/api/v1/admin/houses/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-     
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -34,7 +34,7 @@ export const getAllHouses = createAsyncThunk(
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
    
- 
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -50,7 +50,7 @@ export const getHouseById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/api/v1/admin/houses/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-     
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -105,7 +105,7 @@ export const deleteHouse = createAsyncThunk(
           },
         }
       );
-     
+      
       return response.data;
     } catch (error) {
       console.error("DeleteHouseError", error);

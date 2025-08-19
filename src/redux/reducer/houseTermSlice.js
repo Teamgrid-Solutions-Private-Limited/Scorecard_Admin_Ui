@@ -6,11 +6,11 @@ import { API_URL } from '../API';
 export const createHouseData = createAsyncThunk(
   'houseData/createHouseData',
   async (data, { rejectWithValue }) => {
-   
-   
+    
+    
     try {
       const response = await axios.post(`${API_URL}/api/v1/admin/house-data/`, data);
-     
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -56,7 +56,7 @@ export const getHouseDataByHouseId = createAsyncThunk(
      
       return response.data.info;
     } catch (error) {
-     
+      
       return rejectWithValue(error.response.data);
     }
   }
@@ -64,12 +64,12 @@ export const getHouseDataByHouseId = createAsyncThunk(
 export const updateHouseData = createAsyncThunk(
   'houseData/updateHouseData',
   async ({ id, data }, { rejectWithValue }) => {
-   
-   
+    
+    
     try {
       const response = await axios.put(`${API_URL}/api/v1/admin/house-data/${id}`, data);
-     
-     
+      
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

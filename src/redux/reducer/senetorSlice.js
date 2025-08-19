@@ -10,7 +10,7 @@ export const createSenator = createAsyncThunk(
   "senators/createSenator",
   async (formData, { rejectWithValue }) => {
    
- 
+
     try {
       const response = await axios.post(
         `${API_URL}/api/v1/admin/senators/`,
@@ -21,7 +21,7 @@ export const createSenator = createAsyncThunk(
           },
         }
       );
-     
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -39,14 +39,14 @@ export const getAllSenators = createAsyncThunk(
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
      
- 
+
       if (!response.data) {
         throw new Error('No data received from API');
       }
  
       const senators = response.data;
      
- 
+
       if (!Array.isArray(senators)) {
         throw new Error('Received data is not an array');
       }

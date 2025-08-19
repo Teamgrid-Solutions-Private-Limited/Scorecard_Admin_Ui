@@ -7,7 +7,7 @@ export const createSenatorData = createAsyncThunk(
   'senatorData/createSenatorData',
   async (data, { rejectWithValue }) => {
    
-   
+    
     try {
       const response = await axios.post(`${API_URL}/api/v1/admin/senator-data/`, data);
      
@@ -65,11 +65,11 @@ export const updateSenatorData = createAsyncThunk(
   'senatorData/updateSenatorData',
   async ({ id, data }, { rejectWithValue }) => {
    
-   
+    
     try {
       const response = await axios.put(`${API_URL}/api/v1/admin/senator-data/${id}`, data);
-     
-     
+      
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

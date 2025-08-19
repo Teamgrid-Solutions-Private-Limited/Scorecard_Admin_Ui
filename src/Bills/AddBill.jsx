@@ -76,6 +76,7 @@ export default function AddBill(props) {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+   const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   const fieldLabels = {
     type: "Type",
@@ -108,12 +109,12 @@ export default function AddBill(props) {
     return newVal !== oldVal;
   };
 
-  console.log("User Role:", userRole);
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -199,6 +200,9 @@ export default function AddBill(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
@@ -214,6 +218,9 @@ export default function AddBill(props) {
   };
 
   const handleEditorChange = (content, fieldName) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: content };
 
@@ -229,6 +236,9 @@ export default function AddBill(props) {
   };
 
   const handleFileUpload = (event) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
@@ -463,7 +473,6 @@ export default function AddBill(props) {
         borderColor: "#FFC107",
         iconColor: "#FFA000",
         icon: "",
-
         // title: "Published",
         description:
           editedFields.length > 0
@@ -485,17 +494,17 @@ export default function AddBill(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
-  const backendChanges = Array.isArray(selectedVote?.editedFields)
-    ? selectedVote.editedFields
+  const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
     : [];
-  const localChanges = Array.isArray(editedFields) ? editedFields : [];
-  const hasAnyChanges = backendChanges.length > 0 || localChanges.length > 0;
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
 
   useEffect(() => {
-    console.log("Current status:", currentStatus);
-    console.log("Edited fields:", editedFields);
-    console.log("Original data:", originalFormData);
-    console.log("Form data:", formData);
+    
   }, [currentStatus, editedFields, originalFormData, formData]);
 
   return (
@@ -557,45 +566,42 @@ export default function AddBill(props) {
           >
             {userRole &&
               statusData &&
-              (currentStatus !== "published" || hasAnyChanges) && (
-                <Box
-                  sx={{
-                    width: "98%",
-                    p: 2,
-                    backgroundColor: statusData.backgroundColor,
-                    borderLeft: `4px solid ${statusData.borderColor}`,
-                    borderRadius: "0 8px 8px 0",
-                    boxShadow: 1,
-                    mb: 2,
-                  }}
-                >
-                  <Box
-                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
-                  >
-                    {/* Status icon bubble */}
-                    <Box
-                      sx={{
-                        p: 1,
-                        borderRadius: "50%",
-                        backgroundColor: `rgba(${
-                          currentStatus === "draft"
-                            ? "66, 165, 245"
-                            : currentStatus === "review"
-                            ? "255, 193, 7"
-                            : currentStatus === "published"
-                            ? ""
-                            : "244, 67, 54"
-                        }, 0.2)`,
-                        display: "grid",
-                        placeItems: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {statusData.icon &&
-                        React.cloneElement(statusData.icon, {
-                          sx: { color: statusData.iconColor },
-                        })}
-                    </Box>
+              (currentStatus !== "published" || hasAnyChanges) &&(
+  <Box
+    sx={{
+      width: "98%",
+      p: 2,
+      backgroundColor: statusData.backgroundColor,
+      borderLeft: `4px solid ${statusData.borderColor}`,
+      borderRadius: "0 8px 8px 0",
+      boxShadow: 1,
+      mb: 2,
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+      {/* Status icon bubble */}
+      <Box
+        sx={{
+          p: 1,
+          borderRadius: "50%",
+          backgroundColor: `rgba(${
+            currentStatus === "draft"
+              ? "66, 165, 245"
+              : currentStatus === "review"
+              ? "255, 193, 7"
+              : currentStatus === "published"
+              ? ""
+              : "244, 67, 54"
+          }, 0.2)`,
+          display: "grid",
+          placeItems: "center",
+          flexShrink: 0,
+        }}
+      >
+        {statusData.icon && React.cloneElement(statusData.icon, {
+                        sx: { color: statusData.iconColor },
+                      })}
+      </Box>
 
                     <Box sx={{ flex: 1 }}>
                       {/* Header: title + pending count (admin only) */}
