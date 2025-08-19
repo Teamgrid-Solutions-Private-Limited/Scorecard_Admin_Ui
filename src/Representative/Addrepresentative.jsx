@@ -852,10 +852,20 @@ export default function Addrepresentative(props) {
       // ];
 
       // Update field editors with current changes
+      // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      allChanges.forEach((field) => {
+       localChanges.forEach((field) => {
+    // For senator-level fields
+    if (field in formData) {
+      if (compareValues(formData[field], originalFormData?.[field] || '')) {
         updatedFieldEditors[field] = currentEditor;
-      });
+      }
+    }
+    // For term-level fields
+    else if (field.startsWith('term')) {
+      updatedFieldEditors[field] = currentEditor;
+    }
+  });
 
       // Prepare representative update
       const representativeUpdate = {

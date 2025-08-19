@@ -881,10 +881,21 @@ const handleFileChange = (event) => {
       // ];
 
       // Update field editors with current changes
-     const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-    allChanges.forEach((field) => {
+     // Update field editors with current changes
+      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+       localChanges.forEach((field) => {
+    // For senator-level fields
+    if (field in formData) {
+      if (compareValues(formData[field], originalFormData?.[field] || '')) {
+        updatedFieldEditors[field] = currentEditor;
+      }
+    }
+    // For term-level fields
+    else if (field.startsWith('term')) {
       updatedFieldEditors[field] = currentEditor;
-    });
+    }
+  });
+ 
  
 
       // Prepare senator update
