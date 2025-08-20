@@ -26,7 +26,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../Dashboard/global/common";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -73,6 +73,8 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -89,7 +91,10 @@ export default function Addrepresentative(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
    const [componentKey, setComponentKey] = useState(0);
+       const theme = useTheme();
+     const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
     const [hasLocalChanges, setHasLocalChanges] = useState(false);
+    const navigate = useNavigate();
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -1121,6 +1126,7 @@ export default function Addrepresentative(props) {
   try {
     setLoading(true);
     await dispatch(discardHouseChanges(id)).unwrap();
+    navigate(0);
     await dispatch(getHouseById(id));
     await dispatch(getHouseDataByHouseId(id));
     setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
@@ -1604,12 +1610,12 @@ export default function Addrepresentative(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                 >
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end", // align left
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1620,7 +1626,7 @@ export default function Addrepresentative(props) {
                       Representative's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       required
                       id="title"
@@ -1633,11 +1639,11 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1}>
+                  <Grid size={isMobile?12:1}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1645,7 +1651,7 @@ export default function Addrepresentative(props) {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -1710,11 +1716,11 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1722,7 +1728,7 @@ export default function Addrepresentative(props) {
                       District
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       id="district"
                       name="district"
@@ -1734,11 +1740,11 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1} sx={{ alignContent: "center" }}>
+                  <Grid size={isMobile?12:1} sx={{ alignContent: "center" }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1746,7 +1752,7 @@ export default function Addrepresentative(props) {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <FormControl fullWidth>
                       <Select
                         name="party"
@@ -1761,12 +1767,12 @@ export default function Addrepresentative(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end", // align left
+                       justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1869,12 +1875,12 @@ export default function Addrepresentative(props) {
                     columnSpacing={2}
                     alignItems={"center"}
                   >
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1882,7 +1888,7 @@ export default function Addrepresentative(props) {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?12:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.termId || ""}
@@ -1910,11 +1916,11 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={2.1} sx={{ alignContent: "center" }}>
+                    <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1922,7 +1928,7 @@ export default function Addrepresentative(props) {
                         Current Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={0}>
+                    <Grid size={isMobile?6:0}>
                       <Switch
                         {...label}
                         name="currentTerm"
@@ -1932,12 +1938,12 @@ export default function Addrepresentative(props) {
                       />
                     </Grid>
 
-                    <Grid size={2.39}>
+                    <Grid size={isMobile?6:2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1945,7 +1951,7 @@ export default function Addrepresentative(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?6:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -1968,11 +1974,11 @@ export default function Addrepresentative(props) {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1980,7 +1986,7 @@ export default function Addrepresentative(props) {
                         Term Summary
                       </InputLabel>
                     </Grid>
-                    <Grid size={9.05}>
+                    <Grid size={isMobile?12:9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
@@ -2046,7 +2052,7 @@ export default function Addrepresentative(props) {
                             alignItems="center"
                             columnGap={"15px"}
                           >
-                            <Grid size={2}>
+                            <Grid size={isMobile?12:2}>
                               <InputLabel
                                 sx={{
                                   display: "flex",
@@ -2059,7 +2065,7 @@ export default function Addrepresentative(props) {
                                 Scored Vote
                               </InputLabel>
                             </Grid>
-                            <Grid size={7.5}>
+                            <Grid size={isMobile?12:7.5}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.voteId || ""}
@@ -2131,7 +2137,7 @@ export default function Addrepresentative(props) {
                                 </Select>
                               </FormControl>
                             </Grid>
-                            <Grid size={1.6}>
+                            <Grid size={isMobile?12:1.6}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.score || ""}
@@ -2200,12 +2206,12 @@ export default function Addrepresentative(props) {
                           alignItems="center"
                           columnGap={"15px"}
                         >
-                          <Grid size={2}>
+                          <Grid size={isMobile?12:2}>
                             <InputLabel
                               sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "end",
+                                justifyContent: isMobile ? "flex-start" : "flex-end",
                                 fontWeight: 700,
                                 my: 0,
                               }}
@@ -2213,7 +2219,7 @@ export default function Addrepresentative(props) {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={7.5}>
+                          <Grid size={isMobile?8:7.5}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity.activityId || ""}
@@ -2287,7 +2293,7 @@ export default function Addrepresentative(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1.6}>
+                          <Grid size={isMobile?6:1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity?.score || ""}

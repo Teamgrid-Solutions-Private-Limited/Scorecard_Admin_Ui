@@ -28,7 +28,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../../src/Dashboard/global/common";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -94,6 +94,7 @@ export default function AddSenator(props) {
     const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
    const [hasLocalChanges, setHasLocalChanges] = useState(false);
+   const navigate = useNavigate();
 
 
   let senatorActivities =
@@ -261,6 +262,7 @@ export default function AddSenator(props) {
     try {
       setLoading(true);
       await dispatch(discardSenatorChanges(id)).unwrap();
+      navigate(0);
 
       // Refresh the data
       await dispatch(getSenatorById(id));
