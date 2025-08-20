@@ -127,7 +127,7 @@ export default function AddBill(props) {
 
   const preFillForm = () => {
     if (selectedVote) {
-      const termId = selectedVote.termId?._id || "";
+      const termId = selectedVote.termId || "";
       const newFormData = {
         type: selectedVote.type.includes("senate")
           ? "senate"
