@@ -51,6 +51,8 @@ import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -76,6 +78,9 @@ export default function AddBill(props) {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+         const theme = useTheme();
+       const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+   const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   const fieldLabels = {
     type: "Type",
@@ -199,6 +204,9 @@ export default function AddBill(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
@@ -214,6 +222,9 @@ export default function AddBill(props) {
   };
 
   const handleEditorChange = (content, fieldName) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: content };
 
@@ -229,6 +240,9 @@ export default function AddBill(props) {
   };
 
   const handleFileUpload = (event) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
@@ -448,6 +462,21 @@ export default function AddBill(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: "",
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -459,6 +488,14 @@ export default function AddBill(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+  const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
 
   useEffect(() => {
     
@@ -521,7 +558,9 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-           {userRole && currentStatus !== "published" && statusData && (
+            {userRole &&
+              statusData &&
+              (currentStatus !== "published" || hasAnyChanges) &&(
   <Box
     sx={{
       width: "98%",
@@ -545,7 +584,7 @@ export default function AddBill(props) {
               : currentStatus === "review"
               ? "255, 193, 7"
               : currentStatus === "published"
-              ? "76, 175, 80"
+              ? ""
               : "244, 67, 54"
           }, 0.2)`,
           display: "grid",
@@ -553,9 +592,9 @@ export default function AddBill(props) {
           flexShrink: 0,
         }}
       >
-        {React.cloneElement(statusData.icon, {
-          sx: { color: statusData.iconColor },
-        })}
+        {statusData.icon && React.cloneElement(statusData.icon, {
+                        sx: { color: statusData.iconColor },
+                      })}
       </Box>
 
       <Box sx={{ flex: 1 }}>
@@ -932,11 +971,11 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -944,7 +983,7 @@ export default function AddBill(props) {
                       Short Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -987,11 +1026,11 @@ export default function AddBill(props) {
                     />
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -999,7 +1038,7 @@ export default function AddBill(props) {
                       Long Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1070,12 +1109,12 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?6:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1084,7 +1123,7 @@ export default function AddBill(props) {
                       Congress
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?6:10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1123,7 +1162,7 @@ export default function AddBill(props) {
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
-                        <MenuItem value="" disabled>
+                        {/* <MenuItem value="" disabled>
                           Select an option
                         </MenuItem>
                         {terms && terms.length > 0 ? (
@@ -1136,17 +1175,17 @@ export default function AddBill(props) {
                           <MenuItem value="" disabled>
                             No terms available
                           </MenuItem>
-                        )}
+                        )} */}
                       </Select>
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1155,7 +1194,7 @@ export default function AddBill(props) {
                       Roll Call
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
                       <TextField
                         sx={{
@@ -1204,12 +1243,12 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1218,7 +1257,7 @@ export default function AddBill(props) {
                       Read More
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         <TextField
@@ -1307,12 +1346,12 @@ export default function AddBill(props) {
                       )}
                     </FormControl>
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1324,7 +1363,7 @@ export default function AddBill(props) {
                     </InputLabel>
                   </Grid>
 
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl
                       fullWidth
                       sx={{

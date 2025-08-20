@@ -28,7 +28,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../../src/Dashboard/global/common";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -73,6 +73,8 @@ import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 // import { jwtDecode } from "jwt-decode";
 import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; // adjust path as needed
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -89,6 +91,10 @@ export default function AddSenator(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
    const [componentKey, setComponentKey] = useState(0);
+    const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+   const navigate = useNavigate();
 
 
   let senatorActivities =
@@ -180,6 +186,9 @@ export default function AddSenator(props) {
   const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
        setSenatorTermData((prev) => {
     const newTerms = prev.map((term, index) =>
       index === termIndex ? { ...term, [name]: value } : term
@@ -202,6 +211,9 @@ export default function AddSenator(props) {
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
      const fieldName = `term${termIndex}_${name}`;
+     if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     
     setSenatorTermData((prev) => {
     const newTerms = prev.map((term, index) =>
@@ -250,6 +262,7 @@ export default function AddSenator(props) {
     try {
       setLoading(true);
       await dispatch(discardSenatorChanges(id)).unwrap();
+      navigate(0);
 
       // Refresh the data
       await dispatch(getSenatorById(id));
@@ -316,6 +329,9 @@ export default function AddSenator(props) {
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
   
   setSenatorTermData((prev) => {
     const newTerms = prev.map((term, index) =>
@@ -407,6 +423,9 @@ export default function AddSenator(props) {
 
 const handleActivityChange = (termIndex, activityIndex, field, value) => {
   const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
   setSenatorTermData((prev) => {
     const newTerms = prev.map((term, idx) => {
@@ -733,6 +752,9 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
      setFormData((prev) => {
     const newData = { ...prev, [name]: value };
@@ -757,6 +779,9 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
 const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -778,6 +803,9 @@ const handleFileChange = (event) => {
 
   const handleStatusChange = (status) => {
   const fieldName = "status"; // The field being changed
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
   setFormData((prev) => {
     const newData = { ...prev, status };
@@ -855,10 +883,21 @@ const handleFileChange = (event) => {
       // ];
 
       // Update field editors with current changes
-     const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-    allChanges.forEach((field) => {
+     // Update field editors with current changes
+      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+       localChanges.forEach((field) => {
+    // For senator-level fields
+    if (field in formData) {
+      if (compareValues(formData[field], originalFormData?.[field] || '')) {
+        updatedFieldEditors[field] = currentEditor;
+      }
+    }
+    // For term-level fields
+    else if (field.startsWith('term')) {
       updatedFieldEditors[field] = currentEditor;
-    });
+    }
+  });
+ 
  
 
       // Prepare senator update
@@ -930,12 +969,15 @@ const handleFileChange = (event) => {
 
 
       // Update originals to match latest backend data
-      if (senatorData?.currentSenator) {
-        setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
-      }
-      if (senator) {
-        setOriginalFormData(JSON.parse(JSON.stringify(senator)));
-      }
+      // if (senatorData?.currentSenator) {
+      //   setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
+      // }
+      // if (senator) {
+      //   setOriginalFormData(JSON.parse(JSON.stringify(senator)));
+      // }
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
+      setHasLocalChanges(false); // Reset after save
       setLocalChanges([]);
 
       userRole === "admin"
@@ -1008,6 +1050,21 @@ const handleFileChange = (event) => {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+       published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: null,
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
     return configs[currentStatus];
   };
@@ -1030,6 +1087,19 @@ const getValidTermId = (termId) => {
   const voteExists = votes.some(v => v._id === voteId);
   return voteExists ? voteId : "";
 };
+
+ const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+ const isStatusReady = !id || Boolean(originalFormData);
+ 
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+ 
+ 
+ 
  
 
   return (
@@ -1075,9 +1145,10 @@ const getValidTermId = (termId) => {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole &&
-              formData.publishStatus !== "published" &&
-              statusData && (
+             {userRole &&
+              isStatusReady &&
+              (hasAnyChanges || formData.publishStatus !== "published") &&
+              statusData &&(
                 <Box
                   sx={{
                     width: "98%",
@@ -1100,7 +1171,7 @@ const getValidTermId = (termId) => {
                             : formData.publishStatus === "under review"
                               ? "230, 81, 0"
                               : formData.publishStatus === "published"
-                                ? "76, 175, 80"
+                                ? ""
                                 : "244, 67, 54"
                           }, 0.2)`,
                         display: "grid",
@@ -1108,7 +1179,7 @@ const getValidTermId = (termId) => {
                         flexShrink: 0,
                       }}
                     >
-                      {React.cloneElement(statusData.icon, {
+                      {statusData.icon && React.cloneElement(statusData.icon, {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
@@ -1138,7 +1209,7 @@ const getValidTermId = (termId) => {
                         {userRole === "admin" && (
                           <Chip
                             label={`${Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length
+                                ? formData.editedFields.length + localChanges.length
                                 : 0
                               } pending changes`}
                             size="small"
@@ -1459,21 +1530,23 @@ const getValidTermId = (termId) => {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
+                  // flexDirection={isMobile ? "column" : "row"}
                 >
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
+                      
                     >
                       Senator's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4} >
                     <TextField
                       required
                       id="title"
@@ -1486,11 +1559,11 @@ const getValidTermId = (termId) => {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1}>
+                  <Grid size={isMobile?12:1}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1498,7 +1571,7 @@ const getValidTermId = (termId) => {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -1563,11 +1636,11 @@ const getValidTermId = (termId) => {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1575,7 +1648,7 @@ const getValidTermId = (termId) => {
                       State
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       id="state"
                       name="state"
@@ -1587,11 +1660,11 @@ const getValidTermId = (termId) => {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1} sx={{ alignContent: "center" }}>
+                  <Grid size={isMobile?12:1} sx={{ alignContent: "center" }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1599,7 +1672,7 @@ const getValidTermId = (termId) => {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <FormControl fullWidth>
                       <Select
                         name="party"
@@ -1614,11 +1687,11 @@ const getValidTermId = (termId) => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1718,12 +1791,12 @@ const getValidTermId = (termId) => {
                     columnSpacing={2}
                     alignItems={"center"}
                   >
-                    <Grid size={2}>
+                    <Grid size={isMobile? 12 : 2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1731,7 +1804,7 @@ const getValidTermId = (termId) => {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile? 12 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           // value={term.termId || ""}
@@ -1761,11 +1834,11 @@ const getValidTermId = (termId) => {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={2.1} sx={{ alignContent: "center" }}>
+                    <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1773,7 +1846,7 @@ const getValidTermId = (termId) => {
                         Current Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={0}>
+                    <Grid size={isMobile?6:0}>
                       <Switch
                         {...label}
                         name="currentTerm"
@@ -1783,12 +1856,12 @@ const getValidTermId = (termId) => {
                       />
                     </Grid>
 
-                    <Grid size={2.39}>
+                    <Grid size={isMobile?6:2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1796,7 +1869,7 @@ const getValidTermId = (termId) => {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?6:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -1819,11 +1892,11 @@ const getValidTermId = (termId) => {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1831,7 +1904,7 @@ const getValidTermId = (termId) => {
                         Term Summary
                       </InputLabel>
                     </Grid>
-                    <Grid size={9.05}>
+                    <Grid size={isMobile?12:9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
@@ -1897,13 +1970,14 @@ const getValidTermId = (termId) => {
                             display="flex"
                             alignItems="center"
                             columnGap={"15px"}
+                            // flexDirection={isMobile ? "column" : "row"}
                           >
-                            <Grid size={2}>
+                            <Grid size={isMobile?12:2} >
                               <InputLabel
                                 sx={{
                                   display: "flex",
                                   alignItems: "center",
-                                  justifyContent: "end",
+                                  justifyContent: isMobile ? "flex-start" : "flex-end",                                  
                                   fontWeight: 700,
                                   my: 0,
                                 }}
@@ -1911,7 +1985,7 @@ const getValidTermId = (termId) => {
                                 Scored Vote
                               </InputLabel>
                             </Grid>
-                            <Grid size={7.5}>
+                            <Grid size={isMobile?12:7.5}>
                               <FormControl fullWidth>
                                 <Select
                                   // value={vote.voteId || ""}
@@ -1984,8 +2058,8 @@ const getValidTermId = (termId) => {
                                 </Select>
                               </FormControl>
                             </Grid>
-                            <Grid size={1.6}>
-                              <FormControl fullWidth>
+                            <Grid size={isMobile?12:1.6}>
+                              <FormControl fullWidth >
                                 <Select
                                   value={vote.score || ""}                                  
                                   onChange={(event) =>
@@ -2053,12 +2127,12 @@ const getValidTermId = (termId) => {
                           alignItems="center"
                           columnGap={"15px"}
                         >
-                          <Grid size={2}>
+                          <Grid size={isMobile?12:2}>
                             <InputLabel
                               sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "end",
+                                justifyContent: isMobile ? "flex-start" : "flex-end",
                                 fontWeight: 700,
                                 my: 0,
                               }}
@@ -2066,8 +2140,8 @@ const getValidTermId = (termId) => {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={7.5}>
-                            <FormControl fullWidth>
+                          <Grid size={isMobile?8:7.5}>
+                            <FormControl fullWidth >
                               <Select
                                 // value={activity.activityId || ""}
                                  value={senatorActivities.some(a => a._id === activity.activityId)
@@ -2145,7 +2219,7 @@ const getValidTermId = (termId) => {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1.6}>
+                          <Grid size={isMobile?6:1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity?.score || ""}

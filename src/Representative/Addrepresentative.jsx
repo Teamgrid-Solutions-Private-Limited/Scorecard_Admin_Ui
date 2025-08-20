@@ -26,7 +26,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../Dashboard/global/common";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -73,6 +73,8 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -89,6 +91,10 @@ export default function Addrepresentative(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
    const [componentKey, setComponentKey] = useState(0);
+       const theme = useTheme();
+     const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+    const [hasLocalChanges, setHasLocalChanges] = useState(false);
+    const navigate = useNavigate();
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -163,6 +169,9 @@ export default function Addrepresentative(props) {
     const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
        setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
       index === termIndex ? { ...term, [name]: value } : term
@@ -200,6 +209,9 @@ export default function Addrepresentative(props) {
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
      const fieldName = `term${termIndex}_${name}`;
+     if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     
     setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
@@ -279,6 +291,9 @@ export default function Addrepresentative(props) {
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
   
   setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
@@ -369,6 +384,9 @@ export default function Addrepresentative(props) {
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
   const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
   setHouseTermData((prev) => {
     const newTerms = prev.map((term, idx) => {
@@ -744,6 +762,9 @@ export default function Addrepresentative(props) {
 
   const handleChange = (event) => {
   const { name, value } = event.target;
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
   
   setFormData(prev => {
     const newData = { ...prev, [name]: value };
@@ -769,6 +790,9 @@ export default function Addrepresentative(props) {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -833,10 +857,20 @@ export default function Addrepresentative(props) {
       // ];
 
       // Update field editors with current changes
+      // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      allChanges.forEach((field) => {
+       localChanges.forEach((field) => {
+    // For senator-level fields
+    if (field in formData) {
+      if (compareValues(formData[field], originalFormData?.[field] || '')) {
         updatedFieldEditors[field] = currentEditor;
-      });
+      }
+    }
+    // For term-level fields
+    else if (field.startsWith('term')) {
+      updatedFieldEditors[field] = currentEditor;
+    }
+  });
 
       // Prepare representative update
       const representativeUpdate = {
@@ -911,12 +945,15 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseById(id)).unwrap();
 
       // Update originals to match latest backend data
-      if (houseData?.currentHouse) {
-        setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
-      }
-      if (house) {
-        setOriginalFormData(JSON.parse(JSON.stringify(house)));
-      }
+      // if (houseData?.currentHouse) {
+      //   setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
+      // }
+      // if (house) {
+      //   setOriginalFormData(JSON.parse(JSON.stringify(house)));
+      // }
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
+      setHasLocalChanges(false); // Reset after save
       setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -971,6 +1008,9 @@ export default function Addrepresentative(props) {
 
   const handleStatusChange = (status) => {
   const fieldName = "status"; // The field being changed
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
   setFormData((prev) => {
     const newData = { ...prev, status };
@@ -1024,6 +1064,21 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+       published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: null,
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
       // published: {
       //   backgroundColor: "rgba(76, 175, 80, 0.12)",
       //   borderColor: "#4CAF50",
@@ -1046,6 +1101,15 @@ export default function Addrepresentative(props) {
     currentStatus
   );
 
+    const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
+
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -1062,6 +1126,7 @@ export default function Addrepresentative(props) {
   try {
     setLoading(true);
     await dispatch(discardHouseChanges(id)).unwrap();
+    navigate(0);
     await dispatch(getHouseById(id));
     await dispatch(getHouseDataByHouseId(id));
     setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
@@ -1126,7 +1191,8 @@ export default function Addrepresentative(props) {
             }}
           >
             {userRole &&
-              formData.publishStatus !== "published" &&
+              isStatusReady &&
+              (hasAnyChanges || formData.publishStatus !== "published") &&
               statusData && (
                 <Box
                   sx={{
@@ -1153,7 +1219,7 @@ export default function Addrepresentative(props) {
                             : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                            ? "76, 175, 80"
+                            ? ""
                             : "244, 67, 54"
                         }, 0.2)`,
                         display: "grid",
@@ -1161,7 +1227,7 @@ export default function Addrepresentative(props) {
                         flexShrink: 0,
                       }}
                     >
-                      {React.cloneElement(statusData.icon, {
+                      {statusData.icon && React.cloneElement(statusData.icon, {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
@@ -1192,7 +1258,7 @@ export default function Addrepresentative(props) {
                           <Chip
                             label={`${
                               Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length
+                                ? formData.editedFields.length + localChanges.length
                                 : 0
                             } pending changes`}
                             size="small"
@@ -1544,12 +1610,12 @@ export default function Addrepresentative(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                 >
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end", // align left
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1560,7 +1626,7 @@ export default function Addrepresentative(props) {
                       Representative's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       required
                       id="title"
@@ -1573,11 +1639,11 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1}>
+                  <Grid size={isMobile?12:1}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1585,7 +1651,7 @@ export default function Addrepresentative(props) {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -1650,11 +1716,11 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1662,7 +1728,7 @@ export default function Addrepresentative(props) {
                       District
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       id="district"
                       name="district"
@@ -1674,11 +1740,11 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1} sx={{ alignContent: "center" }}>
+                  <Grid size={isMobile?12:1} sx={{ alignContent: "center" }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1686,7 +1752,7 @@ export default function Addrepresentative(props) {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <FormControl fullWidth>
                       <Select
                         name="party"
@@ -1701,12 +1767,12 @@ export default function Addrepresentative(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end", // align left
+                       justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1809,12 +1875,12 @@ export default function Addrepresentative(props) {
                     columnSpacing={2}
                     alignItems={"center"}
                   >
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1822,7 +1888,7 @@ export default function Addrepresentative(props) {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?12:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.termId || ""}
@@ -1850,11 +1916,11 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={2.1} sx={{ alignContent: "center" }}>
+                    <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1862,7 +1928,7 @@ export default function Addrepresentative(props) {
                         Current Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={0}>
+                    <Grid size={isMobile?6:0}>
                       <Switch
                         {...label}
                         name="currentTerm"
@@ -1872,12 +1938,12 @@ export default function Addrepresentative(props) {
                       />
                     </Grid>
 
-                    <Grid size={2.39}>
+                    <Grid size={isMobile?6:2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1885,7 +1951,7 @@ export default function Addrepresentative(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?6:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -1908,11 +1974,11 @@ export default function Addrepresentative(props) {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1920,7 +1986,7 @@ export default function Addrepresentative(props) {
                         Term Summary
                       </InputLabel>
                     </Grid>
-                    <Grid size={9.05}>
+                    <Grid size={isMobile?12:9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
@@ -1986,7 +2052,7 @@ export default function Addrepresentative(props) {
                             alignItems="center"
                             columnGap={"15px"}
                           >
-                            <Grid size={2}>
+                            <Grid size={isMobile?12:2}>
                               <InputLabel
                                 sx={{
                                   display: "flex",
@@ -1999,7 +2065,7 @@ export default function Addrepresentative(props) {
                                 Scored Vote
                               </InputLabel>
                             </Grid>
-                            <Grid size={7.5}>
+                            <Grid size={isMobile?12:7.5}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.voteId || ""}
@@ -2071,7 +2137,7 @@ export default function Addrepresentative(props) {
                                 </Select>
                               </FormControl>
                             </Grid>
-                            <Grid size={1.6}>
+                            <Grid size={isMobile?12:1.6}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.score || ""}
@@ -2140,12 +2206,12 @@ export default function Addrepresentative(props) {
                           alignItems="center"
                           columnGap={"15px"}
                         >
-                          <Grid size={2}>
+                          <Grid size={isMobile?12:2}>
                             <InputLabel
                               sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "end",
+                                justifyContent: isMobile ? "flex-start" : "flex-end",
                                 fontWeight: 700,
                                 my: 0,
                               }}
@@ -2153,7 +2219,7 @@ export default function Addrepresentative(props) {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={7.5}>
+                          <Grid size={isMobile?8:7.5}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity.activityId || ""}
@@ -2227,7 +2293,7 @@ export default function Addrepresentative(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1.6}>
+                          <Grid size={isMobile?6:1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity?.score || ""}
