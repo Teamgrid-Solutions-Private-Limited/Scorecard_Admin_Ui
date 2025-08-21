@@ -51,6 +51,8 @@ import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -76,7 +78,9 @@ export default function AddBill(props) {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   const fieldLabels = {
     type: "Type",
@@ -109,12 +113,10 @@ export default function AddBill(props) {
     return newVal !== oldVal;
   };
 
-
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -125,7 +127,7 @@ export default function AddBill(props) {
 
   const preFillForm = () => {
     if (selectedVote) {
-      const termId = selectedVote.termId?._id || "";
+      const termId = selectedVote.termId || "";
       const newFormData = {
         type: selectedVote.type.includes("senate")
           ? "senate"
@@ -497,15 +499,19 @@ export default function AddBill(props) {
   const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
     : [];
-  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
-    (field) => !backendChanges.includes(field)
-  );
-  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const localOnlyChanges = (
+    Array.isArray(editedFields) ? editedFields : []
+  ).filter((field) => !backendChanges.includes(field));
+  const hasAnyChanges =
+    backendChanges.length > 0 || localOnlyChanges.length > 0;
   const isStatusReady = !id || Boolean(originalFormData);
 
-  useEffect(() => {
-    
-  }, [currentStatus, editedFields, originalFormData, formData]);
+  useEffect(() => {}, [
+    currentStatus,
+    editedFields,
+    originalFormData,
+    formData,
+  ]);
 
   return (
     <AppTheme>
@@ -566,42 +572,45 @@ export default function AddBill(props) {
           >
             {userRole &&
               statusData &&
-              (currentStatus !== "published" || hasAnyChanges) &&(
-  <Box
-    sx={{
-      width: "98%",
-      p: 2,
-      backgroundColor: statusData.backgroundColor,
-      borderLeft: `4px solid ${statusData.borderColor}`,
-      borderRadius: "0 8px 8px 0",
-      boxShadow: 1,
-      mb: 2,
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-      {/* Status icon bubble */}
-      <Box
-        sx={{
-          p: 1,
-          borderRadius: "50%",
-          backgroundColor: `rgba(${
-            currentStatus === "draft"
-              ? "66, 165, 245"
-              : currentStatus === "review"
-              ? "255, 193, 7"
-              : currentStatus === "published"
-              ? ""
-              : "244, 67, 54"
-          }, 0.2)`,
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        {statusData.icon && React.cloneElement(statusData.icon, {
-                        sx: { color: statusData.iconColor },
-                      })}
-      </Box>
+              (currentStatus !== "published" || hasAnyChanges) && (
+                <Box
+                  sx={{
+                    width: "98%",
+                    p: 2,
+                    backgroundColor: statusData.backgroundColor,
+                    borderLeft: `4px solid ${statusData.borderColor}`,
+                    borderRadius: "0 8px 8px 0",
+                    boxShadow: 1,
+                    mb: 2,
+                  }}
+                >
+                  <Box
+                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
+                  >
+                    {/* Status icon bubble */}
+                    <Box
+                      sx={{
+                        p: 1,
+                        borderRadius: "50%",
+                        backgroundColor: `rgba(${
+                          currentStatus === "draft"
+                            ? "66, 165, 245"
+                            : currentStatus === "review"
+                            ? "255, 193, 7"
+                            : currentStatus === "published"
+                            ? ""
+                            : "244, 67, 54"
+                        }, 0.2)`,
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {statusData.icon &&
+                        React.cloneElement(statusData.icon, {
+                          sx: { color: statusData.iconColor },
+                        })}
+                    </Box>
 
                     <Box sx={{ flex: 1 }}>
                       {/* Header: title + pending count (admin only) */}
@@ -627,20 +636,14 @@ export default function AddBill(props) {
 
                         {userRole === "admin" && (
                           <Chip
-                            label={`${(() => {
-                              const backend = Array.isArray(
-                                selectedVote?.editedFields
-                              )
-                                ? selectedVote.editedFields
-                                : [];
-                              const local = Array.isArray(editedFields)
-                                ? editedFields
-                                : [];
-                              const localOnly = local.filter(
-                                (f) => !backend.includes(f)
-                              );
-                              return backend.length + localOnly.length;
-                            })()} pending changes`}
+                            label={`${
+                              (Array.isArray(selectedVote?.editedFields)
+                                ? selectedVote.editedFields.length
+                                : 0) +
+                              (Array.isArray(editedFields)
+                                ? editedFields.length
+                                : 0)
+                            } pending changes`}
                             size="small"
                             color="warning"
                             variant="outlined"
@@ -1026,11 +1029,11 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1038,7 +1041,7 @@ export default function AddBill(props) {
                       Short Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1081,11 +1084,11 @@ export default function AddBill(props) {
                     />
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1093,7 +1096,7 @@ export default function AddBill(props) {
                       Long Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1165,12 +1168,12 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 6 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1179,7 +1182,7 @@ export default function AddBill(props) {
                       Congress
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 6 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1211,14 +1214,18 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
-                      <Select
+                      <TextField
                         value={formData.termId || ""}
                         id="termId"
                         name="termId"
                         onChange={handleChange}
-                        sx={{ background: "#fff" }}
+                        fullWidth
+                        size="small"
+                        autoComplete="off"
+                        variant="outlined"
+                        //sx={{ background: "#fff" }}
                       >
-                        <MenuItem value="" disabled>
+                        {/* <MenuItem value="" disabled>
                           Select an option
                         </MenuItem>
                         {terms && terms.length > 0 ? (
@@ -1231,17 +1238,17 @@ export default function AddBill(props) {
                           <MenuItem value="" disabled>
                             No terms available
                           </MenuItem>
-                        )}
-                      </Select>
+                        )} */}
+                      </TextField>
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1250,7 +1257,7 @@ export default function AddBill(props) {
                       Roll Call
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         sx={{
@@ -1299,12 +1306,12 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1313,7 +1320,7 @@ export default function AddBill(props) {
                       Read More
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <TextField
@@ -1409,12 +1416,12 @@ export default function AddBill(props) {
                       )}
                     </FormControl>
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1426,7 +1433,7 @@ export default function AddBill(props) {
                     </InputLabel>
                   </Grid>
 
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <FormControl
                       fullWidth
                       sx={{

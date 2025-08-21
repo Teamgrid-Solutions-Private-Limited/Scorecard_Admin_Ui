@@ -28,7 +28,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../../src/Dashboard/global/common";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -75,6 +75,8 @@ import Footer from "../components/Footer";
 import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; // adjust path as needed
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -94,6 +96,7 @@ export default function AddSenator(props) {
     const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
    const [hasLocalChanges, setHasLocalChanges] = useState(false);
+   const navigate = useNavigate();
 
 
   let senatorActivities =
@@ -263,6 +266,7 @@ export default function AddSenator(props) {
     try {
       setLoading(true);
       await dispatch(discardSenatorChanges(id)).unwrap();
+      navigate(0);
 
       // Refresh the data
       await dispatch(getSenatorById(id));
@@ -541,7 +545,22 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
   const termPreFill = () => {
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
-        const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+     const matchedTerm = terms?.find((t) => {
+       // Case 1: term.termId is an object with name property
+       if (term.termId && typeof term.termId === "object" && term.termId.name) {
+         return t.name === term.termId.name;
+       }
+       // Case 2: term.termId is a string (the term name)
+       else if (typeof term.termId === "string") {
+         return t.name === term.termId;
+       }
+       // Case 3: term.termId is an ObjectId - find by ID
+       else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
+         return t._id.toString() === term.termId.toString();
+       }
+       // Case 4: No valid termId found
+       return false;
+     });
         // Prepare votesScore, always at least one blank row
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0

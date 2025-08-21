@@ -53,6 +53,8 @@ import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
@@ -91,6 +93,8 @@ export default function AddActivity(props) {
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
+           const theme = useTheme();
+         const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
    const [hasLocalChanges, setHasLocalChanges] = useState(false);
  
   
@@ -997,11 +1001,11 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1009,7 +1013,7 @@ export default function AddActivity(props) {
                       Activity Details
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1048,12 +1052,12 @@ export default function AddActivity(props) {
                       }}
                     />
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1062,7 +1066,7 @@ export default function AddActivity(props) {
                       Congress
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1109,12 +1113,12 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1123,7 +1127,7 @@ export default function AddActivity(props) {
                       Read More
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <TextField
@@ -1220,12 +1224,12 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
                 
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                           width: "100%",
