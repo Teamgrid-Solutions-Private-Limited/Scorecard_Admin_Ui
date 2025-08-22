@@ -55,6 +55,7 @@ import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
@@ -547,6 +548,7 @@ export default function AddActivity(props) {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{

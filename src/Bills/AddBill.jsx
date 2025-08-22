@@ -53,6 +53,7 @@ import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -561,6 +562,7 @@ export default function AddBill(props) {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{

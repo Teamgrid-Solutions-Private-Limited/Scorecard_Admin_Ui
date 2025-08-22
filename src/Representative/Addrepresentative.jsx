@@ -45,6 +45,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Autocomplete
 } from "@mui/material";
 
 import {
@@ -75,6 +76,7 @@ import Footer from "../components/Footer";
 import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -503,7 +505,22 @@ export default function Addrepresentative(props) {
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
-        const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+        const matchedTerm = terms?.find((t) => {
+       // Case 1: term.termId is an object with name property
+       if (term.termId && typeof term.termId === "object" && term.termId.name) {
+         return t.name === term.termId.name;
+       }
+       // Case 2: term.termId is a string (the term name)
+       else if (typeof term.termId === "string") {
+         return t.name === term.termId;
+       }
+       // Case 3: term.termId is an ObjectId - find by ID
+       else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
+         return t._id.toString() === term.termId.toString();
+       }
+       // Case 4: No valid termId found
+       return false;
+     });
         // Transform votesScore with the same logic as house data
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
@@ -1180,6 +1197,7 @@ export default function Addrepresentative(props) {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
 
           <Stack
             spacing={2}
@@ -1903,9 +1921,9 @@ export default function Addrepresentative(props) {
                             Select an option
                           </MenuItem>
                           {terms && terms.length > 0 ? (
-                            terms.map((t) => (
+                            terms .filter((t) => Array.isArray(t.congresses) && t.congresses.length === 1).sort((a,b)=> a.congresses[0]- b.congresses[0]).map((t) => (
                               <MenuItem key={t._id} value={t._id}>
-                                {t.name}
+                                 {`${t.congresses[0]}th Congress`}
                               </MenuItem>
                             ))
                           ) : (
@@ -1916,6 +1934,40 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
+                                       {/* <Grid size={isMobile ? 12 : 2.2}>
+  <FormControl fullWidth>
+    <Autocomplete
+      options={
+        terms
+          ? terms.filter(
+              (t) => Array.isArray(t.congresses) && t.congresses.length === 1
+            )
+          : []
+      }
+      getOptionLabel={(t) =>
+        t.congresses && t.congresses.length === 1
+          ? `${ordinal(t.congresses[0])} Congress`
+          : ""
+      }
+      value={
+        terms.find((t) => t._id === term.termId) || null
+      }
+      onChange={(event, newValue) =>
+        handleTermChange(
+          { target: { name: "termId", value: newValue?._id || "" } },
+          termIndex
+        )
+      }
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          // label="Select an option"
+          sx={{ background: "#fff" }}
+        />
+      )}
+    />
+  </FormControl>
+</Grid> */}
                     <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{

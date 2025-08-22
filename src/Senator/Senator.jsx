@@ -58,6 +58,7 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import { FormControl, InputLabel, Select } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { jwtDecode } from "jwt-decode";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Senator(props) {
   const navigate = useNavigate();
@@ -460,6 +461,7 @@ export default function Senator(props) {
           }}
         >
           <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{

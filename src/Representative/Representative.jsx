@@ -55,6 +55,7 @@ const xThemeComponents = {
 import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { jwtDecode } from "jwt-decode";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Representative(props) {
   const navigate = useNavigate();
@@ -439,6 +440,7 @@ export default function Representative(props) {
           }}
         >
           <FixedHeader sx={{ display: { xs: "none", md: "block" } }}/>
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{

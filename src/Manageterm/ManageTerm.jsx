@@ -13,25 +13,32 @@ import {
   IconButton,
   Paper,
   Tooltip,
-  Alert,
 } from "@mui/material";
 import { createTerm, getAllTerms, updateTerm } from "../redux/reducer/termSlice";
-import { Add, Edit, Save, Close, CheckCircle } from "@mui/icons-material";
+import { Add, Edit, Save, Close } from "@mui/icons-material";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import SideMenu from "../components/SideMenu";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+import MobileHeader from "../components/MobileHeader";
 
 export default function ManageTerm(props) {
   const dispatch = useDispatch();
-  const { terms, loading, error } = useSelector((state) => state.term);
-  const [newTermName, setNewTermName] = useState("");
+  const { terms, loading } = useSelector((state) => state.term);
+
+  // New state for term inputs
+  const [startYear, setStartYear] = useState("");
+  const [endYear, setEndYear] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [editedName, setEditedName] = useState("");
+  const [editedStartYear, setEditedStartYear] = useState("");
+  const [editedEndYear, setEditedEndYear] = useState("");
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+
+
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -40,9 +47,7 @@ export default function ManageTerm(props) {
   };
 
   const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
+    if (reason === "clickaway") return;
     setOpenSnackbar(false);
   };
 
@@ -50,35 +55,69 @@ export default function ManageTerm(props) {
     dispatch(getAllTerms());
   }, [dispatch]);
 
+  // ✅ Create Term
   const handleCreateTerm = async () => {
-    if (!newTermName.trim()) return;
+    if (!startYear.trim() || !endYear.trim()) {
+      handleSnackbarOpen("Start and End Year are required", "error");
+      return;
+    }
+    
+    // Validate years
+    const start = parseInt(startYear);
+    const end = parseInt(endYear);
+    
+    if (start >= end) {
+      handleSnackbarOpen("End year must be greater than start year", "error");
+      return;
+    }
+    
     try {
-      await dispatch(createTerm({ name: newTermName })).unwrap();
-      setNewTermName("");
+      await dispatch(createTerm({ startYear: start, endYear: end })).unwrap();
+      setStartYear("");
+      setEndYear("");
       handleSnackbarOpen("Term created successfully");
       dispatch(getAllTerms());
     } catch (error) {
       console.error("Failed to create term:", error);
+      handleSnackbarOpen(error.message || "Error creating term", "error");
     }
   };
 
   const handleEditTerm = (term) => {
     setEditingId(term._id);
-    setEditedName(term.name);
+    setEditedStartYear(term.startYear.toString());
+    setEditedEndYear(term.endYear.toString());
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setEditedName("");
+    setEditedStartYear("");
+    setEditedEndYear("");
   };
 
   const handleSaveChanges = async (termId) => {
-    if (!editedName.trim()) return;
+    if (!editedStartYear.trim() || !editedEndYear.trim()) {
+      handleSnackbarOpen("Start and End Year are required", "error");
+      return;
+    }
+    
+    const start = parseInt(editedStartYear);
+    const end = parseInt(editedEndYear);
+    
+    if (start >= end) {
+      handleSnackbarOpen("End year must be greater than start year", "error");
+      return;
+    }
+    
     try {
       await dispatch(
         updateTerm({
           id: termId,
-          updatedData: { name: editedName },
+          updatedData: { 
+            startYear: start, 
+            endYear: end,
+            // Name will be automatically generated on the backend
+          },
         })
       ).unwrap();
       handleSnackbarOpen("Term Updated Successfully");
@@ -86,6 +125,7 @@ export default function ManageTerm(props) {
       handleCancelEdit();
     } catch (error) {
       console.error("Failed to update term:", error);
+      handleSnackbarOpen(error.message || "Error updating term", "error");
     }
   };
 
@@ -115,13 +155,14 @@ export default function ManageTerm(props) {
 
         <Box
           sx={{
-            width:"80%",
+            width: "80%",
             flexGrow: 1,
             filter: loading ? "blur(1px)" : "none",
             pointerEvents: loading ? "none" : "auto",
           }}
         >
           <FixedHeader />
+          <MobileHeader/>
           <Box
             sx={{
               mx: "auto",
@@ -132,6 +173,7 @@ export default function ManageTerm(props) {
               pb: 5,
             }}
           >
+            {/* Snackbar */}
             <Snackbar
               open={openSnackbar}
               autoHideDuration={6000}
@@ -149,23 +191,7 @@ export default function ManageTerm(props) {
               </MuiAlert>
             </Snackbar>
 
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 3,
-              }}
-            >
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: 600, color: "text.primary" }}
-              >
-                Manage Terms
-              </Typography>
-            </Box>
-
+            {/* Add Term Section */}
             <Paper
               elevation={0}
               sx={{
@@ -177,16 +203,31 @@ export default function ManageTerm(props) {
                 borderColor: "divider",
               }}
             >
-              <Typography  sx={{ mb: 2, fontWeight: 500 }}>
+              <Typography sx={{ mb: 2, fontWeight: 500 }}>
                 Add New Term
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   fullWidth
-                  label="Term Name"
+                  label="Start Year"
                   size="small"
-                  value={newTermName}
-                  onChange={(e) => setNewTermName(e.target.value)}
+                  type="number"
+                  value={startYear}
+                  onChange={(e) => setStartYear(e.target.value)}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "10px",
+                      backgroundColor: "background.default",
+                    },
+                  }}
+                />
+                <TextField
+                  fullWidth
+                  label="End Year"
+                  size="small"
+                  type="number"
+                  value={endYear}
+                  onChange={(e) => setEndYear(e.target.value)}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "10px",
@@ -211,6 +252,7 @@ export default function ManageTerm(props) {
               </Stack>
             </Paper>
 
+            {/* Term List */}
             <Paper
               elevation={0}
               sx={{
@@ -236,7 +278,6 @@ export default function ManageTerm(props) {
                         alignItems: "center",
                         justifyContent: "space-between",
                         p: 2,
-
                         borderRadius: 1,
                         backgroundColor:
                           editingId === term._id
@@ -246,24 +287,47 @@ export default function ManageTerm(props) {
                       }}
                     >
                       {editingId === term._id ? (
-                        <TextField
-                          fullWidth
-                          value={editedName}
-                          onChange={(e) => setEditedName(e.target.value)}
-                          size="small"
-                          sx={{ mr: 2 }}
-                          autoFocus
-                        />
+                        <Stack direction="row" spacing={2} sx={{ flexGrow: 1 }}>
+                          <TextField
+                            label="Start Year"
+                            size="small"
+                            type="number"
+                            value={editedStartYear}
+                            onChange={(e) => setEditedStartYear(e.target.value)}
+                            sx={{ width: 120 }}
+                          />
+                          <TextField
+                            label="End Year"
+                            size="small"
+                            type="number"
+                            value={editedEndYear}
+                            onChange={(e) => setEditedEndYear(e.target.value)}
+                            sx={{ width: 120 }}
+                          />
+                        </Stack>
                       ) : (
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            fontWeight:
-                              editingId === term._id ? 500 : "inherit",
-                          }}
-                        >
-                          {index + 1}. {term.name}
-                        </Typography>
+                            <Stack direction="row" spacing={1} alignItems="center">
+      <Typography variant="body1">
+        {index + 1}. {term.name}
+      </Typography>
+     
+        <Paper
+          elevation={0}
+          sx={{
+            px: 1.5,
+            py: 0.5,
+            borderRadius: 1,
+            bgcolor: "primary.main",
+            color: "#fff",
+            fontSize: "0.8rem",
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          Congress: {term.congresses.map((c) => c).join(", ")}
+        </Paper>
+  
+    </Stack>
                       )}
 
                       <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -273,7 +337,7 @@ export default function ManageTerm(props) {
                               <IconButton
                                 color="primary"
                                 onClick={() => handleSaveChanges(term._id)}
-                                disabled={!editedName.trim()}
+                                disabled={!editedStartYear.trim() || !editedEndYear.trim()}
                                 size="small"
                               >
                                 <Save fontSize="small" />

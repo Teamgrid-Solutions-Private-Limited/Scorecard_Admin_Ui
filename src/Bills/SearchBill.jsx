@@ -36,6 +36,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
+import MobileHeader from "../components/MobileHeader";
 
 export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -204,6 +205,7 @@ const handleSearch = async () => {
               </MuiAlert>
             </Snackbar>
       <FixedHeader />
+      <MobileHeader/>
       <Box sx={{ display: "flex" }}>
         <SideMenu />
         <Box

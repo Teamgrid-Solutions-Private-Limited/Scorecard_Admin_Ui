@@ -75,6 +75,7 @@ import Footer from "../components/Footer";
 import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; // adjust path as needed
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -1150,6 +1151,7 @@ const getValidTermId = (termId) => {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
 
           <Stack
             spacing={2}

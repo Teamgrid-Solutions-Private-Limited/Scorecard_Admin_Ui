@@ -40,6 +40,7 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom"; 
+import MobileHeader from "../../components/MobileHeader";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -206,6 +207,7 @@ export default function ManageUser(props) {
         <SideMenu />
         <Box sx={{ flexGrow: 1, width: "80%",  }}>
           <FixedHeader />
+          <MobileHeader/>
           <Box sx={{ maxWidth: "100%", mt: 2,mx:2 }}>
             <Stack
               direction="row"

@@ -46,6 +46,7 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 import { jwtDecode } from "jwt-decode";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -236,6 +237,7 @@ export default function Bills(props) {
           }}
         >
           <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 1 } }}
