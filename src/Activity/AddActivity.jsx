@@ -138,10 +138,10 @@ export default function AddActivity(props) {
 
       setFormData(newFormData);
       setOriginalFormData(newFormData); // Store the original data
-      
+
       // Reset selectedFile when editing existing activity
       setSelectedFile(null);
-      
+
       // Reset editedFields when editing existing activity
       setEditedFields([]);
     }
@@ -249,15 +249,15 @@ export default function AddActivity(props) {
     if (file) {
       setSelectedFile(file);
       // Set the file path in the readMore field
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        readMore: file.name
+        readMore: file.name,
       }));
-      
+
       // Update editedFields if this is a change
       if (originalFormData && file.name !== originalFormData.readMore) {
-        const changes = Object.keys(formData).filter(key => {
-          if (key === 'readMore') {
+        const changes = Object.keys(formData).filter((key) => {
+          if (key === "readMore") {
             return file.name !== originalFormData.readMore;
           }
           return compareValues(formData[key], originalFormData[key]);
@@ -284,13 +284,14 @@ export default function AddActivity(props) {
     try {
       // Create FormData for file upload
       const formDataToSend = new FormData();
-      
+
       // Add all form fields EXCEPT status (we'll add it separately)
-      Object.keys(formData).forEach(key => {
-        if (key === 'readMore' && selectedFile) {
+      Object.keys(formData).forEach((key) => {
+        if (key === "readMore" && selectedFile) {
           // If there's a selected file, append it
-          formDataToSend.append('readMore', selectedFile);
-        } else if (key !== 'status') { // Don't add status here
+          formDataToSend.append("readMore", selectedFile);
+        } else if (key !== "status") {
+          // Don't add status here
           formDataToSend.append(key, formData[key]);
         }
       });
@@ -316,12 +317,15 @@ export default function AddActivity(props) {
       });
 
       // Add editedFields and fieldEditors to FormData
-      formDataToSend.append('editedFields', JSON.stringify(mergedEditedFields));
-      formDataToSend.append('fieldEditors', JSON.stringify(updatedFieldEditors));
-      
+      formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
+      formDataToSend.append(
+        "fieldEditors",
+        JSON.stringify(updatedFieldEditors)
+      );
+
       // Add status ONLY ONCE
       const finalStatus = userRole === "admin" ? "published" : "under review";
-      formDataToSend.append('status', finalStatus);
+      formDataToSend.append("status", finalStatus);
 
      
 
@@ -350,12 +354,7 @@ export default function AddActivity(props) {
           }
         }
       } else {
-        if (
-          !formData.type ||
-          !formData.title ||
-          !formData.shortDesc 
-        )
-         {
+        if (!formData.type || !formData.title || !formData.shortDesc) {
           setSnackbarMessage("Please fill all fields!");
           setSnackbarSeverity("warning");
           setOpenSnackbar(true);
@@ -364,9 +363,9 @@ export default function AddActivity(props) {
         }
 
         await dispatch(createActivity(formDataToSend)).unwrap();
-        setSnackbarMessage( "Activity created successfully!");
+        setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
-        
+
         // Reset editedFields after successful creation
         setHasLocalChanges(false); // Reset after save
         setEditedFields([]);
@@ -406,7 +405,7 @@ export default function AddActivity(props) {
       await dispatch(getActivityById(id));
       setSnackbarMessage("Changes discarded successfully");
       setSnackbarSeverity("success");
-      
+
       // Reset selectedFile state
       setSelectedFile(null);
     } catch (error) {
@@ -850,7 +849,7 @@ export default function AddActivity(props) {
                   {userRole === "admin" ? "Discard" : "Undo"}
                 </Button>
               )}
-              
+
               <Button
                 variant="outlined"
                 onClick={handleSubmit}
@@ -864,7 +863,11 @@ export default function AddActivity(props) {
                   },
                 }}
               >
-                {id ? (userRole === "admin" ? "Publish" : "Save Changes") : "Create"}
+                {id
+                  ? userRole === "admin"
+                    ? "Publish"
+                    : "Save Changes"
+                  : "Create"}
               </Button>
             </Stack>
 
@@ -1128,7 +1131,7 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Box sx={{ display: "flex", gap: 1 }}>
                         <TextField
                           sx={{
                             fontFamily: "'Be Vietnam Pro', sans-serif",
@@ -1147,16 +1150,23 @@ export default function AddActivity(props) {
                               "&:hover .MuiOutlinedInput-notchedOutline": {
                                 borderColor: "#D3D3D3 !important",
                               },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#CC9A3A !important",
-                                borderWidth: "1px",
-                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "#CC9A3A !important",
+                                  borderWidth: "1px",
+                                },
                             },
                           }}
                           fullWidth
                           variant="outlined"
                           name="readMore"
-                          value={formData.readMore ? `${API_URL}/uploads/documents/${formData.readMore.split('/').pop()}` : ""}
+                          value={
+                            formData.readMore
+                              ? `${API_URL}/uploads/documents/${formData.readMore
+                                  .split("/")
+                                  .pop()}`
+                              : ""
+                          }
                           onChange={handleChange}
                           placeholder="File will be uploaded here"
                           InputProps={{
@@ -1182,7 +1192,7 @@ export default function AddActivity(props) {
                           startIcon={<CloudUploadIcon />}
                           sx={{
                             height: 38,
-                            minWidth: 'auto',
+                            minWidth: "auto",
                             px: 2,
                             borderColor: "#CC9A3A",
                             color: "#CC9A3A",
@@ -1202,12 +1212,12 @@ export default function AddActivity(props) {
                         </Button>
                       </Box>
                       {selectedFile && (
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: "success.main", 
-                            mt: 0.5, 
-                            display: "block" 
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "success.main",
+                            mt: 0.5,
+                            display: "block",
                           }}
                         >
                           File selected: {selectedFile.name}

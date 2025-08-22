@@ -697,13 +697,8 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // Merge with any existing editedFields from backend
-      const backendEditedFields = Array.isArray(formData.editedFields)
-        ? formData.editedFields
-        : [];
-      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
-
-      setEditedFields(mergedChanges);
+      // Use only local diffs for editedFields so reverting removes from list
+      setEditedFields(changes);
     }
   }, [formData, originalFormData, houseTermData, originalTermData]);
 
@@ -1294,9 +1289,7 @@ export default function Addrepresentative(props) {
                           )
                             ? formData.editedFields
                             : [];
-                          const hasChanges =
-                            backendChanges.length > 0 ||
-                            localChanges.length > 0;
+                          const hasChanges = hasAnyChanges;
 
                           if (!hasChanges) {
                             return (
@@ -1440,7 +1433,7 @@ export default function Addrepresentative(props) {
                               )}
 
                               {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
+                              {localOnlyChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "background.paper",
@@ -1457,7 +1450,7 @@ export default function Addrepresentative(props) {
                                     Unsaved Changes
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
-                                    {localChanges.map((field) => (
+                                    {localOnlyChanges.map((field) => (
                                       <ListItem
                                         key={`local-${field}`}
                                         sx={{ py: 0, px: 1 }}
