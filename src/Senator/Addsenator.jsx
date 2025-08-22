@@ -28,7 +28,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../../src/Dashboard/global/common";
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -75,8 +75,6 @@ import Footer from "../components/Footer";
 import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; // adjust path as needed
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -92,12 +90,11 @@ export default function AddSenator(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-   const [componentKey, setComponentKey] = useState(0);
-    const theme = useTheme();
+  const [componentKey, setComponentKey] = useState(0);
+  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
-   const [hasLocalChanges, setHasLocalChanges] = useState(false);
-   const navigate = useNavigate();
-
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
+  const navigate = useNavigate();
 
   let senatorActivities =
     activities?.filter((activity) => activity.type === "senate") || [];
@@ -126,8 +123,6 @@ export default function AddSenator(props) {
   // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
-
-
 
   const formatRelativeTime = (date) => {
     const now = new Date();
@@ -179,6 +174,7 @@ export default function AddSenator(props) {
     {
       senateId: id,
       summary: "",
+      summaries: [{ content: "" }], // Add summaries array with one empty summary
       rating: "",
       votesScore: [{ voteId: "", score: "" }],
       activitiesScore: [{ activityId: "", score: "" }],
@@ -193,49 +189,80 @@ export default function AddSenator(props) {
     if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-       setSenatorTermData((prev) => {
-    const newTerms = prev.map((term, index) =>
-      index === termIndex ? { ...term, [name]: value } : term
-    );
-    
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const isActualChange = compareValues(value, originalTerm[name]);
-    
-    if (isActualChange && !localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    } else if (!isActualChange && localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
-    }
-    
-    return newTerms;
-  });
-   
+    setSenatorTermData((prev) => {
+      const newTerms = prev.map((term, index) =>
+        index === termIndex ? { ...term, [name]: value } : term
+      );
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const isActualChange = compareValues(value, originalTerm[name]);
+
+      if (isActualChange && !localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => [...prev, fieldName]);
+      } else if (!isActualChange && localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+      }
+
+      return newTerms;
+    });
   };
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
-     const fieldName = `term${termIndex}_${name}`;
-     if (!hasLocalChanges) {
+    const fieldName = `term${termIndex}_${name}`;
+    if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-    
+
     setSenatorTermData((prev) => {
-    const newTerms = prev.map((term, index) =>
-      index === termIndex ? { ...term, [name]: checked } : term
-    );
-    
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const isActualChange = compareValues(checked, originalTerm[name]);
-    
-    if (isActualChange && !localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    } else if (!isActualChange && localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+      const newTerms = prev.map((term, index) =>
+        index === termIndex ? { ...term, [name]: checked } : term
+      );
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const isActualChange = compareValues(checked, originalTerm[name]);
+
+      if (isActualChange && !localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => [...prev, fieldName]);
+      } else if (!isActualChange && localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+      }
+
+      return newTerms;
+    });
+  };
+
+  // Handle changes to a specific summary
+  const handleSummaryChange = (termIndex, summaryIndex, content) => {
+    const fieldName = `term${termIndex}_summary_${summaryIndex}`;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
     }
-    
-    return newTerms;
-  });
+
+    setSenatorTermData((prev) => {
+      const newTerms = prev.map((term, idx) => {
+        if (idx !== termIndex) return term;
+
+        const newSummaries = [...term.summaries];
+        newSummaries[summaryIndex] = { content: content };
+
+        return { ...term, summaries: newSummaries };
+      });
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalSummary = originalTerm.summaries?.[summaryIndex] || "";
+      const isActualChange = compareValues(content, originalSummary);
+
+      if (isActualChange && !localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => [...prev, fieldName]);
+      } else if (!isActualChange && localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+      }
+
+      return newTerms;
+    });
   };
 
   const handleAddVote = (termIndex) => {
@@ -245,6 +272,41 @@ export default function AddSenator(props) {
           ? {
               ...term,
               votesScore: [...term.votesScore, { voteId: "", score: "" }],
+            }
+          : term
+      )
+    );
+  };
+
+  // ... (previous functions remain the same)
+
+  // Add a new summary to a specific term
+  const handleAddSummary = (termIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              summaries: [...term.summaries, { content: "" }],
+            }
+          : term
+      )
+    );
+  };
+
+  // Remove a summary from a specific term
+  const handleRemoveSummary = (termIndex, summaryIndex) => {
+    // Don't allow removing if there's only one summary left
+    if (senatorTermData[termIndex].summaries.length <= 1) {
+      return;
+    }
+
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              summaries: term.summaries.filter((_, i) => i !== summaryIndex),
             }
           : term
       )
@@ -334,51 +396,50 @@ export default function AddSenator(props) {
   //   );
   // };
 
-
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
-  const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
-  if (!hasLocalChanges) {
+    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
+    if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-  
-  setSenatorTermData((prev) => {
-    const newTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
-        : term
-    );
-    
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-    const isActualChange = compareValues(value, originalVote[field]);
-    
-    if (isActualChange && !localChanges.includes(voteChangeId)) {
-      setLocalChanges((prev) => [...prev, voteChangeId]);
-    } else if (!isActualChange && localChanges.includes(voteChangeId)) {
-      setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
-    }
-    
-    return newTerms;
-  });
-};
+
+    setSenatorTermData((prev) => {
+      const newTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
+          : term
+      );
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalVote = originalTerm.votesScore?.[voteIndex] || {};
+      const isActualChange = compareValues(value, originalVote[field]);
+
+      if (isActualChange && !localChanges.includes(voteChangeId)) {
+        setLocalChanges((prev) => [...prev, voteChangeId]);
+      } else if (!isActualChange && localChanges.includes(voteChangeId)) {
+        setLocalChanges((prev) => prev.filter((f) => f !== voteChangeId));
+      }
+
+      return newTerms;
+    });
+  };
 
   const handleAddActivity = (termIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: "", score: "" },
-            ],
-          }
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: "", score: "" },
+              ],
+            }
           : term
       )
     );
@@ -402,9 +463,9 @@ export default function AddSenator(props) {
   //   // Construct the field name for change tracking
   //   // Construct a unique identifier for this activity change
   //   const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex+1}`;
-    
+
   //   // Update local changes if not already tracked
-  //   setLocalChanges((prev) => 
+  //   setLocalChanges((prev) =>
   //     prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
   //   );
   //   // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
@@ -429,40 +490,43 @@ export default function AddSenator(props) {
   //   );
   // };
 
-const handleActivityChange = (termIndex, activityIndex, field, value) => {
-  const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
-  if (!hasLocalChanges) {
+  const handleActivityChange = (termIndex, activityIndex, field, value) => {
+    const activityChangeId = `term${termIndex}_TrackedActivity_${
+      activityIndex + 1
+    }`;
+    if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
 
-  setSenatorTermData((prev) => {
-    const newTerms = prev.map((term, idx) => {
-      if (idx !== termIndex) return term;
+    setSenatorTermData((prev) => {
+      const newTerms = prev.map((term, idx) => {
+        if (idx !== termIndex) return term;
 
-      const newActivities = term.activitiesScore.map((activity, i) => 
-        i === activityIndex ? { ...activity, [field]: value } : activity
-      );
+        const newActivities = term.activitiesScore.map((activity, i) =>
+          i === activityIndex ? { ...activity, [field]: value } : activity
+        );
 
-      return { ...term, activitiesScore: newActivities };
+        return { ...term, activitiesScore: newActivities };
+      });
+
+      // Compare with original data if available
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalActivity =
+        originalTerm.activitiesScore?.[activityIndex] || {};
+      const isActualChange = compareValues(value, originalActivity[field]);
+
+      setLocalChanges((prevChanges) => {
+        if (isActualChange && !prevChanges.includes(activityChangeId)) {
+          return [...prevChanges, activityChangeId];
+        } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
+          return prevChanges.filter((f) => f !== activityChangeId);
+        }
+        return prevChanges;
+      });
+
+      return newTerms;
     });
-
-    // Compare with original data if available
-    const originalTerm = originalTermData[termIndex] || {};
-    const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
-    const isActualChange = compareValues(value, originalActivity[field]);
-
-    setLocalChanges((prevChanges) => {
-      if (isActualChange && !prevChanges.includes(activityChangeId)) {
-        return [...prevChanges, activityChangeId];
-      } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
-        return prevChanges.filter(f => f !== activityChangeId);
-      }
-      return prevChanges;
-    });
-
-    return newTerms;
-  });
-};
+  };
 
   const contentRefs = useRef([]);
   const handleEditorChange = useCallback((content, termIndex) => {
@@ -519,12 +583,10 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
         setDeletedTermIds((ids) => [...ids, removed._id]);
       }
 
-       // Remove any tracked changes for this term
-    setLocalChanges((prevChanges) => 
-      prevChanges.filter(
-        change => !change.startsWith(`term${termIndex}_`)
-      )
-    );
+      // Remove any tracked changes for this term
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+      );
 
       return prev.filter((_, index) => index !== termIndex);
     });
@@ -545,22 +607,29 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
   const termPreFill = () => {
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
-     const matchedTerm = terms?.find((t) => {
-       // Case 1: term.termId is an object with name property
-       if (term.termId && typeof term.termId === "object" && term.termId.name) {
-         return t.name === term.termId.name;
-       }
-       // Case 2: term.termId is a string (the term name)
-       else if (typeof term.termId === "string") {
-         return t.name === term.termId;
-       }
-       // Case 3: term.termId is an ObjectId - find by ID
-       else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
-         return t._id.toString() === term.termId.toString();
-       }
-       // Case 4: No valid termId found
-       return false;
-     });
+        const matchedTerm = terms?.find((t) => {
+          // Case 1: term.termId is an object with name property
+          if (
+            term.termId &&
+            typeof term.termId === "object" &&
+            term.termId.name
+          ) {
+            return t.name === term.termId.name;
+          }
+          // Case 2: term.termId is a string (the term name)
+          else if (typeof term.termId === "string") {
+            return t.name === term.termId;
+          }
+          // Case 3: term.termId is an ObjectId - find by ID
+          else if (
+            term.termId &&
+            mongoose.Types.ObjectId.isValid(term.termId)
+          ) {
+            return t._id.toString() === term.termId.toString();
+          }
+          // Case 4: No valid termId found
+          return false;
+        });
         // Prepare votesScore, always at least one blank row
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
@@ -586,6 +655,12 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
         return {
           _id: term._id,
           summary: term.summary || "",
+          summaries:
+            term.summaries && term.summaries.length > 0
+              ? term.summaries.map((s) =>
+                  typeof s === "string" ? { content: s } : s
+                )
+              : [{ content: term.summary || "" }],
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
           currentTerm: term.currentTerm || false,
@@ -618,10 +693,10 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || "",
-                score: activity.score || "",
-              }))
+                  activityId:
+                    activity.activityId?._id || activity.activityId || "",
+                  score: activity.score || "",
+                }))
               : [{ activityId: "", score: "" }],
         };
       });
@@ -633,6 +708,7 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
         {
           senateId: id,
           summary: "",
+          summaries: [""], // Add summaries array with one empty summary
           rating: "",
           votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: "", score: "" }],
@@ -790,24 +866,24 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
       setHasLocalChanges(true);
     }
 
-     setFormData((prev) => {
-    const newData = { ...prev, [name]: value };
-    
-    // Compare with original data to determine if this is an actual change
-    const isActualChange = originalFormData 
-      ? compareValues(newData[name], originalFormData[name])
-      : true;
-    
-    // Update local changes only if it's a real change
-    if (isActualChange && !localChanges.includes(name)) {
-      setLocalChanges((prev) => [...prev, name]);
-    } else if (!isActualChange && localChanges.includes(name)) {
-      // If it's reverted to original, remove from changes
-      setLocalChanges((prev) => prev.filter(field => field !== name));
-    }
-    
-    return newData;
-  });
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+
+      // Compare with original data to determine if this is an actual change
+      const isActualChange = originalFormData
+        ? compareValues(newData[name], originalFormData[name])
+        : true;
+
+      // Update local changes only if it's a real change
+      if (isActualChange && !localChanges.includes(name)) {
+        setLocalChanges((prev) => [...prev, name]);
+      } else if (!isActualChange && localChanges.includes(name)) {
+        // If it's reverted to original, remove from changes
+        setLocalChanges((prev) => prev.filter((field) => field !== name));
+      }
+
+      return newData;
+    });
   };
 
   const handleFileChange = (event) => {
@@ -816,13 +892,13 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
     if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
-    
+
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
 
     setFormData((prev) => ({ ...prev, photo: file }));
-};
+  };
   // const handleStatusChange = (status) => {
   //   const fieldName = "status"; // The field being changed
 
@@ -836,195 +912,201 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
   // };
 
   const handleStatusChange = (status) => {
-  const fieldName = "status"; // The field being changed
-  if (!hasLocalChanges) {
+    const fieldName = "status"; // The field being changed
+    if (!hasLocalChanges) {
       setHasLocalChanges(true);
     }
 
-  setFormData((prev) => {
-    const newData = { ...prev, status };
-    
-    // Compare with original value to determine if this is an actual change
-    const isActualChange = originalFormData 
-      ? status !== originalFormData.status
-      : true;
+    setFormData((prev) => {
+      const newData = { ...prev, status };
 
-    // Update local changes based on whether it's an actual change
-    setLocalChanges((prevChanges) => {
-      if (isActualChange && !prevChanges.includes(fieldName)) {
-        return [...prevChanges, fieldName];
-      } else if (!isActualChange && prevChanges.includes(fieldName)) {
-        return prevChanges.filter(field => field !== fieldName);
-      }
-      return prevChanges;
+      // Compare with original value to determine if this is an actual change
+      const isActualChange = originalFormData
+        ? status !== originalFormData.status
+        : true;
+
+      // Update local changes based on whether it's an actual change
+      setLocalChanges((prevChanges) => {
+        if (isActualChange && !prevChanges.includes(fieldName)) {
+          return [...prevChanges, fieldName];
+        } else if (!isActualChange && prevChanges.includes(fieldName)) {
+          return prevChanges.filter((field) => field !== fieldName);
+        }
+        return prevChanges;
+      });
+
+      return newData;
     });
+  };
 
-    return newData;
-  });
-};
+ const handleSave = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  try {
+    const decodedToken = jwtDecode(token);
+    const currentEditor = {
+      editorId: decodedToken.userId,
+      editorName: localStorage.getItem("user") || "Unknown User",
+      editedAt: new Date(),
+    };
+    
+    if (deletedTermIds.length > 0) {
+      await Promise.all(
+        deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
+      );
+      setDeletedTermIds([]); // clear after delete
+    }
 
-    try {
-      const decodedToken = jwtDecode(token);
-      const currentEditor = {
-        editorId: decodedToken.userId,
-        editorName: localStorage.getItem("user") || "Unknown User",
-        editedAt: new Date(),
-      };
-      if (deletedTermIds.length > 0) {
-        await Promise.all(
-          deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
-        );
-        setDeletedTermIds([]); // clear after delete
-      }
-
-          // Transform localChanges to track individual vote/activity edits
-    const detailedChanges = localChanges.map(change => {
+    // Transform localChanges to track individual vote/activity edits
+    const detailedChanges = localChanges.map((change) => {
       // Handle votesScore changes (e.g. "term1_votesScore_0_voteId")
       const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
       if (voteMatch) {
         const [, termIdx, voteIdx] = voteMatch;
         return `term${termIdx}_votesScore_${voteIdx}`;
       }
-     
+
       // Handle activitiesScore changes
-      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
+      const activityMatch = change.match(
+        /^term(\d+)_activitiesScore_(\d+)_(.+)$/
+      );
       if (activityMatch) {
         const [, termIdx, activityIdx] = activityMatch;
         return `term${termIdx}_activitiesScore_${activityIdx}`;
       }
-     
+
       return change;
     });
- 
+
     const allChanges = [
       ...new Set([
-        ...(Array.isArray(formData.editedFields) ? formData.editedFields : []),
+        ...(Array.isArray(formData.editedFields)
+          ? formData.editedFields
+          : []),
         ...detailedChanges,
       ]),
     ];
 
-      // const allChanges = [
-      //   ...new Set([
-      //     ...(Array.isArray(formData.editedFields)
-      //       ? formData.editedFields
-      //       : []),
-      //     ...localChanges,
-      //   ]),
-      // ];
-
-      // Update field editors with current changes
-     // Update field editors with current changes
-      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-       localChanges.forEach((field) => {
-    // For senator-level fields
-    if (field in formData) {
-      if (compareValues(formData[field], originalFormData?.[field] || '')) {
+    // Update field editors with current changes
+    const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+    localChanges.forEach((field) => {
+      // For senator-level fields
+      if (field in formData) {
+        if (compareValues(formData[field], originalFormData?.[field] || "")) {
+          updatedFieldEditors[field] = currentEditor;
+        }
+      }
+      // For term-level fields
+      else if (field.startsWith("term")) {
         updatedFieldEditors[field] = currentEditor;
       }
-    }
-    // For term-level fields
-    else if (field.startsWith('term')) {
-      updatedFieldEditors[field] = currentEditor;
-    }
-  });
- 
- 
+    });
 
-      // Prepare senator update
-      const senatorUpdate = {
+    // Prepare senator update
+    const senatorUpdate = {
       ...formData,
       editedFields: allChanges,
       fieldEditors: updatedFieldEditors,
       publishStatus: userRole === "admin" ? "published" : "under review",
     };
 
-      // Clear editedFields if publishing
-      if (senatorUpdate.publishStatus === "published") {
-        senatorUpdate.editedFields = [];
-        senatorUpdate.fieldEditors = {};
-      }
+    // Clear editedFields if publishing
+    if (senatorUpdate.publishStatus === "published") {
+      senatorUpdate.editedFields = [];
+      senatorUpdate.fieldEditors = {};
+    }
 
-      // Update senator
-      if (id) {
-        const formData = new FormData();
-        Object.entries(senatorUpdate).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            if (typeof value === "object" && !(value instanceof File)) {
-              formData.append(key, JSON.stringify(value));
-            } else {
-              formData.append(key, value);
-            }
+    // Update senator
+    if (id) {
+      const formData = new FormData();
+      Object.entries(senatorUpdate).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          if (typeof value === "object" && !(value instanceof File)) {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, value);
           }
-        });
-
-        await dispatch(updateSenator({ id, formData })).unwrap();
-      }
-
-      // Update terms
-      const termPromises = senatorTermData.map((term, index) => {
-        const transformedVotesScore = term.votesScore.map(vote => ({
-          ...vote,
-          voteId: vote.voteId === "" ? null : vote.voteId
-        })).filter(vote => vote.voteId !== null); // Optional: remove null entries 
-         const transformedTrackedActivity = term.activitiesScore.map(activity => ({
-          ...activity,
-          activityId: activity.activityId === "" ? null : activity.activityId
-        })).filter(activity => activity.activityId !== null);
-
-              // Get changes specific to this term
-      const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
-
-        const termUpdate = {
-          ...term,
-          votesScore: transformedVotesScore, // Use the transformed array
-            activitiesScore: transformedTrackedActivity,
-          isNew: false,
-          senateId: id, //explicitly add it
-          editedFields: termChanges,
-          fieldEditors: updatedFieldEditors,
-        };
-
-        return term._id
-          ? dispatch(
-              updateSenatorData({ id: term._id, data: termUpdate })
-            ).unwrap()
-          : dispatch(createSenatorData(termUpdate)).unwrap();
+        }
       });
 
-      await Promise.all(termPromises);
-
-      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-      await dispatch(getSenatorById(id)).unwrap();
-
-      // Update originals to match latest backend data
-      // if (senatorData?.currentSenator) {
-      //   setOriginalTermData(JSON.parse(JSON.stringify(senatorData.currentSenator)));
-      // }
-      // if (senator) {
-      //   setOriginalFormData(JSON.parse(JSON.stringify(senator)));
-      // }
-      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
-      setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
-      setHasLocalChanges(false); // Reset after save
-      setLocalChanges([]);
-
-      userRole === "admin"
-        ? handleSnackbarOpen("Changes Published successfully!", "success")
-        : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
-    } catch (error) {
-      console.error("Save failed:", error);
-      handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
-    } finally {
-      setLoading(false);
+      await dispatch(updateSenator({ id, formData })).unwrap();
     }
-  };
+
+    // Update terms
+    const termPromises = senatorTermData.map((term, index) => {
+      const transformedVotesScore = term.votesScore
+        .map((vote) => ({
+          ...vote,
+          voteId: vote.voteId === "" ? null : vote.voteId,
+        }))
+        .filter((vote) => vote.voteId !== null); // Optional: remove null entries
+      const transformedTrackedActivity = term.activitiesScore
+        .map((activity) => ({
+          ...activity,
+          activityId: activity.activityId === "" ? null : activity.activityId,
+        }))
+        .filter((activity) => activity.activityId !== null);
+
+      // Get changes specific to this term
+      const termChanges = allChanges.filter((f) =>
+        f.startsWith(`term${index}_`)
+      );
+
+      // Get the selected term to extract congress data
+      const selectedTerm = terms.find(t => t._id === term.termId);
+      
+      // Extract congress array from the term
+      const congressArray = selectedTerm?.congresses || [];
+      
+      // Extract years if available
+      const years = selectedTerm?.years || null;
+
+      const termUpdate = {
+        ...term,
+        votesScore: transformedVotesScore,
+        activitiesScore: transformedTrackedActivity,
+        isNew: false,
+        senateId: id,
+        editedFields: termChanges,
+        fieldEditors: updatedFieldEditors,
+        // Map each summary to include the corresponding congress
+        summaries: term.summaries.map((summary, summaryIndex) => ({
+          ...summary,
+          congress: congressArray[summaryIndex] || null, // Get the congress at the same index
+        })),
+      };
+
+      return term._id
+        ? dispatch(
+            updateSenatorData({ id: term._id, data: termUpdate })
+          ).unwrap()
+        : dispatch(createSenatorData(termUpdate)).unwrap();
+    });
+
+    await Promise.all(termPromises);
+
+    await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+    await dispatch(getSenatorById(id)).unwrap();
+
+    setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+    setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
+    setHasLocalChanges(false); // Reset after save
+    setLocalChanges([]);
+
+    userRole === "admin"
+      ? handleSnackbarOpen("Changes Published successfully!", "success")
+      : handleSnackbarOpen(
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
+  } catch (error) {
+    console.error("Save failed:", error);
+    handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -1051,7 +1133,6 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
     whiteSpace: "nowrap",
     width: 1,
   });
-
   const label = { inputProps: { "aria-label": "Color switch demo" } };
   // Update your status config
   const getStatusConfig = (editedFields, currentStatus) => {
@@ -1082,7 +1163,7 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-       published: {
+      published: {
         backgroundColor: "rgba(255, 193, 7, 0.12)",
         borderColor: "#FFC107",
         iconColor: "#FFA000",
@@ -1107,32 +1188,29 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
- 
-const getValidTermId = (termId) => {
-    const termExists = terms?.some(t => t._id === termId);
+
+  const getValidTermId = (termId) => {
+    const termExists = terms?.some((t) => t._id === termId);
     return termExists ? termId : "";
   };
 
-   // Add this helper function to validate activity IDs
+  // Add this helper function to validate activity IDs
   const getValidVoteId = (voteId) => {
-  if (!votes || votes.length === 0) return "";
-  const voteExists = votes.some(v => v._id === voteId);
-  return voteExists ? voteId : "";
-};
+    if (!votes || votes.length === 0) return "";
+    const voteExists = votes.some((v) => v._id === voteId);
+    return voteExists ? voteId : "";
+  };
 
- const backendChanges = Array.isArray(formData?.editedFields)
+  const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
     : [];
-  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
-    (field) => !backendChanges.includes(field)
-  );
- const isStatusReady = !id || Boolean(originalFormData);
- 
-  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
- 
- 
- 
- 
+  const localOnlyChanges = (
+    Array.isArray(editedFields) ? editedFields : []
+  ).filter((field) => !backendChanges.includes(field));
+  const isStatusReady = !id || Boolean(originalFormData);
+
+  const hasAnyChanges =
+    backendChanges.length > 0 || localOnlyChanges.length > 0;
 
   return (
     <AppTheme key={componentKey}>
@@ -1177,10 +1255,10 @@ const getValidTermId = (termId) => {
               mt: { xs: 8, md: 0 },
             }}
           >
-             {userRole &&
+            {userRole &&
               isStatusReady &&
               (hasAnyChanges || formData.publishStatus !== "published") &&
-              statusData &&(
+              statusData && (
                 <Box
                   sx={{
                     width: "98%",
@@ -1204,19 +1282,20 @@ const getValidTermId = (termId) => {
                           formData.publishStatus === "draft"
                             ? "66, 165, 245"
                             : formData.publishStatus === "under review"
-                              ? "230, 81, 0"
-                              : formData.publishStatus === "published"
-                                ? ""
-                                : "244, 67, 54"
-                          }, 0.2)`,
+                            ? "230, 81, 0"
+                            : formData.publishStatus === "published"
+                            ? ""
+                            : "244, 67, 54"
+                        }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
                       }}
                     >
-                      {statusData.icon && React.cloneElement(statusData.icon, {
-                        sx: { color: statusData.iconColor },
-                      })}
+                      {statusData.icon &&
+                        React.cloneElement(statusData.icon, {
+                          sx: { color: statusData.iconColor },
+                        })}
                     </Box>
 
                     <Box sx={{ flex: 1 }}>
@@ -1243,10 +1322,12 @@ const getValidTermId = (termId) => {
 
                         {userRole === "admin" && (
                           <Chip
-                            label={`${Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length + localChanges.length
+                            label={`${
+                              Array.isArray(formData?.editedFields)
+                                ? formData.editedFields.length +
+                                  localChanges.length
                                 : 0
-                              } pending changes`}
+                            } pending changes`}
                             size="small"
                             color="warning"
                             variant="outlined"
@@ -1604,7 +1685,7 @@ const getValidTermId = (termId) => {
                   alignItems={"center"}
                   // flexDirection={isMobile ? "column" : "row"}
                 >
-                  <Grid size={isMobile?12:2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1613,12 +1694,11 @@ const getValidTermId = (termId) => {
                         fontWeight: 700,
                         my: 0,
                       }}
-                      
                     >
                       Senator's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:4} >
+                  <Grid size={isMobile ? 12 : 4}>
                     <TextField
                       required
                       id="title"
@@ -1631,7 +1711,7 @@ const getValidTermId = (termId) => {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={isMobile?12:1}>
+                  <Grid size={isMobile ? 12 : 1}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1643,7 +1723,7 @@ const getValidTermId = (termId) => {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:4}>
+                  <Grid size={isMobile ? 12 : 4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -1708,7 +1788,7 @@ const getValidTermId = (termId) => {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={isMobile?12:2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1720,7 +1800,7 @@ const getValidTermId = (termId) => {
                       State
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:4}>
+                  <Grid size={isMobile ? 12 : 4}>
                     <TextField
                       id="state"
                       name="state"
@@ -1732,7 +1812,10 @@ const getValidTermId = (termId) => {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={isMobile?12:1} sx={{ alignContent: "center" }}>
+                  <Grid
+                    size={isMobile ? 12 : 1}
+                    sx={{ alignContent: "center" }}
+                  >
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1744,7 +1827,7 @@ const getValidTermId = (termId) => {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:4}>
+                  <Grid size={isMobile ? 12 : 4}>
                     <FormControl fullWidth>
                       <Select
                         name="party"
@@ -1759,7 +1842,7 @@ const getValidTermId = (termId) => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?12:2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1863,7 +1946,7 @@ const getValidTermId = (termId) => {
                     columnSpacing={2}
                     alignItems={"center"}
                   >
-                    <Grid size={isMobile? 12 : 2}>
+                    <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1876,11 +1959,13 @@ const getValidTermId = (termId) => {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={isMobile? 12 : 2.2}>
+                    <Grid size={isMobile ? 12 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           // value={term.termId || ""}
-                          value={getValidTermId(term.termId?._id || term.termId || "")}
+                          value={getValidTermId(
+                            term.termId?._id || term.termId || ""
+                          )}
                           // value={terms.some(t => t._id === term.termId) ? term.termId : ''}
                           id="term"
                           name="termId"
@@ -1906,7 +1991,10 @@ const getValidTermId = (termId) => {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
+                    <Grid
+                      size={isMobile ? 6 : 2.1}
+                      sx={{ alignContent: "center" }}
+                    >
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1918,7 +2006,7 @@ const getValidTermId = (termId) => {
                         Current Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={isMobile?6:0}>
+                    <Grid size={isMobile ? 6 : 0}>
                       <Switch
                         {...label}
                         name="currentTerm"
@@ -1928,7 +2016,7 @@ const getValidTermId = (termId) => {
                       />
                     </Grid>
 
-                    <Grid size={isMobile?6:2.39}>
+                    <Grid size={isMobile ? 6 : 2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1941,7 +2029,7 @@ const getValidTermId = (termId) => {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={isMobile?6:2.2}>
+                    <Grid size={isMobile ? 6 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -1963,73 +2051,142 @@ const getValidTermId = (termId) => {
                         </Select>
                       </FormControl>
                     </Grid>
+                    {/*term repeater start*/}
 
-                    <Grid size={isMobile?12:2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
-                          my: 0,
-                        }}
+                    {term?.summaries?.map((summary, summaryIndex) => (
+                      <Grid
+                        rowSpacing={2}
+                        sx={{ width: "100%" }}
+                        key={summaryIndex}
                       >
-                        Term Summary
-                      </InputLabel>
-                    </Grid>
-                    <Grid size={isMobile?12:9.05}>
-                      <Editor
-                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                        licenseKey="gpl"
-                        onInit={(_evt, editor) => (editorRef.current = editor)}
-                        // initialValue={term.summary || ""}
-                        value={term.summary}
-                        onEditorChange={(content) => {
-                          setSenatorTermData((prev) =>
-                            prev.map((t, idx) =>
-                              idx === termIndex ? { ...t, summary: content } : t
-                            )
-                          );
-                          // Optionally update localChanges here too
-                          const fieldName = `term${termIndex}_summary`;
-                          setLocalChanges((prev) =>
-                            prev.includes(fieldName)
-                              ? prev
-                              : [...prev, fieldName]
-                          );
+                        <Grid
+                          container
+                          alignItems="center"
+                          justifyContent="center" // <--- center horizontally
+                          spacing={2}
+                        >
+                          {/* Label Column */}
+                          <Grid
+                            item
+                            xs={12}
+                            sm={2}
+                            display="flex"
+                            justifyContent="center"
+                          >
+                            <InputLabel
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center", // <--- always center
+                                fontWeight: 700,
+                                my: 0,
+                              }}
+                            >
+                              Term Summary
+                            </InputLabel>
+                          </Grid>
+
+                          {/* Editor Column */}
+                          <Grid
+                            item
+                            xs={12}
+                            sm={9}
+                            display="flex"
+                            justifyContent="center"
+                          >
+                            <Editor
+                              tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                              licenseKey="gpl"
+                              onInit={(_evt, editor) =>
+                                (editorRef.current = editor)
+                              }
+                              value={summary.content || ""}
+                              onEditorChange={(content) => {
+                                handleSummaryChange(
+                                  termIndex,
+                                  summaryIndex,
+                                  content
+                                );
+                              }}
+                              init={{
+                                base_url: "/scorecard/admin/tinymce",
+                                height: 250,
+                                menubar: false,
+                                plugins: [
+                                  "advlist",
+                                  "autolink",
+                                  "lists",
+                                  "link",
+                                  "image",
+                                  "charmap",
+                                  "preview",
+                                  "anchor",
+                                  "searchreplace",
+                                  "visualblocks",
+                                  "code",
+                                  "fullscreen",
+                                  "insertdatetime",
+                                  "media",
+                                  "table",
+                                  "code",
+                                  "help",
+                                  "wordcount",
+                                ],
+                                toolbar:
+                                  "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                                content_style:
+                                  "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+                                directionality: "ltr",
+                              }}
+                            />
+                          </Grid>
+
+                          {/* Delete Column */}
+                          {/* Delete Column */}
+                          <Grid
+                            item
+                            xs={12}
+                            sm={1}
+                            display="flex"
+                            justifyContent="center"
+                          >
+                            {summaryIndex > 0 ? (
+                              <DeleteForeverIcon
+                                onClick={() =>
+                                  handleRemoveSummary(termIndex, summaryIndex)
+                                }
+                                sx={{ cursor: "pointer", color: "black" }}
+                              />
+                            ) : (
+                              // Empty placeholder to keep alignment
+                              <Box sx={{ width: 24, height: 24 }} />
+                            )}
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    ))}
+
+                    {/*term repeater end*/}
+                    <Grid size={1}></Grid>
+                    <Grid size={10} sx={{ textAlign: "right" }}>
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          backgroundColor: "#4a90e2 !important",
+                          color: "white !important",
+                          padding: "0.5rem 1rem",
+                          marginTop: "1rem",
+                          "&:hover": {
+                            backgroundColor: "#357ABD !important",
+                          },
                         }}
-                        onBlur={() => {}}
-                        init={{
-                          base_url: "/scorecard/admin/tinymce",
-                          height: 250,
-                          menubar: false,
-                          plugins: [
-                            "advlist",
-                            "autolink",
-                            "lists",
-                            "link",
-                            "image",
-                            "charmap",
-                            "preview",
-                            "anchor",
-                            "searchreplace",
-                            "visualblocks",
-                            "code",
-                            "fullscreen",
-                            "insertdatetime",
-                            "media",
-                            "table",
-                            "code",
-                            "help",
-                            "wordcount",
-                          ],
-                          toolbar:
-                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                          content_style:
-                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-                          directionality: "ltr",
-                        }}
-                      />
+                        startIcon={<AddIcon />}
+                        onClick={() => handleAddSummary(termIndex)}
+                      >
+                        Add Another Summary
+                      </Button>
                     </Grid>
+                    <Grid size={1}></Grid>
 
                     {/* Vote Repeater Start */}
                     {term.votesScore.map((vote, voteIndex) =>
@@ -2046,12 +2203,14 @@ const getValidTermId = (termId) => {
                             columnGap={"15px"}
                             // flexDirection={isMobile ? "column" : "row"}
                           >
-                            <Grid size={isMobile?12:2} >
+                            <Grid size={isMobile ? 12 : 2}>
                               <InputLabel
                                 sx={{
                                   display: "flex",
                                   alignItems: "center",
-                                  justifyContent: isMobile ? "flex-start" : "flex-end",                                  
+                                  justifyContent: isMobile
+                                    ? "flex-start"
+                                    : "flex-end",
                                   fontWeight: 700,
                                   my: 0,
                                 }}
@@ -2059,11 +2218,11 @@ const getValidTermId = (termId) => {
                                 Scored Vote
                               </InputLabel>
                             </Grid>
-                            <Grid size={isMobile?12:7.5}>
+                            <Grid size={isMobile ? 12 : 7.5}>
                               <FormControl fullWidth>
                                 <Select
                                   // value={vote.voteId || ""}
-                                   value={getValidVoteId(vote.voteId)}
+                                  value={getValidVoteId(vote.voteId)}
                                   onChange={(event) =>
                                     handleVoteChange(
                                       termIndex,
@@ -2132,10 +2291,10 @@ const getValidTermId = (termId) => {
                                 </Select>
                               </FormControl>
                             </Grid>
-                            <Grid size={isMobile?12:1.6}>
-                              <FormControl fullWidth >
+                            <Grid size={isMobile ? 12 : 1.6}>
+                              <FormControl fullWidth>
                                 <Select
-                                  value={vote.score || ""}                                  
+                                  value={vote.score || ""}
                                   onChange={(event) =>
                                     handleVoteChange(
                                       termIndex,
@@ -2188,143 +2347,148 @@ const getValidTermId = (termId) => {
                     <Grid size={1}></Grid>
 
                     {/* Activities Repeater Start */}
-                    {term.activitiesScore.map((activity, activityIndex) => (
+                    {term.activitiesScore.map((activity, activityIndex) =>
                       activity.activityId != null ? (
-                      <Grid
-                        rowSpacing={2}
-                        sx={{ width: "100%", mt: 2 }}
-                        key={activityIndex}
-                      >
                         <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
+                          rowSpacing={2}
+                          sx={{ width: "100%", mt: 2 }}
+                          key={activityIndex}
                         >
-                          <Grid size={isMobile?12:2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile ? "flex-start" : "flex-end",
-                                fontWeight: 700,
-                                my: 0,
-                              }}
-                            >
-                              Tracked Activity
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile?8:7.5}>
-                            <FormControl fullWidth >
-                              <Select
-                                // value={activity.activityId || ""}
-                                 value={senatorActivities.some(a => a._id === activity.activityId)
-                                    ? activity.activityId
-                                    : ""}
- 
-                                onChange={(event) =>
-                                  handleActivityChange(
-                                    termIndex,
-                                    activityIndex,
-                                    "activityId",
-                                    event.target.value
-                                  )
-                                }
+                          <Grid
+                            size={12}
+                            display="flex"
+                            alignItems="center"
+                            columnGap={"15px"}
+                          >
+                            <Grid size={isMobile ? 12 : 2}>
+                              <InputLabel
                                 sx={{
-                                  background: "#fff",
-                                  width: "100%",
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedActivity =
-                                    senatorActivities.find(
-                                      (a) => a._id === selected
-                                    );
-                                  return (
-                                    <Typography
-                                      sx={{
-                                        overflow: "hidden",
-                                        whiteSpace: "nowrap",
-                                        textOverflow: "ellipsis",
-                                      }}
-                                    >
-                                      {selectedActivity?.title ||
-                                        "Select an Activity"}
-                                    </Typography>
-                                  );
-                                }}
-                                MenuProps={{
-                                  PaperProps: {
-                                    sx: {
-                                      maxHeight: 300,
-                                      width: 400,
-                                      "& .MuiMenuItem-root": {
-                                        minHeight: "48px",
-                                      },
-                                    },
-                                  },
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: isMobile
+                                    ? "flex-start"
+                                    : "flex-end",
+                                  fontWeight: 700,
+                                  my: 0,
                                 }}
                               >
-                                <MenuItem value="" disabled>
-                                  Select an Activity
-                                </MenuItem>
-                                {senatorActivities &&
-                                senatorActivities.length > 0 ? (
-                                  senatorActivities.map((activityItem) => (
-                                    <MenuItem
-                                      key={activityItem._id}
-                                      value={activityItem._id}
-                                      sx={{ py: 1.5 }}
-                                    >
+                                Tracked Activity
+                              </InputLabel>
+                            </Grid>
+                            <Grid size={isMobile ? 8 : 7.5}>
+                              <FormControl fullWidth>
+                                <Select
+                                  // value={activity.activityId || ""}
+                                  value={
+                                    senatorActivities.some(
+                                      (a) => a._id === activity.activityId
+                                    )
+                                      ? activity.activityId
+                                      : ""
+                                  }
+                                  onChange={(event) =>
+                                    handleActivityChange(
+                                      termIndex,
+                                      activityIndex,
+                                      "activityId",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{
+                                    background: "#fff",
+                                    width: "100%",
+                                  }}
+                                  renderValue={(selected) => {
+                                    const selectedActivity =
+                                      senatorActivities.find(
+                                        (a) => a._id === selected
+                                      );
+                                    return (
                                       <Typography
                                         sx={{
-                                          whiteSpace: "normal",
-                                          overflowWrap: "break-word",
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                          textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {activityItem.title}
+                                        {selectedActivity?.title ||
+                                          "Select an Activity"}
                                       </Typography>
-                                    </MenuItem>
-                                  ))
-                                ) : (
+                                    );
+                                  }}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 300,
+                                        width: 400,
+                                        "& .MuiMenuItem-root": {
+                                          minHeight: "48px",
+                                        },
+                                      },
+                                    },
+                                  }}
+                                >
                                   <MenuItem value="" disabled>
-                                    No activities available
+                                    Select an Activity
                                   </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={isMobile?6:1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={activity?.score || ""}
-                                onChange={(event) =>
-                                  handleActivityChange(
-                                    termIndex,
-                                    activityIndex,
-                                    "score",
-                                    event.target.value
-                                  )
+                                  {senatorActivities &&
+                                  senatorActivities.length > 0 ? (
+                                    senatorActivities.map((activityItem) => (
+                                      <MenuItem
+                                        key={activityItem._id}
+                                        value={activityItem._id}
+                                        sx={{ py: 1.5 }}
+                                      >
+                                        <Typography
+                                          sx={{
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                          }}
+                                        >
+                                          {activityItem.title}
+                                        </Typography>
+                                      </MenuItem>
+                                    ))
+                                  ) : (
+                                    <MenuItem value="" disabled>
+                                      No activities available
+                                    </MenuItem>
+                                  )}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={isMobile ? 6 : 1.6}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={activity?.score || ""}
+                                  onChange={(event) =>
+                                    handleActivityChange(
+                                      termIndex,
+                                      activityIndex,
+                                      "score",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{ background: "#fff" }}
+                                >
+                                  <MenuItem value="yes">Yea</MenuItem>
+                                  <MenuItem value="no">Nay</MenuItem>
+                                  <MenuItem value="other">Other</MenuItem>
+                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1}>
+                              <DeleteForeverIcon
+                                onClick={() =>
+                                  handleRemoveActivity(termIndex, activityIndex)
                                 }
-                                sx={{ background: "#fff" }}
-                              >
-                                <MenuItem value="yes">Yea</MenuItem>
-                                <MenuItem value="no">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                                {/* <MenuItem value="None">None</MenuItem> */}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveActivity(termIndex, activityIndex)
-                              }
-                            />
+                              />
+                            </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
                       ) : null
-                    ))}
+                    )}
                     {/* Activities Repeater Ends */}
 
                     <Grid size={1}></Grid>

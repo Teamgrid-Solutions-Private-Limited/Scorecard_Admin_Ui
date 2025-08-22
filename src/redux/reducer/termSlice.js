@@ -39,6 +39,7 @@ export const getTermById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/term/terms/viewId/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
+      console.log(response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
