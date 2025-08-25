@@ -566,6 +566,7 @@ export default function AddSenator(props) {
       {
         senateId: id,
         summary: "",
+        summaries: [{ content: "" }],
         rating: "",
         votesScore: [{ voteId: "", score: "" }],
         activitiesScore: [{ activityId: "", score: "" }],
@@ -2057,30 +2058,14 @@ export default function AddSenator(props) {
                     {/*term repeater start*/}
 
                     {term?.summaries?.map((summary, summaryIndex) => (
-                      <Grid
-                        rowSpacing={2}
-                        sx={{ width: "100%" }}
-                        key={summaryIndex}
-                      >
-                        <Grid
-                          container
-                          alignItems="center"
-                          justifyContent="center" // <--- center horizontally
-                          spacing={2}
-                        >
+                      <>
+                        
                           {/* Label Column */}
-                          <Grid
-                            item
-                            xs={12}
-                            sm={2}
-                            display="flex"
-                            justifyContent="center"
-                          >
+                          <Grid size={isMobile?12:2}>
                             <InputLabel
                               sx={{
                                 display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center", // <--- always center
+                                 justifyContent: isMobile ? "flex-start" : "flex-end",
                                 fontWeight: 700,
                                 my: 0,
                               }}
@@ -2090,13 +2075,7 @@ export default function AddSenator(props) {
                           </Grid>
 
                           {/* Editor Column */}
-                          <Grid
-                            item
-                            xs={12}
-                            sm={9}
-                            display="flex"
-                            justifyContent="center"
-                          >
+                          <Grid size={isMobile?12:9.05}>
                             <Editor
                               tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                               licenseKey="gpl"
@@ -2165,8 +2144,8 @@ export default function AddSenator(props) {
                               <Box sx={{ width: 24, height: 24 }} />
                             )}
                           </Grid>
-                        </Grid>
-                      </Grid>
+                       </>
+                     
                     ))}
 
                     {/*term repeater end*/}

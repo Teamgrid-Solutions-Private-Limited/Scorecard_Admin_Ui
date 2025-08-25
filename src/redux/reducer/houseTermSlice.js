@@ -54,7 +54,7 @@ export const getHouseDataByHouseId = createAsyncThunk(
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
      
-      return response.data.info;
+      return response.data.terms;
     } catch (error) {
       
       return rejectWithValue(error.response.data);

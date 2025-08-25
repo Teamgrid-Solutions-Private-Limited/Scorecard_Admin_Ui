@@ -1914,7 +1914,10 @@ export default function Addrepresentative(props) {
                             Select an option
                           </MenuItem>
                           {terms && terms.length > 0 ? (
-                            terms .filter((t) => Array.isArray(t.congresses) && t.congresses.length === 1).sort((a,b)=> a.congresses[0]- b.congresses[0]).map((t) => (
+                            terms 
+                            .filter((t)=>t.startYear && t.endYear && (t.endYear-t.startYear === 1))
+                            .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                            .sort((a,b)=> a.congresses[0]- b.congresses[0]).map((t) => (
                               <MenuItem key={t._id} value={t._id}>
                                  {`${t.congresses[0]}th Congress`}
                               </MenuItem>
