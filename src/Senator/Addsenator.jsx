@@ -407,27 +407,47 @@ export default function AddSenator(props) {
               }
             );
 
-            // Preserve existing scores for activities that are in both the old and new term
-            const existingActivityScores = term.activitiesScore || [];
+            // // Preserve existing scores for activities that are in both the old and new term
+            // const existingActivityScores = term.activitiesScore || [];
 
-            // Create new activitiesScore array with senator's actual scores
-            updatedTerm.activitiesScore = newParticipatedActivities.map(
-              (activity) => {
-                // Find the senator's actual score for this activity
-                const senatorActivity = existingActivityScores.find((a) => {
-                  const aId =
-                    typeof a.activityId === "object"
-                      ? a.activityId?._id
-                      : a.activityId;
-                  return aId === activity._id;
-                });
+            // // Create new activitiesScore array with senator's actual scores
+            // updatedTerm.activitiesScore = newParticipatedActivities.map(
+            //   (activity) => {
+            //     // Find the senator's actual score for this activity
+            //     const senatorActivity = existingActivityScores.find((a) => {
+            //       const aId =
+            //         typeof a.activityId === "object"
+            //           ? a.activityId?._id
+            //           : a.activityId;
+            //       return aId === activity._id;
+            //     });
 
-                return {
-                  activityId: activity._id,
-                  score: senatorActivity ? senatorActivity.score : "",
-                };
+            //     return {
+            //       activityId: activity._id,
+            //       score: senatorActivity ? senatorActivity.score : "",
+            //     };
+            //   }
+            // );
+              // Create new activitiesScore array with senator's actual scores (mirror votes logic)
+            updatedTerm.activitiesScore = newParticipatedActivities.map((activity) => {
+              const senAct = senatorActivities.find((a) => {
+                const aId = typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+                return aId === activity._id;
+              });
+ 
+              let mappedScore = "";
+              if (senAct?.score) {
+                const s = String(senAct.score).toLowerCase();
+                if (s.includes("yea") || s === "yes") mappedScore = "yes";
+                else if (s.includes("nay") || s === "no") mappedScore = "no";
+                else if (s.includes("other")) mappedScore = "other";
+                else mappedScore = senAct.score;
               }
-            );
+ 
+              const row = { activityId: activity._id, score: mappedScore };
+              console.log("[AddSenator] map activity on change ->", { activityId: activity._id, title: activity.title, mappedScore });
+              return row;
+            });
 
             // If no activities in the new term, ensure we have at least one empty entry
             if (updatedTerm.activitiesScore.length === 0) {
@@ -921,6 +941,21 @@ export default function AddSenator(props) {
       else {
         votesScore = [{ voteId: "", score: "" }];
       }
+
+      // Helper to map an activity id to senator's recorded score (mirror votes logic)
+      const getActivityScore = (activityId) => {
+        const senAct = senatorActivities.find((a) => {
+          const aId = typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+          return aId === activityId;
+        });
+ 
+        if (!senAct?.score) return "";
+        const s = String(senAct.score).toLowerCase();
+        if (s.includes("yea") || s === "yes") return "yes";
+        if (s.includes("nay") || s === "no") return "no";
+        if (s.includes("other")) return "other";
+        return senAct.score;
+      };
 
       // Get ALL activities that fall under this specific term (not just participated ones)
       let termActivities = [];
