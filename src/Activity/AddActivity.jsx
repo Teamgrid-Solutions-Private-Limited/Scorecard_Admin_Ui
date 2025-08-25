@@ -56,6 +56,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
+import Footer from "../components/Footer";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
@@ -553,7 +554,7 @@ export default function AddActivity(props) {
             sx={{
               alignItems: "center",
               mx: 3,
-              pb: 5,
+              // pb: 5,
               mt: { xs: 8, md: 0 },
             }}
           >
@@ -1310,7 +1311,9 @@ export default function AddActivity(props) {
               </Box>
             </Paper>
           </Stack>
-          <Copyright sx={{ my: 4 }} />
+          <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>

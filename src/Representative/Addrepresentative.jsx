@@ -1199,7 +1199,7 @@ export default function Addrepresentative(props) {
             sx={{
               alignItems: "center",
               mx: 2,
-              pb: 5,
+              // pb: 5,
               mt: { xs: 8, md: 0 },
             }}
           >
@@ -2436,7 +2436,9 @@ export default function Addrepresentative(props) {
               </MuiAlert>
             </Snackbar>
           </Stack>
-          <Footer />
+          <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>
