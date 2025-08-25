@@ -41,6 +41,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom"; 
 import MobileHeader from "../../components/MobileHeader";
+import Footer from "../../components/Footer";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -473,6 +474,9 @@ export default function ManageUser(props) {
                 {snackbarMessage}
               </Alert>
             </Snackbar>
+            <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
           </Box>
         </Box>
       </Box>

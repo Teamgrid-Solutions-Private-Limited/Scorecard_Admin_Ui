@@ -386,23 +386,8 @@ export default function ManageTerm(props) {
                 </Box>
               )}
             </Paper>
+             <Footer />
           </Box>
-
-          <Footer
-            sx={{
-              mt: "auto",
-              py: 2,
-              backgroundColor: "background.default",
-              textAlign: "center",
-              width: "100%",
-              borderTop: "1px solid",
-              borderColor: "divider",
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              © 2025 Susan B. Anthony Pro-life America. All rights reserved.
-            </Typography>
-          </Footer>
         </Box>
       </Box>
     </AppTheme>

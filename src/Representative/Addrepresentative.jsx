@@ -697,13 +697,8 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // Merge with any existing editedFields from backend
-      const backendEditedFields = Array.isArray(formData.editedFields)
-        ? formData.editedFields
-        : [];
-      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
-
-      setEditedFields(mergedChanges);
+      // Use only local diffs for editedFields so reverting removes from list
+      setEditedFields(changes);
     }
   }, [formData, originalFormData, houseTermData, originalTermData]);
 
@@ -1204,7 +1199,7 @@ export default function Addrepresentative(props) {
             sx={{
               alignItems: "center",
               mx: 2,
-              pb: 5,
+              // pb: 5,
               mt: { xs: 8, md: 0 },
             }}
           >
@@ -1294,9 +1289,7 @@ export default function Addrepresentative(props) {
                           )
                             ? formData.editedFields
                             : [];
-                          const hasChanges =
-                            backendChanges.length > 0 ||
-                            localChanges.length > 0;
+                          const hasChanges = hasAnyChanges;
 
                           if (!hasChanges) {
                             return (
@@ -1440,7 +1433,7 @@ export default function Addrepresentative(props) {
                               )}
 
                               {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
+                              {localOnlyChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "background.paper",
@@ -1457,7 +1450,7 @@ export default function Addrepresentative(props) {
                                     Unsaved Changes
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
-                                    {localChanges.map((field) => (
+                                    {localOnlyChanges.map((field) => (
                                       <ListItem
                                         key={`local-${field}`}
                                         sx={{ py: 0, px: 1 }}
@@ -1921,7 +1914,10 @@ export default function Addrepresentative(props) {
                             Select an option
                           </MenuItem>
                           {terms && terms.length > 0 ? (
-                            terms .filter((t) => Array.isArray(t.congresses) && t.congresses.length === 1).sort((a,b)=> a.congresses[0]- b.congresses[0]).map((t) => (
+                            terms 
+                            .filter((t)=>t.startYear && t.endYear && (t.endYear-t.startYear === 1))
+                            .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                            .sort((a,b)=> a.congresses[0]- b.congresses[0]).map((t) => (
                               <MenuItem key={t._id} value={t._id}>
                                  {`${t.congresses[0]}th Congress`}
                               </MenuItem>
@@ -2440,7 +2436,9 @@ export default function Addrepresentative(props) {
               </MuiAlert>
             </Snackbar>
           </Stack>
-          <Footer />
+          <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>

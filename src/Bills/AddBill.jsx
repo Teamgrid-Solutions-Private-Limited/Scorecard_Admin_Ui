@@ -54,6 +54,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
+import Footer from "../components/Footer";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -568,7 +569,7 @@ export default function AddBill(props) {
             sx={{
               alignItems: "center",
               mx: 3,
-              pb: 5,
+              // pb: 5,
               mt: { xs: 8, md: 0 },
             }}
           >
@@ -1483,7 +1484,9 @@ export default function AddBill(props) {
               </Box>
             </Paper>
           </Stack>
-          <Copyright sx={{ my: 4 }} />
+         <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>

@@ -49,7 +49,6 @@ export const getVoteById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/api/v1/votes/${id}`, {
         headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
-     
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
