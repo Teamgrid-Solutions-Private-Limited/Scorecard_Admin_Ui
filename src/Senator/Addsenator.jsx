@@ -2914,7 +2914,16 @@ export default function AddSenator(props) {
       </Grid>
       <Grid size={isMobile ? 12 : 7.5}>
         <FormControl fullWidth>
-          <Select value="" sx={{ background: "#fff", width: "100%" }}>
+          <Select value="" sx={{ background: "#fff", width: "100%" }}
+           MenuProps={{
+            PaperProps: {
+              sx: {
+               maxHeight: 300,
+                      width: 200,
+                "& .MuiMenuItem-root": { minHeight: "48px" },
+              },
+            },
+          }}>
             <MenuItem value="">Select an Activity</MenuItem>
             {allActivities.map((activityItem) => (
               <MenuItem key={activityItem._id} value={activityItem._id}>
@@ -2988,22 +2997,42 @@ export default function AddSenator(props) {
               Add Another Term
             </Button>
 
-            <Snackbar
-              open={openSnackbar}
-              autoHideDuration={6000}
-              onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MuiAlert
-                onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                sx={{ width: "100%" }}
-                elevation={6}
-                variant="filled"
-              >
-                {snackbarMessage}
-              </MuiAlert>
-            </Snackbar>
+           <Snackbar
+  open={openSnackbar}
+  autoHideDuration={6000}
+  onClose={handleSnackbarClose}
+  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+>
+  <MuiAlert
+    onClose={handleSnackbarClose}
+    severity={snackbarSeverity}
+    sx={{
+      width: "100%",
+      bgcolor:
+        snackbarMessage === "Changes Published successfully!"
+          ? "#daf4f0"
+          : undefined,
+      "& .MuiAlert-icon": {
+        color:
+          snackbarMessage === "Changes Published successfully!"
+            ? "#099885"
+            : undefined,
+      },
+      "& .MuiAlert-message": {
+        color:
+          snackbarMessage === "Changes Published successfully!"
+            ? "#099885"
+            : undefined,
+            
+      },
+    }}
+    elevation={6}
+    variant="filled"
+  >
+    {snackbarMessage}
+  </MuiAlert>
+</Snackbar>
+
           </Stack>
           <Box sx={{ mb: "50px" }}>
             <Footer />

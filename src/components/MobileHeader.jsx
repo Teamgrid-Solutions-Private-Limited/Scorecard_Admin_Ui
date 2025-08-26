@@ -8,7 +8,8 @@ import {
   Box,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import MenuContent from "./MenuContent"; 
+import MenuContent from "./MenuContent";
+import logo from "../assets/image/logo-dark.png";
 
 const MobileHeader = () => {
   const [open, setOpen] = useState(false);
@@ -24,25 +25,25 @@ const MobileHeader = () => {
         position="sticky"
         elevation={0}
         sx={{
-          display: { xs: "flex", md: "none" }, 
+          display: { xs: "flex", md: "none" },
           backgroundColor: "#fff",
           color: "#363837",
-        //   padding: "10x 0",
           borderBottom: "4px solid rgba(0,0,0,0.05)",
-
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontFamily: "'Be Vietnam Pro', sans-serif",
-              fontWeight: 600,
-              color: "#363837",
-            }}
-          >
-            SBA Scorecard
-          </Typography>
+          <Box
+  component="img"
+  src={logo} 
+  alt="SBA Scorecard Logo"
+  sx={{
+    height: 32, 
+    width: "auto",
+    objectFit: "contain",
+    display: "block",
+  }}
+/>
+
 
           <IconButton edge="end" color="inherit" onClick={toggleDrawer(true)}>
             <MenuIcon />
@@ -63,7 +64,8 @@ const MobileHeader = () => {
           },
         }}
       >
-        <Box role="presentation" onClick={toggleDrawer(false)}>
+      
+        <Box role="presentation" sx={{ height: "100%" }}>
           <MenuContent />
         </Box>
       </Drawer>

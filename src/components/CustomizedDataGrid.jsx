@@ -11,7 +11,7 @@ import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
-import { useTheme, useMediaQuery } from "@mui/material";
+import { useTheme, useMediaQuery,Chip } from "@mui/material";
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
     <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
@@ -89,6 +89,18 @@ export default function CustomizedDataGrid({
     return "gray";
   };
 
+   // Function to get status color based on status value
+  const getStatusColor = (status) => {
+    if (!status) return "default";
+    
+    const lowerStatus = status.toLowerCase();
+    if (lowerStatus.includes("published")) return "success";
+    if (lowerStatus.includes("draft")) return "default";
+    if (lowerStatus.includes("review")) return "warning";
+    
+    return "default";
+  };
+
   const navigate = useNavigate();
 
   const theme = useTheme();
@@ -157,15 +169,12 @@ export default function CustomizedDataGrid({
                 : "N/A";
 
             return (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  height: "100%",
-                }}
-              >
-                <Typography>{displayStatus}</Typography>
-              </Box>
+              <Chip 
+                  label={displayStatus} 
+                  color={getStatusColor(status)}
+                  variant="outlined"
+                  size="small"
+                />
             );
           },
         },
@@ -264,7 +273,14 @@ export default function CustomizedDataGrid({
                     .join(" ")
                 : "N/A";
 
-              return displayStatus;
+              return (
+                <Chip 
+                  label={displayStatus} 
+                  color={getStatusColor(status)}
+                  variant="outlined"
+                  size="small"
+                />
+              );
 
               return (
                 <Box
@@ -594,17 +610,13 @@ export default function CustomizedDataGrid({
                           .join(" ")
                       : "N/A";
 
-                    return displayStatus;
                     return (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          height: "100%",
-                        }}
-                      >
-                        <Typography>{displayStatus}</Typography>
-                      </Box>
+                      <Chip 
+                        label={displayStatus} 
+                        color={getStatusColor(status)}
+                        variant="outlined"
+                        size="small"
+                      />
                     );
                   },
                 },
@@ -632,18 +644,13 @@ export default function CustomizedDataGrid({
                           .join(" ")
                       : "N/A";
 
-                    return displayStatus;
-
                     return (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          height: "100%",
-                        }}
-                      >
-                        <Typography>{displayStatus}</Typography>
-                      </Box>
+                      <Chip 
+                        label={displayStatus} 
+                        color={getStatusColor(status)}
+                        variant="outlined"
+                        size="small"
+                      />
                     );
                   },
                 },

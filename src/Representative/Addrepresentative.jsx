@@ -95,7 +95,7 @@ export default function Addrepresentative(props) {
    const [componentKey, setComponentKey] = useState(0);
        const theme = useTheme();
      const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
-    const [hasLocalChanges, setHasLocalChanges] = useState(false);
+    
     const navigate = useNavigate();
 
   let houseActivities =
@@ -171,9 +171,7 @@ export default function Addrepresentative(props) {
     const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
-    if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
+   
        setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
       index === termIndex ? { ...term, [name]: value } : term
@@ -211,9 +209,7 @@ export default function Addrepresentative(props) {
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
      const fieldName = `term${termIndex}_${name}`;
-     if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
+    
     
     setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
@@ -293,9 +289,7 @@ export default function Addrepresentative(props) {
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
-  if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
+ 
   
   setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
@@ -386,9 +380,7 @@ export default function Addrepresentative(props) {
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
   const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
-  if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
+ 
 
   setHouseTermData((prev) => {
     const newTerms = prev.map((term, idx) => {
@@ -698,7 +690,12 @@ export default function Addrepresentative(props) {
       });
 
       // Use only local diffs for editedFields so reverting removes from list
-      setEditedFields(changes);
+      const backendEditedFields = Array.isArray(formData.editedFields)
+        ? formData.editedFields
+        : [];
+      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
+ 
+      setEditedFields(mergedChanges);
     }
   }, [formData, originalFormData, houseTermData, originalTermData]);
 
@@ -774,9 +771,7 @@ export default function Addrepresentative(props) {
 
   const handleChange = (event) => {
   const { name, value } = event.target;
-  if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
+ 
   
   setFormData(prev => {
     const newData = { ...prev, [name]: value };
@@ -802,9 +797,7 @@ export default function Addrepresentative(props) {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
-    if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
+   
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -965,7 +958,7 @@ export default function Addrepresentative(props) {
       // }
       setOriginalFormData(JSON.parse(JSON.stringify(formData)));
       setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
-      setHasLocalChanges(false); // Reset after save
+     
       setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -1020,9 +1013,7 @@ export default function Addrepresentative(props) {
 
   const handleStatusChange = (status) => {
   const fieldName = "status"; // The field being changed
-  if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
+  
 
   setFormData((prev) => {
     const newData = { ...prev, status };
@@ -1077,19 +1068,17 @@ export default function Addrepresentative(props) {
         descColor: "#795548",
       },
        published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
-        icon: null,
-        // title: "Published",
+        backgroundColor: "rgba(76, 175, 80, 0.12)",
+        borderColor: "#4CAF50",
+        iconColor: "#2E7D32",
+        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+        title: "Published",
         description:
           editedFields.length > 0
-            ? `Edited fields: ${editedFields
-                .map((f) => fieldLabels[f] || f)
-                .join(", ")}`
+            ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#2E7D32",
+        descColor: "#388E3C",
       },
       // published: {
       //   backgroundColor: "rgba(76, 175, 80, 0.12)",
@@ -1113,14 +1102,6 @@ export default function Addrepresentative(props) {
     currentStatus
   );
 
-    const backendChanges = Array.isArray(formData?.editedFields)
-    ? formData.editedFields
-    : [];
-  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
-    (field) => !backendChanges.includes(field)
-  );
-  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
-  const isStatusReady = !id || Boolean(originalFormData);
 
   const handleDiscard = () => {
     if (!id) {
@@ -1203,10 +1184,9 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole &&
-              isStatusReady &&
-              (hasAnyChanges || formData.publishStatus !== "published") &&
-              statusData && (
+             {userRole &&
+              statusData &&
+              (formData.publishStatus !== "published" || localChanges.length > 0) && (
                 <Box
                   sx={{
                     width: "98%",
@@ -1226,25 +1206,24 @@ export default function Addrepresentative(props) {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${
-                          formData.publishStatus === "draft"
+                        backgroundColor: `rgba(${formData.publishStatus === "draft"
                             ? "66, 165, 245"
                             : formData.publishStatus === "under review"
-                            ? "230, 81, 0"
-                            : formData.publishStatus === "published"
-                            ? ""
-                            : "244, 67, 54"
-                        }, 0.2)`,
+                              ? "230, 81, 0"
+                              : formData.publishStatus === "published"
+                                ? "76, 175, 80"
+                                : "244, 67, 54"
+                          }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
                       }}
                     >
-                      {statusData.icon && React.cloneElement(statusData.icon, {
+                      {React.cloneElement(statusData.icon, {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
-
+ 
                     <Box sx={{ flex: 1 }}>
                       {/* Header: title + pending count (admin only) */}
                       <Box
@@ -1266,21 +1245,20 @@ export default function Addrepresentative(props) {
                         >
                           {statusData.title}
                         </Typography>
-
+ 
                         {userRole === "admin" && (
                           <Chip
-                            label={`${
-                              Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length + localChanges.length
+                            label={`${Array.isArray(formData?.editedFields)
+                                ? formData.editedFields.length
                                 : 0
-                            } pending changes`}
+                              } pending changes`}
                             size="small"
                             color="warning"
                             variant="outlined"
                           />
                         )}
                       </Box>
-
+ 
                       {/* Pending / New fields list */}
                       <Box sx={{ mt: 1.5 }}>
                         {(() => {
@@ -1289,8 +1267,10 @@ export default function Addrepresentative(props) {
                           )
                             ? formData.editedFields
                             : [];
-                          const hasChanges = hasAnyChanges;
-
+                          const hasChanges =
+                            backendChanges.length > 0 ||
+                            localChanges.length > 0;
+ 
                           if (!hasChanges) {
                             return (
                               <Typography
@@ -1306,7 +1286,7 @@ export default function Addrepresentative(props) {
                               </Typography>
                             );
                           }
-
+ 
                           // Field name formatter function
                           const formatFieldName = (field) => {
                             // Handle term array items
@@ -1316,7 +1296,7 @@ export default function Addrepresentative(props) {
                             if (termArrayMatch) {
                               const [, termIdx, category] = termArrayMatch;
                               const termNumber = parseInt(termIdx) + 1;
-
+ 
                               if (category === "votesScore") {
                                 return `Term ${termNumber}: Scored Vote`;
                               }
@@ -1325,26 +1305,24 @@ export default function Addrepresentative(props) {
                                 const itemNumber = parseInt(itemIdx) + 1;
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
-                              return `Term ${termNumber}: ${
-                                fieldLabels[category] || category
-                              }`;
+                              return `Term ${termNumber}: ${fieldLabels[category] || category
+                                }`;
                             }
-
+ 
                             // Handle regular term fields
                             if (field.startsWith("term")) {
                               const parts = field.split("_");
                               const termNumber =
                                 parseInt(parts[0].replace("term", "")) + 1;
                               const fieldKey = parts.slice(1).join("_");
-                              return `Term ${termNumber}: ${
-                                fieldLabels[fieldKey] || fieldKey
-                              }`;
+                              return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey
+                                }`;
                             }
-
+ 
                             // Handle non-term fields
                             return fieldLabels[field] || field;
                           };
-
+ 
                           return (
                             <>
                               {/* Backend pending changes */}
@@ -1374,15 +1352,15 @@ export default function Addrepresentative(props) {
                                         "Unknown Editor";
                                       const editTime = editorInfo?.editedAt
                                         ? new Date(
-                                            editorInfo.editedAt
-                                          ).toLocaleString([], {
-                                            month: "short",
-                                            day: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                          })
+                                          editorInfo.editedAt
+                                        ).toLocaleString([], {
+                                          month: "short",
+                                          day: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })
                                         : "unknown time";
-
+ 
                                       return (
                                         <ListItem
                                           key={`backend-${field}`}
@@ -1431,9 +1409,9 @@ export default function Addrepresentative(props) {
                                   </List>
                                 </Box>
                               )}
-
+ 
                               {/* Local unsaved changes - now matches senator style */}
-                              {localOnlyChanges.length > 0 && (
+                              {localChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "background.paper",
@@ -1450,7 +1428,7 @@ export default function Addrepresentative(props) {
                                     Unsaved Changes
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
-                                    {localOnlyChanges.map((field) => (
+                                    {localChanges.map((field) => (
                                       <ListItem
                                         key={`local-${field}`}
                                         sx={{ py: 0, px: 1 }}
@@ -1481,15 +1459,15 @@ export default function Addrepresentative(props) {
                                               </Typography>
                                             </Box>
                                           }
-                                          // secondary={
-                                          //   <Typography
-                                          //     variant="caption"
-                                          //     color="text.secondary"
-                                          //   >
-                                          //     Edited just now
-                                          //   </Typography>
-                                          // }
-                                          // sx={{ my: 0 }}
+                                        // secondary={
+                                        //   <Typography
+                                        //     variant="caption"
+                                        //     color="text.secondary"
+                                        //   >
+                                        //     Edited just now
+                                        //   </Typography>
+                                        // }
+                                        // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
@@ -1504,6 +1482,8 @@ export default function Addrepresentative(props) {
                   </Box>
                 </Box>
               )}
+ 
+ 
 
             <Stack
               direction="row"
@@ -2047,10 +2027,17 @@ export default function Addrepresentative(props) {
                             )
                           );
                           // Optionally update localChanges here too
-                          const fieldName = `term${termIndex}_summary`;
-                          setLocalChanges(prev =>
-                            prev.includes(fieldName) ? prev : [...prev, fieldName]
-                          );
+                           const fieldName = `term${termIndex}_summary`;
+                          const originalTerm = originalTermData[termIndex] || {};
+                          const isActualChange = compareValues(content, originalTerm.summary || "");
+                          setLocalChanges(prev => {
+                            if (isActualChange && !prev.includes(fieldName)) {
+                              return [...prev, fieldName];
+                            } else if (!isActualChange && prev.includes(fieldName)) {
+                              return prev.filter(f => f !== fieldName);
+                            }
+                            return prev;
+                          });
                         }}
                         onBlur={() => {}}
                         init={{

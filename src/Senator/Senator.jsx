@@ -455,7 +455,7 @@ export default function Senator(props) {
             width: { xs: "100%", md: "80%" },
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
-            px: { xs: 0.5, sm: 2, md: 0 },
+            px: { xs: 2, sm: 2, md: 0 },
             pt: { xs: 1, md: 0 },
             minHeight: '100vh',
           }}
@@ -485,46 +485,70 @@ export default function Senator(props) {
               <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } }}>
                 All Senators
               </Typography>
-
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center" sx={{ width: { xs: "100%", sm: "auto" } }}>
-                 {/* Mobile: Show Fetch button above search/filter */}
-            {userRole === "admin" && (
-              <Box sx={{ width: "100%", display: { xs: "block", sm: "none" },  }}>
+              {userRole === "admin" && (
+              <Box sx={{ width: "60%", display: { xs: "block", sm: "none" },  }}>
                 <Button
                   variant="outlined"
                   sx={{
-                    backgroundColor: "#4a90e2 !important",
+                    p:0,
+                    backgroundColor: "#173A5E !important",
                     color: "white !important",
+                    fontSize:'14px',
                     width: "100%",
                     "&:hover": {
-                      backgroundColor: "#357ABD !important",
+                      backgroundColor: "#1E4C80 !important",
                     },
                   }}
                   onClick={fetchSenatorsFromQuorum}
-                  fullWidth
+                  // fullWidth
                 >
                   Fetch Senators from Quorum
                 </Button>
               </Box>
             )}
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" } }}>
+                 {/* Mobile: Show Fetch button above search/filter */}
+            
                 <TextField
-                  placeholder="Search Senators"
-                  size="small"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  fullWidth={true}
-                  sx={{
-                    padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
-                    marginLeft: { xs: 0, sm: "0.5rem" },
-                    width: { xs: "100%", sm: "190px" },
-                    "& .MuiInputBase-root": {
-                      "&.Mui-focused": {
-                        boxShadow: "none !important",
-                        outline: "none !important",
-                      },
-                    },
-                  }}
-                />
+  placeholder="Search Senators"
+  size="small"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  fullWidth={true}
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon sx={{ color: "#173A5E", fontSize: 20 }} />
+      </InputAdornment>
+    ),
+  }}
+  sx={{
+    
+    marginLeft: { xs: 0, sm: "0.5rem" },
+    width: { xs: "50%", sm: "220px" },
+    "& .MuiOutlinedInput-root": {
+      // borderRadius: "12px",
+      backgroundColor: "#f9fafb",
+      transition: "all 0.2s ease-in-out",
+      "& fieldset": {
+        borderColor: "#e5e7eb",
+      },
+      "&:hover fieldset": {
+        borderColor: "#cbd5e1",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#173A5E", 
+        borderWidth: "2px",
+      },   
+    },
+   
+    "& input::placeholder": {
+      fontSize: "0.9rem",
+      color: "#9ca3af",
+    },
+  }}
+/>
 
                 <Box sx={{ position: "relative", display: "inline-block", width: { xs: "100%", sm: "auto" } }}>
                   <Badge
@@ -543,12 +567,13 @@ export default function Senator(props) {
                       endIcon={filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                       onClick={toggleFilter}
                       sx={{
-                        height: "40px",
+                        padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                         minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
-                        backgroundColor: filterOpen ? "primary.light" : "background.paper",
+                        color:  "#fff",
+                        backgroundColor:  "#173A5E",
                         "&:hover": {
-                          backgroundColor: filterOpen ? "primary.light" : "action.hover",
+                          backgroundColor:  "#1E4C80",
                         },
                         width: { xs: "100%", sm: "auto" },
                       }}
@@ -1170,7 +1195,7 @@ export default function Senator(props) {
                   <Button
                     variant="outlined"
                     sx={{
-                      backgroundColor: "#4a90e2 !important",
+                      backgroundColor: "#173A5E !important",
                       color: "white !important",
                       padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                       marginLeft: { xs: 0, sm: "0.5rem" },
@@ -1178,7 +1203,7 @@ export default function Senator(props) {
                       mt: { xs: 1, sm: 0 },
                       display: { xs: "none", sm: "block" },
                       "&:hover": {
-                        backgroundColor: "#357ABD !important",
+                        backgroundColor: "#1E4C80 !important",
                       },
                     }}
                     onClick={fetchSenatorsFromQuorum}
@@ -1205,25 +1230,49 @@ export default function Senator(props) {
 
         {/* Snackbar for success/error messages */}
         <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={4000}
-          onClose={() => setSnackbarOpen(false)}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        >
-          <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity={snackbarSeverity}
-            sx={{ width: "100%",
-              //  bgcolor: "#FF474D"
-               bgcolor: snackbarMessage === `${selectedSenator?.name} deleted successfully.` ? '#FF474D' : undefined,
-                 '& .MuiAlert-icon': {
-        color: snackbarMessage === `${selectedSenator?.name} deleted successfully.` ? 'white' : undefined
-      }
-               }}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+  open={snackbarOpen}
+  autoHideDuration={4000}
+  onClose={() => setSnackbarOpen(false)}
+  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+>
+  <Alert
+    onClose={() => setSnackbarOpen(false)}
+    severity={snackbarSeverity}
+    sx={{
+      width: "100%",
+      // ✅ Background conditions
+      bgcolor:
+        snackbarMessage === `${selectedSenator?.name} deleted successfully.`
+          ? "#fde8e4"
+          : snackbarMessage === "Success: Senators fetched successfully!"
+          ? "#daf4f0"
+          : undefined,
+
+      // ✅ Icon color conditions
+      "& .MuiAlert-icon": {
+        color:
+          snackbarMessage === `${selectedSenator?.name} deleted successfully.`
+            ? "#cc563d"
+            : snackbarMessage === "Success: Senators fetched successfully!"
+            ? "#099885"
+            : undefined,
+      },
+
+      // ✅ Text color conditions
+      "& .MuiAlert-message": {
+        color:
+          snackbarMessage === `${selectedSenator?.name} deleted successfully.`
+            ? "#cc563d"
+            : snackbarMessage === "Success: Senators fetched successfully!"
+            ? "#099885"
+            : undefined,
+      },
+    }}
+  >
+    {snackbarMessage}
+  </Alert>
+</Snackbar>
+
         <Dialog
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}
