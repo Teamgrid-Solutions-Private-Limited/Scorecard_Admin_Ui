@@ -31,7 +31,7 @@ const Footer = () => {
             color: "#7d7f87",
           }}
         >
-          © 2025 Susan B. Anthony Pro–life America
+          © {new Date().getFullYear()} Susan B. Anthony Pro–life America
         </Typography>
         <Typography
           variant="body2"
