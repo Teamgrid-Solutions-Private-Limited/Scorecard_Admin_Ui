@@ -8,7 +8,7 @@ export const createActivity = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/activity/activity/create/`,
+        `${API_URL}/api/v1/admin/activities/`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -27,7 +27,7 @@ export const getAllActivity = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/activity/activity/viewAll/`,
+        `${API_URL}/api/v1/activities/`,
         {
           headers: { "x-protected-key": "MySuperSecretApiKey123" },
         }
@@ -45,7 +45,7 @@ export const getActivityById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/activity/activity/viewId/${id}`,
+        `${API_URL}/api/v1/activities/${id}`,
         {
           headers: { "x-protected-key": "MySuperSecretApiKey123" },
         }
@@ -64,7 +64,7 @@ export const updateActivity = createAsyncThunk(
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/activity/activity/update/${id}`,
+        `${API_URL}/api/v1/admin/activities/${id}`,
         updatedData
       );
       return response.data;
@@ -80,7 +80,7 @@ export const deleteActivity = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
-        `${API_URL}/activity/activity/delete/${id}`
+        `${API_URL}/api/v1/admin/activities/${id}`
       );
       return response.data;
     } catch (error) {
@@ -95,7 +95,7 @@ export const discardActivityChanges = createAsyncThunk(
   async (activityId, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/activity/discard/${activityId}`
+        `${API_URL}/api/v1/admin/activities/discard/${activityId}`
       );
       return response.data;
     } catch (error) {
@@ -116,7 +116,7 @@ export const updateActivityStatus = createAsyncThunk(
   async ({ id, status }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/activity/activity/status/${id}`,
+        `${API_URL}/api/v1/admin/activities/status/${id}`,
         { status }
       );
       return response.data;
@@ -131,7 +131,7 @@ export const bulkUpdateTrackActivities = createAsyncThunk(
   async ({ ids, trackActivities }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/activity/update/bulk-update-track-activities`,
+        `${API_URL}/api/v1/admin/activities/update-track-activities`,
         { ids, trackActivities },
         {
           headers: {
@@ -181,149 +181,90 @@ const activitySlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Create Activity
-    builder.addCase(createActivity.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(createActivity.fulfilled, (state, action) => {
-      state.loading = false;
-    });
-    builder.addCase(createActivity.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+  // Create Activity
+  builder
+    .addCase(createActivity.pending, (state) => { state.loading = true; state.error = null; })
+    .addCase(createActivity.fulfilled, (state) => { state.loading = false; })
+    .addCase(createActivity.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
 
-    // Get All Activities
-    builder.addCase(getAllActivity.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(getAllActivity.fulfilled, (state, action) => {
-      state.loading = false;
-      state.activities = action.payload;
-    });
-    builder.addCase(getAllActivity.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+  // Get All Activities
+  builder
+    .addCase(getAllActivity.pending, (state) => { state.loading = true; state.error = null; })
+    .addCase(getAllActivity.fulfilled, (state, action) => { state.loading = false; state.activities = action.payload; })
+    .addCase(getAllActivity.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
 
-    // Get Activity by ID
-    builder.addCase(getActivityById.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(getActivityById.fulfilled, (state, action) => {
-      state.loading = false;
-      state.activity = action.payload;
-    });
-    builder.addCase(getActivityById.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+  // Get Activity by ID
+  builder
+    .addCase(getActivityById.pending, (state) => { state.loading = true; state.error = null; })
+    .addCase(getActivityById.fulfilled, (state, action) => { state.loading = false; state.activity = action.payload; })
+    .addCase(getActivityById.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
 
-    // Update Activity
-    builder.addCase(updateActivity.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(updateActivity.fulfilled, (state, action) => {
-      state.loading = false;
-    });
-    builder.addCase(updateActivity.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+  // Update Activity
+  builder
+    .addCase(updateActivity.pending, (state) => { state.loading = true; state.error = null; })
+    .addCase(updateActivity.fulfilled, (state) => { state.loading = false; })
+    .addCase(updateActivity.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
 
-    // Delete Activity
-    builder.addCase(deleteActivity.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(deleteActivity.fulfilled, (state, action) => {
-      state.loading = false;
-    });
-    builder.addCase(deleteActivity.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
-    // Update Activity Status
-    builder.addCase(updateActivityStatus.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(updateActivityStatus.fulfilled, (state, action) => {
-      
+  // Delete Activity
+  builder
+    .addCase(deleteActivity.pending, (state) => { state.loading = true; state.error = null; })
+    .addCase(deleteActivity.fulfilled, (state) => { state.loading = false; })
+    .addCase(deleteActivity.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
+
+  // Update Activity Status
+  builder
+    .addCase(updateActivityStatus.pending, (state) => { state.loading = true; state.error = null; })
+    .addCase(updateActivityStatus.fulfilled, (state, action) => {
       state.loading = false;
       const updated = action.payload.activity;
-
-      // update single activity if it's being viewed
       if (state.activity && state.activity._id === updated._id) {
         state.activity.status = updated.status;
       }
-
-      // update the activity in the list
       const index = state.activities.findIndex((a) => a._id === updated._id);
       if (index !== -1) {
-        state.activities[index] = {
-          ...state.activities[index],
-          status: updated.status,
-        };
-
-        builder
-          .addCase(bulkUpdateTrackActivities.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-          })
-          .addCase(bulkUpdateTrackActivities.fulfilled, (state, action) => {
-            state.loading = false;
-            // Update the state with the modified activities
-            if (action.payload.updatedActivities) {
-              action.payload.updatedActivities.forEach((updated) => {
-                const index = state.activities.findIndex(
-                  (a) => a._id === updated._id
-                );
-                if (index !== -1) {
-                  state.activities[index] = updated;
-                }
-              });
-            }
-          })
-          .addCase(bulkUpdateTrackActivities.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.payload?.message || "Bulk update failed";
-          });
+        state.activities[index] = { ...state.activities[index], status: updated.status };
       }
-    });
+    })
+    .addCase(updateActivityStatus.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
 
-    builder.addCase(updateActivityStatus.rejected, (state, action) => {
+  // Bulk Update Track Activities (moved out)
+  builder
+    .addCase(bulkUpdateTrackActivities.pending, (state) => { state.loading = true; state.error = null; })
+    .addCase(bulkUpdateTrackActivities.fulfilled, (state, action) => {
       state.loading = false;
-      state.error = action.payload;
+      if (action.payload.updatedActivities) {
+        action.payload.updatedActivities.forEach((updated) => {
+          const index = state.activities.findIndex((a) => a._id === updated._id);
+          if (index !== -1) {
+            state.activities[index] = updated;
+          }
+        });
+      }
+    })
+    .addCase(bulkUpdateTrackActivities.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Bulk update failed";
     });
 
-   builder.addCase(discardActivityChanges.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-});
+  // Discard Changes
+  builder
+    .addCase(discardActivityChanges.pending, (state) => { state.loading = true; state.error = null; })
+    .addCase(discardActivityChanges.fulfilled, (state, action) => {
+      state.loading = false;
+      if (state.activity?._id === action.payload._id) {
+        state.activity = action.payload;
+      }
+      const index = state.activities.findIndex(a => a._id === action.payload._id);
+      if (index !== -1) {
+        state.activities[index] = action.payload;
+      }
+    })
+    .addCase(discardActivityChanges.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Failed to discard changes";
+    });
+}
 
-builder.addCase(discardActivityChanges.fulfilled, (state, action) => {
-  state.loading = false;
-  // Update the current activity
-  if (state.activity?._id === action.payload._id) {
-    state.activity = action.payload;
-  }
-  // Update in activities list
-  const index = state.activities.findIndex(a => a._id === action.payload._id);
-  if (index !== -1) {
-    state.activities[index] = action.payload;
-  }
-});
-
-builder.addCase(discardActivityChanges.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload?.message || "Failed to discard changes";
-});
-  },
 });
 
 export const { clearActivityState } = activitySlice.actions;

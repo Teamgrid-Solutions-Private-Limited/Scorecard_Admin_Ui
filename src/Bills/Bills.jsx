@@ -46,6 +46,7 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 import { jwtDecode } from "jwt-decode";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -223,18 +224,20 @@ export default function Bills(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" }}>
-        <SideMenu />
+      <Box sx={{ display: { xs: "block", md: "flex" } }}>
+        <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
         <Box
           sx={{
             flexGrow: 1,
             // overflow: "auto",
-            width: "80%",
+            width: { xs: "100%", md: "80%" },
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
+           
           }}
         >
-          <FixedHeader />
+          <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 1 } }}
@@ -250,9 +253,10 @@ export default function Bills(props) {
               sx={{
                 width: "100%",
                 display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
-                alignItems: "center",
-                mt: 4,
+                 alignItems: { xs: "stretch", sm: "center" },
+                mt: { xs: 2, md: 4 },
                 gap: 2,
               }}
             >
@@ -261,12 +265,12 @@ export default function Bills(props) {
               </Typography>
 
               <Stack
-                direction="row"
+                direction={{ xs: "column", sm: "row" }}
                 spacing={2}
                 alignItems="center"
-                sx={{ ml: "auto" }}
+                sx={{ ml: "auto", width: { xs: "100%", sm: "auto" } }}
               >
-                <Box sx={{ position: "relative", display: "inline-block" }}>
+                <Box sx={{ position: "relative", display: "inline-block",width: { xs: "100%", sm: "auto" } }}>
                   <Badge
                     badgeContent={activeFilterCount}
                     color="primary"

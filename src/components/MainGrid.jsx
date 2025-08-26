@@ -45,7 +45,7 @@ export default function MainGrid({
          />
         </Grid>
       </Grid>
-      <Footer />
+        {type !== "user" && <Footer />}
     </Box>
   );
 }

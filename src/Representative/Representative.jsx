@@ -55,6 +55,7 @@ const xThemeComponents = {
 import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { jwtDecode } from "jwt-decode";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Representative(props) {
   const navigate = useNavigate();
@@ -425,21 +426,29 @@ export default function Representative(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" }}>
-        <SideMenu />
+      <Box sx={{ display: { xs: "block", md: "flex" } }}>
+        <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
         <Box
           sx={{
             flexGrow: 1,
             // overflow: "auto",
-            width: "80%",
+             width: { xs: "100%", md: "80%" },
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
+            px: { xs: 0.5, sm: 2, md: 0 },
+            pt: { xs: 1, md: 0 },
           }}
         >
-          <FixedHeader />
+          <FixedHeader sx={{ display: { xs: "none", md: "block" } }}/>
+          <MobileHeader/>
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
+            sx={{
+              alignItems: { xs: "stretch", md: "center" },
+              mx: { xs: 0, md: 2 },
+              pb: { xs: 2, md: 5 },
+              mt: { xs: 2, md: 0 },
+            }}
           >
             {/* <Typography
               variant="h4"
@@ -453,26 +462,47 @@ export default function Representative(props) {
               sx={{
                 width: "100%",
                 display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
-                alignItems: "center",
-                mt: 4,
+                alignItems: { xs: "stretch", sm: "center" },
+                mt: { xs: 2, md: 4 },
                 gap: 2,
               }}
             >
-              <Typography component="h2" variant="h6">
+              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } }}>
                 All Representatives
               </Typography>
 
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center" sx={{ width: { xs: "100%", sm: "auto" } }}>
+                {/* Mobile: Show Fetch button above search/filter */}
+                            {userRole === "admin" && (
+                              <Box sx={{ width: "100%", display: { xs: "block", sm: "none" },  }}>
+                                <Button
+                                  variant="outlined"
+                                  sx={{
+                                    backgroundColor: "#4a90e2 !important",
+                                    color: "white !important",
+                                    width: "100%",
+                                    "&:hover": {
+                                      backgroundColor: "#357ABD !important",
+                                    },
+                                  }}
+                                  onClick={fetchRepresentativeFromQuorum}
+                                  fullWidth
+                                >
+                                  Fetch Senators from Quorum
+                                </Button>
+                              </Box>
+                            )}
                 <TextField
                   placeholder="Search Representatives"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    width: "190px",
+                    padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                    marginLeft: { xs: 0, sm: "0.5rem" },
+                    width: { xs: "100%", sm: "190px" },
                     "& .MuiInputBase-root": {
                       "&.Mui-focused": {
                         boxShadow: "none !important",
@@ -483,7 +513,7 @@ export default function Representative(props) {
                 />
 
 
-                <Box sx={{ position: "relative", display: "inline-block" }}>
+                <Box sx={{ position: "relative", display: "inline-block",width: { xs: "100%", sm: "auto" } }}>
                   <Badge
                     badgeContent={activeFilterCount}
                     color="primary"
@@ -1067,8 +1097,9 @@ export default function Representative(props) {
                   sx={{
                     backgroundColor: "#4a90e2 !important",
                     color: "white !important",
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
+                    padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                    marginLeft: { xs: 0, sm: "0.5rem" },
+                    display: { xs: "none", sm: "block" },
                     "&:hover": {
                       backgroundColor: "#357ABD !important",
                     },

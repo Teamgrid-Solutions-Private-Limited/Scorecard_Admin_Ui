@@ -11,6 +11,7 @@ import {
   discardActivityChanges,
 } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { API_URL } from "../redux/API";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -51,6 +52,11 @@ import { jwtDecode } from "jwt-decode";
 import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
+import Footer from "../components/Footer";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
@@ -74,6 +80,7 @@ export default function AddActivity(props) {
   });
   const [fieldEditors, setFieldEditors] = useState({});
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   // Defensive userRole extraction
   const token = localStorage.getItem("token");
   let userRole = "";
@@ -84,9 +91,15 @@ export default function AddActivity(props) {
     userRole = "";
   }
 
+ 
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
+           const theme = useTheme();
+         const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+ 
+  
 
   const fieldLabels = {
     type: "Type",
@@ -126,6 +139,12 @@ export default function AddActivity(props) {
 
       setFormData(newFormData);
       setOriginalFormData(newFormData); // Store the original data
+
+      // Reset selectedFile when editing existing activity
+      setSelectedFile(null);
+
+      // Reset editedFields when editing existing activity
+      setEditedFields([]);
     }
   };
 
@@ -133,11 +152,16 @@ export default function AddActivity(props) {
   useEffect(() => {
     if (selectedActivity) {
       preFillForm();
-      setEditedFields(
-        Array.isArray(selectedActivity.editedFields)
-          ? selectedActivity.editedFields
-          : []
-      );
+      // Only set editedFields from backend on initial load
+      // This prevents overwriting local unsaved changes
+      if (isInitialLoad.current) {
+        setEditedFields(
+          Array.isArray(selectedActivity.editedFields)
+            ? selectedActivity.editedFields
+            : []
+        );
+        isInitialLoad.current = false;
+      }
     }
   }, [selectedActivity]);
 
@@ -162,10 +186,12 @@ export default function AddActivity(props) {
 
     return () => {
       dispatch(clearActivityState());
+      setSelectedFile(null);
     };
   }, [id, dispatch]);
 
   const editorRef = useRef(null);
+  const isInitialLoad = useRef(true);
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
     clipPath: "inset(50%)",
@@ -181,6 +207,9 @@ export default function AddActivity(props) {
   // Update your handleChange and handleEditorChange to properly track changes
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
@@ -196,6 +225,9 @@ export default function AddActivity(props) {
   };
 
   const handleEditorChange = (content, fieldName) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: content };
 
@@ -208,6 +240,32 @@ export default function AddActivity(props) {
 
       return newData;
     });
+  };
+
+  const handleFileUpload = (event) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      // Set the file path in the readMore field
+      setFormData((prev) => ({
+        ...prev,
+        readMore: file.name,
+      }));
+
+      // Update editedFields if this is a change
+      if (originalFormData && file.name !== originalFormData.readMore) {
+        const changes = Object.keys(formData).filter((key) => {
+          if (key === "readMore") {
+            return file.name !== originalFormData.readMore;
+          }
+          return compareValues(formData[key], originalFormData[key]);
+        });
+        setEditedFields(changes);
+      }
+    }
   };
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -225,6 +283,20 @@ export default function AddActivity(props) {
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+
+      // Add all form fields EXCEPT status (we'll add it separately)
+      Object.keys(formData).forEach((key) => {
+        if (key === "readMore" && selectedFile) {
+          // If there's a selected file, append it
+          formDataToSend.append("readMore", selectedFile);
+        } else if (key !== "status") {
+          // Don't add status here
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
       // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
         ? selectedActivity.editedFields
@@ -245,16 +317,22 @@ export default function AddActivity(props) {
         updatedFieldEditors[field] = currentEditor;
       });
 
-      const updatedFormData = {
-        ...formData,
-        status: userRole === "admin" ? "published" : "under review",
-        editedFields: mergedEditedFields, // always send the merged array!
-        fieldEditors: updatedFieldEditors,
-      };
+      // Add editedFields and fieldEditors to FormData
+      formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
+      formDataToSend.append(
+        "fieldEditors",
+        JSON.stringify(updatedFieldEditors)
+      );
+
+      // Add status ONLY ONCE
+      const finalStatus = userRole === "admin" ? "published" : "under review";
+      formDataToSend.append("status", finalStatus);
+
+     
 
       if (id) {
         await dispatch(
-          updateActivity({ id, updatedData: updatedFormData })
+          updateActivity({ id, updatedData: formDataToSend })
         ).unwrap();
         await dispatch(getActivityById(id)).unwrap();
 
@@ -267,22 +345,17 @@ export default function AddActivity(props) {
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
-          setOriginalFormData(updatedFormData); // Keep tracking changes
+          // setOriginalFormData({ ...formData, status: "under review" }); // Keep tracking changes
         } else {
-          // After admin publishes, reload activity to get cleared editedFields
-
           // Only clear locally if status is published
-          if (updatedFormData.status === "published") {
+          if (finalStatus === "published") {
             setEditedFields([]);
+            // Update originalFormData to current form data to stop tracking changes
+            setOriginalFormData({ ...formData, status: "published" });
           }
         }
       } else {
-        if (
-          !formData.type ||
-          !formData.title ||
-          !formData.shortDesc ||
-          !formData.readMore
-        ) {
+        if (!formData.type || !formData.title || !formData.shortDesc) {
           setSnackbarMessage("Please fill all fields!");
           setSnackbarSeverity("warning");
           setOpenSnackbar(true);
@@ -290,22 +363,22 @@ export default function AddActivity(props) {
           return;
         }
 
-        await dispatch(createActivity(updatedFormData)).unwrap();
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Activity created and published!"
-            : "Activity created successfully!"
-        );
+        await dispatch(createActivity(formDataToSend)).unwrap();
+        setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
+
+        // Reset editedFields after successful creation
+        setHasLocalChanges(false); // Reset after save
+        setEditedFields([]);
+        // Update originalFormData to current form data
+        setOriginalFormData({ ...formData, status: finalStatus });
       }
 
-      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       setSnackbarMessage(`Operation failed: ${error.message || error}`);
       setSnackbarSeverity("error");
-      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
@@ -333,6 +406,9 @@ export default function AddActivity(props) {
       await dispatch(getActivityById(id));
       setSnackbarMessage("Changes discarded successfully");
       setSnackbarSeverity("success");
+
+      // Reset selectedFile state
+      setSelectedFile(null);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
@@ -379,16 +455,21 @@ export default function AddActivity(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      // published: {
-      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
-      //   borderColor: "#4CAF50",
-      //   iconColor: "#2E7D32",
-      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-      //   title: "Published",
-      //   description: "Published and live",
-      //   titleColor: "#2E7D32",
-      //   descColor: "#388E3C",
-      // },
+         published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: null,
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -400,6 +481,14 @@ export default function AddActivity(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+    const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
 
   // 5. The banner already uses editedFields, so no change needed there
   useEffect(() => {}, [
@@ -459,16 +548,19 @@ export default function AddActivity(props) {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{
               alignItems: "center",
               mx: 3,
-              pb: 5,
+              // pb: 5,
               mt: { xs: 8, md: 0 },
             }}
           >
-            {userRole && currentStatus !== "published" && statusData && (
+            {userRole &&
+              statusData &&
+              (currentStatus !== "published" || hasAnyChanges) && (
               <Box
                 sx={{
                   width: "98%",
@@ -492,7 +584,7 @@ export default function AddActivity(props) {
                           : currentStatus === "review"
                           ? "255, 193, 7"
                           : currentStatus === "published"
-                          ? "76, 175, 80"
+                          ? ""
                           : "244, 67, 54"
                       }, 0.2)`,
                       display: "grid",
@@ -500,8 +592,7 @@ export default function AddActivity(props) {
                       flexShrink: 0,
                     }}
                   >
-                    {statusData?.icon &&
-                      React.cloneElement(statusData.icon, {
+                    {statusData.icon && React.cloneElement(statusData.icon, {
                         sx: { color: statusData.iconColor },
                       })}
                   </Box>
@@ -741,38 +832,25 @@ export default function AddActivity(props) {
                 alignItems: "center",
               }}
             >
-              {/* <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: "#CC9A3A !important",
+              {/* Show Discard button only for existing activities */}
+              {id && (
+                <Button
+                  variant="outlined"
+                  onClick={handleDiscard}
+                  sx={{
+                    backgroundColor: "#4a90e2 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#357ABD !important",
+                    },
+                  }}
+                >
+                  {userRole === "admin" ? "Discard" : "Undo"}
+                </Button>
+              )}
 
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#c38f2fff !important",
-                  },
-                }}
-                onClick={handleReview}
-              >
-                Review
-              </Button> */}
-
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
               <Button
                 variant="outlined"
                 onClick={handleSubmit}
@@ -786,26 +864,12 @@ export default function AddActivity(props) {
                   },
                 }}
               >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
+                {id
+                  ? userRole === "admin"
+                    ? "Publish"
+                    : "Save Changes"
+                  : "Create"}
               </Button>
-
-              {/* <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button> */}
-
-              {/* <Button variant="outlined">Fetch Data from Quorum</Button> */}
             </Stack>
 
             <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
@@ -940,11 +1004,11 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -952,7 +1016,7 @@ export default function AddActivity(props) {
                       Activity Details
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -991,12 +1055,12 @@ export default function AddActivity(props) {
                       }}
                     />
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1005,7 +1069,7 @@ export default function AddActivity(props) {
                       Congress
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1052,12 +1116,12 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1066,66 +1130,109 @@ export default function AddActivity(props) {
                       Read More
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
-                      <TextField
-                        sx={{
-                          fontFamily: "'Be Vietnam Pro', sans-serif",
-                          height: 38,
-                          "& .MuiOutlinedInput-root": {
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <TextField
+                          sx={{
                             fontFamily: "'Be Vietnam Pro', sans-serif",
-                            fontSize: "13px",
                             height: 38,
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            alignItems: "center",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
+                            flex: 1,
+                            "& .MuiOutlinedInput-root": {
+                              fontFamily: "'Be Vietnam Pro', sans-serif",
+                              fontSize: "13px",
+                              height: 38,
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              alignItems: "center",
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#D3D3D3 !important",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#D3D3D3 !important",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "#CC9A3A !important",
+                                  borderWidth: "1px",
+                                },
                             },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
+                          }}
+                          fullWidth
+                          variant="outlined"
+                          name="readMore"
+                          value={
+                            formData.readMore
+                              ? `${API_URL}/uploads/documents/${formData.readMore
+                                  .split("/")
+                                  .pop()}`
+                              : ""
+                          }
+                          onChange={handleChange}
+                          placeholder="File will be uploaded here"
+                          InputProps={{
+                            readOnly: true,
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Typography
+                                  fontWeight="500"
+                                  sx={{
+                                    fontSize: "13px",
+                                    backgroundColor: "#F9F9F9",
+                                  }}
+                                >
+                                  URL:
+                                </Typography>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          startIcon={<CloudUploadIcon />}
+                          sx={{
+                            height: 38,
+                            minWidth: "auto",
+                            px: 2,
+                            borderColor: "#CC9A3A",
+                            color: "#CC9A3A",
+                            "&:hover": {
+                              borderColor: "#B8860B",
+                              backgroundColor: "rgba(204, 154, 58, 0.04)",
                             },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#CC9A3A !important",
-                              borderWidth: "1px",
-                            },
-                          },
-                        }}
-                        fullWidth
-                        variant="outlined"
-                        name="readMore"
-                        value={formData.readMore}
-                        onChange={handleChange}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Typography
-                                fontWeight="500"
-                                sx={{
-                                  fontSize: "13px",
-                                  backgroundColor: "#F9F9F9",
-                                }}
-                              >
-                                URL:
-                              </Typography>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
+                          }}
+                        >
+                          Upload
+                          <input
+                            type="file"
+                            hidden
+                            onChange={handleFileUpload}
+                            accept=".pdf,.doc,.docx,.txt,.rtf"
+                          />
+                        </Button>
+                      </Box>
+                      {selectedFile && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "success.main",
+                            mt: 0.5,
+                            display: "block",
+                          }}
+                        >
+                          File selected: {selectedFile.name}
+                        </Typography>
+                      )}
                     </FormControl>
                   </Grid>
-                  <Grid
-                    container
-                    spacing={2}
-                    alignItems="center"
-                    sx={{ ml: { xs: 0, sm: 5.6 } }}
-                  >
-                    <Grid size={{ xs: 12, sm: 2 }}>
+                
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                           width: "100%",
@@ -1135,7 +1242,7 @@ export default function AddActivity(props) {
                       </InputLabel>
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 10 }}>
+                    <Grid size={10}>
                       <FormControl
                         sx={{
                           fontFamily: "'Be Vietnam Pro', sans-serif",
@@ -1198,13 +1305,15 @@ export default function AddActivity(props) {
                           />
                         </RadioGroup>
                       </FormControl>
-                    </Grid>
+                  
                   </Grid>
                 </Grid>
               </Box>
             </Paper>
           </Stack>
-          <Copyright sx={{ my: 4 }} />
+          <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>

@@ -26,7 +26,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../Dashboard/global/common";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -45,6 +45,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Autocomplete
 } from "@mui/material";
 
 import {
@@ -73,6 +74,9 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -89,6 +93,10 @@ export default function Addrepresentative(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
    const [componentKey, setComponentKey] = useState(0);
+       const theme = useTheme();
+     const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+    const [hasLocalChanges, setHasLocalChanges] = useState(false);
+    const navigate = useNavigate();
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -146,33 +154,87 @@ export default function Addrepresentative(props) {
     },
   ]);
 
-  const handleTermChange = (e, termIndex) => {
+  // const handleTermChange = (e, termIndex) => {
+  //   const fieldName = `term${termIndex}_${e.target.name}`;
+  //   if (!localChanges.includes(fieldName)) {
+  //     setLocalChanges((prev) => [...prev, fieldName]);
+  //   }
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? { ...term, [e.target.name]: e.target.value }
+  //         : term
+  //     )
+  //   );
+  // };
+
+    const handleTermChange = (e, termIndex) => {
+    const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
-    if (!localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
     }
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? { ...term, [e.target.name]: e.target.value }
-          : term
-      )
+       setHouseTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex ? { ...term, [name]: value } : term
     );
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const isActualChange = compareValues(value, originalTerm[name]);
+    
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+    }
+    
+    return newTerms;
+  });
+   
   };
+  // const handleSwitchChange = (e, termIndex) => {
+  //   const fieldName = `term${termIndex}_${e.target.name}`;
+  //   if (!localChanges.includes(fieldName)) {
+  //     setLocalChanges((prev) => [...prev, fieldName]);
+  //   }
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? { ...term, [e.target.name]: e.target.checked }
+  //         : term
+  //     )
+  //   );
+  // };
+
 
   const handleSwitchChange = (e, termIndex) => {
-    const fieldName = `term${termIndex}_${e.target.name}`;
-    if (!localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
+    const { name, checked } = e.target;
+     const fieldName = `term${termIndex}_${name}`;
+     if (!hasLocalChanges) {
+      setHasLocalChanges(true);
     }
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? { ...term, [e.target.name]: e.target.checked }
-          : term
-      )
+    
+    setHouseTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex ? { ...term, [name]: checked } : term
     );
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const isActualChange = compareValues(checked, originalTerm[name]);
+    
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+    }
+    
+    return newTerms;
+  });
   };
+
+
 
   const handleAddVote = (termIndex) => {
     setHouseTermData((prev) =>
@@ -200,34 +262,67 @@ export default function Addrepresentative(props) {
     );
   };
 
+  // const handleVoteChange = (termIndex, voteIndex, field, value) => {
+  //   // Construct the field name for change tracking
+  //   // Construct the field name for change tracking
+  //   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
+
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) =>
+  //     prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
+  //   );
+
+  //   // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
+
+  //   // setLocalChanges((prev) =>
+  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   // );
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //             ...term,
+  //             votesScore: term.votesScore.map((vote, i) =>
+  //               i === voteIndex ? { ...vote, [field]: value } : vote
+  //             ),
+  //           }
+  //         : term
+  //     )
+  //   );
+  // };
+
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
-    // Construct the field name for change tracking
-    // Construct the field name for change tracking
-    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
-
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
+  const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
+  
+  setHouseTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
+        : term
     );
-
-    // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
-
-    // setLocalChanges((prev) =>
-    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-    // );
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
-          : term
-      )
-    );
-  };
+    
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalVote = originalTerm.votesScore?.[voteIndex] || {};
+    const isActualChange = compareValues(value, originalVote[field]);
+    
+    if (isActualChange && !localChanges.includes(voteChangeId)) {
+      setLocalChanges((prev) => [...prev, voteChangeId]);
+    } else if (!isActualChange && localChanges.includes(voteChangeId)) {
+      setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
+    }
+    
+    return newTerms;
+  });
+};
 
   const handleAddActivity = (termIndex) => {
     setHouseTermData((prev) =>
@@ -260,34 +355,69 @@ export default function Addrepresentative(props) {
     );
   };
 
+  // const handleActivityChange = (termIndex, activityIndex, field, value) => {
+  //   // Construct the field name for change tracking
+  //   const activityChangeId = `term${termIndex}_TrackedActivity_${
+  //     activityIndex + 1
+  //   }`;
+
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) =>
+  //     prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
+  //   );
+  //   // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
+
+  //   // setLocalChanges((prev) =>
+  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   // );
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //             ...term,
+  //             activitiesScore: term.activitiesScore.map((activity, i) =>
+  //               i === activityIndex ? { ...activity, [field]: value } : activity
+  //             ),
+  //           }
+  //         : term
+  //     )
+  //   );
+  // };
+
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    // Construct the field name for change tracking
-    const activityChangeId = `term${termIndex}_TrackedActivity_${
-      activityIndex + 1
-    }`;
+  const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
-    );
-    // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
+  setHouseTermData((prev) => {
+    const newTerms = prev.map((term, idx) => {
+      if (idx !== termIndex) return term;
 
-    // setLocalChanges((prev) =>
-    //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-    // );
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-              ...term,
-              activitiesScore: term.activitiesScore.map((activity, i) =>
-                i === activityIndex ? { ...activity, [field]: value } : activity
-              ),
-            }
-          : term
-      )
-    );
-  };
+      const newActivities = term.activitiesScore.map((activity, i) => 
+        i === activityIndex ? { ...activity, [field]: value } : activity
+      );
+
+      return { ...term, activitiesScore: newActivities };
+    });
+
+    // Compare with original data if available
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
+    const isActualChange = compareValues(value, originalActivity[field]);
+
+    setLocalChanges((prevChanges) => {
+      if (isActualChange && !prevChanges.includes(activityChangeId)) {
+        return [...prevChanges, activityChangeId];
+      } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
+        return prevChanges.filter(f => f !== activityChangeId);
+      }
+      return prevChanges;
+    });
+
+    return newTerms;
+  });
+};
 
   // Remove contentRefs for summary
 
@@ -339,6 +469,14 @@ export default function Addrepresentative(props) {
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
       }
+
+       // Remove any tracked changes for this term
+    setLocalChanges((prevChanges) => 
+      prevChanges.filter(
+        change => !change.startsWith(`term${termIndex}_`)
+      )
+    );
+    
       return prev.filter((_, index) => index !== termIndex);
     });
   };
@@ -346,17 +484,43 @@ export default function Addrepresentative(props) {
   //   setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
   // };
 
+  // const compareValues = (newVal, oldVal) => {
+  //   if (typeof newVal === "string" && typeof oldVal === "string") {
+  //     return newVal.trim() !== oldVal.trim();
+  //   }
+  //   return newVal !== oldVal;
+  // };
+
   const compareValues = (newVal, oldVal) => {
-    if (typeof newVal === "string" && typeof oldVal === "string") {
-      return newVal.trim() !== oldVal.trim();
-    }
-    return newVal !== oldVal;
-  };
+  // Handle null/undefined cases
+  if (newVal == null || oldVal == null) return newVal !== oldVal;
+  
+  // Handle booleans and other primitives directly
+  if (typeof newVal !== 'object') return newVal !== oldVal;
+  
+  // Handle arrays and objects
+  return JSON.stringify(newVal) !== JSON.stringify(oldVal);
+};
 
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
-        const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+        const matchedTerm = terms?.find((t) => {
+       // Case 1: term.termId is an object with name property
+       if (term.termId && typeof term.termId === "object" && term.termId.name) {
+         return t.name === term.termId.name;
+       }
+       // Case 2: term.termId is a string (the term name)
+       else if (typeof term.termId === "string") {
+         return t.name === term.termId;
+       }
+       // Case 3: term.termId is an ObjectId - find by ID
+       else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
+         return t._id.toString() === term.termId.toString();
+       }
+       // Case 4: No valid termId found
+       return false;
+     });
         // Transform votesScore with the same logic as house data
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
@@ -533,13 +697,8 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // Merge with any existing editedFields from backend
-      const backendEditedFields = Array.isArray(formData.editedFields)
-        ? formData.editedFields
-        : [];
-      const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
-
-      setEditedFields(mergedChanges);
+      // Use only local diffs for editedFields so reverting removes from list
+      setEditedFields(changes);
     }
   }, [formData, originalFormData, houseTermData, originalTermData]);
 
@@ -592,30 +751,60 @@ export default function Addrepresentative(props) {
     preFillForm();
   }, [house, terms]);
 
+  // const handleChange = (event) => {
+  //   const { name, value } = event.target;
+
+  //   // Track the changed field
+  //   if (!localChanges.includes(name)) {
+  //     setLocalChanges((prev) => [...prev, name]);
+  //   }
+  //   setFormData((prev) => {
+  //     const newData = { ...prev, [name]: value };
+
+  //     // if (originalFormData) {
+  //     //   const changes = Object.keys(newData).filter((key) =>
+  //     //     compareValues(newData[key], originalFormData[key])
+  //     //   );
+  //     //   setEditedFields(changes);
+  //     // }
+
+  //     return newData;
+  //   });
+  // };
+
   const handleChange = (event) => {
-    const { name, value } = event.target;
-
-    // Track the changed field
-    if (!localChanges.includes(name)) {
-      setLocalChanges((prev) => [...prev, name]);
+  const { name, value } = event.target;
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
     }
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-
-      // if (originalFormData) {
-      //   const changes = Object.keys(newData).filter((key) =>
-      //     compareValues(newData[key], originalFormData[key])
-      //   );
-      //   setEditedFields(changes);
-      // }
-
-      return newData;
-    });
-  };
+  
+  setFormData(prev => {
+    const newData = { ...prev, [name]: value };
+    
+    // Compare with original data
+    if (originalFormData) {
+      const isActualChange = compareValues(value, originalFormData[name]);
+      
+      setLocalChanges(prevChanges => {
+        if (isActualChange && !prevChanges.includes(name)) {
+          return [...prevChanges, name];
+        } else if (!isActualChange && prevChanges.includes(name)) {
+          return prevChanges.filter(field => field !== name);
+        }
+        return prevChanges;
+      });
+    }
+    
+    return newData;
+  });
+};
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -680,10 +869,20 @@ export default function Addrepresentative(props) {
       // ];
 
       // Update field editors with current changes
+      // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      allChanges.forEach((field) => {
+       localChanges.forEach((field) => {
+    // For senator-level fields
+    if (field in formData) {
+      if (compareValues(formData[field], originalFormData?.[field] || '')) {
         updatedFieldEditors[field] = currentEditor;
-      });
+      }
+    }
+    // For term-level fields
+    else if (field.startsWith('term')) {
+      updatedFieldEditors[field] = currentEditor;
+    }
+  });
 
       // Prepare representative update
       const representativeUpdate = {
@@ -758,12 +957,15 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseById(id)).unwrap();
 
       // Update originals to match latest backend data
-      if (houseData?.currentHouse) {
-        setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
-      }
-      if (house) {
-        setOriginalFormData(JSON.parse(JSON.stringify(house)));
-      }
+      // if (houseData?.currentHouse) {
+      //   setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
+      // }
+      // if (house) {
+      //   setOriginalFormData(JSON.parse(JSON.stringify(house)));
+      // }
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
+      setHasLocalChanges(false); // Reset after save
       setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -805,15 +1007,44 @@ export default function Addrepresentative(props) {
     width: 1,
   });
 
-  const handleStatusChange = (status) => {
-    const fieldName = "status"; // The field being changed
+  // const handleStatusChange = (status) => {
+  //   const fieldName = "status"; // The field being changed
 
-    // Update local changes if not already tracked
-    setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
-    );
-    setFormData((prev) => ({ ...prev, status }));
-  };
+  //   // Update local changes if not already tracked
+  //   setLocalChanges((prev) =>
+  //     prev.includes(fieldName) ? prev : [...prev, fieldName]
+  //   );
+  //   setFormData((prev) => ({ ...prev, status }));
+  // };
+
+
+  const handleStatusChange = (status) => {
+  const fieldName = "status"; // The field being changed
+  if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
+
+  setFormData((prev) => {
+    const newData = { ...prev, status };
+    
+    // Compare with original value to determine if this is an actual change
+    const isActualChange = originalFormData 
+      ? status !== originalFormData.status
+      : true;
+
+    // Update local changes based on whether it's an actual change
+    setLocalChanges((prevChanges) => {
+      if (isActualChange && !prevChanges.includes(fieldName)) {
+        return [...prevChanges, fieldName];
+      } else if (!isActualChange && prevChanges.includes(fieldName)) {
+        return prevChanges.filter(field => field !== fieldName);
+      }
+      return prevChanges;
+    });
+
+    return newData;
+  });
+};
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
@@ -845,6 +1076,21 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+       published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: null,
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
       // published: {
       //   backgroundColor: "rgba(76, 175, 80, 0.12)",
       //   borderColor: "#4CAF50",
@@ -867,6 +1113,15 @@ export default function Addrepresentative(props) {
     currentStatus
   );
 
+    const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
+
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -883,6 +1138,7 @@ export default function Addrepresentative(props) {
   try {
     setLoading(true);
     await dispatch(discardHouseChanges(id)).unwrap();
+    navigate(0);
     await dispatch(getHouseById(id));
     await dispatch(getHouseDataByHouseId(id));
     setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
@@ -936,18 +1192,20 @@ export default function Addrepresentative(props) {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
 
           <Stack
             spacing={2}
             sx={{
               alignItems: "center",
               mx: 2,
-              pb: 5,
+              // pb: 5,
               mt: { xs: 8, md: 0 },
             }}
           >
             {userRole &&
-              formData.publishStatus !== "published" &&
+              isStatusReady &&
+              (hasAnyChanges || formData.publishStatus !== "published") &&
               statusData && (
                 <Box
                   sx={{
@@ -974,7 +1232,7 @@ export default function Addrepresentative(props) {
                             : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                            ? "76, 175, 80"
+                            ? ""
                             : "244, 67, 54"
                         }, 0.2)`,
                         display: "grid",
@@ -982,7 +1240,7 @@ export default function Addrepresentative(props) {
                         flexShrink: 0,
                       }}
                     >
-                      {React.cloneElement(statusData.icon, {
+                      {statusData.icon && React.cloneElement(statusData.icon, {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
@@ -1013,7 +1271,7 @@ export default function Addrepresentative(props) {
                           <Chip
                             label={`${
                               Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length
+                                ? formData.editedFields.length + localChanges.length
                                 : 0
                             } pending changes`}
                             size="small"
@@ -1031,9 +1289,7 @@ export default function Addrepresentative(props) {
                           )
                             ? formData.editedFields
                             : [];
-                          const hasChanges =
-                            backendChanges.length > 0 ||
-                            localChanges.length > 0;
+                          const hasChanges = hasAnyChanges;
 
                           if (!hasChanges) {
                             return (
@@ -1177,7 +1433,7 @@ export default function Addrepresentative(props) {
                               )}
 
                               {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
+                              {localOnlyChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "background.paper",
@@ -1194,7 +1450,7 @@ export default function Addrepresentative(props) {
                                     Unsaved Changes
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
-                                    {localChanges.map((field) => (
+                                    {localOnlyChanges.map((field) => (
                                       <ListItem
                                         key={`local-${field}`}
                                         sx={{ py: 0, px: 1 }}
@@ -1365,12 +1621,12 @@ export default function Addrepresentative(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                 >
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end", // align left
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1381,7 +1637,7 @@ export default function Addrepresentative(props) {
                       Representative's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       required
                       id="title"
@@ -1394,11 +1650,11 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1}>
+                  <Grid size={isMobile?12:1}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1406,7 +1662,7 @@ export default function Addrepresentative(props) {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -1471,11 +1727,11 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1483,7 +1739,7 @@ export default function Addrepresentative(props) {
                       District
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       id="district"
                       name="district"
@@ -1495,11 +1751,11 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1} sx={{ alignContent: "center" }}>
+                  <Grid size={isMobile?12:1} sx={{ alignContent: "center" }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1507,7 +1763,7 @@ export default function Addrepresentative(props) {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <FormControl fullWidth>
                       <Select
                         name="party"
@@ -1522,12 +1778,12 @@ export default function Addrepresentative(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end", // align left
+                       justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1630,12 +1886,12 @@ export default function Addrepresentative(props) {
                     columnSpacing={2}
                     alignItems={"center"}
                   >
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1643,7 +1899,7 @@ export default function Addrepresentative(props) {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?12:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.termId || ""}
@@ -1658,9 +1914,12 @@ export default function Addrepresentative(props) {
                             Select an option
                           </MenuItem>
                           {terms && terms.length > 0 ? (
-                            terms.map((t) => (
+                            terms 
+                            .filter((t)=>t.startYear && t.endYear && (t.endYear-t.startYear === 1))
+                            .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                            .sort((a,b)=> a.congresses[0]- b.congresses[0]).map((t) => (
                               <MenuItem key={t._id} value={t._id}>
-                                {t.name}
+                                 {`${t.congresses[0]}th Congress`}
                               </MenuItem>
                             ))
                           ) : (
@@ -1671,11 +1930,45 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={2.1} sx={{ alignContent: "center" }}>
+                                       {/* <Grid size={isMobile ? 12 : 2.2}>
+  <FormControl fullWidth>
+    <Autocomplete
+      options={
+        terms
+          ? terms.filter(
+              (t) => Array.isArray(t.congresses) && t.congresses.length === 1
+            )
+          : []
+      }
+      getOptionLabel={(t) =>
+        t.congresses && t.congresses.length === 1
+          ? `${ordinal(t.congresses[0])} Congress`
+          : ""
+      }
+      value={
+        terms.find((t) => t._id === term.termId) || null
+      }
+      onChange={(event, newValue) =>
+        handleTermChange(
+          { target: { name: "termId", value: newValue?._id || "" } },
+          termIndex
+        )
+      }
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          // label="Select an option"
+          sx={{ background: "#fff" }}
+        />
+      )}
+    />
+  </FormControl>
+</Grid> */}
+                    <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1683,7 +1976,7 @@ export default function Addrepresentative(props) {
                         Current Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={0}>
+                    <Grid size={isMobile?6:0}>
                       <Switch
                         {...label}
                         name="currentTerm"
@@ -1693,12 +1986,12 @@ export default function Addrepresentative(props) {
                       />
                     </Grid>
 
-                    <Grid size={2.39}>
+                    <Grid size={isMobile?6:2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1706,7 +1999,7 @@ export default function Addrepresentative(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?6:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -1729,11 +2022,11 @@ export default function Addrepresentative(props) {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1741,7 +2034,7 @@ export default function Addrepresentative(props) {
                         Term Summary
                       </InputLabel>
                     </Grid>
-                    <Grid size={9.05}>
+                    <Grid size={isMobile?12:9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
@@ -1807,7 +2100,7 @@ export default function Addrepresentative(props) {
                             alignItems="center"
                             columnGap={"15px"}
                           >
-                            <Grid size={2}>
+                            <Grid size={isMobile?12:2}>
                               <InputLabel
                                 sx={{
                                   display: "flex",
@@ -1820,7 +2113,7 @@ export default function Addrepresentative(props) {
                                 Scored Vote
                               </InputLabel>
                             </Grid>
-                            <Grid size={7.5}>
+                            <Grid size={isMobile?12:7.5}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.voteId || ""}
@@ -1892,7 +2185,7 @@ export default function Addrepresentative(props) {
                                 </Select>
                               </FormControl>
                             </Grid>
-                            <Grid size={1.6}>
+                            <Grid size={isMobile?12:1.6}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.score || ""}
@@ -1961,12 +2254,12 @@ export default function Addrepresentative(props) {
                           alignItems="center"
                           columnGap={"15px"}
                         >
-                          <Grid size={2}>
+                          <Grid size={isMobile?12:2}>
                             <InputLabel
                               sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "end",
+                                justifyContent: isMobile ? "flex-start" : "flex-end",
                                 fontWeight: 700,
                                 my: 0,
                               }}
@@ -1974,7 +2267,7 @@ export default function Addrepresentative(props) {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={7.5}>
+                          <Grid size={isMobile?8:7.5}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity.activityId || ""}
@@ -2048,7 +2341,7 @@ export default function Addrepresentative(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1.6}>
+                          <Grid size={isMobile?6:1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity?.score || ""}
@@ -2143,7 +2436,9 @@ export default function Addrepresentative(props) {
               </MuiAlert>
             </Snackbar>
           </Stack>
-          <Footer />
+          <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>

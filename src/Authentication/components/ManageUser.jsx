@@ -40,6 +40,8 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom"; 
+import MobileHeader from "../../components/MobileHeader";
+import Footer from "../../components/Footer";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -206,6 +208,7 @@ export default function ManageUser(props) {
         <SideMenu />
         <Box sx={{ flexGrow: 1, width: "80%",  }}>
           <FixedHeader />
+          <MobileHeader/>
           <Box sx={{ maxWidth: "100%", mt: 2,mx:2 }}>
             <Stack
               direction="row"
@@ -239,7 +242,22 @@ export default function ManageUser(props) {
               </Alert>
             ) : loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-                <CircularProgress />
+                       <Box
+                         sx={{
+                           position: "fixed",
+                           top: 0,
+                           left: 0,
+                           width: "100%",
+                           height: "100%",
+                           backgroundColor: "rgba(255, 255, 255, 0.5)",
+                           display: "flex",
+                           justifyContent: "center",
+                           alignItems: "center",
+                           zIndex: 9999,
+                         }}
+                       >
+                         <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+                       </Box>
               </Box>
             ) : error ? (
               <Alert severity="error">{error}</Alert>
@@ -456,6 +474,9 @@ export default function ManageUser(props) {
                 {snackbarMessage}
               </Alert>
             </Snackbar>
+            <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
           </Box>
         </Box>
       </Box>

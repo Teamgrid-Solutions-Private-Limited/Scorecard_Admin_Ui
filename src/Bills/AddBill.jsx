@@ -10,6 +10,7 @@ import {
   createVote,
   discardVoteChanges,
 } from "../redux/reducer/voteSlice";
+import { API_URL } from "../redux/API";
 import {
   Alert,
   Dialog,
@@ -49,6 +50,11 @@ import { jwtDecode } from "jwt-decode";
 import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
+import Footer from "../components/Footer";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -73,7 +79,10 @@ export default function AddBill(props) {
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-
+  const [selectedFile, setSelectedFile] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   const fieldLabels = {
     type: "Type",
@@ -106,10 +115,21 @@ export default function AddBill(props) {
     return newVal !== oldVal;
   };
 
+  const [loading, setLoading] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
 
   const preFillForm = () => {
     if (selectedVote) {
-      const termId = selectedVote.termId?._id || "";
+      const termId = selectedVote.termId || "";
       const newFormData = {
         type: selectedVote.type.includes("senate")
           ? "senate"
@@ -184,6 +204,9 @@ export default function AddBill(props) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
@@ -199,6 +222,9 @@ export default function AddBill(props) {
   };
 
   const handleEditorChange = (content, fieldName) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: content };
 
@@ -213,16 +239,30 @@ export default function AddBill(props) {
     });
   };
 
-  const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
+  const handleFileUpload = (event) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
     }
-    setOpenSnackbar(false);
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      // Set the file path in the readMore field
+      setFormData((prev) => ({
+        ...prev,
+        readMore: file.name,
+      }));
+
+      // Update editedFields if this is a change
+      if (originalFormData && file.name !== originalFormData.readMore) {
+        const changes = Object.keys(formData).filter((key) => {
+          if (key === "readMore") {
+            return file.name !== originalFormData.readMore;
+          }
+          return compareValues(formData[key], originalFormData[key]);
+        });
+        setEditedFields(changes);
+      }
+    }
   };
 
   const handleSubmit = async () => {
@@ -235,12 +275,30 @@ export default function AddBill(props) {
 
     setLoading(true);
     try {
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+
+      // Add all form fields EXCEPT status (we'll add it separately)
+      Object.keys(formData).forEach((key) => {
+        if (key === "readMore" && selectedFile) {
+          // If there's a selected file, append it
+          formDataToSend.append("readMore", selectedFile);
+        } else if (key !== "status") {
+          // Don't add status here
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
       // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedVote?.editedFields)
         ? selectedVote.editedFields
         : [];
+
+      const filteredEditedFields = editedFields.filter(
+        (field) => field !== "status"
+      );
       const mergedEditedFields = Array.from(
-        new Set([...backendEditedFields, ...editedFields])
+        new Set([...backendEditedFields, ...filteredEditedFields])
       );
 
       const decodedToken = jwtDecode(token);
@@ -252,20 +310,24 @@ export default function AddBill(props) {
 
       // Create updated fieldEditors map
       const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
-      editedFields.forEach((field) => {
+      filteredEditedFields.forEach((field) => {
         updatedFieldEditors[field] = currentEditor;
       });
 
-      const updatedFormData = {
-        ...formData,
-        status: userRole === "admin" ? "published" : "under review",
-        editedFields: mergedEditedFields,
-        fieldEditors: updatedFieldEditors,
-      };
+      // Add editedFields and fieldEditors to FormData
+      formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
+      formDataToSend.append(
+        "fieldEditors",
+        JSON.stringify(updatedFieldEditors)
+      );
+
+      // Add status ONLY ONCE
+      const finalStatus = userRole === "admin" ? "published" : "under review";
+      formDataToSend.append("status", finalStatus);
 
       if (id) {
         await dispatch(
-          updateVote({ id, updatedData: updatedFormData })
+          updateVote({ id, updatedData: formDataToSend })
         ).unwrap();
         // After admin publishes, reload vote to get cleared editedFields
         await dispatch(getVoteById(id)).unwrap();
@@ -279,10 +341,12 @@ export default function AddBill(props) {
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
-          setOriginalFormData(updatedFormData);
+          // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
+          // Remove status from editedFields after update
+          setEditedFields((prev) => prev.filter((field) => field !== "status"));
         } else {
           // Only clear locally if status is published
-          if (updatedFormData.status === "published") {
+          if (finalStatus === "published") {
             setEditedFields([]);
           }
         }
@@ -300,7 +364,7 @@ export default function AddBill(props) {
           return;
         }
 
-        await dispatch(createVote(updatedFormData)).unwrap();
+        await dispatch(createVote(formDataToSend)).unwrap();
         setSnackbarMessage(
           userRole === "admin"
             ? "Bill created and published!"
@@ -310,12 +374,28 @@ export default function AddBill(props) {
       }
 
       setOpenSnackbar(true);
-      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
-      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+
+      // Better error handling
+      let errorMessage = "Operation failed";
+
+      if (error?.payload?.message) {
+        errorMessage = error.payload.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === "string") {
+        errorMessage = error;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.status === 400) {
+        errorMessage = "Bad Request: Please check your input data";
+      } else if (error?.response?.status === 500) {
+        errorMessage = "Server Error: Please try again later";
+      }
+
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
-      setOpenSnackbar(true);
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
@@ -340,14 +420,18 @@ export default function AddBill(props) {
 
       // Refresh the data
       await dispatch(getVoteById(id));
-      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+      setSnackbarMessage(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      );
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+        (typeof error === "string"
+          ? error
+          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -388,6 +472,21 @@ export default function AddBill(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: "",
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -399,10 +498,22 @@ export default function AddBill(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+  const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (
+    Array.isArray(editedFields) ? editedFields : []
+  ).filter((field) => !backendChanges.includes(field));
+  const hasAnyChanges =
+    backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
 
-  useEffect(() => {
-    
-  }, [currentStatus, editedFields, originalFormData, formData]);
+  useEffect(() => {}, [
+    currentStatus,
+    editedFields,
+    originalFormData,
+    formData,
+  ]);
 
   return (
     <AppTheme>
@@ -452,239 +563,286 @@ export default function AddBill(props) {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{
               alignItems: "center",
               mx: 3,
-              pb: 5,
+              // pb: 5,
               mt: { xs: 8, md: 0 },
             }}
           >
-           {userRole && currentStatus !== "published" && statusData && (
-  <Box
-    sx={{
-      width: "98%",
-      p: 2,
-      backgroundColor: statusData.backgroundColor,
-      borderLeft: `4px solid ${statusData.borderColor}`,
-      borderRadius: "0 8px 8px 0",
-      boxShadow: 1,
-      mb: 2,
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-      {/* Status icon bubble */}
-      <Box
-        sx={{
-          p: 1,
-          borderRadius: "50%",
-          backgroundColor: `rgba(${
-            currentStatus === "draft"
-              ? "66, 165, 245"
-              : currentStatus === "review"
-              ? "255, 193, 7"
-              : currentStatus === "published"
-              ? "76, 175, 80"
-              : "244, 67, 54"
-          }, 0.2)`,
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        {React.cloneElement(statusData.icon, {
-          sx: { color: statusData.iconColor },
-        })}
-      </Box>
-
-      <Box sx={{ flex: 1 }}>
-        {/* Header: title + pending count (admin only) */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography
-            variant="subtitle1"
-            fontWeight="600"
-            sx={{
-              color: statusData.titleColor,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            {statusData.title}
-          </Typography>
-
-          {userRole === "admin" && (
-            <Chip
-              label={`${
-                (Array.isArray(selectedVote?.editedFields) ? selectedVote.editedFields.length : 0) +
-                (Array.isArray(editedFields) ? editedFields.length : 0)
-              } pending changes`}
-              size="small"
-              color="warning"
-              variant="outlined"
-            />
-          )}
-        </Box>
-
-        {/* Pending / New fields list */}
-        <Box sx={{ mt: 1.5 }}>
-          {(() => {
-            const backendChanges = Array.isArray(selectedVote?.editedFields)
-              ? selectedVote.editedFields
-              : [];
-            const localChanges = Array.isArray(editedFields) ? editedFields : [];
-            const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
-
-            if (!hasChanges) {
-              return (
-                <Typography
-                  variant="body2"
+            {userRole &&
+              statusData &&
+              (currentStatus !== "published" || hasAnyChanges) && (
+                <Box
                   sx={{
-                    color: "text.disabled",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
+                    width: "98%",
+                    p: 2,
+                    backgroundColor: statusData.backgroundColor,
+                    borderLeft: `4px solid ${statusData.borderColor}`,
+                    borderRadius: "0 8px 8px 0",
+                    boxShadow: 1,
+                    mb: 2,
                   }}
                 >
-                  {id ? "No pending changes" : "Fill in the form to create a new bill"}
-                </Typography>
-              );
-            }
-
-            return (
-              <>
-                {/* Backend pending changes */}
-                {backendChanges.length > 0 && (
                   <Box
-                    sx={{
-                      backgroundColor: "background.paper",
-                      borderRadius: 1,
-                      p: 1.5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      mb: 2,
-                    }}
+                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
                   >
-                    <Typography
-                      variant="overline"
-                      sx={{ color: "text.secondary", mb: 1 }}
+                    {/* Status icon bubble */}
+                    <Box
+                      sx={{
+                        p: 1,
+                        borderRadius: "50%",
+                        backgroundColor: `rgba(${
+                          currentStatus === "draft"
+                            ? "66, 165, 245"
+                            : currentStatus === "review"
+                            ? "255, 193, 7"
+                            : currentStatus === "published"
+                            ? ""
+                            : "244, 67, 54"
+                        }, 0.2)`,
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
+                      }}
                     >
-                      {id ? "Saved Changes" : "New Fields"}
-                    </Typography>
-                    <List dense sx={{ py: 0 }}>
-                      {backendChanges.map((field) => {
-                        const editorInfo = selectedVote?.fieldEditors?.[field];
-                        const editor = editorInfo?.editorName || "Unknown Editor";
-                        const editTime = editorInfo?.editedAt
-                          ? new Date(editorInfo.editedAt).toLocaleString([], {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "unknown time";
+                      {statusData.icon &&
+                        React.cloneElement(statusData.icon, {
+                          sx: { color: statusData.iconColor },
+                        })}
+                    </Box>
 
-                        return (
-                          <ListItem
-                            key={`backend-${field}`}
-                            sx={{ py: 0.5, px: 1 }}
-                          >
-                            <ListItemText
-                              primary={
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                  <Box
-                                    sx={{
-                                      width: 8,
-                                      height: 8,
-                                      borderRadius: "50%",
-                                      backgroundColor: statusData.iconColor,
-                                    }}
-                                  />
-                                  <Typography variant="body2" fontWeight="500">
-                                    {fieldLabels[field] || field}
-                                  </Typography>
-                                </Box>
-                              }
-                              secondary={
-                                <Typography variant="caption" color="text.secondary">
-                                  Updated by {editor} on {editTime}
-                                </Typography>
-                              }
-                              sx={{ my: 0 }}
-                            />
-                          </ListItem>
-                        );
-                      })}
-                    </List>
-                  </Box>
-                )}
-
-                {/* Local unsaved changes - now matches senator style */}
-                {localChanges.length > 0 && (
-                  <Box
-                    sx={{
-                      backgroundColor: "background.paper",
-                      borderRadius: 1,
-                      p: 1.5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                    }}
-                  >
-                    <Typography
-                      variant="overline"
-                      sx={{ color: "text.secondary", mb: 1 }}
-                    >
-                      Unsaved Changes
-                    </Typography>
-                    <List dense sx={{ py: 0 }}>
-                      {localChanges.map((field) => (
-                        <ListItem
-                          key={`local-${field}`}
-                          sx={{ py: 0, px: 1 }}
+                    <Box sx={{ flex: 1 }}>
+                      {/* Header: title + pending count (admin only) */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="600"
+                          sx={{
+                            color: statusData.titleColor,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
                         >
-                          <ListItemText
-                            primary={
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          {statusData.title}
+                        </Typography>
+
+                        {userRole === "admin" && (
+                          <Chip
+                            label={`${
+                              (Array.isArray(selectedVote?.editedFields)
+                                ? selectedVote.editedFields.length
+                                : 0) +
+                              (Array.isArray(editedFields)
+                                ? editedFields.length
+                                : 0)
+                            } pending changes`}
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+
+                      {/* Pending / New fields list */}
+                      <Box sx={{ mt: 1.5 }}>
+                        {(() => {
+                          const backendChanges = Array.isArray(
+                            selectedVote?.editedFields
+                          )
+                            ? selectedVote.editedFields
+                            : [];
+                          const localChanges = Array.isArray(editedFields)
+                            ? editedFields
+                            : [];
+                          const hasChanges =
+                            backendChanges.length > 0 ||
+                            localChanges.length > 0;
+
+                          if (!hasChanges) {
+                            return (
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: "text.disabled",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                {id
+                                  ? "No pending changes"
+                                  : "Fill in the form to create a new bill"}
+                              </Typography>
+                            );
+                          }
+
+                          return (
+                            <>
+                              {/* Backend pending changes */}
+                              {backendChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    width: 8,
-                                    height: 8,
-                                    borderRadius: "50%",
-                                    backgroundColor: statusData.iconColor,
+                                    backgroundColor: "background.paper",
+                                    borderRadius: 1,
+                                    p: 1.5,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    mb: 2,
                                   }}
-                                />
-                                <Typography variant="body2" fontWeight="500">
-                                  {fieldLabels[field] || field}
-                                </Typography>
-                              </Box>
-                            }
-                            // secondary={
-                            //   <Typography variant="caption" color="text.secondary">
-                            //     Edited just now
-                            //   </Typography>
-                            // }
-                            // sx={{ my: 0 }}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
+                                >
+                                  <Typography
+                                    variant="overline"
+                                    sx={{ color: "text.secondary", mb: 1 }}
+                                  >
+                                    {id ? "Saved Changes" : "New Fields"}
+                                  </Typography>
+                                  <List dense sx={{ py: 0 }}>
+                                    {backendChanges.map((field) => {
+                                      const editorInfo =
+                                        selectedVote?.fieldEditors?.[field];
+                                      const editor =
+                                        editorInfo?.editorName ||
+                                        "Unknown Editor";
+                                      const editTime = editorInfo?.editedAt
+                                        ? new Date(
+                                            editorInfo.editedAt
+                                          ).toLocaleString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
+                                        : "unknown time";
+
+                                      return (
+                                        <ListItem
+                                          key={`backend-${field}`}
+                                          sx={{ py: 0.5, px: 1 }}
+                                        >
+                                          <ListItemText
+                                            primary={
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  gap: 1,
+                                                }}
+                                              >
+                                                <Box
+                                                  sx={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: "50%",
+                                                    backgroundColor:
+                                                      statusData.iconColor,
+                                                  }}
+                                                />
+                                                <Typography
+                                                  variant="body2"
+                                                  fontWeight="500"
+                                                >
+                                                  {fieldLabels[field] || field}
+                                                </Typography>
+                                              </Box>
+                                            }
+                                            secondary={
+                                              <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                              >
+                                                Updated by {editor} on{" "}
+                                                {editTime}
+                                              </Typography>
+                                            }
+                                            sx={{ my: 0 }}
+                                          />
+                                        </ListItem>
+                                      );
+                                    })}
+                                  </List>
+                                </Box>
+                              )}
+
+                              {/* Local unsaved changes - now matches senator style */}
+                              {localChanges.length > 0 && (
+                                <Box
+                                  sx={{
+                                    backgroundColor: "background.paper",
+                                    borderRadius: 1,
+                                    p: 1.5,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                  }}
+                                >
+                                  <Typography
+                                    variant="overline"
+                                    sx={{ color: "text.secondary", mb: 1 }}
+                                  >
+                                    Unsaved Changes
+                                  </Typography>
+                                  <List dense sx={{ py: 0 }}>
+                                    {localChanges.map((field) => (
+                                      <ListItem
+                                        key={`local-${field}`}
+                                        sx={{ py: 0, px: 1 }}
+                                      >
+                                        <ListItemText
+                                          primary={
+                                            <Box
+                                              sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 1,
+                                              }}
+                                            >
+                                              <Box
+                                                sx={{
+                                                  width: 8,
+                                                  height: 8,
+                                                  borderRadius: "50%",
+                                                  backgroundColor:
+                                                    statusData.iconColor,
+                                                }}
+                                              />
+                                              <Typography
+                                                variant="body2"
+                                                fontWeight="500"
+                                              >
+                                                {fieldLabels[field] || field}
+                                              </Typography>
+                                            </Box>
+                                          }
+                                          // secondary={
+                                          //   <Typography variant="caption" color="text.secondary">
+                                          //     Edited just now
+                                          //   </Typography>
+                                          // }
+                                          // sx={{ my: 0 }}
+                                        />
+                                      </ListItem>
+                                    ))}
+                                  </List>
+                                </Box>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </Box>
+                    </Box>
                   </Box>
-                )}
-              </>
-            );
-          })()}
-        </Box>
-      </Box>
-    </Box>
-  </Box>
-)}
+                </Box>
+              )}
 
             <Stack
               direction="row"
@@ -769,7 +927,9 @@ export default function AddBill(props) {
                       color: "text.secondary",
                     }}
                   >
-                    Are you sure you want to {userRole === "admin" ? "discard" : "undo"} all changes? <br />
+                    Are you sure you want to{" "}
+                    {userRole === "admin" ? "discard" : "undo"} all changes?{" "}
+                    <br />
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
@@ -872,11 +1032,11 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -884,7 +1044,7 @@ export default function AddBill(props) {
                       Short Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -927,11 +1087,11 @@ export default function AddBill(props) {
                     />
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -939,7 +1099,7 @@ export default function AddBill(props) {
                       Long Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -948,7 +1108,8 @@ export default function AddBill(props) {
                         handleEditorChange(content, "longDesc")
                       }
                       init={{
-                        base_url: "/scorecard/admin/tinymce", suffix: ".min",
+                        base_url: "/scorecard/admin/tinymce",
+                        suffix: ".min",
                         height: 250,
                         menubar: false,
                         plugins: [
@@ -1010,12 +1171,12 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 6 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1024,7 +1185,7 @@ export default function AddBill(props) {
                       Congress
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 6 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1056,14 +1217,18 @@ export default function AddBill(props) {
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
-                      <Select
+                      <TextField
                         value={formData.termId || ""}
                         id="termId"
                         name="termId"
                         onChange={handleChange}
-                        sx={{ background: "#fff" }}
+                        fullWidth
+                        size="small"
+                        autoComplete="off"
+                        variant="outlined"
+                        //sx={{ background: "#fff" }}
                       >
-                        <MenuItem value="" disabled>
+                        {/* <MenuItem value="" disabled>
                           Select an option
                         </MenuItem>
                         {terms && terms.length > 0 ? (
@@ -1076,17 +1241,17 @@ export default function AddBill(props) {
                           <MenuItem value="" disabled>
                             No terms available
                           </MenuItem>
-                        )}
-                      </Select>
+                        )} */}
+                      </TextField>
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1095,7 +1260,7 @@ export default function AddBill(props) {
                       Roll Call
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         sx={{
@@ -1144,12 +1309,12 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1158,60 +1323,108 @@ export default function AddBill(props) {
                       Read More
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
-                      <TextField
-                        sx={{
-                          fontFamily: "'Be Vietnam Pro', sans-serif",
-                          height: 38,
-                          "& .MuiOutlinedInput-root": {
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <TextField
+                          sx={{
                             fontFamily: "'Be Vietnam Pro', sans-serif",
-                            fontSize: "13px",
                             height: 38,
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            alignItems: "center",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
+                            flex: 1,
+                            "& .MuiOutlinedInput-root": {
+                              fontFamily: "'Be Vietnam Pro', sans-serif",
+                              fontSize: "13px",
+                              height: 38,
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              alignItems: "center",
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#D3D3D3 !important",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#D3D3D3 !important",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "#CC9A3A !important",
+                                  borderWidth: "1px",
+                                },
                             },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
+                          }}
+                          fullWidth
+                          variant="outlined"
+                          name="readMore"
+                          value={
+                            formData.readMore
+                              ? `${API_URL}/uploads/documents/${formData.readMore
+                                  .split("/")
+                                  .pop()}`
+                              : ""
+                          }
+                          onChange={handleChange}
+                          placeholder="File will be uploaded here"
+                          InputProps={{
+                            readOnly: true,
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Typography
+                                  fontWeight="500"
+                                  sx={{
+                                    fontSize: "13px",
+                                    backgroundColor: "#F9F9F9",
+                                  }}
+                                >
+                                  URL:
+                                </Typography>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          startIcon={<CloudUploadIcon />}
+                          sx={{
+                            height: 38,
+                            minWidth: "auto",
+                            px: 2,
+                            borderColor: "#CC9A3A",
+                            color: "#CC9A3A",
+                            "&:hover": {
+                              borderColor: "#B8860B",
+                              backgroundColor: "rgba(204, 154, 58, 0.04)",
                             },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#CC9A3A !important",
-                              borderWidth: "1px",
-                            },
-                          },
-                        }}
-                        fullWidth
-                        variant="outlined"
-                        name="readMore"
-                        value={formData.readMore}
-                        onChange={handleChange}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Typography
-                                fontWeight="500"
-                                sx={{
-                                  fontSize: "13px",
-                                  backgroundColor: "#F9F9F9",
-                                }}
-                              >
-                                URL:
-                              </Typography>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
+                          }}
+                        >
+                          Upload
+                          <input
+                            type="file"
+                            hidden
+                            onChange={handleFileUpload}
+                            accept=".pdf,.doc,.docx,.txt,.rtf"
+                          />
+                        </Button>
+                      </Box>
+                      {selectedFile && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "success.main",
+                            mt: 0.5,
+                            display: "block",
+                          }}
+                        >
+                          File selected: {selectedFile.name}
+                        </Typography>
+                      )}
                     </FormControl>
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1223,7 +1436,7 @@ export default function AddBill(props) {
                     </InputLabel>
                   </Grid>
 
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <FormControl
                       fullWidth
                       sx={{
@@ -1271,7 +1484,9 @@ export default function AddBill(props) {
               </Box>
             </Paper>
           </Stack>
-          <Copyright sx={{ my: 4 }} />
+         <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>

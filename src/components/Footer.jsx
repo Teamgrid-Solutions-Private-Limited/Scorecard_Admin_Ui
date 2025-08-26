@@ -3,14 +3,16 @@ import { Box, Typography } from "@mui/material";
 import digitalAlchemy from "../../src/assets/image/digital-alchemy.png";
 const Footer = () => {
   return (
-    <Box
+   <Box
       sx={{
         m: "20px",
         // ml: { xs: "20px", md: "260px" },
         backgroundColor: "#fff",
-        padding: "20px",
+                // backgroundColor: "#ab4141ff",
+ 
+        padding: "10px",
         textAlign: "center",
-        // marginTop: "52px",
+        marginTop: "60px",
         borderRadius: "6px",
       }}
     >
@@ -29,7 +31,7 @@ const Footer = () => {
             color: "#7d7f87",
           }}
         >
-          © 2025 Susan B. Anthony Pro–life America
+          © {new Date().getFullYear()} Susan B. Anthony Pro–life America
         </Typography>
         <Typography
           variant="body2"
@@ -55,5 +57,5 @@ const Footer = () => {
     </Box>
   );
 };
-
+ 
 export default Footer;

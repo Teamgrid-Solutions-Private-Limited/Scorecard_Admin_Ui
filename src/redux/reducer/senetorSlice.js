@@ -2,9 +2,9 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../API";
 import { jwtDecode } from "jwt-decode";
-
+ 
 // Async thunks for CRUD operations
-
+ 
 // Create a senator
 export const createSenator = createAsyncThunk(
   "senators/createSenator",
@@ -13,7 +13,7 @@ export const createSenator = createAsyncThunk(
 
     try {
       const response = await axios.post(
-        `${API_URL}/senator/senators/create/`,
+        `${API_URL}/api/v1/admin/senators/`,
         formData,
         {
           headers: {
@@ -28,14 +28,14 @@ export const createSenator = createAsyncThunk(
     }
   }
 );
-
+ 
 // Get all senators
 export const getAllSenators = createAsyncThunk(
   "senators/getAllSenators",
   async (_, { rejectWithValue }) => {
     try {
      
-      const response = await axios.get(`${API_URL}/senator/senators/view`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/senators/`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
      
@@ -43,14 +43,14 @@ export const getAllSenators = createAsyncThunk(
       if (!response.data) {
         throw new Error('No data received from API');
       }
-
+ 
       const senators = response.data;
      
 
       if (!Array.isArray(senators)) {
         throw new Error('Received data is not an array');
       }
-
+ 
       return senators;
     } catch (error) {
       console.error('Error in getAllSenators:', error);
@@ -63,14 +63,14 @@ export const getAllSenators = createAsyncThunk(
     }
   }
 );
-
+ 
 // Get senator by ID
 export const getSenatorById = createAsyncThunk(
   "senators/getSenatorById",
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/senator/senators/viewId/${id}`,
+        `${API_URL}/api/v1/admin/senators/${id}`,
         {
           headers: { "x-protected-key": "MySuperSecretApiKey123" },
         }
@@ -81,14 +81,14 @@ export const getSenatorById = createAsyncThunk(
     }
   }
 );
-
+ 
 // Update senator
 export const updateSenator = createAsyncThunk(
   "senators/updateSenator",
   async ({ id, formData }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/senator/senators/update/${id}`,
+        `${API_URL}/api/v1/admin/senators/update/${id}`,
         formData,
         {
           headers: {
@@ -112,40 +112,40 @@ export const deleteSenator = createAsyncThunk(
           message: "Authentication token not found",
         });
       }
-
+ 
       // Decode the JWT token to get user information
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role; // Make sure this matches your JWT payload structure
-
+ 
       if (userRole !== "admin") {
         return rejectWithValue({
           message: "You are not authorized to delete senators.",
         });
       }
-
+ 
       const response = await axios.delete(
-        `${API_URL}/senator/senators/delete/${id}`,
+        `${API_URL}/api/v1/admin/senators/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
+ 
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Delete failed");
     }
   }
 );
-
+ 
 // Thunk to update senator status
 export const updateSenatorStatus = createAsyncThunk(
   "senators/updateStatus",
   async ({ id, publishStatus }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/senator/senators/status/${id}`,
+        `${API_URL}/api/v1/admin/senators/status/${id}`,
         { publishStatus }
       );
       return response.data.senator;
@@ -154,14 +154,14 @@ export const updateSenatorStatus = createAsyncThunk(
     }
   }
 );
-
+ 
 // Discard changes for a senator
 export const discardSenatorChanges = createAsyncThunk(
   "senators/discardChanges",
   async (senatorId, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/senator/discard/${senatorId}`
+        `${API_URL}/api/v1/admin/senators/discard/${senatorId}`
       );
       return response.data;
     } catch (error) {
@@ -175,7 +175,7 @@ export const discardSenatorChanges = createAsyncThunk(
     }
   }
 );
-
+ 
 // Initial state
 const initialState = {
   senators: [],
@@ -183,7 +183,7 @@ const initialState = {
   loading: false,
   error: null,
 };
-
+ 
 // Slice
 const senatorSlice = createSlice({
   name: "senators",
@@ -215,7 +215,7 @@ const senatorSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
+ 
     // Get all senators
     builder
       .addCase(getAllSenators.pending, (state) => {
@@ -234,7 +234,7 @@ const senatorSlice = createSlice({
         state.senators = [];
         console.error('Reducer: Error fetching senators:', action.payload);
       });
-
+ 
     // Get senator by ID
     builder
       .addCase(getSenatorById.pending, (state) => {
@@ -249,7 +249,7 @@ const senatorSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
+ 
     // Update senator
     builder
       .addCase(updateSenator.pending, (state) => {
@@ -267,8 +267,8 @@ const senatorSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
-
+ 
+ 
     builder
       .addCase(deleteSenator.pending, (state) => {
         state.loading = true;
@@ -299,7 +299,7 @@ const senatorSlice = createSlice({
           state.senators[index] = updated;
         }
       })
-
+ 
       .addCase(updateSenatorStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Error deleting senator";
@@ -327,12 +327,11 @@ const senatorSlice = createSlice({
       state.loading = false;
       state.error = action.payload?.message || "Failed to discard changes";
     });
-
+ 
   },
 });
-
+ 
 export default senatorSlice.reducer;
-
+ 
 export const { clearSenatorState } = senatorSlice.actions;
-
-
+ 

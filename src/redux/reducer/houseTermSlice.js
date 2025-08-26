@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { API_URL } from '../API';
-
+ 
 // Async thunks
 export const createHouseData = createAsyncThunk(
   'houseData/createHouseData',
@@ -9,7 +9,7 @@ export const createHouseData = createAsyncThunk(
     
     
     try {
-      const response = await axios.post(`${API_URL}/houseData/house-data/create/`, data);
+      const response = await axios.post(`${API_URL}/api/v1/admin/house-data/`, data);
       
       return response.data;
     } catch (error) {
@@ -17,12 +17,12 @@ export const createHouseData = createAsyncThunk(
     }
   }
 );
-
+ 
 export const getAllHouseData = createAsyncThunk(
   'houseData/getAllHouseData',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/houseData/house-data/viewAll/`,{
+      const response = await axios.get(`${API_URL}/api/v1/admin/house-data/`,{
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
       return response.data;
@@ -31,12 +31,12 @@ export const getAllHouseData = createAsyncThunk(
     }
   }
 );
-
+ 
 export const getHouseDataById = createAsyncThunk(
   'houseData/getHouseDataById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/houseData/house-data/viewID/${id}`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/house-data/viewID/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
       return response.data;
@@ -45,16 +45,16 @@ export const getHouseDataById = createAsyncThunk(
     }
   }
 );
-
+ 
 export const getHouseDataByHouseId = createAsyncThunk(
   'houseData/getHouseDataByHouseId',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/houseData/house-data/viewbyhouse/${id}`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/house-data/viewbyhouse/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-     
-      return response.data.info;
+
+      return response.data.terms;
     } catch (error) {
       
       return rejectWithValue(error.response.data);
@@ -67,7 +67,7 @@ export const updateHouseData = createAsyncThunk(
     
     
     try {
-      const response = await axios.put(`${API_URL}/houseData/house-data/update/${id}`, data);
+      const response = await axios.put(`${API_URL}/api/v1/admin/house-data/${id}`, data);
       
       
       return response.data;
@@ -76,19 +76,19 @@ export const updateHouseData = createAsyncThunk(
     }
   }
 );
-
+ 
 export const deleteHouseData = createAsyncThunk(
   'houseData/deleteHouseData',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${API_URL}/houseData/house-data/delete/${id}`);
+      const response = await axios.delete(`${API_URL}/api/v1/admin/house-data/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
-
+ 
 // Initial state
 const initialState = {
   houseData: [],
@@ -96,7 +96,7 @@ const initialState = {
   loading: false,
   error: null,
 };
-
+ 
 // Slice
 const houseDataSlice = createSlice({
   name: 'houseData',
@@ -148,7 +148,7 @@ const houseDataSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
+ 
       .addCase(getHouseDataByHouseId.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -187,7 +187,7 @@ const houseDataSlice = createSlice({
       });
   },
 });
-
+ 
 export default houseDataSlice.reducer;
-
+ 
 export const {clearHouseDataState} = houseDataSlice.actions
