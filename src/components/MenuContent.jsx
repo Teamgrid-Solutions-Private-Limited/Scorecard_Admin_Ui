@@ -71,7 +71,8 @@ export default function MenuContent() {
         ]
       : mainListItems;
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = (event) => {
+    event.stopPropagation(); // Prevent event bubbling
     setOpenLogoutDialog(true);
   };
 
@@ -154,12 +155,12 @@ export default function MenuContent() {
         </ListItem>
       </List>
 
-      <Dialog
-        open={openLogoutDialog}
-        onClose={handleCancelLogout}
-        PaperProps={{
-          sx: { borderRadius: 3, padding: 2, minWidth: 350 },
-        }}
+        <Dialog
+          open={openLogoutDialog}
+          onClose={handleCancelLogout}
+          PaperProps={{
+            sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 400 },
+          }}
       >
         <DialogTitle
           sx={{
