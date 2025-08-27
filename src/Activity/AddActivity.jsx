@@ -553,9 +553,9 @@ export default function AddActivity(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: 2.5,
               // pb: 5,
-              mt: { xs: 8, md: 4 },
+              mt: { xs: 8, md: 2 },
             }}
           >
             {userRole &&

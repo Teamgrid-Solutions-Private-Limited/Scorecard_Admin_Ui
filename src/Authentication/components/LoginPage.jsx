@@ -120,7 +120,7 @@ export default function LoginPage() {
             overflow: "hidden",
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
-            height: { xs: "100vh", md: "70vh" }, 
+            height: { xs: "100vh", md: "70vh",lg:"65vh" }, 
       width: { xs: "100%", sm: "auto" },  
           }}
         >
@@ -165,7 +165,7 @@ export default function LoginPage() {
               </Box>
 
               {/* Center Quote */}
-              <Typography color="#dfdfdfff" fontSize={13} mt={8 } sx={{ fontStyle: "italic" }}>
+              <Typography color="#dfdfdfff" fontSize={14} mt={8 } sx={{ fontStyle: "italic" }}>
                 "Senators and Representatives are the pillars of democracy,
                 shaping the nation's future with every decision they make."
               </Typography>

@@ -1584,9 +1584,10 @@ export default function AddSenator(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 2,
+              mx: 2.5,
               // pb: 5,
-              mt: { xs: 8, md: 4 },
+              mt: { xs: 8, md: 2 },
+              gap:0.5
             }}
           >
             {userRole &&
@@ -2246,7 +2247,7 @@ export default function AddSenator(props) {
               </Box>
             </Paper>
 
-            <div className="spacer"></div>
+           
 
             {/* Render each term in senatorTermData */}
             {senatorTermData.map((term, termIndex) => (

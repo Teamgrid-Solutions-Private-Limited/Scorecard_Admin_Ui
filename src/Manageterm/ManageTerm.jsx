@@ -165,11 +165,10 @@ export default function ManageTerm(props) {
           <MobileHeader/>
           <Box
             sx={{
-              mx: "auto",
+              mx: 2.5,
               mt: 4,
-              px: 3,
-              maxWidth: "1200px",
-              width: "100%",
+              // px: 3,
+              // width: "100%",
               pb: 5,
             }}
           >
