@@ -870,7 +870,7 @@ export default function AddActivity(props) {
               </Button>
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff'}}>
+            <Paper  sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff',borderRadius:0.8, border:'1px solid', borderColor:'divider'}}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1309,7 +1309,7 @@ export default function AddActivity(props) {
               </Box>
             </Paper>
           </Stack>
-          <Box sx={{ mb: "50px" }}>
+          <Box sx={{ mb: "40px" ,mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

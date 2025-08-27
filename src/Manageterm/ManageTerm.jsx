@@ -156,7 +156,7 @@ const handleConfirmDelete = async () => {
           <MobileHeader />
           <Box
             sx={{
-              mx: 2.5,
+              mx: 3,
               mt: 4,
               // px: 3,
               // maxWidth: "1200px",
@@ -188,7 +188,7 @@ const handleConfirmDelete = async () => {
               sx={{
                 p: 3,
                 mb: 4,
-                borderRadius: 2,
+                borderRadius: 0.8,
                 backgroundColor: "#fff",
                 border: "1px solid",
                 borderColor: "divider",
@@ -248,7 +248,7 @@ const handleConfirmDelete = async () => {
               elevation={0}
               sx={{
                 p: 3,
-                borderRadius: 2,
+                borderRadius: 0.8,
                 backgroundColor: "#fff",
                 border: "1px solid",
                 borderColor: "divider",
