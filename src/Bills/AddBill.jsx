@@ -55,6 +55,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
 import Footer from "../components/Footer";
+import CheckCircle from "@mui/icons-material/CheckCircle";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -472,20 +473,18 @@ export default function AddBill(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
-        icon: "",
-        // title: "Published",
+         published: {
+        backgroundColor: "rgba(76, 175, 80, 0.12)",
+        borderColor: "#4CAF50",
+        iconColor: "#2E7D32",
+        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+        title: "Published",
         description:
           editedFields.length > 0
-            ? `Edited fields: ${editedFields
-                .map((f) => fieldLabels[f] || f)
-                .join(", ")}`
+            ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#2E7D32",
+        descColor: "#388E3C",
       },
     };
 

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import {jwtDecode} from "jwt-decode";
 import {
   Box,
   Stack,
@@ -14,13 +15,24 @@ import {
   Paper,
   Tooltip,
 } from "@mui/material";
-import { createTerm, getAllTerms, updateTerm } from "../redux/reducer/termSlice";
-import { Add, Edit, Save, Close } from "@mui/icons-material";
+import {
+  createTerm,
+  getAllTerms,
+  deleteTerm,
+} from "../redux/reducer/termSlice";
+import { Add, Delete } from "@mui/icons-material";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import SideMenu from "../components/SideMenu";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
+} from "@mui/material";
 
 export default function ManageTerm(props) {
   const dispatch = useDispatch();
@@ -29,16 +41,27 @@ export default function ManageTerm(props) {
   // New state for term inputs
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editedStartYear, setEditedStartYear] = useState("");
-  const [editedEndYear, setEditedEndYear] = useState("");
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [selectedTermId, setSelectedTermId] = useState(null);
 
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
+  const handleOpenConfirm = (termId) => {
+    setSelectedTermId(termId);
+    setOpenConfirm(true);
+  };
 
+  const handleCloseConfirm = () => {
+    setOpenConfirm(false);
+    setSelectedTermId(null);
+  };
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -61,16 +84,16 @@ export default function ManageTerm(props) {
       handleSnackbarOpen("Start and End Year are required", "error");
       return;
     }
-    
+
     // Validate years
     const start = parseInt(startYear);
     const end = parseInt(endYear);
-    
+
     if (start >= end) {
       handleSnackbarOpen("End year must be greater than start year", "error");
       return;
     }
-    
+
     try {
       await dispatch(createTerm({ startYear: start, endYear: end })).unwrap();
       setStartYear("");
@@ -83,51 +106,19 @@ export default function ManageTerm(props) {
     }
   };
 
-  const handleEditTerm = (term) => {
-    setEditingId(term._id);
-    setEditedStartYear(term.startYear.toString());
-    setEditedEndYear(term.endYear.toString());
-  };
+const handleConfirmDelete = async () => {
+  try {
+    await dispatch(deleteTerm(selectedTermId)).unwrap();
+    handleSnackbarOpen("Term deleted successfully");
+    dispatch(getAllTerms());
+  } catch (error) {
+    console.error("Failed to delete term:", error);
+    handleSnackbarOpen(error.message || "Error deleting term", "error");
+  } finally {
+    handleCloseConfirm();
+  }
+};
 
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditedStartYear("");
-    setEditedEndYear("");
-  };
-
-  const handleSaveChanges = async (termId) => {
-    if (!editedStartYear.trim() || !editedEndYear.trim()) {
-      handleSnackbarOpen("Start and End Year are required", "error");
-      return;
-    }
-    
-    const start = parseInt(editedStartYear);
-    const end = parseInt(editedEndYear);
-    
-    if (start >= end) {
-      handleSnackbarOpen("End year must be greater than start year", "error");
-      return;
-    }
-    
-    try {
-      await dispatch(
-        updateTerm({
-          id: termId,
-          updatedData: { 
-            startYear: start, 
-            endYear: end,
-            // Name will be automatically generated on the backend
-          },
-        })
-      ).unwrap();
-      handleSnackbarOpen("Term Updated Successfully");
-      dispatch(getAllTerms());
-      handleCancelEdit();
-    } catch (error) {
-      console.error("Failed to update term:", error);
-      handleSnackbarOpen(error.message || "Error updating term", "error");
-    }
-  };
 
   return (
     <AppTheme {...props}>
@@ -150,7 +141,7 @@ export default function ManageTerm(props) {
         </Box>
       )}
 
-      <Box sx={{ display: "flex", minHeight: "100vh" ,bgcolor:'#f6f6f6ff',}}>
+      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f6f6f6ff" }}>
         <SideMenu />
 
         <Box
@@ -168,6 +159,7 @@ export default function ManageTerm(props) {
               mx: 2.5,
               mt: 4,
               // px: 3,
+              // maxWidth: "1200px",
               // width: "100%",
               pb: 5,
             }}
@@ -278,99 +270,47 @@ export default function ManageTerm(props) {
                         justifyContent: "space-between",
                         p: 2,
                         borderRadius: 1,
-                        backgroundColor:
-                          editingId === term._id
-                            ? "action.selected"
-                            : "#fff",
-                        transition: "background-color 0.2s ease",
+                        backgroundColor: "#fff",
                       }}
                     >
-                      {editingId === term._id ? (
-                        <Stack direction="row" spacing={2} sx={{ flexGrow: 1 }}>
-                          <TextField
-                            label="Start Year"
-                            size="small"
-                            type="number"
-                            value={editedStartYear}
-                            onChange={(e) => setEditedStartYear(e.target.value)}
-                            sx={{ width: 120 }}
-                          />
-                          <TextField
-                            label="End Year"
-                            size="small"
-                            type="number"
-                            value={editedEndYear}
-                            onChange={(e) => setEditedEndYear(e.target.value)}
-                            sx={{ width: 120 }}
-                          />
-                        </Stack>
-                      ) : (
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography variant="body1">
-                            {index + 1}. {term.name}
-                          </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="body1">
+                          {index + 1}. {term.name}
+                        </Typography>
 
-                          <Paper
-                            elevation={0}
-                            sx={{
-                              px: 1.5,
-                              py: 0.5,
-                              borderRadius: 1,
-                              bgcolor: "primary.main",
-                              color: "#fff",
-                              fontSize: "0.8rem",
-                              fontWeight: 500,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Congress: {term.congresses.map((c) => c).join(", ")}
-                          </Paper>
-                        </Stack>
-                      )}
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            bgcolor: "#173A5E",
+                            color: "#fff",
+                            fontSize: "0.8rem",
+                            fontWeight: 500,
+                          }}
+                        >
+                          Congress:{" "}
+                          {term.congresses?.length
+                            ? term.congresses.join(", ")
+                            : "N/A"}
+                        </Paper>
+                      </Stack>
 
-                      <Box sx={{ display: "flex", gap: 0.5 }}>
-                        {editingId === term._id ? (
-                          <>
-                            <Tooltip title="Save changes">
-                              <span>
-                                <IconButton
-                                  color="primary"
-                                  onClick={() => handleSaveChanges(term._id)}
-                                  disabled={
-                                    !editedStartYear.trim() ||
-                                    !editedEndYear.trim()
-                                  }
-                                  size="small"
-                                >
-                                  <Save fontSize="small" />
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                            <Tooltip title="Cancel">
-                              <IconButton
-                                color="error"
-                                onClick={handleCancelEdit}
-                                size="small"
-                              >
-                                <Close fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </>
-                        ) : (
-                            <Tooltip title="Edit term">
-                              <span>
-                            <IconButton
-                              color="primary"
-                              onClick={() => handleEditTerm(term)}
-                              disabled={loading || editingId !== null}
-                              size="small"
-                            >
-                              <Edit fontSize="small" />
-                            </IconButton>
-                          </span>
-                          </Tooltip>
-                        )}
-                      </Box>
+                      {/* Delete Button */}
+                      {
+                        userRole === 'admin' &&
+                          <Tooltip title="Delete term">
+                        <IconButton
+                          color="error"
+                           onClick={() => handleOpenConfirm(term._id)}
+                          size="small"
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      }
+                    
                     </Paper>
                   ))}
                 </Stack>
@@ -395,6 +335,74 @@ export default function ManageTerm(props) {
           </Box>
         </Box>
       </Box>
+<Dialog
+  open={openConfirm}
+  onClose={handleCloseConfirm}
+  aria-labelledby="confirm-dialog"
+  PaperProps={{
+    sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+  }}
+>
+  <DialogTitle
+    id="confirm-dialog"
+    sx={{
+      fontSize: "1.4rem",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "error.main",
+    }}
+  >
+    Confirm Deletion
+  </DialogTitle>
+
+  <DialogContent>
+    <DialogContentText
+      sx={{
+        textAlign: "center",
+        fontSize: "1rem",
+        color: "text.secondary",
+      }}
+    >
+      Are you sure you want to delete this term? <br />
+      <strong>This action cannot be undone.</strong>
+    </DialogContentText>
+  </DialogContent>
+
+  <DialogActions>
+    <Stack
+      direction="row"
+      spacing={2}
+      sx={{
+        width: "100%",
+        justifyContent: "center",
+        paddingBottom: 2,
+      }}
+    >
+      <Button
+        onClick={handleCloseConfirm}
+        variant="outlined"
+        color="secondary"
+        sx={{ borderRadius: 2, paddingX: 3 }}
+      >
+        Cancel
+      </Button>
+
+      <Button
+        onClick={handleConfirmDelete}
+        variant="contained"
+        color="error"
+        sx={{ borderRadius: 2, paddingX: 3 }}
+        autoFocus
+      >
+        Delete
+      </Button>
+    </Stack>
+  </DialogActions>
+</Dialog>
+
+
+
     </AppTheme>
+    
   );
 }
