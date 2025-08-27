@@ -2462,11 +2462,11 @@ export default function AddSenator(props) {
                         </Grid>
                         {/* Delete Column */}
                         <Grid
-                          item
-                          xs={12}
-                          sm={1}
-                          display="flex"
-                          justifyContent="center"
+                          gridColumn={{ xs: 12, sm: 1 }}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
                         >
                           {summaryIndex > 0 ? (
                             <DeleteForeverIcon
