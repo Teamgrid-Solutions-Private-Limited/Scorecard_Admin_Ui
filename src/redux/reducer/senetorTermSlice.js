@@ -53,7 +53,6 @@ export const getSenatorDataBySenetorId = createAsyncThunk(
       const response = await axios.get(`${API_URL}/api/v1/admin/senator-data/viewbysenator/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-      console.log(response.data.info);
       return response.data.info;
     } catch (error) {
       return rejectWithValue(error.response.data);
