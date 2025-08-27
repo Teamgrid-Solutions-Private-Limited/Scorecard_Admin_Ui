@@ -1576,7 +1576,7 @@ export default function AddSenator(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex",bgcolor:'#f6f6f6ff',  }}>
         <SideMenu />
         <Box
           component="main"
@@ -1597,7 +1597,7 @@ export default function AddSenator(props) {
               alignItems: "center",
               mx: 2,
               // pb: 5,
-              mt: { xs: 8, md: 0 },
+              mt: { xs: 8, md: 4 },
             }}
           >
             {userRole &&
@@ -1747,7 +1747,7 @@ export default function AddSenator(props) {
                               {backendChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    backgroundColor: "background.paper",
+                                    backgroundColor: "#fff",
                                     borderRadius: 1,
                                     p: 1.5,
                                     border: "1px solid",
@@ -1832,7 +1832,7 @@ export default function AddSenator(props) {
                               {localOnlyChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    backgroundColor: "background.paper",
+                                    backgroundColor: "#fff",
                                     borderRadius: 1,
                                     p: 1.5,
                                     border: "1px solid",
@@ -1910,12 +1910,12 @@ export default function AddSenator(props) {
                 variant="outlined"
                 onClick={handleDiscard}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -1925,12 +1925,12 @@ export default function AddSenator(props) {
                 variant="outlined"
                 onClick={handleSave}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -1955,7 +1955,7 @@ export default function AddSenator(props) {
               </Button> */}
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%" }}>
+            <Paper elevation={2} sx={{ width: "100%" , bgcolor:"#fff" }}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -2226,12 +2226,12 @@ export default function AddSenator(props) {
                         component="label"
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<CloudUploadIcon />}
@@ -2260,6 +2260,7 @@ export default function AddSenator(props) {
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
+                  bgcolor: "#fff",
                 }}
               >
                 <Box sx={{ padding: 5 }}>
@@ -2495,12 +2496,12 @@ export default function AddSenator(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginTop: "1rem",
                           "&:hover": {
-                            backgroundColor: "#357ABD !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -2608,7 +2609,7 @@ export default function AddSenator(props) {
                   }
  
                   return termVotes.length > 0 ? (
-                    termVotes.map((voteItem) => {
+                    termVotes.filter((vote) => vote.type === "senate_bill").map((voteItem) => {
                       // Optional senator’s score for display
                       const senatorVote = senatorVotes.find((v) => {
                         const vId =
@@ -2740,12 +2741,12 @@ export default function AddSenator(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#357ABD !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -2976,12 +2977,12 @@ export default function AddSenator(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#357ABD !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -3003,12 +3004,12 @@ export default function AddSenator(props) {
               onClick={handleAddTerm}
               sx={{
                 alignSelf: "flex-start",
-                backgroundColor: "#4a90e2 !important",
+                backgroundColor: "#173A5E !important",
                 color: "white !important",
                 padding: "0.5rem 1rem",
                 marginLeft: "0.5rem",
                 "&:hover": {
-                  backgroundColor: "#357ABD !important",
+                  backgroundColor: "#1E4C80 !important",
                 },
               }}
             >

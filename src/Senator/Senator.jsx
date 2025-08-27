@@ -446,7 +446,7 @@ export default function Senator(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: { xs: "block", md: "flex" } }}>
+      <Box sx={{ display: { xs: "block", md: "flex"},bgcolor:'#f6f6f6ff', }}>
         <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
 
         <Box
@@ -468,7 +468,7 @@ export default function Senator(props) {
               alignItems: { xs: "stretch", md: "center" },
               mx: { xs: 0, md: 2 },
               pb: { xs: 2, md: 5 },
-              mt: { xs: 2, md: 0 },
+              mt: { xs: 2, md: 4 },
             }}
           >
             <Box
@@ -529,7 +529,7 @@ export default function Senator(props) {
     width: { xs: "50%", sm: "220px" },
     "& .MuiOutlinedInput-root": {
       // borderRadius: "12px",
-      backgroundColor: "#f9fafb",
+      backgroundColor: "#fff",
       transition: "all 0.2s ease-in-out",
       "& fieldset": {
         borderColor: "#e5e7eb",
@@ -588,10 +588,11 @@ export default function Senator(props) {
                       <Paper
                         sx={{
                           position: "absolute",
-                          right: 0,
+                          right: {xs:'40%',sm:0},
                           top: "100%",
                           mt: 1,
-                          width: 320,
+                          width: {xs:'60vw',sm:320},
+                          height: {xs:'60vh',sm: 'auto'},
                           zIndex: 1,
                           boxShadow: 3,
                           borderRadius: 2,
@@ -1196,7 +1197,7 @@ export default function Senator(props) {
                     variant="outlined"
                     sx={{
                       backgroundColor: "#173A5E !important",
-                      color: "white !important",
+                      color: "#fff !important",
                       padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                       marginLeft: { xs: 0, sm: "0.5rem" },
                       width: { xs: "100%", sm: "auto" },

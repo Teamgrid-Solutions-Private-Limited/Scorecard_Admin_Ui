@@ -150,7 +150,7 @@ export default function ManageTerm(props) {
         </Box>
       )}
 
-      <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <Box sx={{ display: "flex", minHeight: "100vh" ,bgcolor:'#f6f6f6ff',}}>
         <SideMenu />
 
         <Box
@@ -166,7 +166,7 @@ export default function ManageTerm(props) {
           <Box
             sx={{
               mx: "auto",
-              mt: 0,
+              mt: 4,
               px: 3,
               maxWidth: "1200px",
               width: "100%",
@@ -198,7 +198,7 @@ export default function ManageTerm(props) {
                 p: 3,
                 mb: 4,
                 borderRadius: 2,
-                backgroundColor: "background.paper",
+                backgroundColor: "#fff",
                 border: "1px solid",
                 borderColor: "divider",
               }}
@@ -217,7 +217,7 @@ export default function ManageTerm(props) {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "10px",
-                      backgroundColor: "background.default",
+                      backgroundColor: "#fff",
                     },
                   }}
                 />
@@ -231,7 +231,7 @@ export default function ManageTerm(props) {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "10px",
-                      backgroundColor: "background.default",
+                      backgroundColor: "#fff",
                     },
                   }}
                 />
@@ -242,9 +242,9 @@ export default function ManageTerm(props) {
                     minWidth: 120,
                     textTransform: "none",
                     boxShadow: "none",
-                    bgcolor: "#4a90e2",
+                    bgcolor: "#173A5E",
                     color: "#fff",
-                    "&:hover": { boxShadow: "none", bgcolor: "#7b1fe0" },
+                    "&:hover": { boxShadow: "none", bgcolor: "#1E4C80" },
                   }}
                 >
                   Add Term
@@ -258,7 +258,7 @@ export default function ManageTerm(props) {
               sx={{
                 p: 3,
                 borderRadius: 2,
-                backgroundColor: "background.paper",
+                backgroundColor: "#fff",
                 border: "1px solid",
                 borderColor: "divider",
               }}
@@ -282,7 +282,7 @@ export default function ManageTerm(props) {
                         backgroundColor:
                           editingId === term._id
                             ? "action.selected"
-                            : "background.default",
+                            : "#fff",
                         transition: "background-color 0.2s ease",
                       }}
                     >
@@ -317,7 +317,7 @@ export default function ManageTerm(props) {
             px: 1.5,
             py: 0.5,
             borderRadius: 1,
-            bgcolor: "primary.main",
+            bgcolor: "#173A5E",
             color: "#fff",
             fontSize: "0.8rem",
             fontWeight: 500,
@@ -376,7 +376,7 @@ export default function ManageTerm(props) {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "background.default",
+                    backgroundColor: "#fff",
                     borderRadius: 1,
                   }}
                 >

@@ -10,11 +10,10 @@ import SelectContent from "./SelectContent";
 import MenuContent from "./MenuContent";
 import CardAlert from "./CardAlert";
 import OptionsMenu from "./OptionsMenu";
-import logo from "../../src/assets/image/logo-dark.png";
-import logosm from "../../src/assets/image/logo-sm.png";
+import logo from "../../src/assets/image/logos/sba-logo3.svg";
 
 
-const drawerWidth = 270;
+const drawerWidth = 250;
 
 const Drawer = styled(MuiDrawer)({
 	width: drawerWidth,
@@ -30,26 +29,45 @@ const Drawer = styled(MuiDrawer)({
 export default function SideMenu() {
 	return (
 		<Drawer
-			variant="permanent"
-			sx={{
-				display: { xs: "none", md: "block" },
-				[`& .${drawerClasses.paper}`]: {
-					backgroundColor: "#fafafa", // Made the color even lighter
-					'& .MuiListItemButton-root:hover': {
-						color: '#CC9A3A !important',
-						'& .MuiListItemIcon-root': {
-							color: '#CC9A3A !important'
-						}
-					},
-					'& .MuiListItemButton-root.active': {
-						color: '#CC9A3A !important',
-						'& .MuiListItemIcon-root': {
-							color: '#CC9A3A !important'
-						}
-					}
-				},
-			}}
-		>
+  variant="permanent"
+  sx={{
+    display: { xs: "none", md: "block" },
+    [`& .${drawerClasses.paper}`]: {
+  backgroundColor: "#173A5E !important",
+  backgroundImage: "none !important",
+  boxShadow: "none !important",
+  color: "#FFFFFF !important", // sab text white
+  "& .MuiTypography-root": {
+    color: "#FFFFFF !important",
+  },
+  "& .MuiListItemIcon-root": {
+    color: "#FFFFFF !important",
+  },
+  "& .MuiSvgIcon-root": {
+    color: "#FFFFFF !important",
+  },
+  "& .MuiListItemButton-root:hover": {
+    color: "#FFFFFF !important",
+    "& .MuiListItemIcon-root": {
+      color: "#FFFFFF !important",
+    },
+    "& .MuiSvgIcon-root": {
+      color: "#FFFFFF !important",
+    },
+  },
+  "& .MuiListItemButton-root.active": {
+    color: "#FFFFFF !important",
+    "& .MuiListItemIcon-root": {
+      color: "#FFFFFF !important",
+    },
+    "& .MuiSvgIcon-root": {
+      color: "#FFFFFF !important",
+    },
+  },
+},
+  }}
+>
+
 			<Stack
 				direction="row"
 				sx={{
@@ -60,12 +78,12 @@ export default function SideMenu() {
 					borderColor: "divider",
 				}}
 			>
-				<img className="logo-sm" src={logosm} />
+				
 				<img className="logo-lg" src={logo} />
 
 			</Stack>
 
-			<Divider />
+	
 			<Box
 				sx={{
 					overflow: "auto",

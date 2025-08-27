@@ -224,7 +224,7 @@ export default function Bills(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: { xs: "block", md: "flex" } }}>
+      <Box sx={{ display: { xs: "block", md: "flex" } , bgcolor:'#f6f6f6ff',}}>
         <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
         <Box
           sx={{
@@ -240,7 +240,7 @@ export default function Bills(props) {
           <MobileHeader/>
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 1 } }}
+            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 4 } }}
           >
             {/* <Typography
               variant="h4"
@@ -289,16 +289,13 @@ export default function Bills(props) {
                       }
                       onClick={toggleFilter}
                       sx={{
-                        height: "40px",
-                        minWidth: "120px",
+                        padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                        minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
-                        backgroundColor: filterOpen
-                          ? "primary.light"
-                          : "background.paper",
+                        color:  "#fff",
+                        backgroundColor:  "#173A5E",
                         "&:hover": {
-                          backgroundColor: filterOpen
-                            ? "primary.light"
-                            : "action.hover",
+                          backgroundColor: "#1E4C80",
                         },
                       }}
                     >
@@ -399,12 +396,12 @@ export default function Bills(props) {
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
                   sx={{
-                    backgroundColor: isBulkEditMode ? "#CC9A3A" : "#4a90e2",
+                    backgroundColor: isBulkEditMode ? "#CC9A3A" : "#173A5E",
                     color: "white !important",
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
                     "&:hover": {
-                      backgroundColor: isBulkEditMode ? "#B38935" : "#357ABD",
+                      backgroundColor: isBulkEditMode ? "#B38935" : "#1E4C80",
                     },
                   }}
                 >
@@ -415,12 +412,12 @@ export default function Bills(props) {
                   <Button
                     onClick={() => navigate("/search-bills")}
                     sx={{
-                      backgroundColor: "#4a90e2 !important",
+                      backgroundColor: "#173A5E !important",
                       color: "white !important",
                       padding: "0.5rem 1rem",
                       marginLeft: "0.5rem",
                       "&:hover": {
-                        backgroundColor: "#357ABD !important",
+                        backgroundColor: "#1E4C80 !important",
                       },
                     }}
                   >
@@ -523,13 +520,19 @@ export default function Bills(props) {
             width: "100%",
             bgcolor:
               snackbarMessage === "This bill has been successfully deleted."
-                ? "#FF474D"
+                ? "#fde8e4"
                 : undefined,
             "& .MuiAlert-icon": {
               color: snackbarMessage === "This bill has been successfully deleted."
-                ? "white"
+                ? "#cc563d"
                 : undefined
-            }
+            },
+            "& .MuiAlert-message": {
+                color:
+                  snackbarMessage === `This bill has been successfully deleted.`
+                    ? "#cc563d"
+                    : undefined,
+              },
           }}
         >
           {snackbarMessage}

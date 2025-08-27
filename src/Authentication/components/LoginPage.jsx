@@ -77,15 +77,15 @@ export default function LoginPage() {
         open={openSnackbar}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <MuiAlert
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
           sx={{
             width: "100%",
-            backgroundColor: snackbarSeverity === "success" ? "#90EE90" : undefined,
-            color: "#000",
+            backgroundColor: snackbarSeverity === "success" ? "#173A5E" : undefined,
+            color: "#fff",
           }}
           elevation={6}
           variant="filled"
@@ -178,12 +178,13 @@ export default function LoginPage() {
             onSubmit={handleSubmit}
             sx={{
               flex: 1,
-              p: { xs: 3, sm: 4 },
+              p: { xs: 3, sm: 0 },
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
             }}
           >
+            <Box sx={{ mx: { xs: 1, sm: 2, md: 4 },height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             {/* Heading */}
             <Typography
               variant="h6"
@@ -216,6 +217,7 @@ export default function LoginPage() {
               fullWidth
               margin="dense"
               variant="outlined"
+              size="small"
               InputProps={{
                 sx: {
                   borderRadius: "10px",
@@ -241,6 +243,7 @@ export default function LoginPage() {
               fullWidth
               margin="dense"
               variant="outlined"
+              size="small"
               InputProps={{
                 sx: {
                   borderRadius: "10px",
@@ -280,6 +283,7 @@ export default function LoginPage() {
             >
               Sign In
             </Button>
+            </Box>
           </Box>
         </Grid>
       </Grid>

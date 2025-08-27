@@ -551,7 +551,7 @@ export default function AddBill(props) {
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex",bgcolor:'#f6f6f6ff', }}>
         <SideMenu />
         <Box
           component="main"
@@ -570,7 +570,7 @@ export default function AddBill(props) {
               alignItems: "center",
               mx: 3,
               // pb: 5,
-              mt: { xs: 8, md: 0 },
+              mt: { xs: 8, md: 4 },
             }}
           >
             {userRole &&
@@ -693,7 +693,7 @@ export default function AddBill(props) {
                               {backendChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    backgroundColor: "background.paper",
+                                    backgroundColor: "#fff",
                                     borderRadius: 1,
                                     p: 1.5,
                                     border: "1px solid",
@@ -778,7 +778,7 @@ export default function AddBill(props) {
                               {localChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    backgroundColor: "background.paper",
+                                    backgroundColor: "#fff",
                                     borderRadius: 1,
                                     p: 1.5,
                                     border: "1px solid",
@@ -857,12 +857,12 @@ export default function AddBill(props) {
                 variant="outlined"
                 onClick={handleDiscard}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -872,12 +872,12 @@ export default function AddBill(props) {
                 variant="outlined"
                 onClick={handleSubmit}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -900,7 +900,7 @@ export default function AddBill(props) {
               </Button> */}
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
+            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff'}}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}

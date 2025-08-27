@@ -426,7 +426,7 @@ export default function Representative(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: { xs: "block", md: "flex" } }}>
+      <Box sx={{ display: { xs: "block", md: "flex" } ,bgcolor:'#f6f6f6ff',}}>
         <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
         <Box
           sx={{
@@ -447,7 +447,7 @@ export default function Representative(props) {
               alignItems: { xs: "stretch", md: "center" },
               mx: { xs: 0, md: 2 },
               pb: { xs: 2, md: 5 },
-              mt: { xs: 2, md: 0 },
+              mt: { xs: 2, md: 4 },
             }}
           >
             {/* <Typography
@@ -473,15 +473,15 @@ export default function Representative(props) {
                 All Representatives
               </Typography>
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center" sx={{ width: { xs: "100%", sm: "auto" } }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" } }}>
                 {/* Mobile: Show Fetch button above search/filter */}
                             {userRole === "admin" && (
                               <Box sx={{ width: "100%", display: { xs: "block", sm: "none" },  }}>
                                 <Button
                                   variant="outlined"
                                   sx={{
-                                    backgroundColor: "#4a90e2 !important",
-                                    color: "white !important",
+                                    backgroundColor: "#173A5E !important",
+                                    color: "#fff !important",
                                     width: "100%",
                                     "&:hover": {
                                       backgroundColor: "#357ABD !important",
@@ -490,7 +490,7 @@ export default function Representative(props) {
                                   onClick={fetchRepresentativeFromQuorum}
                                   fullWidth
                                 >
-                                  Fetch Senators from Quorum
+                                  Fetch Representatives from Quorum
                                 </Button>
                               </Box>
                             )}
@@ -499,17 +499,37 @@ export default function Representative(props) {
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: "#173A5E", fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    }}
                   sx={{
-                    padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
-                    marginLeft: { xs: 0, sm: "0.5rem" },
-                    width: { xs: "100%", sm: "190px" },
-                    "& .MuiInputBase-root": {
-                      "&.Mui-focused": {
-                        boxShadow: "none !important",
-                        outline: "none !important",
-                      },
-                    },
-                  }}
+                   marginLeft: { xs: 0, sm: "0.5rem" },
+    width: { xs: "50%", sm: "220px" },
+    "& .MuiOutlinedInput-root": {
+      // borderRadius: "12px",
+      backgroundColor: "#fff",
+      transition: "all 0.2s ease-in-out",
+      "& fieldset": {
+        borderColor: "#e5e7eb",
+      },
+      "&:hover fieldset": {
+        borderColor: "#cbd5e1",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#173A5E", 
+        borderWidth: "2px",
+      },   
+    },
+   
+    "& input::placeholder": {
+      fontSize: "0.9rem",
+      color: "#9ca3af",
+    },
+  }}
                 />
 
 
@@ -532,16 +552,13 @@ export default function Representative(props) {
                       }
                       onClick={toggleFilter}
                       sx={{
-                        height: "40px",
-                        minWidth: "120px",
+                        padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                        minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
-                        backgroundColor: filterOpen
-                          ? "primary.light"
-                          : "background.paper",
+                        color:  "#fff",
+                        backgroundColor: "#173A5E",
                         "&:hover": {
-                          backgroundColor: filterOpen
-                            ? "primary.light"
-                            : "action.hover",
+                          backgroundColor:  "#1E4C80",
                         },
                       }}
                     >
@@ -1095,13 +1112,13 @@ export default function Representative(props) {
         {userRole === "admin" && (  <Button
                   variant="outlined"
                   sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
+                    backgroundColor: "#173A5E !important",
+                    color: "#fff !important",
                     padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                     marginLeft: { xs: 0, sm: "0.5rem" },
                     display: { xs: "none", sm: "block" },
                     "&:hover": {
-                      backgroundColor: "#357ABD !important",
+                      backgroundColor: "#1E4C80 !important",
                     },
                   }}
                   onClick={fetchRepresentativeFromQuorum}
@@ -1130,16 +1147,41 @@ export default function Representative(props) {
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity={snackbarSeverity}
-            sx={{ width: "100%", bgcolor: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? '#FF474D' : undefined ,
-              '& .MuiAlert-icon': {
-        color: snackbarMessage === `${selectedRepresentative?.name} deleted successfully.` ? 'white' : undefined
-      }
-          }}
-          >
-            {snackbarMessage}
-          </Alert>
+              onClose={() => setSnackbarOpen(false)}
+              severity={snackbarSeverity}
+              sx={{
+                width: "100%",
+                // ✅ Background conditions
+                bgcolor:
+                  snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                    ? "#fde8e4"
+                    : snackbarMessage === "Success: Representatives fetched successfully!"
+                    ? "#daf4f0"
+                    : undefined,
+          
+                // ✅ Icon color conditions
+                "& .MuiAlert-icon": {
+                  color:
+                    snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                      ? "#cc563d"
+                      : snackbarMessage === "Success: Representatives fetched successfully!"
+                      ? "#099885"
+                      : undefined,
+                },
+          
+                // ✅ Text color conditions
+                "& .MuiAlert-message": {
+                  color:
+                    snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                      ? "#cc563d"
+                      : snackbarMessage === "Success: Representatives fetched successfully!"
+                      ? "#099885"
+                      : undefined,
+                },
+              }}
+            >
+              {snackbarMessage}
+            </Alert>
         </Snackbar>
 
         <Dialog
