@@ -455,20 +455,18 @@ export default function AddActivity(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-         published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
-        icon: null,
-        // title: "Published",
+             published: {
+        backgroundColor: "rgba(76, 175, 80, 0.12)",
+        borderColor: "#4CAF50",
+        iconColor: "#2E7D32",
+        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+        title: "Published",
         description:
           editedFields.length > 0
-            ? `Edited fields: ${editedFields
-                .map((f) => fieldLabels[f] || f)
-                .join(", ")}`
+            ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#2E7D32",
+        descColor: "#388E3C",
       },
     };
 
@@ -553,9 +551,9 @@ export default function AddActivity(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: 2.5,
               // pb: 5,
-              mt: { xs: 8, md: 4 },
+              mt: { xs: 8, md: 2 },
             }}
           >
             {userRole &&

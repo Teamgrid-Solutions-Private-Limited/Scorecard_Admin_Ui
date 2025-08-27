@@ -239,8 +239,8 @@ export default function Bills(props) {
           <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
           <MobileHeader/>
           <Stack
-            spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 4 } }}
+            // spacing={2}
+            sx={{ alignItems: "center", mx: 2.5, pb: 5, mt: { xs: 8, md: 0 } }}
           >
             {/* <Typography
               variant="h4"
@@ -258,9 +258,17 @@ export default function Bills(props) {
                  alignItems: { xs: "stretch", sm: "center" },
                 mt: { xs: 2, md: 4 },
                 gap: 2,
+                bgcolor: "#fff",
+                borderTop: "1px solid ",
+                borderLeft: "1px solid ",
+                borderRight: "1px solid ",
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 8,
+                borderColor: "divider",
+                py: 3,
               }}
             >
-              <Typography component="h2" variant="h6">
+              <Typography component="h2" variant="h6" sx={{ml:2}}>
                 All Bills
               </Typography>
 
@@ -392,7 +400,7 @@ export default function Bills(props) {
                 </Box>
               </Stack>
 
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center" sx={{ mr:2 }}>
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
                   sx={{
@@ -464,8 +472,9 @@ export default function Bills(props) {
                     disabled={!selectedBills.length || !bulkSbaPosition}
                     onClick={handleBulkUpdate}
                     sx={{
-                      backgroundColor: "#68e24aff",
-                      "&:hover": { backgroundColor: "#357ABD" },
+                      backgroundColor: "#173A5E",
+                      color:' #fff !important',
+                      "&:hover": { backgroundColor: "#1E4C80" },
                     }}
                   >
                     Apply

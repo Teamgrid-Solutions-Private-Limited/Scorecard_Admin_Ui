@@ -272,8 +272,8 @@ const statusOptions = ["published", "draft", "under review"];
           <FixedHeader sx={{ display: { xs: "none", md: "block" } }}/>
           <MobileHeader/>
           <Stack
-            spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 4 } }}
+            // spacing={2}
+            sx={{ alignItems: "center", mx: 2.5, pb: 5, mt: { xs: 8, md: 0 } }}
           >
             <Box
               sx={{
@@ -284,9 +284,17 @@ const statusOptions = ["published", "draft", "under review"];
                  alignItems: { xs: "stretch", sm: "center" },
                 mt: { xs: 2, md: 4 },
                 gap: 2,
+                bgcolor: "#fff",
+                borderTop: "1px solid ",
+                borderLeft: "1px solid ",
+                borderRight: "1px solid ",
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 8,
+                borderColor: "divider",
+                py: 3,
               }}
             >
-              <Typography component="h2" variant="h6">
+              <Typography component="h2" variant="h6" sx={{ml:2}}>
                 All Activities
               </Typography>
               <Stack
@@ -417,7 +425,7 @@ const statusOptions = ["published", "draft", "under review"];
                 </Box>
               </Stack>
 
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center" sx={{mr:2}}>
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
                   sx={{
