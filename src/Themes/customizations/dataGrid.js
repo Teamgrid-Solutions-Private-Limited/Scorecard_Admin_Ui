@@ -20,7 +20,7 @@ export const dataGridCustomizations = {
         borderColor: (theme.vars || theme).palette.divider,
         backgroundColor: '#fff',
         [`& .${gridClasses.columnHeader}`]: {
-          backgroundColor: '#fff',
+          backgroundColor: '#eef1f4',
         },
         [`& .${gridClasses.footerContainer}`]: {
           backgroundColor: '#fff',

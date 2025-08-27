@@ -567,7 +567,7 @@ export default function AddBill(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 2.5,
+              mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2 },
             }}
@@ -899,7 +899,7 @@ export default function AddBill(props) {
               </Button> */}
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff'}}>
+            <Paper sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff', borderRadius:0.8,border:'1px solid',borderColor:'divider'}}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1483,7 +1483,7 @@ export default function AddBill(props) {
               </Box>
             </Paper>
           </Stack>
-         <Box sx={{ mb: "50px" }}>
+<Box sx={{ mb: "40px" ,mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

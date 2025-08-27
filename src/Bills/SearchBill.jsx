@@ -390,7 +390,9 @@ const handleSearch = async () => {
               </Box>
             </Paper>
           </Stack>
-          <Footer />
+          <Box sx={{  mx:"15px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>
