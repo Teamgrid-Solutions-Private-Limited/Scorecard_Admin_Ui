@@ -1185,6 +1185,7 @@ export default function Addrepresentative(props) {
             }}
           >
              {userRole &&
+              formData.publishStatus &&
               statusData &&
               (formData.publishStatus !== "published" || localChanges.length > 0) && (
                 <Box
