@@ -204,12 +204,12 @@ export default function ManageUser(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex",bgcolor:'#f6f6f6ff', }}>
         <SideMenu />
         <Box sx={{ flexGrow: 1, width: "80%",  }}>
           <FixedHeader />
           <MobileHeader/>
-          <Box sx={{ maxWidth: "100%", mt: 2,mx:2 }}>
+          <Box sx={{ maxWidth: "100%", mt: 4,mx:2 }}>
             <Stack
               direction="row"
               justifyContent="space-between"
@@ -223,12 +223,12 @@ export default function ManageUser(props) {
                 startIcon={<PersonAddAltRoundedIcon />}
                 onClick={handleAddUserOpen}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -275,7 +275,7 @@ export default function ManageUser(props) {
               <DialogTitle
                 sx={{
                   textAlign: "center",
-                  backgroundColor: "#739ACE",
+                  backgroundColor: "#173A5E",
                   padding: "22px 20px 24px 20px",
                   position: "relative",
                   marginBottom: "10px",

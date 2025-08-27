@@ -206,7 +206,7 @@ const handleSearch = async () => {
             </Snackbar>
       <FixedHeader />
       <MobileHeader/>
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex" ,bgcolor:'#f6f6f6ff',}}>
         <SideMenu />
         <Box
           component="main"
@@ -220,10 +220,10 @@ const handleSearch = async () => {
               : alpha(theme.palette.background.default, 1),
           })}
         >
-          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 0, mt: { xs: 8, md: 0 }, flex: 1 }}>
+          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 0, mt: { xs: 8, md: 4 }, flex: 1 }}>
             
 
-            <Paper elevation={2} sx={{ width: "100%" }}>
+            <Paper elevation={2} sx={{ width: "100%",bgcolor:'#fff' }}>
               <Box sx={{ padding: 5, pb: 10 }}>
                 <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
                   Search For Bills In Quorum
@@ -288,12 +288,12 @@ const handleSearch = async () => {
                       sx={{
                         width: { xs: "100%", md: "auto" },
                         minWidth: "110px",
-                        backgroundColor: "#4a90e2 !important",
+                        backgroundColor: "#173A5E !important",
                         color: "white !important",
                         padding: "0.5rem 1rem",
                         marginLeft: "0.5rem",
                         "&:hover": {
-                          backgroundColor: "#357ABD !important",
+                          backgroundColor: "#1E4C80 !important",
                         },
                         transition: "all 0.3s ease",
                       }}
@@ -359,11 +359,11 @@ const handleSearch = async () => {
                                     variant="outlined"
                                     onClick={() => handleAddBill(bill)}
                                     sx={{
-                                      backgroundColor: "#4a90e2 !important",
+                                      backgroundColor: "#173A5E !important",
                         color: "white !important",
                          
                         "&:hover": {
-                          backgroundColor: "#357ABD !important",
+                          backgroundColor: "#1E4C80 !important",
                                       },
                                       transition: "all 0.3s ease",
                                     }}

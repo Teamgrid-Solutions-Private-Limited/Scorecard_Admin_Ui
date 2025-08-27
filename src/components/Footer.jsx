@@ -7,7 +7,7 @@ const Footer = () => {
       sx={{
         m: "20px",
         // ml: { xs: "20px", md: "260px" },
-        backgroundColor: "#fff",
+        // backgroundColor: "#fff",
                 // backgroundColor: "#ab4141ff",
  
         padding: "10px",

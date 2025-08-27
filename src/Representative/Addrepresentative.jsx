@@ -1160,7 +1160,7 @@ export default function Addrepresentative(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex" ,bgcolor:'#f6f6f6ff', }}>
         <SideMenu />
         <Box
           component="main"
@@ -1181,7 +1181,7 @@ export default function Addrepresentative(props) {
               alignItems: "center",
               mx: 2,
               // pb: 5,
-              mt: { xs: 8, md: 0 },
+              mt: { xs: 8, md: 4 },
             }}
           >
              {userRole &&
@@ -1330,7 +1330,7 @@ export default function Addrepresentative(props) {
                               {backendChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    backgroundColor: "background.paper",
+                                    backgroundColor: "#fff",
                                     borderRadius: 1,
                                     p: 1.5,
                                     border: "1px solid",
@@ -1415,7 +1415,7 @@ export default function Addrepresentative(props) {
                               {localChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    backgroundColor: "background.paper",
+                                    backgroundColor: "#fff",
                                     borderRadius: 1,
                                     p: 1.5,
                                     border: "1px solid",
@@ -1499,12 +1499,12 @@ export default function Addrepresentative(props) {
                 variant="outlined"
                 onClick={handleDiscard}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -1514,12 +1514,12 @@ export default function Addrepresentative(props) {
                 variant="outlined"
                 onClick={handleSave}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -1527,7 +1527,7 @@ export default function Addrepresentative(props) {
               </Button>
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%" }}>
+            <Paper elevation={2} sx={{ width: "100%", bgcolor:"#fff" }}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1802,12 +1802,12 @@ export default function Addrepresentative(props) {
                         component="label"
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<CloudUploadIcon />}
@@ -1836,6 +1836,7 @@ export default function Addrepresentative(props) {
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
+                   bgcolor:"#fff"
                 }}
               >
                 <Box sx={{ padding: 5 }}>
@@ -2149,7 +2150,7 @@ export default function Addrepresentative(props) {
                                     Select a Bill
                                   </MenuItem>
                                   {votes && votes.length > 0 ? (
-                                    votes.map((voteItem) => (
+                                    votes.filter((vote) => vote.type === "house_bill").map((voteItem) => (
                                       <MenuItem
                                         key={voteItem._id}
                                         value={voteItem._id}
@@ -2212,12 +2213,12 @@ export default function Addrepresentative(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#357ABD !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -2368,12 +2369,12 @@ export default function Addrepresentative(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#357ABD !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -2395,12 +2396,12 @@ export default function Addrepresentative(props) {
               onClick={handleAddTerm}
               sx={{
                 alignSelf: "flex-start",
-                backgroundColor: "#4a90e2 !important",
+                backgroundColor: "#173A5E !important",
                 color: "white !important",
                 padding: "0.5rem 1rem",
                 marginLeft: "0.5rem",
                 "&:hover": {
-                  backgroundColor: "#357ABD !important",
+                  backgroundColor: "#1E4C80 !important",
                 },
               }}
             >
@@ -2414,14 +2415,33 @@ export default function Addrepresentative(props) {
               anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
               <MuiAlert
-                onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                sx={{ width: "100%" }}
-                elevation={6}
-                variant="filled"
-              >
-                {snackbarMessage}
-              </MuiAlert>
+                  onClose={handleSnackbarClose}
+                  severity={snackbarSeverity}
+                  sx={{
+                    width: "100%",
+                    bgcolor:
+                      snackbarMessage === "Changes Published successfully!"
+                        ? "#daf4f0"
+                        : undefined,
+                    "& .MuiAlert-icon": {
+                      color:
+                        snackbarMessage === "Changes Published successfully!"
+                          ? "#099885"
+                          : undefined,
+                    },
+                    "& .MuiAlert-message": {
+                      color:
+                        snackbarMessage === "Changes Published successfully!"
+                          ? "#099885"
+                          : undefined,
+                          
+                    },
+                  }}
+                  elevation={6}
+                  variant="filled"
+                >
+                  {snackbarMessage}
+                </MuiAlert>
             </Snackbar>
           </Stack>
           <Box sx={{ mb: "50px" }}>
