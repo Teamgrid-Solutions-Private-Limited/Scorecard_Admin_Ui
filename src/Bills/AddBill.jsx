@@ -131,10 +131,10 @@ export default function AddBill(props) {
     if (selectedVote) {
       const termId = selectedVote.termId || "";
       const newFormData = {
-        type: selectedVote.type.includes("senate")
-          ? "senate"
+          type: selectedVote.type.includes("senate")
+          ? "senate_bill"
           : selectedVote.type.includes("house")
-          ? "house"
+          ? "house_bill"
           : "",
         title: selectedVote.title || "",
         shortDesc: selectedVote.shortDesc || "",
@@ -996,8 +996,8 @@ export default function AddBill(props) {
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
-                        <MenuItem value="senate">Senate</MenuItem>
-                        <MenuItem value="house">House</MenuItem>
+                         <MenuItem value="senate_bill">Senate</MenuItem>
+                        <MenuItem value="house_bill">House</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
