@@ -1483,34 +1483,34 @@ export default function AddSenator(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
-        icon: null,
-        // title: "Published",
-        description:
-          editedFields.length > 0
-            ? `Edited fields: ${editedFields
-                .map((f) => fieldLabels[f] || f)
-                .join(", ")}`
-            : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
-      },
-      //  published: {
-      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
-      //   borderColor: "#4CAF50",
-      //   iconColor: "#2E7D32",
-      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-      //   title: "Published",
+      // published: {
+      //   backgroundColor: "rgba(255, 193, 7, 0.12)",
+      //   borderColor: "#FFC107",
+      //   iconColor: "#FFA000",
+      //   icon: null,
+      //   // title: "Published",
       //   description:
       //     editedFields.length > 0
-      //       ? `${editedFields.length} pending changes`
+      //       ? `Edited fields: ${editedFields
+      //           .map((f) => fieldLabels[f] || f)
+      //           .join(", ")}`
       //       : "Published and live",
-      //   titleColor: "#2E7D32",
-      //   descColor: "#388E3C",
+      //   titleColor: "#5D4037",
+      //   descColor: "#795548",
       // },
+       published: {
+        backgroundColor: "rgba(76, 175, 80, 0.12)",
+        borderColor: "#4CAF50",
+        iconColor: "#2E7D32",
+        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+        title: "Published",
+        description:
+          editedFields.length > 0
+            ? `${editedFields.length} pending changes`
+            : "Published and live",
+        titleColor: "#2E7D32",
+        descColor: "#388E3C",
+      },
     };
     return configs[currentStatus];
   };
