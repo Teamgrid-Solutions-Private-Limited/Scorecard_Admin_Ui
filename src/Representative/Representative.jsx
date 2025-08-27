@@ -481,7 +481,7 @@ export default function Representative(props) {
                 All Representatives
               </Typography>
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" } }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" },mr:2 }}>
                 {/* Mobile: Show Fetch button above search/filter */}
                             {userRole === "admin" && (
                               <Box sx={{ width: "100%", display: { xs: "block", sm: "none" },  }}>

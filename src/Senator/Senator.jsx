@@ -491,7 +491,7 @@ export default function Senator(props) {
                 // mx:2.5
               }}
             >
-              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } }}>
+              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } ,ml:2}}>
                 All Senators
               </Typography>
               {userRole === "admin" && (
@@ -516,7 +516,7 @@ export default function Senator(props) {
               </Box>
             )}
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" } }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" },mr:2 }}>
                  {/* Mobile: Show Fetch button above search/filter */}
             
                 <TextField
