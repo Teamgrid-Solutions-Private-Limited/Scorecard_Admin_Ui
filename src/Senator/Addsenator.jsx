@@ -2512,263 +2512,226 @@ export default function AddSenator(props) {
                     <Grid size={1}></Grid>
                     {/* Vote Repeater Start */}
                     {term.termId ? (
-                      <>
-                        {term.votesScore.map((vote, voteIndex) => (
-                          <Grid
-                            rowSpacing={2}
-                            sx={{ width: "100%" }}
-                            key={voteIndex}
-                          >
-                            <Grid
-                              size={12}
-                              display="flex"
-                              alignItems="center"
-                              columnGap={"15px"}
-                            >
-                              {/* Label */}
-                              <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: isMobile
-                                      ? "flex-start"
-                                      : "flex-end",
-                                    fontWeight: 700,
-                                    my: 0,
-                                  }}
-                                >
-                                  Scored Vote {voteIndex + 1}
-                                </InputLabel>
-                              </Grid>
-
-                              {/* Vote Select */}
-                              <Grid size={isMobile ? 12 : 7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.voteId || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "voteId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff", width: "100%" }}
-                                    renderValue={(selected) => {
-                                      const selectedVote = allVotes.find(
-                                        (v) => v._id === selected
-                                      );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedVote?.title ||
-                                            "Select a Bill"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <MenuItem value="">Select a Bill</MenuItem>
-
-                                    {(() => {
-                                      let termVotes = [];
-                                      if (term.termId) {
-                                        const selectedTerm = terms?.find(
-                                          (t) => t._id === term.termId
-                                        );
-                                        if (selectedTerm) {
-                                          const termStart = new Date(
-                                            `${selectedTerm.startYear}-01-01`
-                                          );
-                                          const termEnd = new Date(
-                                            `${selectedTerm.endYear}-12-31`
-                                          );
-
-                                          // ✅ Filter by term
-                                          termVotes = allVotes.filter(
-                                            (voteItem) => {
-                                              const voteDate = new Date(
-                                                voteItem.date
-                                              );
-                                              return (
-                                                voteDate >= termStart &&
-                                                voteDate <= termEnd &&
-                                                selectedTerm.congresses.includes(
-                                                  Number(voteItem.congress)
-                                                )
-                                              );
-                                            }
-                                          );
-                                        }
-                                      } else {
-                                        // ✅ No term selected → show ALL votes
-                                        termVotes = allVotes;
-                                      }
-
-                                      return termVotes.length > 0 ? (
-                                        termVotes.map((voteItem) => {
-                                          // Optional senator’s score for display
-                                          const senatorVote = senatorVotes.find(
-                                            (v) => {
-                                              const vId =
-                                                typeof v.voteId === "object"
-                                                  ? v.voteId?._id
-                                                  : v.voteId;
-                                              return (
-                                                vId === voteItem._id ||
-                                                v.quorumId ===
-                                                  voteItem.quorumId ||
-                                                (v.billNumber &&
-                                                  voteItem.billNumber &&
-                                                  v.billNumber ===
-                                                    voteItem.billNumber)
-                                              );
-                                            }
-                                          );
-
-                                          const score =
-                                            senatorVote?.score || "";
-                                          const scoreText = score
-                                            ? ` (${score})`
-                                            : "";
-
-                                          return (
-                                            <MenuItem
-                                              key={voteItem._id}
-                                              value={voteItem._id}
-                                              sx={{ py: 1.5 }}
-                                            >
-                                              <Typography
-                                                sx={{
-                                                  whiteSpace: "normal",
-                                                  overflowWrap: "break-word",
-                                                }}
-                                              >
-                                                {voteItem.title}
-                                                {scoreText}
-                                              </Typography>
-                                            </MenuItem>
-                                          );
-                                        })
-                                      ) : (
-                                        <MenuItem value="" disabled>
-                                          {term.termId
-                                            ? "No bills available for this term"
-                                            : "No votes available"}
-                                        </MenuItem>
-                                      );
-                                    })()}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-
-                              {/* Score Select */}
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote?.score || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "score",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff" }}
-                                  >
-                                    <MenuItem value="yea">Yea</MenuItem>
-                                    <MenuItem value="nay">Nay</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-
-                              {/* Delete */}
-                              <Grid size={1}>
-                                <DeleteForeverIcon
-                                  onClick={() =>
-                                    handleRemoveVote(termIndex, voteIndex)
-                                  }
-                                />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        ))}
-                      </>
-                    ) : (
-                      <Grid rowSpacing={2} sx={{ width: "100%" }}>
-                        <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
+  <>
+    {term.votesScore.map((vote, voteIndex) => (
+      <Grid rowSpacing={2} sx={{ width: "100%" }} key={voteIndex}>
+        <Grid
+          size={12}
+          display="flex"
+          alignItems="center"
+          columnGap={"15px"}
+        >
+          {/* Label */}
+          <Grid size={isMobile ? 12 : 2}>
+            <InputLabel
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: isMobile ? "flex-start" : "flex-end",
+                fontWeight: 700,
+                my: 0,
+              }}
+            >
+              Scored Vote {voteIndex + 1}
+            </InputLabel>
+          </Grid>
+ 
+          {/* Vote Select */}
+          <Grid size={isMobile ? 12 : 7.5}>
+            <FormControl fullWidth>
+              <Select
+                value={vote.voteId || ""}
+                onChange={(event) =>
+                  handleVoteChange(
+                    termIndex,
+                    voteIndex,
+                    "voteId",
+                    event.target.value
+                  )
+                }
+                sx={{ background: "#fff", width: "100%" }}
+                renderValue={(selected) => {
+                  const selectedVote = allVotes.find((v) => v._id === selected);
+                  return (
+                    <Typography
+                      sx={{
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {selectedVote?.title || "Select a Bill"}
+                    </Typography>
+                  );
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 300,
+                      width: 400,
+                      "& .MuiMenuItem-root": { minHeight: "48px" },
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">Select a Bill</MenuItem>
+ 
+                {(() => {
+                  let termVotes = [];
+                  if (term.termId) {
+                    const selectedTerm = terms?.find(
+                      (t) => t._id === term.termId
+                    );
+                    if (selectedTerm) {
+                      const termStart = new Date(
+                        `${selectedTerm.startYear}-01-01`
+                      );
+                      const termEnd = new Date(
+                        `${selectedTerm.endYear}-12-31`
+                      );
+ 
+                      // ✅ Filter by term
+                      termVotes = allVotes.filter((voteItem) => {
+                        const voteDate = new Date(voteItem.date);
+                        return (
+                          voteDate >= termStart &&
+                          voteDate <= termEnd &&
+                          selectedTerm.congresses.includes(
+                            Number(voteItem.congress)
+                          )
+                        );
+                      });
+                    }
+                  } else {
+                    // ✅ No term selected → show ALL votes
+                    termVotes = allVotes;
+                  }
+ 
+                  return termVotes.length > 0 ? (
+                    termVotes.map((voteItem) => {
+                      // Optional senator’s score for display
+                      const senatorVote = senatorVotes.find((v) => {
+                        const vId =
+                          typeof v.voteId === "object"
+                            ? v.voteId?._id
+                            : v.voteId;
+                        return (
+                          vId === voteItem._id ||
+                          v.quorumId === voteItem.quorumId ||
+                          (v.billNumber &&
+                            voteItem.billNumber &&
+                            v.billNumber === voteItem.billNumber)
+                        );
+                      });
+ 
+                      const score = senatorVote?.score || "";
+                      const scoreText = score ? ` (${score})` : "";
+ 
+                      return (
+                        <MenuItem
+                          key={voteItem._id}
+                          value={voteItem._id}
+                          sx={{ py: 1.5 }}
                         >
-                          <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 700,
-                                my: 0,
-                              }}
-                            >
-                              Scored Vote 1
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff", width: "100%" }}
-                              >
-                                <MenuItem value="">Select a Bill</MenuItem>
-                                {allVotes.map((voteItem) => (
-                                  <MenuItem
-                                    key={voteItem._id}
-                                    value={voteItem._id}
-                                  >
-                                    {voteItem.title}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 1.6}>
-                            <FormControl fullWidth>
-                              <Select value="" sx={{ background: "#fff" }}>
-                                <MenuItem value="yea">Yea</MenuItem>
-                                <MenuItem value="nay">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon sx={{ opacity: 0.5 }} />
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    )}
+                          <Typography
+                            sx={{
+                              whiteSpace: "normal",
+                              overflowWrap: "break-word",
+                            }}
+                          >
+                            {voteItem.title}
+                            {scoreText}
+                          </Typography>
+                        </MenuItem>
+                      );
+                    })
+                  ) : (
+                    <MenuItem value="" disabled>
+                      {term.termId
+                        ? "No bills available for this term"
+                        : "No votes available"}
+                    </MenuItem>
+                  );
+                })()}
+              </Select>
+            </FormControl>
+          </Grid>
+ 
+          {/* Score Select */}
+          <Grid size={isMobile ? 12 : 1.6}>
+            <FormControl fullWidth>
+              <Select
+                value={vote?.score || ""}
+                onChange={(event) =>
+                  handleVoteChange(
+                    termIndex,
+                    voteIndex,
+                    "score",
+                    event.target.value
+                  )
+                }
+                sx={{ background: "#fff" }}
+              >
+                <MenuItem value="yea">Yea</MenuItem>
+                <MenuItem value="nay">Nay</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+ 
+          {/* Delete */}
+          <Grid size={1}>
+            <DeleteForeverIcon
+              onClick={() => handleRemoveVote(termIndex, voteIndex)}
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+    ))}
+  </>
+) : (
+  <Grid rowSpacing={2} sx={{ width: "100%" }}>
+    <Grid size={12} display="flex" alignItems="center" columnGap={"15px"}>
+      <Grid size={isMobile ? 12 : 2}>
+        <InputLabel
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: isMobile ? "flex-start" : "flex-end",
+            fontWeight: 700,
+            my: 0,
+          }}
+        >
+          Scored Vote 1
+        </InputLabel>
+      </Grid>
+      <Grid size={isMobile ? 12 : 7.5}>
+        <FormControl fullWidth>
+          <Select value="" sx={{ background: "#fff", width: "100%" }}>
+            <MenuItem value="">Select a Bill</MenuItem>
+            {allVotes.map((voteItem) => (
+              <MenuItem key={voteItem._id} value={voteItem._id}>
+                {voteItem.title}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid size={isMobile ? 12 : 1.6}>
+        <FormControl fullWidth>
+          <Select value="" sx={{ background: "#fff" }}>
+            <MenuItem value="yea">Yea</MenuItem>
+            <MenuItem value="nay">Nay</MenuItem>
+            <MenuItem value="other">Other</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid size={1}>
+        <DeleteForeverIcon sx={{ opacity: 0.5 }} />
+      </Grid>
+    </Grid>
+  </Grid>
+)}
 
                     {/* Vote Repeater Ends */}
 
@@ -2793,235 +2756,218 @@ export default function AddSenator(props) {
                     </Grid>
                     <Grid size={1}></Grid>
                     {/* Activities Repeater Start */}
-                    {term.termId ? (
-                      <>
-                        {term.activitiesScore.map((activity, activityIndex) => (
-                          <Grid
-                            rowSpacing={2}
-                            sx={{ width: "100%", mt: 2 }}
-                            key={activityIndex}
-                          >
-                            <Grid
-                              size={12}
-                              display="flex"
-                              alignItems="center"
-                              columnGap={"15px"}
-                            >
-                              {/* Label */}
-                              <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: isMobile
-                                      ? "flex-start"
-                                      : "flex-end",
-                                    fontWeight: 700,
-                                    my: 0,
-                                  }}
-                                >
-                                  Tracked Activity {activityIndex + 1}
-                                </InputLabel>
-                              </Grid>
-
-                              {/* Activity Select */}
-                              <Grid size={isMobile ? 12 : 7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={activity.activityId || ""}
-                                    onChange={(event) =>
-                                      handleActivityChange(
-                                        termIndex,
-                                        activityIndex,
-                                        "activityId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff", width: "100%" }}
-                                    renderValue={(selected) => {
-                                      const selectedActivity =
-                                        allActivities.find(
-                                          (a) => a._id === selected
-                                        );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedActivity?.title ||
-                                            "Select an Activity"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <MenuItem value="">
-                                      Select an Activity
-                                    </MenuItem>
-
-                                    {(() => {
-                                      let termActivities = [];
-                                      if (term.termId) {
-                                        const selectedTerm = terms?.find(
-                                          (t) => t._id === term.termId
-                                        );
-                                        if (selectedTerm) {
-                                          const termStart = new Date(
-                                            `${selectedTerm.startYear}-01-01`
-                                          );
-                                          const termEnd = new Date(
-                                            `${selectedTerm.endYear}-12-31`
-                                          );
-
-                                          // ✅ Filter by term
-                                          termActivities = allActivities.filter(
-                                            (activityItem) => {
-                                              const activityDate = new Date(
-                                                activityItem.date
-                                              );
-                                              return (
-                                                activityDate >= termStart &&
-                                                activityDate <= termEnd &&
-                                                selectedTerm.congresses.includes(
-                                                  Number(activityItem.congress)
-                                                )
-                                              );
-                                            }
-                                          );
-                                        }
-                                      } else {
-                                        // ✅ No term selected → show ALL activities
-                                        termActivities = allActivities;
-                                      }
-
-                                      return termActivities.length > 0 ? (
-                                        termActivities.map((activityItem) => (
-                                          <MenuItem
-                                            key={activityItem._id}
-                                            value={activityItem._id}
-                                          >
-                                            {activityItem.title ||
-                                              "Untitled Activity"}
-                                          </MenuItem>
-                                        ))
-                                      ) : (
-                                        <MenuItem value="" disabled>
-                                          {term.termId
-                                            ? "No activities available for this term"
-                                            : "No activities available"}
-                                        </MenuItem>
-                                      );
-                                    })()}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-
-                              {/* Score Select */}
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={activity?.score || ""}
-                                    onChange={(event) =>
-                                      handleActivityChange(
-                                        termIndex,
-                                        activityIndex,
-                                        "score",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff" }}
-                                  >
-                                    <MenuItem value="yes">Yea</MenuItem>
-                                    <MenuItem value="no">Nay</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-
-                              {/* Delete */}
-                              <Grid size={1}>
-                                <DeleteForeverIcon
-                                  onClick={() =>
-                                    handleRemoveActivity(
-                                      termIndex,
-                                      activityIndex
-                                    )
-                                  }
-                                />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        ))}
-                      </>
-                    ) : (
-                      <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
-                        <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
-                        >
-                          <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 700,
-                                my: 0,
-                              }}
-                            >
-                              Tracked Activity 1
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff", width: "100%" }}
-                              >
-                                <MenuItem value="">Select an Activity</MenuItem>
-                                {allActivities.map((activityItem) => (
-                                  <MenuItem
-                                    key={activityItem._id}
-                                    value={activityItem._id}
-                                  >
-                                    {activityItem.title || "Untitled Activity"}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 1.6}>
-                            <FormControl fullWidth>
-                              <Select value="" sx={{ background: "#fff" }}>
-                                <MenuItem value="yes">Yea</MenuItem>
-                                <MenuItem value="no">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon sx={{ opacity: 0.5 }} />
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    )}
+                                     {term.termId ? (
+  <>
+    {term.activitiesScore.map((activity, activityIndex) => (
+      <Grid
+        rowSpacing={2}
+        sx={{ width: "100%", mt: 2 }}
+        key={activityIndex}
+      >
+        <Grid
+          size={12}
+          display="flex"
+          alignItems="center"
+          columnGap={"15px"}
+        >
+          {/* Label */}
+          <Grid size={isMobile ? 12 : 2}>
+            <InputLabel
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: isMobile ? "flex-start" : "flex-end",
+                fontWeight: 700,
+                my: 0,
+              }}
+            >
+              Tracked Activity {activityIndex + 1}
+            </InputLabel>
+          </Grid>
+ 
+          {/* Activity Select */}
+          <Grid size={isMobile ? 12 : 7.5}>
+            <FormControl fullWidth>
+              <Select
+                value={activity.activityId || ""}
+                onChange={(event) =>
+                  handleActivityChange(
+                    termIndex,
+                    activityIndex,
+                    "activityId",
+                    event.target.value
+                  )
+                }
+                sx={{ background: "#fff", width: "100%" }}
+                renderValue={(selected) => {
+                  const selectedActivity = allActivities.find(
+                    (a) => a._id === selected
+                  );
+                  return (
+                    <Typography
+                      sx={{
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {selectedActivity?.title || "Select an Activity"}
+                    </Typography>
+                  );
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 300,
+                      width: 400,
+                      "& .MuiMenuItem-root": { minHeight: "48px" },
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">Select an Activity</MenuItem>
+ 
+                {(() => {
+                  let termActivities = [];
+                  if (term.termId) {
+                    const selectedTerm = terms?.find(
+                      (t) => t._id === term.termId
+                    );
+                    if (selectedTerm) {
+                      const termStart = new Date(
+                        `${selectedTerm.startYear}-01-01`
+                      );
+                      const termEnd = new Date(
+                        `${selectedTerm.endYear}-12-31`
+                      );
+ 
+                      // ✅ Filter by term
+                      termActivities = allActivities.filter((activityItem) => {
+                        const activityDate = new Date(activityItem.date);
+                        return (
+                          activityDate >= termStart &&
+                          activityDate <= termEnd &&
+                          selectedTerm.congresses.includes(
+                            Number(activityItem.congress)
+                          )
+                        );
+                      });
+                    }
+                  } else {
+                    // ✅ No term selected → show ALL activities
+                    termActivities = allActivities;
+                  }
+ 
+                  return termActivities.length > 0 ? (
+                    termActivities.map((activityItem) => (
+                      <MenuItem
+                        key={activityItem._id}
+                        value={activityItem._id}
+                      >
+                        {activityItem.title || "Untitled Activity"}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem value="" disabled>
+                      {term.termId
+                        ? "No activities available for this term"
+                        : "No activities available"}
+                    </MenuItem>
+                  );
+                })()}
+              </Select>
+            </FormControl>
+          </Grid>
+ 
+          {/* Score Select */}
+          <Grid size={isMobile ? 12 : 1.6}>
+            <FormControl fullWidth>
+              <Select
+                value={activity?.score || ""}
+                onChange={(event) =>
+                  handleActivityChange(
+                    termIndex,
+                    activityIndex,
+                    "score",
+                    event.target.value
+                  )
+                }
+                sx={{ background: "#fff" }}
+              >
+                <MenuItem value="yes">Yea</MenuItem>
+                <MenuItem value="no">Nay</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+ 
+          {/* Delete */}
+          <Grid size={1}>
+            <DeleteForeverIcon
+              onClick={() =>
+                handleRemoveActivity(termIndex, activityIndex)
+              }
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+    ))}
+  </>
+) : (
+ 
+  <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
+    <Grid size={12} display="flex" alignItems="center" columnGap={"15px"}>
+      <Grid size={isMobile ? 12 : 2}>
+        <InputLabel
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: isMobile ? "flex-start" : "flex-end",
+            fontWeight: 700,
+            my: 0,
+          }}
+        >
+          Tracked Activity 1
+        </InputLabel>
+      </Grid>
+      <Grid size={isMobile ? 12 : 7.5}>
+        <FormControl fullWidth>
+          <Select value="" sx={{ background: "#fff", width: "100%" }}
+           MenuProps={{
+            PaperProps: {
+              sx: {
+               maxHeight: 300,
+                      width: 200,
+                "& .MuiMenuItem-root": { minHeight: "48px" },
+              },
+            },
+          }}>
+            <MenuItem value="">Select an Activity</MenuItem>
+            {allActivities.map((activityItem) => (
+              <MenuItem key={activityItem._id} value={activityItem._id}>
+                {activityItem.title || "Untitled Activity"}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid size={isMobile ? 12 : 1.6}>
+        <FormControl fullWidth>
+          <Select value="" sx={{ background: "#fff" }}>
+            <MenuItem value="yes">Yea</MenuItem>
+            <MenuItem value="no">Nay</MenuItem>
+            <MenuItem value="other">Other</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid size={1}>
+        <DeleteForeverIcon sx={{ opacity: 0.5 }} />
+      </Grid>
+    </Grid>
+  </Grid>
+)}
+ 
+ 
 
                     {/* Activities Repeater Ends */}
 
@@ -3069,22 +3015,42 @@ export default function AddSenator(props) {
               Add Another Term
             </Button>
 
-            <Snackbar
-              open={openSnackbar}
-              autoHideDuration={6000}
-              onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MuiAlert
-                onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                sx={{ width: "100%" }}
-                elevation={6}
-                variant="filled"
-              >
-                {snackbarMessage}
-              </MuiAlert>
-            </Snackbar>
+           <Snackbar
+  open={openSnackbar}
+  autoHideDuration={6000}
+  onClose={handleSnackbarClose}
+  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+>
+  <MuiAlert
+    onClose={handleSnackbarClose}
+    severity={snackbarSeverity}
+    sx={{
+      width: "100%",
+      bgcolor:
+        snackbarMessage === "Changes Published successfully!"
+          ? "#daf4f0"
+          : undefined,
+      "& .MuiAlert-icon": {
+        color:
+          snackbarMessage === "Changes Published successfully!"
+            ? "#099885"
+            : undefined,
+      },
+      "& .MuiAlert-message": {
+        color:
+          snackbarMessage === "Changes Published successfully!"
+            ? "#099885"
+            : undefined,
+            
+      },
+    }}
+    elevation={6}
+    variant="filled"
+  >
+    {snackbarMessage}
+  </MuiAlert>
+</Snackbar>
+
           </Stack>
           <Box sx={{ mb: "50px" }}>
             <Footer />

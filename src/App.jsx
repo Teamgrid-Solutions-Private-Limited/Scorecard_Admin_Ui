@@ -19,6 +19,7 @@ import Activity from '../src/Activity/Activity';
 import AddActivity from '../src/Activity/AddActivity';
 import AddUser from "../src/Authentication/components/AddUser";
 import ManageUser from "../src/Authentication/components/ManageUser";
+import LoginPage from './Authentication/components/LoginPage';
 
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
@@ -29,7 +30,7 @@ export default function App() {
   return (
     <Router basename="/scorecard/admin">
       <Routes>
-        <Route path="/login" element={<SignIn />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />
         <Route path="add-senator" element={<PrivateRoute element={<SaveSenetors />} />} />
         <Route path="edit-senator/:id" element={<PrivateRoute element={<SaveSenetors />} />} />
