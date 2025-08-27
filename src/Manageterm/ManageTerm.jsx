@@ -162,7 +162,7 @@ export default function ManageTerm(props) {
           }}
         >
           <FixedHeader />
-          <MobileHeader/>
+          <MobileHeader />
           <Box
             sx={{
               mx: "auto",
@@ -306,42 +306,46 @@ export default function ManageTerm(props) {
                           />
                         </Stack>
                       ) : (
-                            <Stack direction="row" spacing={1} alignItems="center">
-      <Typography variant="body1">
-        {index + 1}. {term.name}
-      </Typography>
-     
-        <Paper
-          elevation={0}
-          sx={{
-            px: 1.5,
-            py: 0.5,
-            borderRadius: 1,
-            bgcolor: "primary.main",
-            color: "#fff",
-            fontSize: "0.8rem",
-            fontWeight: 500,
-            cursor: "pointer",
-          }}
-        >
-          Congress: {term.congresses.map((c) => c).join(", ")}
-        </Paper>
-  
-    </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography variant="body1">
+                            {index + 1}. {term.name}
+                          </Typography>
+
+                          <Paper
+                            elevation={0}
+                            sx={{
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: 1,
+                              bgcolor: "primary.main",
+                              color: "#fff",
+                              fontSize: "0.8rem",
+                              fontWeight: 500,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Congress: {term.congresses.map((c) => c).join(", ")}
+                          </Paper>
+                        </Stack>
                       )}
 
                       <Box sx={{ display: "flex", gap: 0.5 }}>
                         {editingId === term._id ? (
                           <>
                             <Tooltip title="Save changes">
-                              <IconButton
-                                color="primary"
-                                onClick={() => handleSaveChanges(term._id)}
-                                disabled={!editedStartYear.trim() || !editedEndYear.trim()}
-                                size="small"
-                              >
-                                <Save fontSize="small" />
-                              </IconButton>
+                              <span>
+                                <IconButton
+                                  color="primary"
+                                  onClick={() => handleSaveChanges(term._id)}
+                                  disabled={
+                                    !editedStartYear.trim() ||
+                                    !editedEndYear.trim()
+                                  }
+                                  size="small"
+                                >
+                                  <Save fontSize="small" />
+                                </IconButton>
+                              </span>
                             </Tooltip>
                             <Tooltip title="Cancel">
                               <IconButton
@@ -354,7 +358,8 @@ export default function ManageTerm(props) {
                             </Tooltip>
                           </>
                         ) : (
-                          <Tooltip title="Edit term">
+                            <Tooltip title="Edit term">
+                              <span>
                             <IconButton
                               color="primary"
                               onClick={() => handleEditTerm(term)}
@@ -363,6 +368,7 @@ export default function ManageTerm(props) {
                             >
                               <Edit fontSize="small" />
                             </IconButton>
+                          </span>
                           </Tooltip>
                         )}
                       </Box>
@@ -386,7 +392,7 @@ export default function ManageTerm(props) {
                 </Box>
               )}
             </Paper>
-             <Footer />
+            <Footer />
           </Box>
         </Box>
       </Box>
