@@ -497,9 +497,6 @@ export default function Addrepresentative(props) {
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
-<<<<<<< HEAD
-        const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
-=======
         const matchedTerm = terms?.find((t) => {
        // Case 1: term.termId is an object with name property
        if (term.termId && typeof term.termId === "object" && term.termId.name) {
@@ -516,7 +513,6 @@ export default function Addrepresentative(props) {
        // Case 4: No valid termId found
        return false;
      });
->>>>>>> dev-test
         // Transform votesScore with the same logic as house data
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
@@ -1188,16 +1184,10 @@ export default function Addrepresentative(props) {
               mt: { xs: 8, md: 4 },
             }}
           >
-<<<<<<< HEAD
-            {userRole &&
-              formData.publishStatus !== "published" &&
-              statusData && (
-=======
              {userRole &&
               formData.publishStatus &&
               statusData &&
               (formData.publishStatus !== "published" || localChanges.length > 0) && (
->>>>>>> dev-test
                 <Box
                   sx={{
                     width: "98%",
@@ -1217,17 +1207,6 @@ export default function Addrepresentative(props) {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-<<<<<<< HEAD
-                        backgroundColor: `rgba(${
-                          formData.publishStatus === "draft"
-                            ? "66, 165, 245"
-                            : formData.publishStatus === "under review"
-                            ? "230, 81, 0"
-                            : formData.publishStatus === "published"
-                            ? "76, 175, 80"
-                            : "244, 67, 54"
-                        }, 0.2)`,
-=======
                         backgroundColor: `rgba(${formData.publishStatus === "draft"
                             ? "66, 165, 245"
                             : formData.publishStatus === "under review"
@@ -1236,7 +1215,6 @@ export default function Addrepresentative(props) {
                                 ? "76, 175, 80"
                                 : "244, 67, 54"
                           }, 0.2)`,
->>>>>>> dev-test
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
@@ -1246,11 +1224,7 @@ export default function Addrepresentative(props) {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
-<<<<<<< HEAD
-
-=======
  
->>>>>>> dev-test
                     <Box sx={{ flex: 1 }}>
                       {/* Header: title + pending count (admin only) */}
                       <Box
@@ -1509,11 +1483,8 @@ export default function Addrepresentative(props) {
                   </Box>
                 </Box>
               )}
-<<<<<<< HEAD
-=======
  
  
->>>>>>> dev-test
 
             <Stack
               direction="row"
@@ -2473,7 +2444,7 @@ export default function Addrepresentative(props) {
                 </MuiAlert>
             </Snackbar>
           </Stack>
-          <Box sx={{ mb: "50px" }}>
+          <Box sx={{ mb: "40px",mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

@@ -242,19 +242,12 @@ export default function AddSenator(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-<<<<<<< HEAD
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
-=======
       return `${termPrefix.replace("term", "Term ")}: ${
         fieldLabels[actualField] || actualField
       }`;
       return `${termPrefix.replace("term", "Term ")}: ${
         fieldLabels[actualField] || actualField
       }`;
->>>>>>> dev-test
     }
     return fieldLabels[field] || field;
   };
@@ -653,36 +646,6 @@ export default function AddSenator(props) {
   // };
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
-<<<<<<< HEAD
-  const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
-  
-  setSenatorTermData((prev) => {
-    const newTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
-        : term
-    );
-    
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-    const isActualChange = compareValues(value, originalVote[field]);
-    
-    if (isActualChange && !localChanges.includes(voteChangeId)) {
-      setLocalChanges((prev) => [...prev, voteChangeId]);
-    } else if (!isActualChange && localChanges.includes(voteChangeId)) {
-      setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
-    }
-    
-    return newTerms;
-  });
-};
-=======
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
 
     setSenatorTermData((prev) => {
@@ -711,28 +674,18 @@ export default function AddSenator(props) {
       return newTerms;
     });
   };
->>>>>>> dev-test
 
   const handleAddActivity = (termIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
           ? {
-<<<<<<< HEAD
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: "", score: "" },
-            ],
-          }
-=======
               ...term,
               activitiesScore: [
                 ...term.activitiesScore,
                 { activityId: "", score: "" },
               ],
             }
->>>>>>> dev-test
           : term
       )
     );
@@ -752,70 +705,6 @@ export default function AddSenator(props) {
       )
     );
   };
-<<<<<<< HEAD
-  // const handleActivityChange = (termIndex, activityIndex, field, value) => {
-  //   // Construct the field name for change tracking
-  //   // Construct a unique identifier for this activity change
-  //   const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex+1}`;
-    
-  //   // Update local changes if not already tracked
-  //   setLocalChanges((prev) => 
-  //     prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
-  //   );
-  //   // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
-
-  //   // Update local changes if not already tracked
-  //   // setLocalChanges((prev) =>
-  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-  //   // );
-
-  //   // Update the actual term data
-  //   setSenatorTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //           ...term,
-  //           activitiesScore: term.activitiesScore.map((activity, i) =>
-  //             i === activityIndex ? { ...activity, [field]: value } : activity
-  //           ),
-  //         }
-  //         : term
-  //     )
-  //   );
-  // };
-
-const handleActivityChange = (termIndex, activityIndex, field, value) => {
-  const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
-
-  setSenatorTermData((prev) => {
-    const newTerms = prev.map((term, idx) => {
-      if (idx !== termIndex) return term;
-
-      const newActivities = term.activitiesScore.map((activity, i) => 
-        i === activityIndex ? { ...activity, [field]: value } : activity
-      );
-
-      return { ...term, activitiesScore: newActivities };
-    });
-
-    // Compare with original data if available
-    const originalTerm = originalTermData[termIndex] || {};
-    const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
-    const isActualChange = compareValues(value, originalActivity[field]);
-
-    setLocalChanges((prevChanges) => {
-      if (isActualChange && !prevChanges.includes(activityChangeId)) {
-        return [...prevChanges, activityChangeId];
-      } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
-        return prevChanges.filter(f => f !== activityChangeId);
-      }
-      return prevChanges;
-    });
-
-    return newTerms;
-  });
-};
-=======
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${
@@ -851,7 +740,6 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
       return newTerms;
     });
   };
->>>>>>> dev-test
 
   const contentRefs = useRef([]);
   const handleEditorChange = useCallback((content, termIndex) => {
@@ -896,11 +784,7 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
         currentTerm: false,
         termId: null,
         editedFields: [], // Initialize empty
-<<<<<<< HEAD
-      fieldEditors: {}, // Initialize empty
-=======
         fieldEditors: {}, // Initialize empty
->>>>>>> dev-test
         isNew: true,
       },
     ]);
@@ -1117,43 +1001,8 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
           isNew: false,
-<<<<<<< HEAD
-          votesScore
-          // :
-          //   term.votesScore?.length > 0
-          //     ? term.votesScore.map((vote) => {
-          //       let scoreValue = "";
-          //       const dbScore = vote.score?.toLowerCase();
-
-          //       if (dbScore?.includes("yea")) {
-          //         scoreValue = "Yes";
-          //       } else if (dbScore?.includes("nay")) {
-          //         scoreValue = "No";
-          //       } else if (dbScore?.includes("other")) {
-          //         scoreValue = "Neutral";
-          //       } else {
-          //         scoreValue = vote.score || "";
-          //       }
-
-          //       return {
-          //         voteId: vote.voteId?._id || vote.voteId || null,
-          //         score: scoreValue,
-          //       };
-          //     })
-          //     : [{ voteId: "", score: "" }]
-          ,
-          activitiesScore:
-            term.activitiesScore?.length > 0
-              ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || "",
-                score: activity.score || "",
-              }))
-              : [{ activityId: "", score: "" }],
-=======
           votesScore,
           activitiesScore,
->>>>>>> dev-test
         };
       });
       setSenatorTermData(termsData);
@@ -1194,13 +1043,9 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
   }, [formData, originalFormData]);
 
   useEffect(() => {
-<<<<<<< HEAD
-  if (originalFormData && formData && originalTermData && senatorTermData) {
-=======
     if (!originalFormData || !formData || !originalTermData || !senatorTermData)
       return;
 
->>>>>>> dev-test
     const changes = [];
 
     // Track senator-level changes
@@ -1262,20 +1107,6 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
           if (JSON.stringify(current) !== JSON.stringify(original)) {
             changes.push(`term${termIndex}_${key}`);
           }
-<<<<<<< HEAD
-        });
-      } else {
-        // Existing term logic
-        const originalTerm = originalTermData[termIndex] || {};
-        Object.keys(term).forEach((key) => {
-          if (["_id", "senateId", "editedFields", "fieldEditors"].includes(key))
-            return;
- 
-          if (key === "votesScore" || key === "activitiesScore") {
-            const current = JSON.stringify(term[key]);
-            const original = JSON.stringify(originalTerm[key] || []);
-            if (current !== original) {
-=======
         } else {
           const currentValue = term[key];
           const originalValue = originalTerm[key];
@@ -1290,7 +1121,6 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
             }
           } else {
             if ((currentValue || "") !== (originalValue || "")) {
->>>>>>> dev-test
               changes.push(`term${termIndex}_${key}`);
             }
           }
@@ -1553,13 +1383,8 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
 
         const termUpdate = {
           ...term,
-<<<<<<< HEAD
-          votesScore: transformedVotesScore, // Use the transformed array
-            activitiesScore: transformedTrackedActivity,
-=======
           votesScore: transformedVotesScore,
           activitiesScore: transformedTrackedActivity,
->>>>>>> dev-test
           isNew: false,
           senateId: id,
           editedFields: termChanges,
@@ -1891,10 +1716,6 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
                                 return `Term ${termNumber}: Scored Vote`;
                               }
                               if (category === "activitiesScore") {
-<<<<<<< HEAD
-                                
-=======
->>>>>>> dev-test
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
                               return `Term ${termNumber}: ${
@@ -2587,7 +2408,7 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
                               my: 0,
                             }}
                           >
-                            Term Summary {summaryIndex + 1}
+                            Term Summary 
                           </InputLabel>
                         </Grid>
 
@@ -2663,7 +2484,7 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
                     ))}
                     {/*term repeater end*/}
                     <Grid size={1}></Grid>
-                    <Grid size={10} sx={{ textAlign: "right" }}>
+                    {/* <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
                         sx={{
@@ -2680,7 +2501,7 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
                       >
                         Add Another Summary
                       </Button>
-                    </Grid>
+                    </Grid> */}
                     <Grid size={1}></Grid>
                     {/* Vote Repeater Start */}
                     {term.termId ? (
@@ -3282,7 +3103,7 @@ const handleActivityChange = (termIndex, activityIndex, field, value) => {
 </Snackbar>
 
           </Stack>
-          <Box sx={{ mb: "50px" }}>
+          <Box sx={{ mb: "40px" ,mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

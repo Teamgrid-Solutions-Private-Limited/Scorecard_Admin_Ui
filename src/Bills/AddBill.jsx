@@ -1484,7 +1484,7 @@ export default function AddBill(props) {
               </Box>
             </Paper>
           </Stack>
-         <Box sx={{ mb: "50px" }}>
+         <Box sx={{ mb: "40px",mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

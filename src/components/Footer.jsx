@@ -5,14 +5,14 @@ const Footer = () => {
   return (
    <Box
       sx={{
-        m: "20px",
+        mx: "20px",
         // ml: { xs: "20px", md: "260px" },
         // backgroundColor: "#fff",
                 // backgroundColor: "#ab4141ff",
  
-        padding: "10px",
+        padding: "0px",
         textAlign: "center",
-        marginTop: "60px",
+        marginTop: "40px",
         borderRadius: "6px",
       }}
     >
