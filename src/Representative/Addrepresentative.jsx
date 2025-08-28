@@ -1179,9 +1179,10 @@ export default function Addrepresentative(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 2,
+              mx: 3,
               // pb: 5,
-              mt: { xs: 8, md: 4 },
+              mt: { xs: 8, md: 2 },
+              gap:1
             }}
           >
              {userRole &&
@@ -1527,7 +1528,7 @@ export default function Addrepresentative(props) {
               </Button>
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%", bgcolor:"#fff" }}>
+            <Paper  sx={{ width: "100%", bgcolor:"#fff",borderRadius:0.8,border:'1px solid',borderColor:'divider', }} >
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1825,18 +1826,21 @@ export default function Addrepresentative(props) {
               </Box>
             </Paper>
 
-            <div className="spacer"></div>
 
             {/* Render each term in houseTermData */}
             {houseTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-                elevation={2}
+               
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
-                   bgcolor:"#fff"
+                   bgcolor:"#fff",
+                  borderRadius: 0.8,
+                  border:'1px solid',
+                  borderColor:'divider'
+                
                 }}
               >
                 <Box sx={{ padding: 5 }}>
@@ -2444,7 +2448,7 @@ export default function Addrepresentative(props) {
                 </MuiAlert>
             </Snackbar>
           </Stack>
-          <Box sx={{ mb: "40px",mx:"15px" }}>
+          <Box sx={{ mb: "40px" ,mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

@@ -466,7 +466,7 @@ export default function Senator(props) {
             spacing={2}
             sx={{
               alignItems: { xs: "stretch", md: "center" },
-              mx: { xs: 0, md: 2 },
+              mx: { xs: 0, md: 3 },
               pb: { xs: 2, md: 5 },
               mt: { xs: 2, md: 4 },
             }}
@@ -480,9 +480,18 @@ export default function Senator(props) {
                 alignItems: { xs: "stretch", sm: "center" },
                 mt: { xs: 2, md: 4 },
                 gap: 2,
+                // bgcolor: "#fff",
+                // borderTop: "1px solid ",
+                // borderLeft: "1px solid ",
+                // borderRight: "1px solid ",
+                // borderTopLeftRadius: 8,
+                // borderTopRightRadius: 8,
+                // borderColor: "divider",
+                // py: 3,
+                // mx:2.5
               }}
             >
-              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } }}>
+              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } ,ml:2}}>
                 All Senators
               </Typography>
               {userRole === "admin" && (
@@ -507,7 +516,7 @@ export default function Senator(props) {
               </Box>
             )}
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" } }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" },mr:2 }}>
                  {/* Mobile: Show Fetch button above search/filter */}
             
                 <TextField

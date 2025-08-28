@@ -284,9 +284,17 @@ const statusOptions = ["published", "draft", "under review"];
                  alignItems: { xs: "stretch", sm: "center" },
                 mt: { xs: 2, md: 4 },
                 gap: 2,
+                // bgcolor: "#fff",
+                // borderTop: "1px solid ",
+                // borderLeft: "1px solid ",
+                // borderRight: "1px solid ",
+                // borderTopLeftRadius: 8,
+                // borderTopRightRadius: 8,
+                // borderColor: "divider",
+                // py: 3,
               }}
             >
-              <Typography component="h2" variant="h6">
+              <Typography component="h2" variant="h6" >
                 All Activities
               </Typography>
               <Stack
@@ -417,7 +425,7 @@ const statusOptions = ["published", "draft", "under review"];
                 </Box>
               </Stack>
 
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center" >
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
                   sx={{

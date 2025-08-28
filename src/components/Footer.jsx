@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material";
 import digitalAlchemy from "../../src/assets/image/digital-alchemy.png";
 const Footer = () => {
   return (
-   <Box
+  <Box
       sx={{
         mx: "20px",
         // ml: { xs: "20px", md: "260px" },
@@ -16,6 +16,7 @@ const Footer = () => {
         borderRadius: "6px",
       }}
     >
+ 
       <Box
         sx={{
           display: "flex",

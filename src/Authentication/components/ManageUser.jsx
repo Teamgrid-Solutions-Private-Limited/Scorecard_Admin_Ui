@@ -209,14 +209,22 @@ export default function ManageUser(props) {
         <Box sx={{ flexGrow: 1, width: "80%",  }}>
           <FixedHeader />
           <MobileHeader/>
-          <Box sx={{ maxWidth: "100%", mt: 4,mx:2 }}>
+          <Box sx={{ maxWidth: "100%", mt: 4,mx:3, }}>
             <Stack
               direction="row"
               justifyContent="space-between"
               alignItems="center"
               mb={3}
+              // sx={{ bgcolor: "#fff",
+              //   borderTop: "1px solid ",
+              //   borderLeft: "1px solid ",
+              //   borderRight: "1px solid ",
+              //   borderTopLeftRadius: 8,
+              //   borderTopRightRadius: 8,
+              //   borderColor: "divider",
+              //   py: 3, px:2}}
             >
-              <Typography variant="h5" fontWeight="bold">
+              <Typography variant="h5" fontWeight="bold" >
                 Manage Users
               </Typography>
               <Button

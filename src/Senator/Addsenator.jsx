@@ -265,7 +265,7 @@ export default function AddSenator(props) {
     {
       senateId: id,
       summary: "",
-      summaries: [{ content: "" }],
+      // summaries: [{ content: "" }],
       rating: "",
       votesScore: [{ voteId: "", score: "" }], // Start with empty, will be populated when term is selected
       activitiesScore: [{ activityId: "", score: "" }],
@@ -486,34 +486,60 @@ export default function AddSenator(props) {
   };
 
   // Handle changes to a specific summary
-  const handleSummaryChange = (termIndex, summaryIndex, content) => {
-    const fieldName = `term${termIndex}_summary_${summaryIndex + 1}`;
+  // const handleSummaryChange = (termIndex, summaryIndex, content) => {
+  //   const fieldName = `term${termIndex}_summary_${summaryIndex + 1}`;
 
-    setSenatorTermData((prev) => {
-      const newTerms = prev.map((term, idx) => {
-        if (idx !== termIndex) return term;
+  //   setSenatorTermData((prev) => {
+  //     const newTerms = prev.map((term, idx) => {
+  //       if (idx !== termIndex) return term;
 
-        const newSummaries = [...term.summaries];
-        newSummaries[summaryIndex] = { content: content };
+  //       const newSummaries = [...term.summaries];
+  //       newSummaries[summaryIndex] = { content: content };
 
-        return { ...term, summaries: newSummaries };
-      });
+  //       return { ...term, summaries: newSummaries };
+  //     });
 
-      // Compare with original data
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalSummary =
-        originalTerm.summaries?.[summaryIndex]?.content || "";
-      const isActualChange = compareValues(content, originalSummary);
+  //     // Compare with original data
+  //     const originalTerm = originalTermData[termIndex] || {};
+  //     const originalSummary =
+  //       originalTerm.summaries?.[summaryIndex]?.content || "";
+  //     const isActualChange = compareValues(content, originalSummary);
 
-      if (isActualChange && !localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => [...prev, fieldName]);
-      } else if (!isActualChange && localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
-      }
+  //     if (isActualChange && !localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => [...prev, fieldName]);
+  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+  //     }
 
-      return newTerms;
+  //     return newTerms;
+  //   });
+  // };
+
+  const handleSummaryChange = (termIndex, content) => {
+  const fieldName = `term${termIndex}_summary`;
+ 
+  setSenatorTermData((prev) => {
+    const newTerms = prev.map((term, idx) => {
+      if (idx !== termIndex) return term;
+ 
+      return { ...term, summary: content };
     });
-  };
+ 
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalSummary = originalTerm.summary || "";
+    const isActualChange = compareValues(content, originalSummary);
+ 
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+    }
+ 
+    return newTerms;
+  });
+};
+ 
 
   const handleAddVote = (termIndex) => {
     setSenatorTermData((prev) =>
@@ -531,37 +557,37 @@ export default function AddSenator(props) {
   // ... (previous functions remain the same)
 
   // Add a new summary to a specific term
-  const handleAddSummary = (termIndex) => {
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-              ...term,
-              summaries: [...term.summaries, { content: "" }],
-            }
-          : term
-      )
-    );
-  };
+  // const handleAddSummary = (termIndex) => {
+  //   setSenatorTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //             ...term,
+  //             summaries: [...term.summaries, { content: "" }],
+  //           }
+  //         : term
+  //     )
+  //   );
+  // };
 
   // Remove a summary from a specific term
-  const handleRemoveSummary = (termIndex, summaryIndex) => {
-    // Don't allow removing if there's only one summary left
-    if (senatorTermData[termIndex].summaries.length <= 1) {
-      return;
-    }
+  // const handleRemoveSummary = (termIndex, summaryIndex) => {
+  //   // Don't allow removing if there's only one summary left
+  //   if (senatorTermData[termIndex].summaries.length <= 1) {
+  //     return;
+  //   }
 
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-              ...term,
-              summaries: term.summaries.filter((_, i) => i !== summaryIndex),
-            }
-          : term
-      )
-    );
-  };
+  //   setSenatorTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //             ...term,
+  //             summaries: term.summaries.filter((_, i) => i !== summaryIndex),
+  //           }
+  //         : term
+  //     )
+  //   );
+  // };
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -777,7 +803,7 @@ export default function AddSenator(props) {
       {
         senateId: id,
         summary: "",
-        summaries: [{ content: "" }],
+        // summaries: [{ content: "" }],
         rating: "",
         votesScore: [{ voteId: "", score: "" }], // Start with empty, will be populated when term is selected
         activitiesScore: [{ activityId: "", score: "" }],
@@ -988,13 +1014,13 @@ export default function AddSenator(props) {
 
         return {
           _id: term._id,
-          // summary: term.summary || "",
-          summaries:
-            term.summaries && term.summaries.length > 0
-              ? term.summaries.map((s) =>
-                  typeof s === "string" ? { content: s } : s
-                )
-              : [{ content: "" }],
+          summary: term.summary || "",
+          // summaries:
+          //   term.summaries && term.summaries.length > 0
+          //     ? term.summaries.map((s) =>
+          //         typeof s === "string" ? { content: s } : s
+          //       )
+          //     : [{ content: "" }],
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
           currentTerm: term.currentTerm || false,
@@ -1012,8 +1038,8 @@ export default function AddSenator(props) {
       const defaultTerm = [
         {
           senateId: id,
-          // summary: "",
-          summaries: [{ content: "" }], // ✅ use only summaries
+          summary: "",
+          // summaries: [{ content: "" }], // ✅ use only summaries
           rating: "",
           votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: "", score: "" }],
@@ -1079,25 +1105,15 @@ export default function AddSenator(props) {
         )
           return;
 
-        if (key === "summaries") {
-          const currentSummaries = term.summaries || [];
-          const originalSummaries = originalTerm.summaries || [];
-
-          currentSummaries.forEach((s, sIndex) => {
-            const orig = originalSummaries[sIndex];
-            // Track only if content is changed
-            if (orig) {
-              if ((s?.content || "").trim() !== (orig?.content || "").trim()) {
-                changes.push(`term${termIndex}_summary_${sIndex + 1}`);
-              }
-            } else {
-              // New summary: only track if user typed something
-              if ((s?.content || "").trim() !== "") {
-                changes.push(`term${termIndex}_summary_${sIndex + 1}`);
-              }
-            }
-          });
-        } else if (["votesScore", "activitiesScore"].includes(key)) {
+         if (key === "summary") {
+  const currentSummary = term.summary || "";
+  const originalSummary = originalTerm.summary || "";
+ 
+  // Track only if content is changed
+  if (currentSummary.trim() !== originalSummary.trim()) {
+    changes.push(`term${termIndex}_summary`);
+  }
+} else if (["votesScore", "activitiesScore"].includes(key)) {
           const current = (term[key] || []).filter((item) =>
             Object.values(item).some((val) => val !== "" && val !== null)
           );
@@ -1390,10 +1406,11 @@ export default function AddSenator(props) {
           editedFields: termChanges,
           fieldEditors: updatedFieldEditors,
           // Map each summary to include the corresponding congress
-          summaries: term.summaries.map((summary, summaryIndex) => ({
-            ...summary,
-            congress: congressArray[summaryIndex] || null, // Get the congress at the same index
-          })),
+          // summaries: term.summaries.map((summary, summaryIndex) => ({
+          //   ...summary,
+          //   congress: congressArray[summaryIndex] || null, // Get the congress at the same index
+          // })),
+          summary:term.summary
         };
 
         return term._id
@@ -1483,22 +1500,7 @@ export default function AddSenator(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      // published: {
-      //   backgroundColor: "rgba(255, 193, 7, 0.12)",
-      //   borderColor: "#FFC107",
-      //   iconColor: "#FFA000",
-      //   icon: null,
-      //   // title: "Published",
-      //   description:
-      //     editedFields.length > 0
-      //       ? `Edited fields: ${editedFields
-      //           .map((f) => fieldLabels[f] || f)
-      //           .join(", ")}`
-      //       : "Published and live",
-      //   titleColor: "#5D4037",
-      //   descColor: "#795548",
-      // },
-       published: {
+         published: {
         backgroundColor: "rgba(76, 175, 80, 0.12)",
         borderColor: "#4CAF50",
         iconColor: "#2E7D32",
@@ -1511,6 +1513,7 @@ export default function AddSenator(props) {
         titleColor: "#2E7D32",
         descColor: "#388E3C",
       },
+      
     };
     return configs[currentStatus];
   };
@@ -1584,9 +1587,10 @@ export default function AddSenator(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 2,
+              mx: 3,
               // pb: 5,
-              mt: { xs: 8, md: 4 },
+              mt: { xs: 8, md: 2 },
+              gap:1
             }}
           >
             {userRole &&
@@ -1952,7 +1956,7 @@ export default function AddSenator(props) {
               </Button> */}
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%" , bgcolor:"#fff" }}>
+            <Paper  sx={{ width: "100%" , bgcolor:"#fff",borderRadius:0.8, border:'1px solid' , borderColor:'divider' }}> 
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -2246,18 +2250,21 @@ export default function AddSenator(props) {
               </Box>
             </Paper>
 
-            <div className="spacer"></div>
+           
 
             {/* Render each term in senatorTermData */}
             {senatorTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-                elevation={2}
+             
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
                   bgcolor: "#fff",
+                  borderRadius: 0.8,
+                  border: "1px solid",
+                  borderColor: "divider",
                 }}
               >
                 <Box sx={{ padding: 5 }}>
@@ -2394,9 +2401,62 @@ export default function AddSenator(props) {
                       </FormControl>
                     </Grid>
                     {/*term repeater start*/}
-                    {term?.summaries?.map((summary, summaryIndex) => (
+                    <Grid size={isMobile ? 12 : 2}>
+  <InputLabel
+    sx={{
+      display: "flex",
+      justifyContent: isMobile ? "flex-start" : "flex-end",
+      fontWeight: 700,
+      my: 0,
+    }}
+  >
+    Term Summary
+  </InputLabel>
+</Grid>
+ 
+{/* Editor Column */}
+<Grid size={isMobile ? 12 : 9.05}>
+<Editor
+  tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+  licenseKey="gpl"
+  onInit={(_evt, editor) => (editorRef.current = editor)}
+  value={term?.summary || ""}
+  onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
+  init={{
+    base_url: "/scorecard/admin/tinymce",
+    height: 250,
+    menubar: false,
+    plugins: [
+      "advlist",
+      "autolink",
+      "lists",
+      "link",
+      "image",
+      "charmap",
+      "preview",
+      "anchor",
+      "searchreplace",
+      "visualblocks",
+      "code",
+      "fullscreen",
+      "insertdatetime",
+      "media",
+      "table",
+      "code",
+      "help",
+      "wordcount",
+    ],
+    toolbar:
+      "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+    content_style:
+      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+    directionality: "ltr",
+  }}
+/>
+</Grid>
+                    {/* {term?.summaries?.map((summary, summaryIndex) => (
                       <>
-                        {/* Label Column */}
+                        
                         <Grid size={isMobile ? 12 : 2}>
                           <InputLabel
                             sx={{
@@ -2412,7 +2472,7 @@ export default function AddSenator(props) {
                           </InputLabel>
                         </Grid>
 
-                        {/* Editor Column */}
+                        
                         <Grid size={isMobile ? 12 : 9.05}>
                           <Editor
                             tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
@@ -2460,7 +2520,7 @@ export default function AddSenator(props) {
                             }}
                           />
                         </Grid>
-                        {/* Delete Column */}
+                        
                         <Grid
                           gridColumn={{ xs: 12, sm: 1 }}
                           sx={{
@@ -2476,12 +2536,12 @@ export default function AddSenator(props) {
                               sx={{ cursor: "pointer", color: "black" }}
                             />
                           ) : (
-                            // Empty placeholder to keep alignment
+                            
                             <Box sx={{ width: 24, height: 24 }} />
                           )}
                         </Grid>
                       </>
-                    ))}
+                    ))} */}
                     {/*term repeater end*/}
                     <Grid size={1}></Grid>
                     {/* <Grid size={10} sx={{ textAlign: "right" }}>
