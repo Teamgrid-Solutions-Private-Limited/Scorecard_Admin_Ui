@@ -26,7 +26,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../Dashboard/global/common";
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -92,11 +92,11 @@ export default function Addrepresentative(props) {
   const [localChanges, setLocalChanges] = useState([]);
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
-   const [componentKey, setComponentKey] = useState(0);
-       const theme = useTheme();
-     const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
-    
-    const navigate = useNavigate();
+  const [componentKey, setComponentKey] = useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+
+  const navigate = useNavigate();
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -126,9 +126,8 @@ export default function Addrepresentative(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -168,28 +167,28 @@ export default function Addrepresentative(props) {
   //   );
   // };
 
-    const handleTermChange = (e, termIndex) => {
+  const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
-   
-       setHouseTermData((prev) => {
-    const newTerms = prev.map((term, index) =>
-      index === termIndex ? { ...term, [name]: value } : term
-    );
-    
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const isActualChange = compareValues(value, originalTerm[name]);
-    
-    if (isActualChange && !localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    } else if (!isActualChange && localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
-    }
-    
-    return newTerms;
-  });
-   
+
+    setHouseTermData((prev) => {
+      const newTerms = prev.map((term, index) =>
+        index === termIndex ? { ...term, [name]: value } : term
+      );
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const isActualChange = compareValues(value, originalTerm[name]);
+
+      if (isActualChange && !localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => [...prev, fieldName]);
+      } else if (!isActualChange && localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+      }
+
+      return newTerms;
+    });
+
   };
   // const handleSwitchChange = (e, termIndex) => {
   //   const fieldName = `term${termIndex}_${e.target.name}`;
@@ -208,26 +207,26 @@ export default function Addrepresentative(props) {
 
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
-     const fieldName = `term${termIndex}_${name}`;
-    
-    
+    const fieldName = `term${termIndex}_${name}`;
+
+
     setHouseTermData((prev) => {
-    const newTerms = prev.map((term, index) =>
-      index === termIndex ? { ...term, [name]: checked } : term
-    );
-    
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const isActualChange = compareValues(checked, originalTerm[name]);
-    
-    if (isActualChange && !localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    } else if (!isActualChange && localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
-    }
-    
-    return newTerms;
-  });
+      const newTerms = prev.map((term, index) =>
+        index === termIndex ? { ...term, [name]: checked } : term
+      );
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const isActualChange = compareValues(checked, originalTerm[name]);
+
+      if (isActualChange && !localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => [...prev, fieldName]);
+      } else if (!isActualChange && localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+      }
+
+      return newTerms;
+    });
   };
 
 
@@ -237,9 +236,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: "", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -250,9 +249,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       )
     );
@@ -288,47 +287,47 @@ export default function Addrepresentative(props) {
   // };
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
-  const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
- 
-  
-  setHouseTermData((prev) => {
-    const newTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
+    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
+
+
+    setHouseTermData((prev) => {
+      const newTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
             ...term,
             votesScore: term.votesScore.map((vote, i) =>
               i === voteIndex ? { ...vote, [field]: value } : vote
             ),
           }
-        : term
-    );
-    
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-    const isActualChange = compareValues(value, originalVote[field]);
-    
-    if (isActualChange && !localChanges.includes(voteChangeId)) {
-      setLocalChanges((prev) => [...prev, voteChangeId]);
-    } else if (!isActualChange && localChanges.includes(voteChangeId)) {
-      setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
-    }
-    
-    return newTerms;
-  });
-};
+          : term
+      );
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalVote = originalTerm.votesScore?.[voteIndex] || {};
+      const isActualChange = compareValues(value, originalVote[field]);
+
+      if (isActualChange && !localChanges.includes(voteChangeId)) {
+        setLocalChanges((prev) => [...prev, voteChangeId]);
+      } else if (!isActualChange && localChanges.includes(voteChangeId)) {
+        setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
+      }
+
+      return newTerms;
+    });
+  };
 
   const handleAddActivity = (termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: "", score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: "", score: "" },
+            ],
+          }
           : term
       )
     );
@@ -339,11 +338,11 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       )
     );
@@ -379,37 +378,37 @@ export default function Addrepresentative(props) {
   // };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-  const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
- 
+    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
 
-  setHouseTermData((prev) => {
-    const newTerms = prev.map((term, idx) => {
-      if (idx !== termIndex) return term;
 
-      const newActivities = term.activitiesScore.map((activity, i) => 
-        i === activityIndex ? { ...activity, [field]: value } : activity
-      );
+    setHouseTermData((prev) => {
+      const newTerms = prev.map((term, idx) => {
+        if (idx !== termIndex) return term;
 
-      return { ...term, activitiesScore: newActivities };
+        const newActivities = term.activitiesScore.map((activity, i) =>
+          i === activityIndex ? { ...activity, [field]: value } : activity
+        );
+
+        return { ...term, activitiesScore: newActivities };
+      });
+
+      // Compare with original data if available
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
+      const isActualChange = compareValues(value, originalActivity[field]);
+
+      setLocalChanges((prevChanges) => {
+        if (isActualChange && !prevChanges.includes(activityChangeId)) {
+          return [...prevChanges, activityChangeId];
+        } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
+          return prevChanges.filter(f => f !== activityChangeId);
+        }
+        return prevChanges;
+      });
+
+      return newTerms;
     });
-
-    // Compare with original data if available
-    const originalTerm = originalTermData[termIndex] || {};
-    const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
-    const isActualChange = compareValues(value, originalActivity[field]);
-
-    setLocalChanges((prevChanges) => {
-      if (isActualChange && !prevChanges.includes(activityChangeId)) {
-        return [...prevChanges, activityChangeId];
-      } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
-        return prevChanges.filter(f => f !== activityChangeId);
-      }
-      return prevChanges;
-    });
-
-    return newTerms;
-  });
-};
+  };
 
   // Remove contentRefs for summary
 
@@ -462,13 +461,13 @@ export default function Addrepresentative(props) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
       }
 
-       // Remove any tracked changes for this term
-    setLocalChanges((prevChanges) => 
-      prevChanges.filter(
-        change => !change.startsWith(`term${termIndex}_`)
-      )
-    );
-    
+      // Remove any tracked changes for this term
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter(
+          change => !change.startsWith(`term${termIndex}_`)
+        )
+      );
+
       return prev.filter((_, index) => index !== termIndex);
     });
   };
@@ -484,56 +483,56 @@ export default function Addrepresentative(props) {
   // };
 
   const compareValues = (newVal, oldVal) => {
-  // Handle null/undefined cases
-  if (newVal == null || oldVal == null) return newVal !== oldVal;
-  
-  // Handle booleans and other primitives directly
-  if (typeof newVal !== 'object') return newVal !== oldVal;
-  
-  // Handle arrays and objects
-  return JSON.stringify(newVal) !== JSON.stringify(oldVal);
-};
+    // Handle null/undefined cases
+    if (newVal == null || oldVal == null) return newVal !== oldVal;
+
+    // Handle booleans and other primitives directly
+    if (typeof newVal !== 'object') return newVal !== oldVal;
+
+    // Handle arrays and objects
+    return JSON.stringify(newVal) !== JSON.stringify(oldVal);
+  };
 
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => {
-       // Case 1: term.termId is an object with name property
-       if (term.termId && typeof term.termId === "object" && term.termId.name) {
-         return t.name === term.termId.name;
-       }
-       // Case 2: term.termId is a string (the term name)
-       else if (typeof term.termId === "string") {
-         return t.name === term.termId;
-       }
-       // Case 3: term.termId is an ObjectId - find by ID
-       else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
-         return t._id.toString() === term.termId.toString();
-       }
-       // Case 4: No valid termId found
-       return false;
-     });
+          // Case 1: term.termId is an object with name property
+          if (term.termId && typeof term.termId === "object" && term.termId.name) {
+            return t.name === term.termId.name;
+          }
+          // Case 2: term.termId is a string (the term name)
+          else if (typeof term.termId === "string") {
+            return t.name === term.termId;
+          }
+          // Case 3: term.termId is an ObjectId - find by ID
+          else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
+            return t._id.toString() === term.termId.toString();
+          }
+          // Case 4: No valid termId found
+          return false;
+        });
         // Transform votesScore with the same logic as house data
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
             ? term.votesScore.map((vote) => {
-                let scoreValue = "";
-                const dbScore = vote.score?.toLowerCase();
-                if (dbScore?.includes("yea")) {
-                  scoreValue = "yea";
-                } else if (dbScore?.includes("nay")) {
-                  scoreValue = "nay";
-                } else if (dbScore?.includes("other")) {
-                  scoreValue = "other";
-                } else {
-                  scoreValue = vote.score || "";
-                }
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
 
-                return {
-                  voteId: vote.voteId?._id || vote.voteId || "",
-                  score: scoreValue,
-                };
-              })
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+              };
+            })
             : [{ voteId: "", score: "" }]; // Changed from empty string to null
 
         // If all voteId are null or array is empty, add a blank row
@@ -579,10 +578,10 @@ export default function Addrepresentative(props) {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId:
-                    activity.activityId?._id || activity.activityId || null,
-                  score: activity.score || "",
-                }))
+                activityId:
+                  activity.activityId?._id || activity.activityId || null,
+                score: activity.score || "",
+              }))
               : [{ activityId: "", score: "" }],
         };
       });
@@ -694,7 +693,7 @@ export default function Addrepresentative(props) {
         ? formData.editedFields
         : [];
       const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
- 
+
       setEditedFields(mergedChanges);
     }
   }, [formData, originalFormData, houseTermData, originalTermData]);
@@ -770,34 +769,34 @@ export default function Addrepresentative(props) {
   // };
 
   const handleChange = (event) => {
-  const { name, value } = event.target;
- 
-  
-  setFormData(prev => {
-    const newData = { ...prev, [name]: value };
-    
-    // Compare with original data
-    if (originalFormData) {
-      const isActualChange = compareValues(value, originalFormData[name]);
-      
-      setLocalChanges(prevChanges => {
-        if (isActualChange && !prevChanges.includes(name)) {
-          return [...prevChanges, name];
-        } else if (!isActualChange && prevChanges.includes(name)) {
-          return prevChanges.filter(field => field !== name);
-        }
-        return prevChanges;
-      });
-    }
-    
-    return newData;
-  });
-};
+    const { name, value } = event.target;
+
+
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+
+      // Compare with original data
+      if (originalFormData) {
+        const isActualChange = compareValues(value, originalFormData[name]);
+
+        setLocalChanges(prevChanges => {
+          if (isActualChange && !prevChanges.includes(name)) {
+            return [...prevChanges, name];
+          } else if (!isActualChange && prevChanges.includes(name)) {
+            return prevChanges.filter(field => field !== name);
+          }
+          return prevChanges;
+        });
+      }
+
+      return newData;
+    });
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
-   
+
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -810,6 +809,21 @@ export default function Addrepresentative(props) {
     setLoading(true);
 
     try {
+      // Prevent duplicate termId selections before any API calls
+      const termIdCounts = houseTermData
+        .map(t => t.termId)
+        .filter(Boolean)
+        .reduce((acc, id) => {
+          acc[id] = (acc[id] || 0) + 1;
+          return acc;
+        }, {});
+
+      const hasDuplicateTerms = Object.values(termIdCounts).some(count => count > 1);
+      if (hasDuplicateTerms) {
+        setLoading(false);
+        handleSnackbarOpen("Duplicate term selected. Each term can only be added once.", "error");
+        return;
+      }
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -824,26 +838,26 @@ export default function Addrepresentative(props) {
         setDeletedTermIds([]); // clear after delete
       }
 
-       // Transform localChanges to track individual vote/activity edits
-    const detailedChanges = localChanges.map(change => {
-      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId" or "term1_votesScore_0_score")
-      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
-      if (voteMatch) {
-        const [, termIdx, voteIdx] = voteMatch;
-        return `term${termIdx}_votesScore_${voteIdx}`;
-      }
-     
-      // Handle activitiesScore changes
-      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
-      if (activityMatch) {
-        const [, termIdx, activityIdx] = activityMatch;
-        return `term${termIdx}_activitiesScore_${activityIdx}`;
-      }
-     
-      return change;
-    });
+      // Transform localChanges to track individual vote/activity edits
+      const detailedChanges = localChanges.map(change => {
+        // Handle votesScore changes (e.g. "term1_votesScore_0_voteId" or "term1_votesScore_0_score")
+        const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
+        if (voteMatch) {
+          const [, termIdx, voteIdx] = voteMatch;
+          return `term${termIdx}_votesScore_${voteIdx}`;
+        }
 
-    const allChanges = [
+        // Handle activitiesScore changes
+        const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
+        if (activityMatch) {
+          const [, termIdx, activityIdx] = activityMatch;
+          return `term${termIdx}_activitiesScore_${activityIdx}`;
+        }
+
+        return change;
+      });
+
+      const allChanges = [
         ...new Set([
           ...(Array.isArray(formData.editedFields)
             ? formData.editedFields
@@ -864,23 +878,23 @@ export default function Addrepresentative(props) {
       // Update field editors with current changes
       // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-       localChanges.forEach((field) => {
-    // For senator-level fields
-    if (field in formData) {
-      if (compareValues(formData[field], originalFormData?.[field] || '')) {
-        updatedFieldEditors[field] = currentEditor;
-      }
-    }
-    // For term-level fields
-    else if (field.startsWith('term')) {
-      updatedFieldEditors[field] = currentEditor;
-    }
-  });
+      localChanges.forEach((field) => {
+        // For senator-level fields
+        if (field in formData) {
+          if (compareValues(formData[field], originalFormData?.[field] || '')) {
+            updatedFieldEditors[field] = currentEditor;
+          }
+        }
+        // For term-level fields
+        else if (field.startsWith('term')) {
+          updatedFieldEditors[field] = currentEditor;
+        }
+      });
 
       // Prepare representative update
       const representativeUpdate = {
         ...formData,
-        editedFields:allChanges,
+        editedFields: allChanges,
         fieldEditors: updatedFieldEditors,
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
@@ -917,14 +931,14 @@ export default function Addrepresentative(props) {
             score: vote.score,
           }));
 
-           const transformedTrackedActivity = term.activitiesScore.map(activity => ({
+        const transformedTrackedActivity = term.activitiesScore.map(activity => ({
           ...activity,
           activityId: activity.activityId === "" ? null : activity.activityId
         })).filter(activity => activity.activityId !== null);
 
 
-          // Get changes specific to this term
-      const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
+        // Get changes specific to this term
+        const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
 
         const termUpdate = {
           ...term,
@@ -938,8 +952,8 @@ export default function Addrepresentative(props) {
 
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateHouseData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -958,14 +972,14 @@ export default function Addrepresentative(props) {
       // }
       setOriginalFormData(JSON.parse(JSON.stringify(formData)));
       setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
-     
+
       setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -1012,30 +1026,30 @@ export default function Addrepresentative(props) {
 
 
   const handleStatusChange = (status) => {
-  const fieldName = "status"; // The field being changed
-  
+    const fieldName = "status"; // The field being changed
 
-  setFormData((prev) => {
-    const newData = { ...prev, status };
-    
-    // Compare with original value to determine if this is an actual change
-    const isActualChange = originalFormData 
-      ? status !== originalFormData.status
-      : true;
 
-    // Update local changes based on whether it's an actual change
-    setLocalChanges((prevChanges) => {
-      if (isActualChange && !prevChanges.includes(fieldName)) {
-        return [...prevChanges, fieldName];
-      } else if (!isActualChange && prevChanges.includes(fieldName)) {
-        return prevChanges.filter(field => field !== fieldName);
-      }
-      return prevChanges;
+    setFormData((prev) => {
+      const newData = { ...prev, status };
+
+      // Compare with original value to determine if this is an actual change
+      const isActualChange = originalFormData
+        ? status !== originalFormData.status
+        : true;
+
+      // Update local changes based on whether it's an actual change
+      setLocalChanges((prevChanges) => {
+        if (isActualChange && !prevChanges.includes(fieldName)) {
+          return [...prevChanges, fieldName];
+        } else if (!isActualChange && prevChanges.includes(fieldName)) {
+          return prevChanges.filter(field => field !== fieldName);
+        }
+        return prevChanges;
+      });
+
+      return newData;
     });
-
-    return newData;
-  });
-};
+  };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
@@ -1067,7 +1081,7 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-       published: {
+      published: {
         backgroundColor: "rgba(76, 175, 80, 0.12)",
         borderColor: "#4CAF50",
         iconColor: "#2E7D32",
@@ -1116,28 +1130,28 @@ export default function Addrepresentative(props) {
   const handleConfirmDiscard = async () => {
     setOpenDiscardDialog(false);
 
-  try {
-    setLoading(true);
-    await dispatch(discardHouseChanges(id)).unwrap();
-    navigate(0);
-    await dispatch(getHouseById(id));
-    await dispatch(getHouseDataByHouseId(id));
-    setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
-    setSnackbarSeverity("success");
-    setComponentKey(prev => prev + 1);
-  } catch (error) {
-    console.error("Discard failed:", error);
-    const errorMessage =
-      error?.payload?.message ||
-      error?.message ||
-      (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
-    setSnackbarMessage(errorMessage);
-    setSnackbarSeverity("error");
-  } finally {
-    setOpenSnackbar(true);
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      await dispatch(discardHouseChanges(id)).unwrap();
+      navigate(0);
+      await dispatch(getHouseById(id));
+      await dispatch(getHouseDataByHouseId(id));
+      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+      setSnackbarSeverity("success");
+      setComponentKey(prev => prev + 1);
+    } catch (error) {
+      console.error("Discard failed:", error);
+      const errorMessage =
+        error?.payload?.message ||
+        error?.message ||
+        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+    } finally {
+      setOpenSnackbar(true);
+      setLoading(false);
+    }
+  };
 
 
   return (
@@ -1160,7 +1174,7 @@ export default function Addrepresentative(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" ,bgcolor:'#f6f6f6ff', }}>
+      <Box sx={{ display: "flex", bgcolor: '#f6f6f6ff', }}>
         <SideMenu />
         <Box
           component="main"
@@ -1173,7 +1187,7 @@ export default function Addrepresentative(props) {
           })}
         >
           <FixedHeader />
-          <MobileHeader/>
+          <MobileHeader />
 
           <Stack
             spacing={2}
@@ -1182,10 +1196,10 @@ export default function Addrepresentative(props) {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2 },
-              gap:1
+              gap: 1
             }}
           >
-             {userRole &&
+            {userRole &&
               formData.publishStatus &&
               statusData &&
               (formData.publishStatus !== "published" || localChanges.length > 0) && (
@@ -1209,12 +1223,12 @@ export default function Addrepresentative(props) {
                         p: 1,
                         borderRadius: "50%",
                         backgroundColor: `rgba(${formData.publishStatus === "draft"
-                            ? "66, 165, 245"
-                            : formData.publishStatus === "under review"
-                              ? "230, 81, 0"
-                              : formData.publishStatus === "published"
-                                ? "76, 175, 80"
-                                : "244, 67, 54"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
+                            ? "230, 81, 0"
+                            : formData.publishStatus === "published"
+                              ? "76, 175, 80"
+                              : "244, 67, 54"
                           }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
@@ -1225,7 +1239,7 @@ export default function Addrepresentative(props) {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
- 
+
                     <Box sx={{ flex: 1 }}>
                       {/* Header: title + pending count (admin only) */}
                       <Box
@@ -1247,12 +1261,12 @@ export default function Addrepresentative(props) {
                         >
                           {statusData.title}
                         </Typography>
- 
+
                         {userRole === "admin" && (
                           <Chip
                             label={`${Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length
-                                : 0
+                              ? formData.editedFields.length
+                              : 0
                               } pending changes`}
                             size="small"
                             color="warning"
@@ -1260,7 +1274,7 @@ export default function Addrepresentative(props) {
                           />
                         )}
                       </Box>
- 
+
                       {/* Pending / New fields list */}
                       <Box sx={{ mt: 1.5 }}>
                         {(() => {
@@ -1272,7 +1286,7 @@ export default function Addrepresentative(props) {
                           const hasChanges =
                             backendChanges.length > 0 ||
                             localChanges.length > 0;
- 
+
                           if (!hasChanges) {
                             return (
                               <Typography
@@ -1288,7 +1302,7 @@ export default function Addrepresentative(props) {
                               </Typography>
                             );
                           }
- 
+
                           // Field name formatter function
                           const formatFieldName = (field) => {
                             // Handle term array items
@@ -1298,7 +1312,7 @@ export default function Addrepresentative(props) {
                             if (termArrayMatch) {
                               const [, termIdx, category] = termArrayMatch;
                               const termNumber = parseInt(termIdx) + 1;
- 
+
                               if (category === "votesScore") {
                                 return `Term ${termNumber}: Scored Vote`;
                               }
@@ -1310,7 +1324,7 @@ export default function Addrepresentative(props) {
                               return `Term ${termNumber}: ${fieldLabels[category] || category
                                 }`;
                             }
- 
+
                             // Handle regular term fields
                             if (field.startsWith("term")) {
                               const parts = field.split("_");
@@ -1320,11 +1334,11 @@ export default function Addrepresentative(props) {
                               return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey
                                 }`;
                             }
- 
+
                             // Handle non-term fields
                             return fieldLabels[field] || field;
                           };
- 
+
                           return (
                             <>
                               {/* Backend pending changes */}
@@ -1362,7 +1376,7 @@ export default function Addrepresentative(props) {
                                           minute: "2-digit",
                                         })
                                         : "unknown time";
- 
+
                                       return (
                                         <ListItem
                                           key={`backend-${field}`}
@@ -1411,7 +1425,7 @@ export default function Addrepresentative(props) {
                                   </List>
                                 </Box>
                               )}
- 
+
                               {/* Local unsaved changes - now matches senator style */}
                               {localChanges.length > 0 && (
                                 <Box
@@ -1484,8 +1498,8 @@ export default function Addrepresentative(props) {
                   </Box>
                 </Box>
               )}
- 
- 
+
+
 
             <Stack
               direction="row"
@@ -1528,7 +1542,7 @@ export default function Addrepresentative(props) {
               </Button>
             </Stack>
 
-            <Paper  sx={{ width: "100%", bgcolor:"#fff",borderRadius:0.8,border:'1px solid',borderColor:'divider', }} >
+            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider', }} >
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1603,7 +1617,7 @@ export default function Addrepresentative(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                 >
-                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1619,7 +1633,7 @@ export default function Addrepresentative(props) {
                       Representative's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:4}>
+                  <Grid size={isMobile ? 12 : 4}>
                     <TextField
                       required
                       id="title"
@@ -1632,7 +1646,7 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={isMobile?12:1}>
+                  <Grid size={isMobile ? 12 : 1}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1644,7 +1658,7 @@ export default function Addrepresentative(props) {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:4}>
+                  <Grid size={isMobile ? 12 : 4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -1709,7 +1723,7 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1721,7 +1735,7 @@ export default function Addrepresentative(props) {
                       District
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:4}>
+                  <Grid size={isMobile ? 12 : 4}>
                     <TextField
                       id="district"
                       name="district"
@@ -1733,7 +1747,7 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={isMobile?12:1} sx={{ alignContent: "center" }}>
+                  <Grid size={isMobile ? 12 : 1} sx={{ alignContent: "center" }}>
                     <InputLabel
                       sx={{
                         display: "flex",
@@ -1745,7 +1759,7 @@ export default function Addrepresentative(props) {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:4}>
+                  <Grid size={isMobile ? 12 : 4}>
                     <FormControl fullWidth>
                       <Select
                         name="party"
@@ -1760,12 +1774,12 @@ export default function Addrepresentative(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                       justifyContent: isMobile ? "flex-start" : "flex-end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1831,16 +1845,16 @@ export default function Addrepresentative(props) {
             {houseTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-               
+
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
-                   bgcolor:"#fff",
+                  bgcolor: "#fff",
                   borderRadius: 0.8,
-                  border:'1px solid',
-                  borderColor:'divider'
-                
+                  border: '1px solid',
+                  borderColor: 'divider'
+
                 }}
               >
                 <Box sx={{ padding: 5 }}>
@@ -1872,7 +1886,7 @@ export default function Addrepresentative(props) {
                     columnSpacing={2}
                     alignItems={"center"}
                   >
-                    <Grid size={isMobile?12:2}>
+                    <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1885,7 +1899,7 @@ export default function Addrepresentative(props) {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={isMobile?12:2.2}>
+                    <Grid size={isMobile ? 12 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.termId || ""}
@@ -1900,15 +1914,22 @@ export default function Addrepresentative(props) {
                             Select an option
                           </MenuItem>
                           {terms && terms.length > 0 ? (
-                            terms 
-                            .filter((t)=>t.startYear && t.endYear && (t.endYear-t.startYear === 1))
-                            .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
-                            .sort((a,b)=> a.congresses[0]- b.congresses[0]).map((t) => (
-                              <MenuItem key={t._id} value={t._id}>
-                                 {`${t.congresses[0]}th Congress`}
-                              </MenuItem>
-                            ))
-                          ) : (
+                            terms
+                              .filter((t) => t.startYear && t.endYear && (t.endYear - t.startYear === 1) &&
+                                t.startYear % 2 === 1 && // must be odd
+                                t.endYear % 2 === 0 && // must be even
+                                t.startYear >= 2015 && // no terms before 1789
+                                t.endYear >= 2015)     // must be even
+                                  .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                                  // Hide terms already selected in other term sections
+                                  .filter((t) => !houseTermData.some((ht, idx) => idx !== termIndex && ht.termId === t._id))
+                                  .sort((a, b) => a.congresses[0] - b.congresses[0])
+                                  .map((t) => (
+                                    <MenuItem key={t._id} value={t._id}>
+                                      {`${t.congresses[0]}th Congress`}
+                                    </MenuItem>
+                                  ))
+                              ) : (
                             <MenuItem value="" disabled>
                               No terms available
                             </MenuItem>
@@ -1916,7 +1937,7 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
-                                       {/* <Grid size={isMobile ? 12 : 2.2}>
+                    {/* <Grid size={isMobile ? 12 : 2.2}>
   <FormControl fullWidth>
     <Autocomplete
       options={
@@ -1950,7 +1971,7 @@ export default function Addrepresentative(props) {
     />
   </FormControl>
 </Grid> */}
-                    <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
+                    <Grid size={isMobile ? 6 : 2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1962,7 +1983,7 @@ export default function Addrepresentative(props) {
                         Current Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={isMobile?6:0}>
+                    <Grid size={isMobile ? 6 : 0}>
                       <Switch
                         {...label}
                         name="currentTerm"
@@ -1972,7 +1993,7 @@ export default function Addrepresentative(props) {
                       />
                     </Grid>
 
-                    <Grid size={isMobile?6:2.39}>
+                    <Grid size={isMobile ? 6 : 2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -1985,7 +2006,7 @@ export default function Addrepresentative(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={isMobile?6:2.2}>
+                    <Grid size={isMobile ? 6 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -2008,7 +2029,7 @@ export default function Addrepresentative(props) {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={isMobile?12:2}>
+                    <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
                         sx={{
                           display: "flex",
@@ -2020,7 +2041,7 @@ export default function Addrepresentative(props) {
                         Term Summary
                       </InputLabel>
                     </Grid>
-                    <Grid size={isMobile?12:9.05}>
+                    <Grid size={isMobile ? 12 : 9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
@@ -2033,7 +2054,7 @@ export default function Addrepresentative(props) {
                             )
                           );
                           // Optionally update localChanges here too
-                           const fieldName = `term${termIndex}_summary`;
+                          const fieldName = `term${termIndex}_summary`;
                           const originalTerm = originalTermData[termIndex] || {};
                           const isActualChange = compareValues(content, originalTerm.summary || "");
                           setLocalChanges(prev => {
@@ -2045,7 +2066,7 @@ export default function Addrepresentative(props) {
                             return prev;
                           });
                         }}
-                        onBlur={() => {}}
+                        onBlur={() => { }}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -2093,7 +2114,7 @@ export default function Addrepresentative(props) {
                             alignItems="center"
                             columnGap={"15px"}
                           >
-                            <Grid size={isMobile?12:2}>
+                            <Grid size={isMobile ? 12 : 2}>
                               <InputLabel
                                 sx={{
                                   display: "flex",
@@ -2106,7 +2127,7 @@ export default function Addrepresentative(props) {
                                 Scored Vote
                               </InputLabel>
                             </Grid>
-                            <Grid size={isMobile?12:7.5}>
+                            <Grid size={isMobile ? 12 : 7.5}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.voteId || ""}
@@ -2178,7 +2199,7 @@ export default function Addrepresentative(props) {
                                 </Select>
                               </FormControl>
                             </Grid>
-                            <Grid size={isMobile?12:1.6}>
+                            <Grid size={isMobile ? 12 : 1.6}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.score || ""}
@@ -2236,134 +2257,134 @@ export default function Addrepresentative(props) {
                     {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) => (
                       activity.activityId != null ? (
-                      <Grid
-                        rowSpacing={2}
-                        sx={{ width: "100%", mt: 2 }}
-                        key={activityIndex}
-                      >
                         <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
+                          rowSpacing={2}
+                          sx={{ width: "100%", mt: 2 }}
+                          key={activityIndex}
                         >
-                          <Grid size={isMobile?12:2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile ? "flex-start" : "flex-end",
-                                fontWeight: 700,
-                                my: 0,
-                              }}
-                            >
-                              Tracked Activity
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile?8:7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={activity.activityId || ""}
-                                onChange={(event) =>
-                                  handleActivityChange(
-                                    termIndex,
-                                    activityIndex,
-                                    "activityId",
-                                    event.target.value
-                                  )
-                                }
+                          <Grid
+                            size={12}
+                            display="flex"
+                            alignItems="center"
+                            columnGap={"15px"}
+                          >
+                            <Grid size={isMobile ? 12 : 2}>
+                              <InputLabel
                                 sx={{
-                                  background: "#fff",
-                                  width: "100%",
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedActivity = houseActivities.find(
-                                    (a) => a._id === selected
-                                  );
-                                  return (
-                                    <Typography
-                                      sx={{
-                                        overflow: "hidden",
-                                        whiteSpace: "nowrap",
-                                        textOverflow: "ellipsis",
-                                      }}
-                                    >
-                                      {selectedActivity?.title ||
-                                        "Select an Activity"}
-                                    </Typography>
-                                  );
-                                }}
-                                MenuProps={{
-                                  PaperProps: {
-                                    sx: {
-                                      maxHeight: 300,
-                                      width: 400,
-                                      "& .MuiMenuItem-root": {
-                                        minHeight: "48px",
-                                      },
-                                    },
-                                  },
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: isMobile ? "flex-start" : "flex-end",
+                                  fontWeight: 700,
+                                  my: 0,
                                 }}
                               >
-                                <MenuItem value="" disabled>
-                                  Select an Activity
-                                </MenuItem>
-                                {houseActivities &&
-                                houseActivities.length > 0 ? (
-                                  houseActivities.map((activityItem) => (
-                                    <MenuItem
-                                      key={activityItem._id}
-                                      value={activityItem._id}
-                                      sx={{ py: 1.5 }}
-                                    >
+                                Tracked Activity
+                              </InputLabel>
+                            </Grid>
+                            <Grid size={isMobile ? 8 : 7.5}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={activity.activityId || ""}
+                                  onChange={(event) =>
+                                    handleActivityChange(
+                                      termIndex,
+                                      activityIndex,
+                                      "activityId",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{
+                                    background: "#fff",
+                                    width: "100%",
+                                  }}
+                                  renderValue={(selected) => {
+                                    const selectedActivity = houseActivities.find(
+                                      (a) => a._id === selected
+                                    );
+                                    return (
                                       <Typography
                                         sx={{
-                                          whiteSpace: "normal",
-                                          overflowWrap: "break-word",
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                          textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {activityItem.title}
+                                        {selectedActivity?.title ||
+                                          "Select an Activity"}
                                       </Typography>
-                                    </MenuItem>
-                                  ))
-                                ) : (
+                                    );
+                                  }}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 300,
+                                        width: 400,
+                                        "& .MuiMenuItem-root": {
+                                          minHeight: "48px",
+                                        },
+                                      },
+                                    },
+                                  }}
+                                >
                                   <MenuItem value="" disabled>
-                                    No activities available
+                                    Select an Activity
                                   </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={isMobile?6:1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={activity?.score || ""}
-                                onChange={(event) =>
-                                  handleActivityChange(
-                                    termIndex,
-                                    activityIndex,
-                                    "score",
-                                    event.target.value
-                                  )
+                                  {houseActivities &&
+                                    houseActivities.length > 0 ? (
+                                    houseActivities.map((activityItem) => (
+                                      <MenuItem
+                                        key={activityItem._id}
+                                        value={activityItem._id}
+                                        sx={{ py: 1.5 }}
+                                      >
+                                        <Typography
+                                          sx={{
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                          }}
+                                        >
+                                          {activityItem.title}
+                                        </Typography>
+                                      </MenuItem>
+                                    ))
+                                  ) : (
+                                    <MenuItem value="" disabled>
+                                      No activities available
+                                    </MenuItem>
+                                  )}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={isMobile ? 6 : 1.6}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={activity?.score || ""}
+                                  onChange={(event) =>
+                                    handleActivityChange(
+                                      termIndex,
+                                      activityIndex,
+                                      "score",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{ background: "#fff" }}
+                                >
+                                  <MenuItem value="yes">Yea</MenuItem>
+                                  <MenuItem value="no">Nay</MenuItem>
+                                  <MenuItem value="other">Other</MenuItem>
+                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1}>
+                              <DeleteForeverIcon
+                                onClick={() =>
+                                  handleRemoveActivity(termIndex, activityIndex)
                                 }
-                                sx={{ background: "#fff" }}
-                              >
-                                <MenuItem value="yes">Yea</MenuItem>
-                                <MenuItem value="no">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                                {/* <MenuItem value="None">None</MenuItem> */}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveActivity(termIndex, activityIndex)
-                              }
-                            />
+                              />
+                            </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
                       ) : null
                     ))}
                     {/* Activities Repeater Ends */}
@@ -2419,36 +2440,36 @@ export default function Addrepresentative(props) {
               anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
               <MuiAlert
-                  onClose={handleSnackbarClose}
-                  severity={snackbarSeverity}
-                  sx={{
-                    width: "100%",
-                    bgcolor:
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{
+                  width: "100%",
+                  bgcolor:
+                    snackbarMessage === "Changes Published successfully!"
+                      ? "#daf4f0"
+                      : undefined,
+                  "& .MuiAlert-icon": {
+                    color:
                       snackbarMessage === "Changes Published successfully!"
-                        ? "#daf4f0"
+                        ? "#099885"
                         : undefined,
-                    "& .MuiAlert-icon": {
-                      color:
-                        snackbarMessage === "Changes Published successfully!"
-                          ? "#099885"
-                          : undefined,
-                    },
-                    "& .MuiAlert-message": {
-                      color:
-                        snackbarMessage === "Changes Published successfully!"
-                          ? "#099885"
-                          : undefined,
-                          
-                    },
-                  }}
-                  elevation={6}
-                  variant="filled"
-                >
-                  {snackbarMessage}
-                </MuiAlert>
+                  },
+                  "& .MuiAlert-message": {
+                    color:
+                      snackbarMessage === "Changes Published successfully!"
+                        ? "#099885"
+                        : undefined,
+
+                  },
+                }}
+                elevation={6}
+                variant="filled"
+              >
+                {snackbarMessage}
+              </MuiAlert>
             </Snackbar>
           </Stack>
-          <Box sx={{ mb: "40px" ,mx:"15px" }}>
+          <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
           </Box>
         </Box>
