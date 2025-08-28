@@ -11,6 +11,7 @@ import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
+import { useTheme, useMediaQuery,Chip } from "@mui/material";
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
     <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
@@ -88,7 +89,22 @@ export default function CustomizedDataGrid({
     return "gray";
   };
 
+   // Function to get status color based on status value
+  const getStatusColor = (status) => {
+    if (!status) return "default";
+    
+    const lowerStatus = status.toLowerCase();
+    if (lowerStatus.includes("published")) return "success";
+    if (lowerStatus.includes("draft")) return "default";
+    if (lowerStatus.includes("review")) return "warning";
+    
+    return "default";
+  };
+
   const navigate = useNavigate();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const columns =
     type === "bills"
@@ -153,15 +169,12 @@ export default function CustomizedDataGrid({
                 : "N/A";
 
             return (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  height: "100%",
-                }}
-              >
-                <Typography>{displayStatus}</Typography>
-              </Box>
+              <Chip 
+                  label={displayStatus} 
+                  color={getStatusColor(status)}
+                  variant="outlined"
+                  size="small"
+                />
             );
           },
         },
@@ -260,7 +273,14 @@ export default function CustomizedDataGrid({
                     .join(" ")
                 : "N/A";
 
-              return displayStatus;
+              return (
+                <Chip 
+                  label={displayStatus} 
+                  color={getStatusColor(status)}
+                  variant="outlined"
+                  size="small"
+                />
+              );
 
               return (
                 <Box
@@ -427,14 +447,15 @@ export default function CustomizedDataGrid({
               field: "name",
               flex: 2,
               headerName: type === "senator" ? "Senator" : "Representative",
-              minWidth: 150,
+              minWidth: isMobile ? 180 : 150,
+              maxWidth: isMobile ? 200 : undefined,
               minHeight: 200,
               headerAlign: "left",
               align: "left",
               renderHeader: (params) => (
                 <Typography
                   sx={{
-                    paddingLeft: "32px",
+                    paddingLeft: isMobile ? "12px" : "32px",
                     fontWeight: "bold",
                   }}
                 >
@@ -450,7 +471,7 @@ export default function CustomizedDataGrid({
                     columnGap: "10px",
                     width: "fit-content",
                     height: "100%",
-                    paddingLeft: "32px",
+                    paddingLeft: isMobile ? "12px" : "32px",
                     "&:hover": {
                       cursor: "pointer",
                     },
@@ -465,8 +486,8 @@ export default function CustomizedDataGrid({
                 >
                   <Box
                     sx={{
-                      width: 50,
-                      height: 50,
+                      width: isMobile ? 36 : 50,
+                      height: isMobile ? 36 : 50,
                       borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
@@ -477,8 +498,8 @@ export default function CustomizedDataGrid({
                     <Avatar
                       src={params.row.photo}
                       sx={{
-                        width: 45,
-                        height: 45,
+                        width: isMobile ? 32 : 45,
+                        height: isMobile ? 32 : 45,
                       }}
                     />
                   </Box>
@@ -488,6 +509,11 @@ export default function CustomizedDataGrid({
                       "&:hover": {
                         color: getBorderColor(params.row.party),
                       },
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: isMobile ? "90px" : undefined,
+                      minWidth: isMobile ? "40px" : undefined,
                     }}
                   >
                     {params.row.name}
@@ -584,17 +610,13 @@ export default function CustomizedDataGrid({
                           .join(" ")
                       : "N/A";
 
-                    return displayStatus;
                     return (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          height: "100%",
-                        }}
-                      >
-                        <Typography>{displayStatus}</Typography>
-                      </Box>
+                      <Chip 
+                        label={displayStatus} 
+                        color={getStatusColor(status)}
+                        variant="outlined"
+                        size="small"
+                      />
                     );
                   },
                 },
@@ -622,18 +644,13 @@ export default function CustomizedDataGrid({
                           .join(" ")
                       : "N/A";
 
-                    return displayStatus;
-
                     return (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          height: "100%",
-                        }}
-                      >
-                        <Typography>{displayStatus}</Typography>
-                      </Box>
+                      <Chip 
+                        label={displayStatus} 
+                        color={getStatusColor(status)}
+                        variant="outlined"
+                        size="small"
+                      />
                     );
                   },
                 },
@@ -709,6 +726,22 @@ export default function CustomizedDataGrid({
         }
         selectionModel={isSelectable ? selectedItems : []}
         sx={{
+          ...(isMobile && {
+            overflowX: "auto",
+            width: "100vw",
+            minWidth: 0,
+            '& .MuiDataGrid-main': {
+              minWidth: '600px',
+            },
+            '& .MuiDataGrid-columnHeader': {
+              fontSize: '13px',
+              padding: '4px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+            
+          }),
           "& .MuiDataGrid-row": {
             maxHeight: "70px !important",
             minHeight: "70px !important",

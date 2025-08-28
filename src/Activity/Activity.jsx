@@ -47,6 +47,7 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 import { jwtDecode } from "jwt-decode";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Activity(props) {
   const dispatch = useDispatch();
@@ -257,29 +258,31 @@ const statusOptions = ["published", "draft", "under review"];
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" }}>
-        <SideMenu />
+      <Box sx={{ display: { xs: "block", md: "flex" },bgcolor:'#f6f6f6ff', }}>
+        <SideMenu sx={{ display: { xs: "none", md: "block" } }}/>
         <Box
           sx={{
             flexGrow: 1,
             // overflow: "auto",
-            width: "80%",
+            width: { xs: "100%", md: "80%" },
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
           }}
         >
-          <FixedHeader />
+          <FixedHeader sx={{ display: { xs: "none", md: "block" } }}/>
+          <MobileHeader/>
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 1 } }}
+            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 4 } }}
           >
             <Box
               sx={{
                 width: "100%",
                 display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
-                alignItems: "center",
-                mt: 4,
+                 alignItems: { xs: "stretch", sm: "center" },
+                mt: { xs: 2, md: 4 },
                 gap: 2,
               }}
             >
@@ -287,12 +290,12 @@ const statusOptions = ["published", "draft", "under review"];
                 All Activities
               </Typography>
               <Stack
-                direction="row"
+                direction={{ xs: "column", sm: "row" }}
                 spacing={2}
                 alignItems="center"
-                sx={{ ml: "auto" }}
+                sx={{ ml: "auto",width: { xs: "100%", sm: "auto" } }}
               >
-                <Box sx={{ position: "relative", display: "inline-block" }}>
+                <Box sx={{ position: "relative", display: "inline-block",width: { xs: "100%", sm: "auto" } }}>
                   <Badge
                     badgeContent={activeFilterCount}
                     color="primary"
@@ -311,16 +314,13 @@ const statusOptions = ["published", "draft", "under review"];
                       }
                       onClick={toggleFilter}
                       sx={{
-                        height: "40px",
-                        minWidth: "120px",
+                         padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                        minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
-                        backgroundColor: filterOpen
-                          ? "primary.light"
-                          : "background.paper",
+                       color:  "#fff",
+                        backgroundColor:  "#173A5E",
                         "&:hover": {
-                          backgroundColor: filterOpen
-                            ? "primary.light"
-                            : "action.hover",
+                          backgroundColor:  "#1E4C80",
                         },
                       }}
                     >
@@ -421,12 +421,12 @@ const statusOptions = ["published", "draft", "under review"];
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
                   sx={{
-                    backgroundColor: isBulkEditMode ? "#CC9A3A" : "#4a90e2",
+                    backgroundColor: isBulkEditMode ? "#CC9A3A" : "#173A5E",
                     color: "white !important",
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
                     "&:hover": {
-                      backgroundColor: isBulkEditMode ? "#B38935" : "#357ABD",
+                      backgroundColor: isBulkEditMode ? "#B38935" : "#1E4C80",
                     },
                   }}
                 >
@@ -436,12 +436,12 @@ const statusOptions = ["published", "draft", "under review"];
                   <Button
                     onClick={() => navigate("/add-activity")}
                     sx={{
-                      backgroundColor: "#4a90e2 !important",
+                      backgroundColor: "#173A5E !important",
                       color: "white !important",
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
                     "&:hover": {
-                      backgroundColor: "#357ABD !important",
+                      backgroundColor: "#1E4C80 !important",
                     },
                   }}
                 >
@@ -485,8 +485,9 @@ const statusOptions = ["published", "draft", "under review"];
                     disabled={!selectedTrackActivity.length || !bulkTrackActivity}
                     onClick={handleBulkUpdate}
                     sx={{
-                      backgroundColor: "#68e24aff",
-                      "&:hover": { backgroundColor: "#357ABD" },
+                      backgroundColor: "#173A5E",
+                      color:' #fff !important',
+                      "&:hover": { backgroundColor: "#1E4C80" },
                     }}
                   >
                     Apply
@@ -535,23 +536,36 @@ const statusOptions = ["published", "draft", "under review"];
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-          sx={{
-            width: "100%",
-            bgcolor:
-              snackbarMessage === "This activity has been successfully deleted."
-                ? "#FF474D"
-                : undefined,
-            "& .MuiAlert-icon": {
-              color: snackbarMessage === "This activity has been successfully deleted."
-                ? "white"
-                : undefined
-            }
-          }}
-        >
-          {snackbarMessage}
-        </Alert>
+            onClose={() => setSnackbarOpen(false)}
+            severity={snackbarSeverity}
+            sx={{
+              width: "100%",
+              // ✅ Background conditions
+              bgcolor:
+                snackbarMessage === `This activity has been successfully deleted.`
+                  ? "#fde8e4"
+                  : undefined,
+        
+              // ✅ Icon color conditions
+              "& .MuiAlert-icon": {
+                color:
+                  snackbarMessage === `This activity has been successfully deleted.`
+                    ? "#cc563d"
+                    : undefined,
+              },
+        
+              // ✅ Text color conditions
+              "& .MuiAlert-message": {
+                color:
+                  snackbarMessage === `This activity has been successfully deleted.`
+                    ? "#cc563d"
+
+                    : undefined,
+              },
+            }}
+          >
+            {snackbarMessage}
+          </Alert>
       </Snackbar>
       <Dialog
         open={openDeleteDialog}

@@ -18,12 +18,12 @@ export const dataGridCustomizations = {
         '--DataGrid-overlayHeight': '300px',
         overflow: 'clip',
         borderColor: (theme.vars || theme).palette.divider,
-        backgroundColor: (theme.vars || theme).palette.background.default,
+        backgroundColor: '#fff',
         [`& .${gridClasses.columnHeader}`]: {
-          backgroundColor: (theme.vars || theme).palette.background.paper,
+          backgroundColor: '#fff',
         },
         [`& .${gridClasses.footerContainer}`]: {
-          backgroundColor: (theme.vars || theme).palette.background.paper,
+          backgroundColor: '#fff',
         },
         [`& .${checkboxClasses.root}`]: {
           padding: theme.spacing(0.5),

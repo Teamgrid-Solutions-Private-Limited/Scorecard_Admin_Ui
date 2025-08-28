@@ -2,9 +2,9 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../API";
 import { jwtDecode } from "jwt-decode";
-
+ 
 // Async thunks for CRUD operations
-
+ 
 // Create a house
 export const createHouse = createAsyncThunk(
   "house/createHouse",
@@ -24,7 +24,7 @@ export const createHouse = createAsyncThunk(
     }
   }
 );
-
+ 
 // Get all house
 export const getAllHouses = createAsyncThunk(
   "house/getAllHouses",
@@ -41,7 +41,7 @@ export const getAllHouses = createAsyncThunk(
     }
   }
 );
-
+ 
 // Get house by ID
 export const getHouseById = createAsyncThunk(
   "house/getHouseById",
@@ -57,7 +57,7 @@ export const getHouseById = createAsyncThunk(
     }
   }
 );
-
+ 
 // Update house
 export const updateHouse = createAsyncThunk(
   "house/updateHouse",
@@ -74,7 +74,7 @@ export const updateHouse = createAsyncThunk(
     }
   }
 );
-
+ 
 // Delete house
 export const deleteHouse = createAsyncThunk(
   "house/deleteHouse",
@@ -86,17 +86,17 @@ export const deleteHouse = createAsyncThunk(
           message: "Authentication token not found",
         });
       }
-
+ 
       // Decode token to get user role
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role;
-
+ 
       if (userRole !== "admin") {
         return rejectWithValue({
           message: "You are not authorized to delete houses.",
         });
       }
-
+ 
       const response = await axios.delete(
         `${API_URL}/api/v1/admin/houses/${id}`,
         {
@@ -113,7 +113,7 @@ export const deleteHouse = createAsyncThunk(
     }
   }
 );
-
+ 
 // Thunk to update representative status
 export const updateRepresentativeStatus = createAsyncThunk(
   "representatives/updateStatus",
@@ -131,8 +131,8 @@ export const updateRepresentativeStatus = createAsyncThunk(
     }
   }
 );
-
-
+ 
+ 
 export const discardHouseChanges = createAsyncThunk(
   "house/discardChanges",
   async (houseId, { rejectWithValue }) => {
@@ -150,9 +150,9 @@ export const discardHouseChanges = createAsyncThunk(
     }
   }
 );
-
-
-
+ 
+ 
+ 
 // export const deleteHouse = createAsyncThunk(
 //   "house/deleteHouse",
 //   async (id, { rejectWithValue }) => {
@@ -165,7 +165,7 @@ export const discardHouseChanges = createAsyncThunk(
 //     }
 //   }
 // );
-
+ 
 // Initial state
 const initialState = {
   houses: [],
@@ -173,7 +173,7 @@ const initialState = {
   loading: false,
   error: null,
 };
-
+ 
 // Slice
 const houseSlice = createSlice({
   name: "house",
@@ -200,7 +200,7 @@ const houseSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
+ 
     // Get all house
     builder
       .addCase(getAllHouses.pending, (state) => {
@@ -215,7 +215,7 @@ const houseSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
+ 
     // Get house by ID
     builder
       .addCase(getHouseById.pending, (state) => {
@@ -230,7 +230,7 @@ const houseSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
+ 
     // Update house
     builder
       .addCase(updateHouse.pending, (state) => {
@@ -248,7 +248,7 @@ const houseSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
+ 
     // Delete house
     builder
       .addCase(deleteHouse.pending, (state) => {
@@ -264,7 +264,7 @@ const houseSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
+ 
     // Update representative status
     builder
       .addCase(updateRepresentativeStatus.pending, (state) => {
@@ -290,11 +290,11 @@ builder.addCase(discardHouseChanges.pending, (state) => {
 });
 builder.addCase(discardHouseChanges.fulfilled, (state, action) => {
   state.loading = false;
-
+ 
   if (state.house && state.house._id === action.payload.house._id) {
     state.house = action.payload.house;
   }
-
+ 
   const idx = state.houses.findIndex((h) => h._id === action.payload.house._id);
   if (idx !== -1) {
     state.houses[idx] = action.payload.house;
@@ -304,14 +304,12 @@ builder.addCase(discardHouseChanges.rejected, (state, action) => {
   state.loading = false;
   state.error = action.payload?.message || "Failed to discard changes";
 });
-
-
+ 
+ 
   },
 });
-
+ 
 export default houseSlice.reducer;
-
-
+ 
+ 
 export const { clearHouseState } = houseSlice.actions
-
-

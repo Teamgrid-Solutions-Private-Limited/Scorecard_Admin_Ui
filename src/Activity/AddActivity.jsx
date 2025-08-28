@@ -53,6 +53,10 @@ import { List, ListItem, ListItemText } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
+import Footer from "../components/Footer";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
@@ -91,6 +95,10 @@ export default function AddActivity(props) {
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
+           const theme = useTheme();
+         const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+ 
   
 
   const fieldLabels = {
@@ -131,10 +139,10 @@ export default function AddActivity(props) {
 
       setFormData(newFormData);
       setOriginalFormData(newFormData); // Store the original data
-      
+
       // Reset selectedFile when editing existing activity
       setSelectedFile(null);
-      
+
       // Reset editedFields when editing existing activity
       setEditedFields([]);
     }
@@ -199,6 +207,9 @@ export default function AddActivity(props) {
   // Update your handleChange and handleEditorChange to properly track changes
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
@@ -214,6 +225,9 @@ export default function AddActivity(props) {
   };
 
   const handleEditorChange = (content, fieldName) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: content };
 
@@ -229,19 +243,22 @@ export default function AddActivity(props) {
   };
 
   const handleFileUpload = (event) => {
+    if (!hasLocalChanges) {
+      setHasLocalChanges(true);
+    }
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
       // Set the file path in the readMore field
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        readMore: file.name
+        readMore: file.name,
       }));
-      
+
       // Update editedFields if this is a change
       if (originalFormData && file.name !== originalFormData.readMore) {
-        const changes = Object.keys(formData).filter(key => {
-          if (key === 'readMore') {
+        const changes = Object.keys(formData).filter((key) => {
+          if (key === "readMore") {
             return file.name !== originalFormData.readMore;
           }
           return compareValues(formData[key], originalFormData[key]);
@@ -268,13 +285,14 @@ export default function AddActivity(props) {
     try {
       // Create FormData for file upload
       const formDataToSend = new FormData();
-      
+
       // Add all form fields EXCEPT status (we'll add it separately)
-      Object.keys(formData).forEach(key => {
-        if (key === 'readMore' && selectedFile) {
+      Object.keys(formData).forEach((key) => {
+        if (key === "readMore" && selectedFile) {
           // If there's a selected file, append it
-          formDataToSend.append('readMore', selectedFile);
-        } else if (key !== 'status') { // Don't add status here
+          formDataToSend.append("readMore", selectedFile);
+        } else if (key !== "status") {
+          // Don't add status here
           formDataToSend.append(key, formData[key]);
         }
       });
@@ -300,12 +318,15 @@ export default function AddActivity(props) {
       });
 
       // Add editedFields and fieldEditors to FormData
-      formDataToSend.append('editedFields', JSON.stringify(mergedEditedFields));
-      formDataToSend.append('fieldEditors', JSON.stringify(updatedFieldEditors));
-      
+      formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
+      formDataToSend.append(
+        "fieldEditors",
+        JSON.stringify(updatedFieldEditors)
+      );
+
       // Add status ONLY ONCE
       const finalStatus = userRole === "admin" ? "published" : "under review";
-      formDataToSend.append('status', finalStatus);
+      formDataToSend.append("status", finalStatus);
 
      
 
@@ -334,12 +355,7 @@ export default function AddActivity(props) {
           }
         }
       } else {
-        if (
-          !formData.type ||
-          !formData.title ||
-          !formData.shortDesc 
-        )
-         {
+        if (!formData.type || !formData.title || !formData.shortDesc) {
           setSnackbarMessage("Please fill all fields!");
           setSnackbarSeverity("warning");
           setOpenSnackbar(true);
@@ -348,10 +364,11 @@ export default function AddActivity(props) {
         }
 
         await dispatch(createActivity(formDataToSend)).unwrap();
-        setSnackbarMessage( "Activity created successfully!");
+        setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
-        
+
         // Reset editedFields after successful creation
+        setHasLocalChanges(false); // Reset after save
         setEditedFields([]);
         // Update originalFormData to current form data
         setOriginalFormData({ ...formData, status: finalStatus });
@@ -389,7 +406,7 @@ export default function AddActivity(props) {
       await dispatch(getActivityById(id));
       setSnackbarMessage("Changes discarded successfully");
       setSnackbarSeverity("success");
-      
+
       // Reset selectedFile state
       setSelectedFile(null);
     } catch (error) {
@@ -438,16 +455,21 @@ export default function AddActivity(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      // published: {
-      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
-      //   borderColor: "#4CAF50",
-      //   iconColor: "#2E7D32",
-      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-      //   title: "Published",
-      //   description: "Published and live",
-      //   titleColor: "#2E7D32",
-      //   descColor: "#388E3C",
-      // },
+         published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: null,
+        // title: "Published",
+        description:
+          editedFields.length > 0
+            ? `Edited fields: ${editedFields
+                .map((f) => fieldLabels[f] || f)
+                .join(", ")}`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -459,6 +481,14 @@ export default function AddActivity(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
+    const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
+  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
+    (field) => !backendChanges.includes(field)
+  );
+  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const isStatusReady = !id || Boolean(originalFormData);
 
   // 5. The banner already uses editedFields, so no change needed there
   useEffect(() => {}, [
@@ -504,7 +534,7 @@ export default function AddActivity(props) {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex",bgcolor:'#f6f6f6ff', }}>
         <SideMenu />
         <Box
           component="main"
@@ -518,16 +548,19 @@ export default function AddActivity(props) {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
           <Stack
             spacing={2}
             sx={{
               alignItems: "center",
               mx: 3,
-              pb: 5,
-              mt: { xs: 8, md: 0 },
+              // pb: 5,
+              mt: { xs: 8, md: 4 },
             }}
           >
-            {userRole && currentStatus !== "published" && statusData && (
+            {userRole &&
+              statusData &&
+              (currentStatus !== "published" || hasAnyChanges) && (
               <Box
                 sx={{
                   width: "98%",
@@ -551,7 +584,7 @@ export default function AddActivity(props) {
                           : currentStatus === "review"
                           ? "255, 193, 7"
                           : currentStatus === "published"
-                          ? "76, 175, 80"
+                          ? ""
                           : "244, 67, 54"
                       }, 0.2)`,
                       display: "grid",
@@ -559,8 +592,7 @@ export default function AddActivity(props) {
                       flexShrink: 0,
                     }}
                   >
-                    {statusData?.icon &&
-                      React.cloneElement(statusData.icon, {
+                    {statusData.icon && React.cloneElement(statusData.icon, {
                         sx: { color: statusData.iconColor },
                       })}
                   </Box>
@@ -648,7 +680,7 @@ export default function AddActivity(props) {
                             {backendChanges.length > 0 && (
                               <Box
                                 sx={{
-                                  backgroundColor: "background.paper",
+                                  backgroundColor: "#fff",
                                   borderRadius: 1,
                                   p: 1.5,
                                   border: "1px solid",
@@ -732,7 +764,7 @@ export default function AddActivity(props) {
                             {localChanges.length > 0 && (
                               <Box
                                 sx={{
-                                  backgroundColor: "background.paper",
+                                  backgroundColor: "#fff",
                                   borderRadius: 1,
                                   p: 1.5,
                                   border: "1px solid",
@@ -806,37 +838,41 @@ export default function AddActivity(props) {
                   variant="outlined"
                   onClick={handleDiscard}
                   sx={{
-                    backgroundColor: "#4a90e2 !important",
+                    backgroundColor: "#173A5E !important",
                     color: "white !important",
                     padding: "0.5rem 1rem",
                     marginLeft: "0.5rem",
                     "&:hover": {
-                      backgroundColor: "#357ABD !important",
+                      backgroundColor: "#1E4C80 !important",
                     },
                   }}
                 >
                   {userRole === "admin" ? "Discard" : "Undo"}
                 </Button>
               )}
-              
+
               <Button
                 variant="outlined"
                 onClick={handleSubmit}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
-                {id ? (userRole === "admin" ? "Publish" : "Save Changes") : "Create"}
+                {id
+                  ? userRole === "admin"
+                    ? "Publish"
+                    : "Save Changes"
+                  : "Create"}
               </Button>
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" }}>
+            <Paper elevation={2} sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff'}}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -968,11 +1004,11 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -980,7 +1016,7 @@ export default function AddActivity(props) {
                       Activity Details
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1019,12 +1055,12 @@ export default function AddActivity(props) {
                       }}
                     />
                   </Grid>
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1033,7 +1069,7 @@ export default function AddActivity(props) {
                       Congress
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1080,12 +1116,12 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?12:2}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         width: "100%",
@@ -1094,9 +1130,9 @@ export default function AddActivity(props) {
                       Read More
                     </InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?12:10}>
                     <FormControl fullWidth>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Box sx={{ display: "flex", gap: 1 }}>
                         <TextField
                           sx={{
                             fontFamily: "'Be Vietnam Pro', sans-serif",
@@ -1115,16 +1151,23 @@ export default function AddActivity(props) {
                               "&:hover .MuiOutlinedInput-notchedOutline": {
                                 borderColor: "#D3D3D3 !important",
                               },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#CC9A3A !important",
-                                borderWidth: "1px",
-                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "#CC9A3A !important",
+                                  borderWidth: "1px",
+                                },
                             },
                           }}
                           fullWidth
                           variant="outlined"
                           name="readMore"
-                          value={formData.readMore ? `${API_URL}/uploads/documents/${formData.readMore.split('/').pop()}` : ""}
+                          value={
+                            formData.readMore
+                              ? `${API_URL}/uploads/documents/${formData.readMore
+                                  .split("/")
+                                  .pop()}`
+                              : ""
+                          }
                           onChange={handleChange}
                           placeholder="File will be uploaded here"
                           InputProps={{
@@ -1150,7 +1193,7 @@ export default function AddActivity(props) {
                           startIcon={<CloudUploadIcon />}
                           sx={{
                             height: 38,
-                            minWidth: 'auto',
+                            minWidth: "auto",
                             px: 2,
                             borderColor: "#CC9A3A",
                             color: "#CC9A3A",
@@ -1170,12 +1213,12 @@ export default function AddActivity(props) {
                         </Button>
                       </Box>
                       {selectedFile && (
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: "success.main", 
-                            mt: 0.5, 
-                            display: "block" 
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "success.main",
+                            mt: 0.5,
+                            display: "block",
                           }}
                         >
                           File selected: {selectedFile.name}
@@ -1184,12 +1227,12 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
                 
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                           width: "100%",
@@ -1268,7 +1311,9 @@ export default function AddActivity(props) {
               </Box>
             </Paper>
           </Stack>
-          <Copyright sx={{ my: 4 }} />
+          <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>

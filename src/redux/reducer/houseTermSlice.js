@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { API_URL } from '../API';
-
+ 
 // Async thunks
 export const createHouseData = createAsyncThunk(
   'houseData/createHouseData',
@@ -17,7 +17,7 @@ export const createHouseData = createAsyncThunk(
     }
   }
 );
-
+ 
 export const getAllHouseData = createAsyncThunk(
   'houseData/getAllHouseData',
   async (_, { rejectWithValue }) => {
@@ -31,7 +31,7 @@ export const getAllHouseData = createAsyncThunk(
     }
   }
 );
-
+ 
 export const getHouseDataById = createAsyncThunk(
   'houseData/getHouseDataById',
   async (id, { rejectWithValue }) => {
@@ -45,7 +45,7 @@ export const getHouseDataById = createAsyncThunk(
     }
   }
 );
-
+ 
 export const getHouseDataByHouseId = createAsyncThunk(
   'houseData/getHouseDataByHouseId',
   async (id, { rejectWithValue }) => {
@@ -53,8 +53,8 @@ export const getHouseDataByHouseId = createAsyncThunk(
       const response = await axios.get(`${API_URL}/api/v1/admin/house-data/viewbyhouse/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-     
-      return response.data.info;
+
+      return response.data.terms;
     } catch (error) {
       
       return rejectWithValue(error.response.data);
@@ -76,7 +76,7 @@ export const updateHouseData = createAsyncThunk(
     }
   }
 );
-
+ 
 export const deleteHouseData = createAsyncThunk(
   'houseData/deleteHouseData',
   async (id, { rejectWithValue }) => {
@@ -88,7 +88,7 @@ export const deleteHouseData = createAsyncThunk(
     }
   }
 );
-
+ 
 // Initial state
 const initialState = {
   houseData: [],
@@ -96,7 +96,7 @@ const initialState = {
   loading: false,
   error: null,
 };
-
+ 
 // Slice
 const houseDataSlice = createSlice({
   name: 'houseData',
@@ -148,7 +148,7 @@ const houseDataSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
+ 
       .addCase(getHouseDataByHouseId.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -187,7 +187,7 @@ const houseDataSlice = createSlice({
       });
   },
 });
-
+ 
 export default houseDataSlice.reducer;
-
+ 
 export const {clearHouseDataState} = houseDataSlice.actions

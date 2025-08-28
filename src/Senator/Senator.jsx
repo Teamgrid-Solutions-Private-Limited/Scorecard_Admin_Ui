@@ -58,6 +58,7 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import { FormControl, InputLabel, Select } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { jwtDecode } from "jwt-decode";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Senator(props) {
   const navigate = useNavigate();
@@ -445,71 +446,120 @@ export default function Senator(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" }}>
-        <SideMenu />
+      <Box sx={{ display: { xs: "block", md: "flex"},bgcolor:'#f6f6f6ff', }}>
+        <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
 
         <Box
           sx={{
             flexGrow: 1,
-            // overflow: "auto",
-            width: "80%",
-            filter: fetching ? "blur(1px)" : "none", // Apply blur when fetching
-            pointerEvents: fetching ? "none" : "auto", // Disable interactions
+            width: { xs: "100%", md: "80%" },
+            filter: fetching ? "blur(1px)" : "none",
+            pointerEvents: fetching ? "none" : "auto",
+            px: { xs: 2, sm: 2, md: 0 },
+            pt: { xs: 1, md: 0 },
+            minHeight: '100vh',
           }}
         >
-          <FixedHeader />
+          <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
+          <MobileHeader/>
           <Stack
             spacing={2}
-            sx={{ alignItems: "center", mx: 2, pb: 5, mt: { xs: 8, md: 0 } }}
+            sx={{
+              alignItems: { xs: "stretch", md: "center" },
+              mx: { xs: 0, md: 2 },
+              pb: { xs: 2, md: 5 },
+              mt: { xs: 2, md: 4 },
+            }}
           >
-            {/* Search Input - Positioned ABOVE the table */}
             <Box
               sx={{
                 width: "100%",
                 display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
-                alignItems: "center",
-                mt: 4,
+                alignItems: { xs: "stretch", sm: "center" },
+                mt: { xs: 2, md: 4 },
                 gap: 2,
               }}
             >
-              <Typography component="h2" variant="h6">
+              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } }}>
                 All Senators
               </Typography>
-
-              <Stack direction="row" spacing={2} alignItems="center">
-                <TextField
-                  placeholder="Search Senators"
-                  size="small"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+              {userRole === "admin" && (
+              <Box sx={{ width: "60%", display: { xs: "block", sm: "none" },  }}>
+                <Button
+                  variant="outlined"
                   sx={{
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    width: "190px",
-                    "& .MuiInputBase-root": {
-                      "&.Mui-focused": {
-                        boxShadow: "none !important",
-                        outline: "none !important",
-                      },
+                    p:0,
+                    backgroundColor: "#173A5E !important",
+                    color: "white !important",
+                    fontSize:'14px',
+                    width: "100%",
+                    "&:hover": {
+                      backgroundColor: "#1E4C80 !important",
                     },
                   }}
-                />
+                  onClick={fetchSenatorsFromQuorum}
+                  // fullWidth
+                >
+                  Fetch Senators from Quorum
+                </Button>
+              </Box>
+            )}
 
-                <Box sx={{ position: "relative", display: "inline-block" }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" } }}>
+                 {/* Mobile: Show Fetch button above search/filter */}
+            
+                <TextField
+  placeholder="Search Senators"
+  size="small"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  fullWidth={true}
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon sx={{ color: "#173A5E", fontSize: 20 }} />
+      </InputAdornment>
+    ),
+  }}
+  sx={{
+    
+    marginLeft: { xs: 0, sm: "0.5rem" },
+    width: { xs: "50%", sm: "220px" },
+    "& .MuiOutlinedInput-root": {
+      // borderRadius: "12px",
+      backgroundColor: "#fff",
+      transition: "all 0.2s ease-in-out",
+      "& fieldset": {
+        borderColor: "#e5e7eb",
+      },
+      "&:hover fieldset": {
+        borderColor: "#cbd5e1",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#173A5E", 
+        borderWidth: "2px",
+      },   
+    },
+   
+    "& input::placeholder": {
+      fontSize: "0.9rem",
+      color: "#9ca3af",
+    },
+  }}
+/>
 
-
-
-
+                <Box sx={{ position: "relative", display: "inline-block", width: { xs: "100%", sm: "auto" } }}>
                   <Badge
                     badgeContent={activeFilterCount > 0 ? activeFilterCount : null}
                     color="primary"
                     sx={{
-    "& .MuiBadge-badge": {
-      top: 6, 
-      right: 6, 
-    },
-  }}
+                      "& .MuiBadge-badge": {
+                        top: 6,
+                        right: 6,
+                      },
+                    }}
                   >
                     <Button
                       variant="outlined"
@@ -517,18 +567,17 @@ export default function Senator(props) {
                       endIcon={filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                       onClick={toggleFilter}
                       sx={{
-                        height: "40px",
-                        minWidth: "120px",
+                        padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                        minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
-                        backgroundColor: filterOpen
-                          ? "primary.light"
-                          : "background.paper",
+                        color:  "#fff",
+                        backgroundColor:  "#173A5E",
                         "&:hover": {
-                          backgroundColor: filterOpen
-                            ? "primary.light"
-                            : "action.hover",
+                          backgroundColor:  "#1E4C80",
                         },
+                        width: { xs: "100%", sm: "auto" },
                       }}
+                      fullWidth={true}
                     >
                       Filters
                     </Button>
@@ -539,10 +588,11 @@ export default function Senator(props) {
                       <Paper
                         sx={{
                           position: "absolute",
-                          right: 0,
+                          right: {xs:'40%',sm:0},
                           top: "100%",
                           mt: 1,
-                          width: 320,
+                          width: {xs:'60vw',sm:320},
+                          height: {xs:'60vh',sm: 'auto'},
                           zIndex: 1,
                           boxShadow: 3,
                           borderRadius: 2,
@@ -1141,25 +1191,31 @@ export default function Senator(props) {
                   )}
                 </Box>
 
-
-             {userRole === "admin" && (  <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#4a90e2 !important",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    "&:hover": {
-                      backgroundColor: "#357ABD !important",
-                    },
-                  }}
-                  onClick={fetchSenatorsFromQuorum}
-                >
-                  Fetch Senators from Quorum
-                </Button>
-              )}
-            </Stack>
-          </Box>
+                {/* Desktop: Show Fetch button inside search/filter stack */}
+                {userRole === "admin" && (
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "#173A5E !important",
+                      color: "#fff !important",
+                      padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                      marginLeft: { xs: 0, sm: "0.5rem" },
+                      width: { xs: "100%", sm: "auto" },
+                      mt: { xs: 1, sm: 0 },
+                      display: { xs: "none", sm: "block" },
+                      "&:hover": {
+                        backgroundColor: "#1E4C80 !important",
+                      },
+                    }}
+                    onClick={fetchSenatorsFromQuorum}
+                    fullWidth={true}
+                  >
+                    Fetch Senators from Quorum
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+          
 
             <MainGrid
               type="senator"
@@ -1175,25 +1231,49 @@ export default function Senator(props) {
 
         {/* Snackbar for success/error messages */}
         <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={4000}
-          onClose={() => setSnackbarOpen(false)}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        >
-          <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity={snackbarSeverity}
-            sx={{ width: "100%",
-              //  bgcolor: "#FF474D"
-               bgcolor: snackbarMessage === `${selectedSenator?.name} deleted successfully.` ? '#FF474D' : undefined,
-                 '& .MuiAlert-icon': {
-        color: snackbarMessage === `${selectedSenator?.name} deleted successfully.` ? 'white' : undefined
-      }
-               }}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+  open={snackbarOpen}
+  autoHideDuration={4000}
+  onClose={() => setSnackbarOpen(false)}
+  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+>
+  <Alert
+    onClose={() => setSnackbarOpen(false)}
+    severity={snackbarSeverity}
+    sx={{
+      width: "100%",
+      // ✅ Background conditions
+      bgcolor:
+        snackbarMessage === `${selectedSenator?.name} deleted successfully.`
+          ? "#fde8e4"
+          : snackbarMessage === "Success: Senators fetched successfully!"
+          ? "#daf4f0"
+          : undefined,
+
+      // ✅ Icon color conditions
+      "& .MuiAlert-icon": {
+        color:
+          snackbarMessage === `${selectedSenator?.name} deleted successfully.`
+            ? "#cc563d"
+            : snackbarMessage === "Success: Senators fetched successfully!"
+            ? "#099885"
+            : undefined,
+      },
+
+      // ✅ Text color conditions
+      "& .MuiAlert-message": {
+        color:
+          snackbarMessage === `${selectedSenator?.name} deleted successfully.`
+            ? "#cc563d"
+            : snackbarMessage === "Success: Senators fetched successfully!"
+            ? "#099885"
+            : undefined,
+      },
+    }}
+  >
+    {snackbarMessage}
+  </Alert>
+</Snackbar>
+
         <Dialog
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}

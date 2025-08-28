@@ -26,7 +26,7 @@ import Switch from "@mui/material/Switch";
 import Copyright from "../Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../Dashboard/global/common";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
@@ -45,6 +45,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Autocomplete
 } from "@mui/material";
 
 import {
@@ -73,6 +74,9 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import MobileHeader from "../components/MobileHeader";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -89,6 +93,10 @@ export default function Addrepresentative(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
    const [componentKey, setComponentKey] = useState(0);
+       const theme = useTheme();
+     const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+    
+    const navigate = useNavigate();
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -163,6 +171,7 @@ export default function Addrepresentative(props) {
     const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
+   
        setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
       index === termIndex ? { ...term, [name]: value } : term
@@ -200,6 +209,7 @@ export default function Addrepresentative(props) {
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
      const fieldName = `term${termIndex}_${name}`;
+    
     
     setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
@@ -279,6 +289,7 @@ export default function Addrepresentative(props) {
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
+ 
   
   setHouseTermData((prev) => {
     const newTerms = prev.map((term, index) =>
@@ -369,6 +380,7 @@ export default function Addrepresentative(props) {
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
   const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
+ 
 
   setHouseTermData((prev) => {
     const newTerms = prev.map((term, idx) => {
@@ -485,7 +497,26 @@ export default function Addrepresentative(props) {
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
       const termsData = houseData.currentHouse.map((term) => {
+<<<<<<< HEAD
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+=======
+        const matchedTerm = terms?.find((t) => {
+       // Case 1: term.termId is an object with name property
+       if (term.termId && typeof term.termId === "object" && term.termId.name) {
+         return t.name === term.termId.name;
+       }
+       // Case 2: term.termId is a string (the term name)
+       else if (typeof term.termId === "string") {
+         return t.name === term.termId;
+       }
+       // Case 3: term.termId is an ObjectId - find by ID
+       else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
+         return t._id.toString() === term.termId.toString();
+       }
+       // Case 4: No valid termId found
+       return false;
+     });
+>>>>>>> dev-test
         // Transform votesScore with the same logic as house data
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
@@ -662,12 +693,12 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // Merge with any existing editedFields from backend
+      // Use only local diffs for editedFields so reverting removes from list
       const backendEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
         : [];
       const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
-
+ 
       setEditedFields(mergedChanges);
     }
   }, [formData, originalFormData, houseTermData, originalTermData]);
@@ -744,6 +775,7 @@ export default function Addrepresentative(props) {
 
   const handleChange = (event) => {
   const { name, value } = event.target;
+ 
   
   setFormData(prev => {
     const newData = { ...prev, [name]: value };
@@ -769,6 +801,7 @@ export default function Addrepresentative(props) {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
+   
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -833,10 +866,20 @@ export default function Addrepresentative(props) {
       // ];
 
       // Update field editors with current changes
+      // Update field editors with current changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      allChanges.forEach((field) => {
+       localChanges.forEach((field) => {
+    // For senator-level fields
+    if (field in formData) {
+      if (compareValues(formData[field], originalFormData?.[field] || '')) {
         updatedFieldEditors[field] = currentEditor;
-      });
+      }
+    }
+    // For term-level fields
+    else if (field.startsWith('term')) {
+      updatedFieldEditors[field] = currentEditor;
+    }
+  });
 
       // Prepare representative update
       const representativeUpdate = {
@@ -911,12 +954,15 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseById(id)).unwrap();
 
       // Update originals to match latest backend data
-      if (houseData?.currentHouse) {
-        setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
-      }
-      if (house) {
-        setOriginalFormData(JSON.parse(JSON.stringify(house)));
-      }
+      // if (houseData?.currentHouse) {
+      //   setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
+      // }
+      // if (house) {
+      //   setOriginalFormData(JSON.parse(JSON.stringify(house)));
+      // }
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
+     
       setLocalChanges([]);
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
@@ -971,6 +1017,7 @@ export default function Addrepresentative(props) {
 
   const handleStatusChange = (status) => {
   const fieldName = "status"; // The field being changed
+  
 
   setFormData((prev) => {
     const newData = { ...prev, status };
@@ -1024,6 +1071,19 @@ export default function Addrepresentative(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
+       published: {
+        backgroundColor: "rgba(76, 175, 80, 0.12)",
+        borderColor: "#4CAF50",
+        iconColor: "#2E7D32",
+        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
+        title: "Published",
+        description:
+          editedFields.length > 0
+            ? `${editedFields.length} pending changes`
+            : "Published and live",
+        titleColor: "#2E7D32",
+        descColor: "#388E3C",
+      },
       // published: {
       //   backgroundColor: "rgba(76, 175, 80, 0.12)",
       //   borderColor: "#4CAF50",
@@ -1046,6 +1106,7 @@ export default function Addrepresentative(props) {
     currentStatus
   );
 
+
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -1062,6 +1123,7 @@ export default function Addrepresentative(props) {
   try {
     setLoading(true);
     await dispatch(discardHouseChanges(id)).unwrap();
+    navigate(0);
     await dispatch(getHouseById(id));
     await dispatch(getHouseDataByHouseId(id));
     setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
@@ -1102,7 +1164,7 @@ export default function Addrepresentative(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex" ,bgcolor:'#f6f6f6ff', }}>
         <SideMenu />
         <Box
           component="main"
@@ -1115,19 +1177,27 @@ export default function Addrepresentative(props) {
           })}
         >
           <FixedHeader />
+          <MobileHeader/>
 
           <Stack
             spacing={2}
             sx={{
               alignItems: "center",
               mx: 2,
-              pb: 5,
-              mt: { xs: 8, md: 0 },
+              // pb: 5,
+              mt: { xs: 8, md: 4 },
             }}
           >
+<<<<<<< HEAD
             {userRole &&
               formData.publishStatus !== "published" &&
               statusData && (
+=======
+             {userRole &&
+              formData.publishStatus &&
+              statusData &&
+              (formData.publishStatus !== "published" || localChanges.length > 0) && (
+>>>>>>> dev-test
                 <Box
                   sx={{
                     width: "98%",
@@ -1147,6 +1217,7 @@ export default function Addrepresentative(props) {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
+<<<<<<< HEAD
                         backgroundColor: `rgba(${
                           formData.publishStatus === "draft"
                             ? "66, 165, 245"
@@ -1156,6 +1227,16 @@ export default function Addrepresentative(props) {
                             ? "76, 175, 80"
                             : "244, 67, 54"
                         }, 0.2)`,
+=======
+                        backgroundColor: `rgba(${formData.publishStatus === "draft"
+                            ? "66, 165, 245"
+                            : formData.publishStatus === "under review"
+                              ? "230, 81, 0"
+                              : formData.publishStatus === "published"
+                                ? "76, 175, 80"
+                                : "244, 67, 54"
+                          }, 0.2)`,
+>>>>>>> dev-test
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
@@ -1165,7 +1246,11 @@ export default function Addrepresentative(props) {
                         sx: { color: statusData.iconColor },
                       })}
                     </Box>
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> dev-test
                     <Box sx={{ flex: 1 }}>
                       {/* Header: title + pending count (admin only) */}
                       <Box
@@ -1187,21 +1272,20 @@ export default function Addrepresentative(props) {
                         >
                           {statusData.title}
                         </Typography>
-
+ 
                         {userRole === "admin" && (
                           <Chip
-                            label={`${
-                              Array.isArray(formData?.editedFields)
+                            label={`${Array.isArray(formData?.editedFields)
                                 ? formData.editedFields.length
                                 : 0
-                            } pending changes`}
+                              } pending changes`}
                             size="small"
                             color="warning"
                             variant="outlined"
                           />
                         )}
                       </Box>
-
+ 
                       {/* Pending / New fields list */}
                       <Box sx={{ mt: 1.5 }}>
                         {(() => {
@@ -1213,7 +1297,7 @@ export default function Addrepresentative(props) {
                           const hasChanges =
                             backendChanges.length > 0 ||
                             localChanges.length > 0;
-
+ 
                           if (!hasChanges) {
                             return (
                               <Typography
@@ -1229,7 +1313,7 @@ export default function Addrepresentative(props) {
                               </Typography>
                             );
                           }
-
+ 
                           // Field name formatter function
                           const formatFieldName = (field) => {
                             // Handle term array items
@@ -1239,7 +1323,7 @@ export default function Addrepresentative(props) {
                             if (termArrayMatch) {
                               const [, termIdx, category] = termArrayMatch;
                               const termNumber = parseInt(termIdx) + 1;
-
+ 
                               if (category === "votesScore") {
                                 return `Term ${termNumber}: Scored Vote`;
                               }
@@ -1248,33 +1332,31 @@ export default function Addrepresentative(props) {
                                 const itemNumber = parseInt(itemIdx) + 1;
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
-                              return `Term ${termNumber}: ${
-                                fieldLabels[category] || category
-                              }`;
+                              return `Term ${termNumber}: ${fieldLabels[category] || category
+                                }`;
                             }
-
+ 
                             // Handle regular term fields
                             if (field.startsWith("term")) {
                               const parts = field.split("_");
                               const termNumber =
                                 parseInt(parts[0].replace("term", "")) + 1;
                               const fieldKey = parts.slice(1).join("_");
-                              return `Term ${termNumber}: ${
-                                fieldLabels[fieldKey] || fieldKey
-                              }`;
+                              return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey
+                                }`;
                             }
-
+ 
                             // Handle non-term fields
                             return fieldLabels[field] || field;
                           };
-
+ 
                           return (
                             <>
                               {/* Backend pending changes */}
                               {backendChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    backgroundColor: "background.paper",
+                                    backgroundColor: "#fff",
                                     borderRadius: 1,
                                     p: 1.5,
                                     border: "1px solid",
@@ -1297,15 +1379,15 @@ export default function Addrepresentative(props) {
                                         "Unknown Editor";
                                       const editTime = editorInfo?.editedAt
                                         ? new Date(
-                                            editorInfo.editedAt
-                                          ).toLocaleString([], {
-                                            month: "short",
-                                            day: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                          })
+                                          editorInfo.editedAt
+                                        ).toLocaleString([], {
+                                          month: "short",
+                                          day: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })
                                         : "unknown time";
-
+ 
                                       return (
                                         <ListItem
                                           key={`backend-${field}`}
@@ -1354,12 +1436,12 @@ export default function Addrepresentative(props) {
                                   </List>
                                 </Box>
                               )}
-
+ 
                               {/* Local unsaved changes - now matches senator style */}
                               {localChanges.length > 0 && (
                                 <Box
                                   sx={{
-                                    backgroundColor: "background.paper",
+                                    backgroundColor: "#fff",
                                     borderRadius: 1,
                                     p: 1.5,
                                     border: "1px solid",
@@ -1404,15 +1486,15 @@ export default function Addrepresentative(props) {
                                               </Typography>
                                             </Box>
                                           }
-                                          // secondary={
-                                          //   <Typography
-                                          //     variant="caption"
-                                          //     color="text.secondary"
-                                          //   >
-                                          //     Edited just now
-                                          //   </Typography>
-                                          // }
-                                          // sx={{ my: 0 }}
+                                        // secondary={
+                                        //   <Typography
+                                        //     variant="caption"
+                                        //     color="text.secondary"
+                                        //   >
+                                        //     Edited just now
+                                        //   </Typography>
+                                        // }
+                                        // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
@@ -1427,6 +1509,11 @@ export default function Addrepresentative(props) {
                   </Box>
                 </Box>
               )}
+<<<<<<< HEAD
+=======
+ 
+ 
+>>>>>>> dev-test
 
             <Stack
               direction="row"
@@ -1441,12 +1528,12 @@ export default function Addrepresentative(props) {
                 variant="outlined"
                 onClick={handleDiscard}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -1456,12 +1543,12 @@ export default function Addrepresentative(props) {
                 variant="outlined"
                 onClick={handleSave}
                 sx={{
-                  backgroundColor: "#4a90e2 !important",
+                  backgroundColor: "#173A5E !important",
                   color: "white !important",
                   padding: "0.5rem 1rem",
                   marginLeft: "0.5rem",
                   "&:hover": {
-                    backgroundColor: "#357ABD !important",
+                    backgroundColor: "#1E4C80 !important",
                   },
                 }}
               >
@@ -1469,7 +1556,7 @@ export default function Addrepresentative(props) {
               </Button>
             </Stack>
 
-            <Paper elevation={2} sx={{ width: "100%" }}>
+            <Paper elevation={2} sx={{ width: "100%", bgcolor:"#fff" }}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1544,12 +1631,12 @@ export default function Addrepresentative(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                 >
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end", // align left
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1560,7 +1647,7 @@ export default function Addrepresentative(props) {
                       Representative's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       required
                       id="title"
@@ -1573,11 +1660,11 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1}>
+                  <Grid size={isMobile?12:1}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1585,7 +1672,7 @@ export default function Addrepresentative(props) {
                       Status
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -1650,11 +1737,11 @@ export default function Addrepresentative(props) {
                       </Button>
                     </ButtonGroup>
                   </Grid>
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1662,7 +1749,7 @@ export default function Addrepresentative(props) {
                       District
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <TextField
                       id="district"
                       name="district"
@@ -1674,11 +1761,11 @@ export default function Addrepresentative(props) {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={1} sx={{ alignContent: "center" }}>
+                  <Grid size={isMobile?12:1} sx={{ alignContent: "center" }}>
                     <InputLabel
                       sx={{
                         display: "flex",
-                        justifyContent: "end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                       }}
@@ -1686,7 +1773,7 @@ export default function Addrepresentative(props) {
                       Party
                     </InputLabel>
                   </Grid>
-                  <Grid size={4}>
+                  <Grid size={isMobile?12:4}>
                     <FormControl fullWidth>
                       <Select
                         name="party"
@@ -1701,12 +1788,12 @@ export default function Addrepresentative(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2} sx={{ minWidth: 165 }}>
+                  <Grid size={isMobile?12:2} sx={{ minWidth: 165 }}>
                     <InputLabel
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end", // align left
+                       justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 700,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1744,12 +1831,12 @@ export default function Addrepresentative(props) {
                         component="label"
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#7b1fe0 !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<CloudUploadIcon />}
@@ -1778,6 +1865,7 @@ export default function Addrepresentative(props) {
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
+                   bgcolor:"#fff"
                 }}
               >
                 <Box sx={{ padding: 5 }}>
@@ -1809,12 +1897,12 @@ export default function Addrepresentative(props) {
                     columnSpacing={2}
                     alignItems={"center"}
                   >
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1822,7 +1910,7 @@ export default function Addrepresentative(props) {
                         Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?12:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.termId || ""}
@@ -1837,9 +1925,12 @@ export default function Addrepresentative(props) {
                             Select an option
                           </MenuItem>
                           {terms && terms.length > 0 ? (
-                            terms.map((t) => (
+                            terms 
+                            .filter((t)=>t.startYear && t.endYear && (t.endYear-t.startYear === 1))
+                            .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                            .sort((a,b)=> a.congresses[0]- b.congresses[0]).map((t) => (
                               <MenuItem key={t._id} value={t._id}>
-                                {t.name}
+                                 {`${t.congresses[0]}th Congress`}
                               </MenuItem>
                             ))
                           ) : (
@@ -1850,11 +1941,45 @@ export default function Addrepresentative(props) {
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid size={2.1} sx={{ alignContent: "center" }}>
+                                       {/* <Grid size={isMobile ? 12 : 2.2}>
+  <FormControl fullWidth>
+    <Autocomplete
+      options={
+        terms
+          ? terms.filter(
+              (t) => Array.isArray(t.congresses) && t.congresses.length === 1
+            )
+          : []
+      }
+      getOptionLabel={(t) =>
+        t.congresses && t.congresses.length === 1
+          ? `${ordinal(t.congresses[0])} Congress`
+          : ""
+      }
+      value={
+        terms.find((t) => t._id === term.termId) || null
+      }
+      onChange={(event, newValue) =>
+        handleTermChange(
+          { target: { name: "termId", value: newValue?._id || "" } },
+          termIndex
+        )
+      }
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          // label="Select an option"
+          sx={{ background: "#fff" }}
+        />
+      )}
+    />
+  </FormControl>
+</Grid> */}
+                    <Grid size={isMobile?6:2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1862,7 +1987,7 @@ export default function Addrepresentative(props) {
                         Current Term
                       </InputLabel>
                     </Grid>
-                    <Grid size={0}>
+                    <Grid size={isMobile?6:0}>
                       <Switch
                         {...label}
                         name="currentTerm"
@@ -1872,12 +1997,12 @@ export default function Addrepresentative(props) {
                       />
                     </Grid>
 
-                    <Grid size={2.39}>
+                    <Grid size={isMobile?6:2.39}>
                       <InputLabel
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1885,7 +2010,7 @@ export default function Addrepresentative(props) {
                         SBA Rating
                       </InputLabel>
                     </Grid>
-                    <Grid size={2.2}>
+                    <Grid size={isMobile?6:2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -1908,11 +2033,11 @@ export default function Addrepresentative(props) {
                       </FormControl>
                     </Grid>
 
-                    <Grid size={2}>
+                    <Grid size={isMobile?12:2}>
                       <InputLabel
                         sx={{
                           display: "flex",
-                          justifyContent: "end",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
                           fontWeight: 700,
                           my: 0,
                         }}
@@ -1920,7 +2045,7 @@ export default function Addrepresentative(props) {
                         Term Summary
                       </InputLabel>
                     </Grid>
-                    <Grid size={9.05}>
+                    <Grid size={isMobile?12:9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
@@ -1933,10 +2058,17 @@ export default function Addrepresentative(props) {
                             )
                           );
                           // Optionally update localChanges here too
-                          const fieldName = `term${termIndex}_summary`;
-                          setLocalChanges(prev =>
-                            prev.includes(fieldName) ? prev : [...prev, fieldName]
-                          );
+                           const fieldName = `term${termIndex}_summary`;
+                          const originalTerm = originalTermData[termIndex] || {};
+                          const isActualChange = compareValues(content, originalTerm.summary || "");
+                          setLocalChanges(prev => {
+                            if (isActualChange && !prev.includes(fieldName)) {
+                              return [...prev, fieldName];
+                            } else if (!isActualChange && prev.includes(fieldName)) {
+                              return prev.filter(f => f !== fieldName);
+                            }
+                            return prev;
+                          });
                         }}
                         onBlur={() => {}}
                         init={{
@@ -1986,7 +2118,7 @@ export default function Addrepresentative(props) {
                             alignItems="center"
                             columnGap={"15px"}
                           >
-                            <Grid size={2}>
+                            <Grid size={isMobile?12:2}>
                               <InputLabel
                                 sx={{
                                   display: "flex",
@@ -1999,7 +2131,7 @@ export default function Addrepresentative(props) {
                                 Scored Vote
                               </InputLabel>
                             </Grid>
-                            <Grid size={7.5}>
+                            <Grid size={isMobile?12:7.5}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.voteId || ""}
@@ -2047,7 +2179,7 @@ export default function Addrepresentative(props) {
                                     Select a Bill
                                   </MenuItem>
                                   {votes && votes.length > 0 ? (
-                                    votes.map((voteItem) => (
+                                    votes.filter((vote) => vote.type === "house_bill").map((voteItem) => (
                                       <MenuItem
                                         key={voteItem._id}
                                         value={voteItem._id}
@@ -2071,7 +2203,7 @@ export default function Addrepresentative(props) {
                                 </Select>
                               </FormControl>
                             </Grid>
-                            <Grid size={1.6}>
+                            <Grid size={isMobile?12:1.6}>
                               <FormControl fullWidth>
                                 <Select
                                   value={vote.score || ""}
@@ -2110,12 +2242,12 @@ export default function Addrepresentative(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#357ABD !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -2140,12 +2272,12 @@ export default function Addrepresentative(props) {
                           alignItems="center"
                           columnGap={"15px"}
                         >
-                          <Grid size={2}>
+                          <Grid size={isMobile?12:2}>
                             <InputLabel
                               sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "end",
+                                justifyContent: isMobile ? "flex-start" : "flex-end",
                                 fontWeight: 700,
                                 my: 0,
                               }}
@@ -2153,7 +2285,7 @@ export default function Addrepresentative(props) {
                               Tracked Activity
                             </InputLabel>
                           </Grid>
-                          <Grid size={7.5}>
+                          <Grid size={isMobile?8:7.5}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity.activityId || ""}
@@ -2227,7 +2359,7 @@ export default function Addrepresentative(props) {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid size={1.6}>
+                          <Grid size={isMobile?6:1.6}>
                             <FormControl fullWidth>
                               <Select
                                 value={activity?.score || ""}
@@ -2266,12 +2398,12 @@ export default function Addrepresentative(props) {
                       <Button
                         variant="outlined"
                         sx={{
-                          backgroundColor: "#4a90e2 !important",
+                          backgroundColor: "#173A5E !important",
                           color: "white !important",
                           padding: "0.5rem 1rem",
                           marginLeft: "0.5rem",
                           "&:hover": {
-                            backgroundColor: "#357ABD !important",
+                            backgroundColor: "#1E4C80 !important",
                           },
                         }}
                         startIcon={<AddIcon />}
@@ -2293,12 +2425,12 @@ export default function Addrepresentative(props) {
               onClick={handleAddTerm}
               sx={{
                 alignSelf: "flex-start",
-                backgroundColor: "#4a90e2 !important",
+                backgroundColor: "#173A5E !important",
                 color: "white !important",
                 padding: "0.5rem 1rem",
                 marginLeft: "0.5rem",
                 "&:hover": {
-                  backgroundColor: "#357ABD !important",
+                  backgroundColor: "#1E4C80 !important",
                 },
               }}
             >
@@ -2312,17 +2444,38 @@ export default function Addrepresentative(props) {
               anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
               <MuiAlert
-                onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                sx={{ width: "100%" }}
-                elevation={6}
-                variant="filled"
-              >
-                {snackbarMessage}
-              </MuiAlert>
+                  onClose={handleSnackbarClose}
+                  severity={snackbarSeverity}
+                  sx={{
+                    width: "100%",
+                    bgcolor:
+                      snackbarMessage === "Changes Published successfully!"
+                        ? "#daf4f0"
+                        : undefined,
+                    "& .MuiAlert-icon": {
+                      color:
+                        snackbarMessage === "Changes Published successfully!"
+                          ? "#099885"
+                          : undefined,
+                    },
+                    "& .MuiAlert-message": {
+                      color:
+                        snackbarMessage === "Changes Published successfully!"
+                          ? "#099885"
+                          : undefined,
+                          
+                    },
+                  }}
+                  elevation={6}
+                  variant="filled"
+                >
+                  {snackbarMessage}
+                </MuiAlert>
             </Snackbar>
           </Stack>
-          <Footer />
+          <Box sx={{ mb: "50px" }}>
+            <Footer />
+          </Box>
         </Box>
       </Box>
     </AppTheme>
