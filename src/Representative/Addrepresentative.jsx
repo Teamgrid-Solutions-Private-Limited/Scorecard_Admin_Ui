@@ -1195,11 +1195,51 @@ export default function Addrepresentative(props) {
               alignItems: "center",
               mx: 3,
               // pb: 5,
-              mt: { xs: 8, md: 2 },
-              gap: 1
+              mt: { xs: 8, md: 2.8 },
+              gap:1
             }}
           >
-            {userRole &&
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#E24042 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#C91E37 !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleSave}
+                sx={{
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
+              </Button>
+            </Stack>
+             {userRole &&
               formData.publishStatus &&
               statusData &&
               (formData.publishStatus !== "published" || localChanges.length > 0) && (
@@ -1501,48 +1541,9 @@ export default function Addrepresentative(props) {
 
 
 
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
-            </Stack>
+            
 
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider', }} >
+            <Paper  sx={{ width: "100%", bgcolor:"#fff",borderRadius:0.8,border:'1px solid',borderColor:'divider', }} >
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1607,8 +1608,8 @@ export default function Addrepresentative(props) {
                 </DialogActions>
               </Dialog>
 
-              <Box sx={{ p: 5 }}>
-                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
+              <Box sx={{ p: 0 }}>
+                <Typography variant="h6"  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
                   Representative's Information
                 </Typography>
                 <Grid
@@ -1616,6 +1617,8 @@ export default function Addrepresentative(props) {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
+                  py={3}
+                  px={9}
                 >
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel
@@ -1623,7 +1626,7 @@ export default function Addrepresentative(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
                         overflowWrap: "break-word", // break long words
@@ -1651,7 +1654,7 @@ export default function Addrepresentative(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -1728,7 +1731,7 @@ export default function Addrepresentative(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -1752,7 +1755,7 @@ export default function Addrepresentative(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -1779,8 +1782,8 @@ export default function Addrepresentative(props) {
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                       justifyContent: isMobile ? "flex-start" : "flex-end",
+                        fontWeight: 500,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
                         overflowWrap: "break-word", // break long words
@@ -1845,28 +1848,30 @@ export default function Addrepresentative(props) {
             {houseTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-
+               
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
-                  bgcolor: "#fff",
+                   bgcolor:"#fff",
                   borderRadius: 0.8,
-                  border: '1px solid',
-                  borderColor: 'divider'
-
+                  border:'1px solid',
+                  borderColor:'divider'
+                
                 }}
               >
-                <Box sx={{ padding: 5 }}>
+                <Box sx={{ padding: 0 }}>
                   <Box
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      marginBottom: 3,
+                      // marginBottom: 3,
+                       borderBottom:'1px solid', borderColor:'divider',
+                       p:1.5,px:3
                     }}
                   >
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" >
                       Representative's Term Information {termIndex + 1}
                     </Typography>
                     {termIndex > 0 && (
@@ -1885,6 +1890,7 @@ export default function Addrepresentative(props) {
                     rowSpacing={2}
                     columnSpacing={2}
                     alignItems={"center"}
+                    py={3}
                   >
                     <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
@@ -1892,7 +1898,7 @@ export default function Addrepresentative(props) {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -1976,7 +1982,7 @@ export default function Addrepresentative(props) {
                         sx={{
                           display: "flex",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -1999,7 +2005,7 @@ export default function Addrepresentative(props) {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -2034,7 +2040,7 @@ export default function Addrepresentative(props) {
                         sx={{
                           display: "flex",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -2120,7 +2126,7 @@ export default function Addrepresentative(props) {
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "end",
-                                  fontWeight: 700,
+                                  fontWeight: 500,
                                   my: 0,
                                 }}
                               >
@@ -2257,134 +2263,134 @@ export default function Addrepresentative(props) {
                     {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) => (
                       activity.activityId != null ? (
+                      <Grid
+                        rowSpacing={2}
+                        sx={{ width: "100%", mt: 2 }}
+                        key={activityIndex}
+                      >
                         <Grid
-                          rowSpacing={2}
-                          sx={{ width: "100%", mt: 2 }}
-                          key={activityIndex}
+                          size={12}
+                          display="flex"
+                          alignItems="center"
+                          columnGap={"15px"}
                         >
-                          <Grid
-                            size={12}
-                            display="flex"
-                            alignItems="center"
-                            columnGap={"15px"}
-                          >
-                            <Grid size={isMobile ? 12 : 2}>
-                              <InputLabel
+                          <Grid size={isMobile?12:2}>
+                            <InputLabel
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: isMobile ? "flex-start" : "flex-end",
+                                fontWeight: 500,
+                                my: 0,
+                              }}
+                            >
+                              Tracked Activity
+                            </InputLabel>
+                          </Grid>
+                          <Grid size={isMobile?8:7.5}>
+                            <FormControl fullWidth>
+                              <Select
+                                value={activity.activityId || ""}
+                                onChange={(event) =>
+                                  handleActivityChange(
+                                    termIndex,
+                                    activityIndex,
+                                    "activityId",
+                                    event.target.value
+                                  )
+                                }
                                 sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: isMobile ? "flex-start" : "flex-end",
-                                  fontWeight: 700,
-                                  my: 0,
+                                  background: "#fff",
+                                  width: "100%",
                                 }}
-                              >
-                                Tracked Activity
-                              </InputLabel>
-                            </Grid>
-                            <Grid size={isMobile ? 8 : 7.5}>
-                              <FormControl fullWidth>
-                                <Select
-                                  value={activity.activityId || ""}
-                                  onChange={(event) =>
-                                    handleActivityChange(
-                                      termIndex,
-                                      activityIndex,
-                                      "activityId",
-                                      event.target.value
-                                    )
-                                  }
-                                  sx={{
-                                    background: "#fff",
-                                    width: "100%",
-                                  }}
-                                  renderValue={(selected) => {
-                                    const selectedActivity = houseActivities.find(
-                                      (a) => a._id === selected
-                                    );
-                                    return (
-                                      <Typography
-                                        sx={{
-                                          overflow: "hidden",
-                                          whiteSpace: "nowrap",
-                                          textOverflow: "ellipsis",
-                                        }}
-                                      >
-                                        {selectedActivity?.title ||
-                                          "Select an Activity"}
-                                      </Typography>
-                                    );
-                                  }}
-                                  MenuProps={{
-                                    PaperProps: {
-                                      sx: {
-                                        maxHeight: 300,
-                                        width: 400,
-                                        "& .MuiMenuItem-root": {
-                                          minHeight: "48px",
-                                        },
+                                renderValue={(selected) => {
+                                  const selectedActivity = houseActivities.find(
+                                    (a) => a._id === selected
+                                  );
+                                  return (
+                                    <Typography
+                                      sx={{
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {selectedActivity?.title ||
+                                        "Select an Activity"}
+                                    </Typography>
+                                  );
+                                }}
+                                MenuProps={{
+                                  PaperProps: {
+                                    sx: {
+                                      maxHeight: 300,
+                                      width: 400,
+                                      "& .MuiMenuItem-root": {
+                                        minHeight: "48px",
                                       },
                                     },
-                                  }}
-                                >
-                                  <MenuItem value="" disabled>
-                                    Select an Activity
-                                  </MenuItem>
-                                  {houseActivities &&
-                                    houseActivities.length > 0 ? (
-                                    houseActivities.map((activityItem) => (
-                                      <MenuItem
-                                        key={activityItem._id}
-                                        value={activityItem._id}
-                                        sx={{ py: 1.5 }}
+                                  },
+                                }}
+                              >
+                                <MenuItem value="" disabled>
+                                  Select an Activity
+                                </MenuItem>
+                                {houseActivities &&
+                                houseActivities.length > 0 ? (
+                                  houseActivities.map((activityItem) => (
+                                    <MenuItem
+                                      key={activityItem._id}
+                                      value={activityItem._id}
+                                      sx={{ py: 1.5 }}
+                                    >
+                                      <Typography
+                                        sx={{
+                                          whiteSpace: "normal",
+                                          overflowWrap: "break-word",
+                                        }}
                                       >
-                                        <Typography
-                                          sx={{
-                                            whiteSpace: "normal",
-                                            overflowWrap: "break-word",
-                                          }}
-                                        >
-                                          {activityItem.title}
-                                        </Typography>
-                                      </MenuItem>
-                                    ))
-                                  ) : (
-                                    <MenuItem value="" disabled>
-                                      No activities available
+                                        {activityItem.title}
+                                      </Typography>
                                     </MenuItem>
-                                  )}
-                                </Select>
-                              </FormControl>
-                            </Grid>
-                            <Grid size={isMobile ? 6 : 1.6}>
-                              <FormControl fullWidth>
-                                <Select
-                                  value={activity?.score || ""}
-                                  onChange={(event) =>
-                                    handleActivityChange(
-                                      termIndex,
-                                      activityIndex,
-                                      "score",
-                                      event.target.value
-                                    )
-                                  }
-                                  sx={{ background: "#fff" }}
-                                >
-                                  <MenuItem value="yes">Yea</MenuItem>
-                                  <MenuItem value="no">Nay</MenuItem>
-                                  <MenuItem value="other">Other</MenuItem>
-                                  {/* <MenuItem value="None">None</MenuItem> */}
-                                </Select>
-                              </FormControl>
-                            </Grid>
-                            <Grid size={1}>
-                              <DeleteForeverIcon
-                                onClick={() =>
-                                  handleRemoveActivity(termIndex, activityIndex)
+                                  ))
+                                ) : (
+                                  <MenuItem value="" disabled>
+                                    No activities available
+                                  </MenuItem>
+                                )}
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid size={isMobile?6:1.6}>
+                            <FormControl fullWidth>
+                              <Select
+                                value={activity?.score || ""}
+                                onChange={(event) =>
+                                  handleActivityChange(
+                                    termIndex,
+                                    activityIndex,
+                                    "score",
+                                    event.target.value
+                                  )
                                 }
-                              />
-                            </Grid>
+                                sx={{ background: "#fff" }}
+                              >
+                                <MenuItem value="yes">Yea</MenuItem>
+                                <MenuItem value="no">Nay</MenuItem>
+                                <MenuItem value="other">Other</MenuItem>
+                                {/* <MenuItem value="None">None</MenuItem> */}
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid size={1}>
+                            <DeleteForeverIcon
+                              onClick={() =>
+                                handleRemoveActivity(termIndex, activityIndex)
+                              }
+                            />
                           </Grid>
                         </Grid>
+                      </Grid>
                       ) : null
                     ))}
                     {/* Activities Repeater Ends */}
@@ -2469,7 +2475,7 @@ export default function Addrepresentative(props) {
               </MuiAlert>
             </Snackbar>
           </Stack>
-          <Box sx={{ mb: "40px", mx: "15px" }}>
+          <Box sx={{ mb: "40px" ,mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

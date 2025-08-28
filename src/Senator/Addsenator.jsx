@@ -487,30 +487,30 @@ export default function AddSenator(props) {
   // };
 
   const handleSummaryChange = (termIndex, content) => {
-    const fieldName = `term${termIndex}_summary`;
-
-    setSenatorTermData((prev) => {
-      const newTerms = prev.map((term, idx) => {
-        if (idx !== termIndex) return term;
-
-        return { ...term, summary: content };
-      });
-
-      // Compare with original data
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalSummary = originalTerm.summary || "";
-      const isActualChange = compareValues(content, originalSummary);
-
-      if (isActualChange && !localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => [...prev, fieldName]);
-      } else if (!isActualChange && localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
-      }
-
-      return newTerms;
+  const fieldName = `term${termIndex}_summary`;
+ 
+  setSenatorTermData((prev) => {
+    const newTerms = prev.map((term, idx) => {
+      if (idx !== termIndex) return term;
+ 
+      return { ...term, summary: content };
     });
-  };
-
+ 
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalSummary = originalTerm.summary || "";
+    const isActualChange = compareValues(content, originalSummary);
+ 
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+    }
+ 
+    return newTerms;
+  });
+};
+ 
 
   const handleAddVote = (termIndex) => {
     setSenatorTermData((prev) =>
@@ -1087,15 +1087,15 @@ export default function AddSenator(props) {
         )
           return;
 
-        if (key === "summary") {
-          const currentSummary = term.summary || "";
-          const originalSummary = originalTerm.summary || "";
-
-          // Track only if content is changed
-          if (currentSummary.trim() !== originalSummary.trim()) {
-            changes.push(`term${termIndex}_summary`);
-          }
-        } else if (["votesScore", "activitiesScore"].includes(key)) {
+         if (key === "summary") {
+  const currentSummary = term.summary || "";
+  const originalSummary = originalTerm.summary || "";
+ 
+  // Track only if content is changed
+  if (currentSummary.trim() !== originalSummary.trim()) {
+    changes.push(`term${termIndex}_summary`);
+  }
+} else if (["votesScore", "activitiesScore"].includes(key)) {
           const current = (term[key] || []).filter((item) =>
             Object.values(item).some((val) => val !== "" && val !== null)
           );
@@ -1392,7 +1392,7 @@ export default function AddSenator(props) {
           //   ...summary,
           //   congress: congressArray[summaryIndex] || null, // Get the congress at the same index
           // })),
-          summary: term.summary
+          summary:term.summary
         };
 
         return term._id
@@ -1579,10 +1579,50 @@ export default function AddSenator(props) {
               alignItems: "center",
               mx: 3,
               // pb: 5,
-              mt: { xs: 8, md: 2 },
-              gap: 1
+              mt: { xs: 8, md: 2.8 },
+              gap:1
             }}
           >
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#E24042 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#C91E37 !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleSave}
+                sx={{
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
+              </Button>
+            </Stack>
             {userRole &&
               formData.publishStatus &&
               (formData.publishStatus !== "published" ||
@@ -1884,65 +1924,9 @@ export default function AddSenator(props) {
                   </Box>
                 </Box>
               )}
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
+            
 
-              {/* <Button
-                variant="outlined"
-                onClick={(e) => {
-                  handleSave(e, "save");
-                }}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                Save Changes
-              </Button> */}
-            </Stack>
-
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider' }}>
+            <Paper  sx={{ width: "100%" , bgcolor:"#fff",borderRadius:0.8, border:'1px solid' , borderColor:'divider' }}> 
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -2006,8 +1990,8 @@ export default function AddSenator(props) {
                   </Stack>
                 </DialogActions>
               </Dialog>
-              <Box sx={{ p: 5 }}>
-                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
+              <Box sx={{ p: 0 }}>
+                <Typography variant="h6"  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
                   Senator's Information
                 </Typography>
                 <Grid
@@ -2015,7 +1999,9 @@ export default function AddSenator(props) {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
-                // flexDirection={isMobile ? "column" : "row"}
+                  // mt={2}
+                  py={3}
+                  // flexDirection={isMobile ? "column" : "row"}
                 >
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
@@ -2023,7 +2009,7 @@ export default function AddSenator(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2048,7 +2034,7 @@ export default function AddSenator(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2125,7 +2111,7 @@ export default function AddSenator(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2152,7 +2138,7 @@ export default function AddSenator(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2179,7 +2165,7 @@ export default function AddSenator(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2242,7 +2228,6 @@ export default function AddSenator(props) {
             {senatorTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
@@ -2253,18 +2238,22 @@ export default function AddSenator(props) {
                   borderColor: "divider",
                 }}
               >
-                <Box sx={{ padding: 5 }}>
+                <Box sx={{ padding: 0 }}>
+                  
                   <Box
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      marginBottom: 3,
+                      // marginBottom: 3,
+                      borderBottom:'1px solid', borderColor:'divider',
+                       p:1.5,px:3
                     }}
                   >
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6"  >
                       Senator's Term Information {termIndex + 1}
                     </Typography>
+                    
                     {termIndex > 0 && (
                       <Button
                         variant="outlined"
@@ -2281,6 +2270,7 @@ export default function AddSenator(props) {
                     rowSpacing={2}
                     columnSpacing={2}
                     alignItems={"center"}
+                    py={3}
                   >
                     <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
@@ -2288,7 +2278,7 @@ export default function AddSenator(props) {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -2335,7 +2325,7 @@ export default function AddSenator(props) {
                         sx={{
                           display: "flex",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -2357,7 +2347,7 @@ export default function AddSenator(props) {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -2388,58 +2378,58 @@ export default function AddSenator(props) {
                     </Grid>
                     {/*term repeater start*/}
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
-                          my: 0,
-                        }}
-                      >
-                        Term Summary
-                      </InputLabel>
-                    </Grid>
-
-                    {/* Editor Column */}
-                    <Grid size={isMobile ? 12 : 9.05}>
-                      <Editor
-                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                        licenseKey="gpl"
-                        onInit={(_evt, editor) => (editorRef.current = editor)}
-                        value={term?.summary || ""}
-                        onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
-                        init={{
-                          base_url: "/scorecard/admin/tinymce",
-                          height: 250,
-                          menubar: false,
-                          plugins: [
-                            "advlist",
-                            "autolink",
-                            "lists",
-                            "link",
-                            "image",
-                            "charmap",
-                            "preview",
-                            "anchor",
-                            "searchreplace",
-                            "visualblocks",
-                            "code",
-                            "fullscreen",
-                            "insertdatetime",
-                            "media",
-                            "table",
-                            "code",
-                            "help",
-                            "wordcount",
-                          ],
-                          toolbar:
-                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                          content_style:
-                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-                          directionality: "ltr",
-                        }}
-                      />
-                    </Grid>
+  <InputLabel
+    sx={{
+      display: "flex",
+      justifyContent: isMobile ? "flex-start" : "flex-end",
+      fontWeight: 500,
+      my: 0,
+    }}
+  >
+    Term Summary
+  </InputLabel>
+</Grid>
+ 
+{/* Editor Column */}
+<Grid size={isMobile ? 12 : 9.05}>
+<Editor
+  tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+  licenseKey="gpl"
+  onInit={(_evt, editor) => (editorRef.current = editor)}
+  value={term?.summary || ""}
+  onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
+  init={{
+    base_url: "/scorecard/admin/tinymce",
+    height: 250,
+    menubar: false,
+    plugins: [
+      "advlist",
+      "autolink",
+      "lists",
+      "link",
+      "image",
+      "charmap",
+      "preview",
+      "anchor",
+      "searchreplace",
+      "visualblocks",
+      "code",
+      "fullscreen",
+      "insertdatetime",
+      "media",
+      "table",
+      "code",
+      "help",
+      "wordcount",
+    ],
+    toolbar:
+      "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+    content_style:
+      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+    directionality: "ltr",
+  }}
+/>
+</Grid>
                     {/* {term?.summaries?.map((summary, summaryIndex) => (
                       <>
                         
@@ -2572,7 +2562,7 @@ export default function AddSenator(props) {
                                     justifyContent: isMobile
                                       ? "flex-start"
                                       : "flex-end",
-                                    fontWeight: 700,
+                                    fontWeight: 500,
                                     my: 0,
                                   }}
                                 >
@@ -2811,7 +2801,7 @@ export default function AddSenator(props) {
                                 justifyContent: isMobile
                                   ? "flex-start"
                                   : "flex-end",
-                                fontWeight: 700,
+                                fontWeight: 500,
                                 my: 0,
                               }}
                             >
@@ -2894,7 +2884,7 @@ export default function AddSenator(props) {
                                     justifyContent: isMobile
                                       ? "flex-start"
                                       : "flex-end",
-                                    fontWeight: 700,
+                                    fontWeight: 500,
                                     my: 0,
                                   }}
                                 >
@@ -3051,7 +3041,7 @@ export default function AddSenator(props) {
                                 justifyContent: isMobile
                                   ? "flex-start"
                                   : "flex-end",
-                                fontWeight: 700,
+                                fontWeight: 500,
                                 my: 0,
                               }}
                             >
@@ -3172,7 +3162,7 @@ export default function AddSenator(props) {
             </Snackbar>
 
           </Stack>
-          <Box sx={{ mb: "40px", mx: "15px" }}>
+          <Box sx={{ mb: "40px" ,mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

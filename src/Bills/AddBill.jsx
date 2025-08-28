@@ -572,6 +572,61 @@ export default function AddBill(props) {
               mt: { xs: 8, md: 2 },
             }}
           >
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#E24042 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#C91E37 !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleSubmit}
+                sx={{
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
+              </Button>
+              {/* <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#4a90e2 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#357ABD !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button> */}
+            </Stack>
             {userRole &&
               statusData &&
               (currentStatus !== "published" || hasAnyChanges) && (
@@ -843,61 +898,7 @@ export default function AddBill(props) {
                 </Box>
               )}
 
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleSubmit}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
-              {/* <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button> */}
-            </Stack>
+            
 
             <Paper sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff', borderRadius:0.8,border:'1px solid',borderColor:'divider'}}>
               <Dialog
@@ -963,8 +964,8 @@ export default function AddBill(props) {
                   </Stack>
                 </DialogActions>
               </Dialog>
-              <Box sx={{ padding: 5 }}>
-                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
+              <Box sx={{ padding: 0 }}>
+                <Typography variant="h6"  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
                   Bill's Information
                 </Typography>
                 <Grid
@@ -972,6 +973,8 @@ export default function AddBill(props) {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
+                  py={3}
+                  pr={7}
                 >
                   <Grid size={2}>
                     <InputLabel
@@ -979,7 +982,7 @@ export default function AddBill(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1007,7 +1010,7 @@ export default function AddBill(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1036,7 +1039,7 @@ export default function AddBill(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -1091,7 +1094,7 @@ export default function AddBill(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -1145,7 +1148,7 @@ export default function AddBill(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1176,7 +1179,7 @@ export default function AddBill(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1206,7 +1209,7 @@ export default function AddBill(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1251,7 +1254,7 @@ export default function AddBill(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1314,7 +1317,7 @@ export default function AddBill(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1424,7 +1427,7 @@ export default function AddBill(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                         fontFamily: "'Be Vietnam Pro', sans-serif",

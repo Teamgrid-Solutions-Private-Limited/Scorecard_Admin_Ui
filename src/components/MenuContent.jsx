@@ -41,19 +41,19 @@ const getRole = () => {
 };
 
 const mainListItems = [
-  { text: "Senators", icon: <GavelRoundedIcon />, link: "/" },
+  { text: "Senators", icon: <GavelRoundedIcon sx={{ fontSize: 40 }}/>, link: "/" },
   {
     text: "Representatives",
-    icon: <GroupsRoundedIcon />,
+    icon: <GroupsRoundedIcon sx={{ fontSize: 40 }} />,
     link: "/representative",
   },
-  { text: "Votes We Scored", icon: <DescriptionRoundedIcon />, link: "/bills" },
+  { text: "Votes We Scored", icon: <DescriptionRoundedIcon sx={{ fontSize: 40 }}/>, link: "/bills" },
   {
     text: "Activities We Track",
-    icon: <CalendarTodayRoundedIcon />,
+    icon: <CalendarTodayRoundedIcon sx={{ fontSize: 40 }}/>,
     link: "/activities",
   },
-  { text: "Manage Terms", icon: <AddIcon />, link: "/manage-term" },
+  { text: "Manage Terms", icon: <AddIcon sx={{ fontSize: 40 }}/>, link: "/manage-term" },
 ];
 
 export default function MenuContent() {
@@ -104,6 +104,13 @@ export default function MenuContent() {
               component={NavLink}
               to={item.link}
               sx={{
+              
+     "& .MuiListItemText-primary": {
+      // fontSize: "1px",      
+     fontWeight: "300 !important",
+     lineHeight: "2.2 !important",
+    },
+   
                 "&:hover": {
                   color: "#CC9A3A !important",
                   "& .MuiListItemIcon-root": {
@@ -126,8 +133,14 @@ export default function MenuContent() {
                 },
               }}
             >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
+              <ListItemIcon sx={{
+    "& .MuiSvgIcon-root": {
+      fontSize: "23px !important",   
+      width: "23px !important",      
+      height: "23px !important",     
+    },
+  }}>{item.icon}</ListItemIcon>
+              <ListItemText  primary={item.text} />
             </ListItemButton>
           </ListItem>
         ))}
