@@ -165,7 +165,7 @@ export default function AddSenator(props) {
   const participatedActivities = allActivities.filter((activity) => {
     const activityDate = new Date(activity.date);
 
-    // ✅ Condition 1: Must be inside the senator's term range
+    //  Condition 1: Must be inside the senator's term range
     const inTerm =
       activityDate >= termStart &&
       activityDate <= termEnd &&
@@ -173,7 +173,7 @@ export default function AddSenator(props) {
 
     if (!inTerm) return false;
 
-    // ✅ Condition 2: Must have a non-empty score
+    //  Condition 2: Must have a non-empty score
     return senatorActivities.some((a) => {
       if (!a?.score || a.score.trim() === "") return false;
 
@@ -242,12 +242,10 @@ export default function AddSenator(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -364,80 +362,53 @@ export default function AddSenator(props) {
               updatedTerm.votesScore = [{ voteId: "", score: "" }];
             }
 
+            // In handleTermChange, update the activitiesScore section:
+
             // Update activitiesScore for the new term
-            const newParticipatedActivities = allActivities.filter(
-              (activity) => {
-                const activityDate = new Date(activity.date);
+            const newParticipatedActivities = allActivities.filter((activity) => {
+              const activityDate = new Date(activity.date);
 
-                // Must be inside the term range
-                const inTerm =
-                  activityDate >= newTermStart &&
-                  activityDate <= newTermEnd &&
-                  selectedTerm.congresses.includes(
-                    Number(activity.congress || 0)
-                  );
+              //  Condition 1: Must be inside the senator's term range
+              const inTerm =
+                activityDate >= newTermStart &&
+                activityDate <= newTermEnd &&
+                selectedTerm.congresses.includes(Number(activity.congress || 0));
 
-                if (!inTerm) return false;
+              if (!inTerm) return false;
 
-                // Senator must have participated (have a score) for this activity
-                return senatorActivities.some((a) => {
-                  if (!a?.score || a.score.trim() === "") return false;
+              //  Condition 2: Must have a non-empty score
+              return senatorActivities.some((a) => {
+                if (!a?.score || a.score.trim() === "") return false;
 
-                  const aId =
-                    typeof a.activityId === "object"
-                      ? a.activityId?._id
-                      : a.activityId;
+                const aId =
+                  typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
 
-                  return aId === activity._id;
-                });
+                return aId === activity._id;
+              });
+            });
+
+            // Create new activitiesScore array with senator's actual scores
+            updatedTerm.activitiesScore = newParticipatedActivities.map((activity) => {
+              const senAct = senatorActivities.find((a) => {
+                const aId =
+                  typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+                return aId === activity._id;
+              });
+
+              let mappedScore = "";
+              if (senAct?.score) {
+                const s = String(senAct.score).toLowerCase();
+                if (s.includes("yea") || s === "yes") mappedScore = "yes";
+                else if (s.includes("nay") || s === "no") mappedScore = "no";
+                else if (s.includes("other")) mappedScore = "other";
+                else mappedScore = senAct.score;
               }
-            );
 
-            // // Preserve existing scores for activities that are in both the old and new term
-            // const existingActivityScores = term.activitiesScore || [];
-
-            // // Create new activitiesScore array with senator's actual scores
-            // updatedTerm.activitiesScore = newParticipatedActivities.map(
-            //   (activity) => {
-            //     // Find the senator's actual score for this activity
-            //     const senatorActivity = existingActivityScores.find((a) => {
-            //       const aId =
-            //         typeof a.activityId === "object"
-            //           ? a.activityId?._id
-            //           : a.activityId;
-            //       return aId === activity._id;
-            //     });
-
-            //     return {
-            //       activityId: activity._id,
-            //       score: senatorActivity ? senatorActivity.score : "",
-            //     };
-            //   }
-            // );
-            // Create new activitiesScore array with senator's actual scores (mirror votes logic)
-            updatedTerm.activitiesScore = newParticipatedActivities.map(
-              (activity) => {
-                const senAct = senatorActivities.find((a) => {
-                  const aId =
-                    typeof a.activityId === "object"
-                      ? a.activityId?._id
-                      : a.activityId;
-                  return aId === activity._id;
-                });
-
-                let mappedScore = "";
-                if (senAct?.score) {
-                  const s = String(senAct.score).toLowerCase();
-                  if (s.includes("yea") || s === "yes") mappedScore = "yes";
-                  else if (s.includes("nay") || s === "no") mappedScore = "no";
-                  else if (s.includes("other")) mappedScore = "other";
-                  else mappedScore = senAct.score;
-                }
-
-                const row = { activityId: activity._id, score: mappedScore };
-                return row;
-              }
-            );
+              return {
+                activityId: activity._id,
+                score: mappedScore,
+              };
+            });
 
             // If no activities in the new term, ensure we have at least one empty entry
             if (updatedTerm.activitiesScore.length === 0) {
@@ -516,39 +487,39 @@ export default function AddSenator(props) {
   // };
 
   const handleSummaryChange = (termIndex, content) => {
-  const fieldName = `term${termIndex}_summary`;
- 
-  setSenatorTermData((prev) => {
-    const newTerms = prev.map((term, idx) => {
-      if (idx !== termIndex) return term;
- 
-      return { ...term, summary: content };
+    const fieldName = `term${termIndex}_summary`;
+
+    setSenatorTermData((prev) => {
+      const newTerms = prev.map((term, idx) => {
+        if (idx !== termIndex) return term;
+
+        return { ...term, summary: content };
+      });
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalSummary = originalTerm.summary || "";
+      const isActualChange = compareValues(content, originalSummary);
+
+      if (isActualChange && !localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => [...prev, fieldName]);
+      } else if (!isActualChange && localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+      }
+
+      return newTerms;
     });
- 
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const originalSummary = originalTerm.summary || "";
-    const isActualChange = compareValues(content, originalSummary);
- 
-    if (isActualChange && !localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    } else if (!isActualChange && localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
-    }
- 
-    return newTerms;
-  });
-};
- 
+  };
+
 
   const handleAddVote = (termIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: "", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -635,9 +606,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       )
     );
@@ -678,11 +649,11 @@ export default function AddSenator(props) {
       const newTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
           : term
       );
 
@@ -706,12 +677,12 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: "", score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: "", score: "" },
+            ],
+          }
           : term
       )
     );
@@ -722,20 +693,19 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       )
     );
   };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    const activityChangeId = `term${termIndex}_TrackedActivity_${
-      activityIndex + 1
-    }`;
+    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
+      }`;
 
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, idx) => {
@@ -788,9 +758,9 @@ export default function AddSenator(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              summary: contentRefs.current[termIndex]?.content || "",
-            }
+            ...term,
+            summary: contentRefs.current[termIndex]?.content || "",
+          }
           : term
       )
     );
@@ -948,6 +918,7 @@ export default function AddSenator(props) {
         }
 
         // Helper to map an activity id to senator's recorded score (mirror votes logic)
+        // Helper to map an activity id to senator's recorded score
         const getActivityScore = (activityId) => {
           const senAct = senatorActivities.find((a) => {
             const aId =
@@ -965,7 +936,7 @@ export default function AddSenator(props) {
           return senAct.score;
         };
 
-        // Get ALL activities that fall under this specific term (not just participated ones)
+        // Get activities that fall under this specific term AND senator participated in
         let termActivities = [];
         if (matchedTerm) {
           const termStart = new Date(`${matchedTerm.startYear}-01-01`);
@@ -975,15 +946,26 @@ export default function AddSenator(props) {
             const activityDate = new Date(activity.date);
 
             // Must be inside the term range
-            return (
+            const inTerm =
               activityDate >= termStart &&
               activityDate <= termEnd &&
-              matchedTerm.congresses.includes(Number(activity.congress || 0))
-            );
+              matchedTerm.congresses.includes(Number(activity.congress || 0));
+
+            if (!inTerm) return false;
+
+            // Senator must have participated (have a score) for this activity
+            return senatorActivities.some((a) => {
+              if (!a?.score || a.score.trim() === "") return false;
+
+              const aId =
+                typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+
+              return aId === activity._id;
+            });
           });
         }
 
-        // Use activities for this term regardless of participation
+        // Use activities for this term that the senator participated in
         let activitiesScore;
         if (
           Array.isArray(term.activitiesScore) &&
@@ -1005,7 +987,7 @@ export default function AddSenator(props) {
         } else if (termActivities.length > 0) {
           activitiesScore = termActivities.map((activity) => ({
             activityId: activity._id,
-            score: "", // Start with empty score
+            score: getActivityScore(activity._id),
             _activityTitle: activity.title || "Unknown Activity",
           }));
         } else {
@@ -1105,15 +1087,15 @@ export default function AddSenator(props) {
         )
           return;
 
-         if (key === "summary") {
-  const currentSummary = term.summary || "";
-  const originalSummary = originalTerm.summary || "";
- 
-  // Track only if content is changed
-  if (currentSummary.trim() !== originalSummary.trim()) {
-    changes.push(`term${termIndex}_summary`);
-  }
-} else if (["votesScore", "activitiesScore"].includes(key)) {
+        if (key === "summary") {
+          const currentSummary = term.summary || "";
+          const originalSummary = originalTerm.summary || "";
+
+          // Track only if content is changed
+          if (currentSummary.trim() !== originalSummary.trim()) {
+            changes.push(`term${termIndex}_summary`);
+          }
+        } else if (["votesScore", "activitiesScore"].includes(key)) {
           const current = (term[key] || []).filter((item) =>
             Object.values(item).some((val) => val !== "" && val !== null)
           );
@@ -1410,13 +1392,13 @@ export default function AddSenator(props) {
           //   ...summary,
           //   congress: congressArray[summaryIndex] || null, // Get the congress at the same index
           // })),
-          summary:term.summary
+          summary: term.summary
         };
 
         return term._id
           ? dispatch(
-              updateSenatorData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateSenatorData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
@@ -1508,7 +1490,7 @@ export default function AddSenator(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-         published: {
+      published: {
         backgroundColor: "rgba(76, 175, 80, 0.12)",
         borderColor: "#4CAF50",
         iconColor: "#2E7D32",
@@ -1521,7 +1503,7 @@ export default function AddSenator(props) {
         titleColor: "#2E7D32",
         descColor: "#388E3C",
       },
-      
+
     };
     return configs[currentStatus];
   };
@@ -1576,7 +1558,7 @@ export default function AddSenator(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex",bgcolor:'#f6f6f6ff',  }}>
+      <Box sx={{ display: "flex", bgcolor: '#f6f6f6ff', }}>
         <SideMenu />
         <Box
           component="main"
@@ -1598,7 +1580,7 @@ export default function AddSenator(props) {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2 },
-              gap:1
+              gap: 1
             }}
           >
             {userRole &&
@@ -1625,15 +1607,14 @@ export default function AddSenator(props) {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${
-                          formData.publishStatus === "draft"
-                            ? "66, 165, 245"
-                            : formData.publishStatus === "under review"
+                        backgroundColor: `rgba(${formData.publishStatus === "draft"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                            ? ""
-                            : "244, 67, 54"
-                        }, 0.2)`,
+                              ? ""
+                              : "244, 67, 54"
+                          }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
@@ -1669,12 +1650,11 @@ export default function AddSenator(props) {
 
                         {userRole === "admin" && (
                           <Chip
-                            label={`${
-                              Array.isArray(formData?.editedFields)
-                                ? formData.editedFields.length +
-                                  localChanges.length
-                                : 0
-                            } pending changes`}
+                            label={`${Array.isArray(formData?.editedFields)
+                              ? formData.editedFields.length +
+                              localChanges.length
+                              : 0
+                              } pending changes`}
                             size="small"
                             color="warning"
                             variant="outlined"
@@ -1730,9 +1710,8 @@ export default function AddSenator(props) {
                               if (category === "activitiesScore") {
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
-                              return `Term ${termNumber}: ${
-                                fieldLabels[category] || category
-                              } Item ${itemNumber}`;
+                              return `Term ${termNumber}: ${fieldLabels[category] || category
+                                } Item ${itemNumber}`;
                             }
 
                             // Handle regular term fields (e.g., "term2_votesScore")
@@ -1741,9 +1720,8 @@ export default function AddSenator(props) {
                               const termNumber =
                                 parseInt(parts[0].replace("term", "")) + 1;
                               const fieldKey = parts.slice(1).join("_");
-                              return `Term ${termNumber}: ${
-                                fieldLabels[fieldKey] || fieldKey
-                              }`;
+                              return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey
+                                }`;
                             }
 
                             // Handle non-term fields
@@ -1779,13 +1757,13 @@ export default function AddSenator(props) {
                                         "Unknown Editor";
                                       const editTime = editorInfo?.editedAt
                                         ? new Date(
-                                            editorInfo.editedAt
-                                          ).toLocaleString([], {
-                                            month: "short",
-                                            day: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                          })
+                                          editorInfo.editedAt
+                                        ).toLocaleString([], {
+                                          month: "short",
+                                          day: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })
                                         : "unknown time";
 
                                       return (
@@ -1886,12 +1864,12 @@ export default function AddSenator(props) {
                                               </Typography>
                                             </Box>
                                           }
-                                          // secondary={
-                                          //   <Typography variant="caption" color="text.secondary">
-                                          //     Edited just now
-                                          //   </Typography>
-                                          // }
-                                          // sx={{ my: 0 }}
+                                        // secondary={
+                                        //   <Typography variant="caption" color="text.secondary">
+                                        //     Edited just now
+                                        //   </Typography>
+                                        // }
+                                        // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
@@ -1964,7 +1942,7 @@ export default function AddSenator(props) {
               </Button> */}
             </Stack>
 
-            <Paper  sx={{ width: "100%" , bgcolor:"#fff",borderRadius:0.8, border:'1px solid' , borderColor:'divider' }}> 
+            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider' }}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -2037,7 +2015,7 @@ export default function AddSenator(props) {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
-                  // flexDirection={isMobile ? "column" : "row"}
+                // flexDirection={isMobile ? "column" : "row"}
                 >
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
@@ -2258,13 +2236,13 @@ export default function AddSenator(props) {
               </Box>
             </Paper>
 
-           
+
 
             {/* Render each term in senatorTermData */}
             {senatorTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-             
+
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
@@ -2410,58 +2388,58 @@ export default function AddSenator(props) {
                     </Grid>
                     {/*term repeater start*/}
                     <Grid size={isMobile ? 12 : 2}>
-  <InputLabel
-    sx={{
-      display: "flex",
-      justifyContent: isMobile ? "flex-start" : "flex-end",
-      fontWeight: 700,
-      my: 0,
-    }}
-  >
-    Term Summary
-  </InputLabel>
-</Grid>
- 
-{/* Editor Column */}
-<Grid size={isMobile ? 12 : 9.05}>
-<Editor
-  tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-  licenseKey="gpl"
-  onInit={(_evt, editor) => (editorRef.current = editor)}
-  value={term?.summary || ""}
-  onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
-  init={{
-    base_url: "/scorecard/admin/tinymce",
-    height: 250,
-    menubar: false,
-    plugins: [
-      "advlist",
-      "autolink",
-      "lists",
-      "link",
-      "image",
-      "charmap",
-      "preview",
-      "anchor",
-      "searchreplace",
-      "visualblocks",
-      "code",
-      "fullscreen",
-      "insertdatetime",
-      "media",
-      "table",
-      "code",
-      "help",
-      "wordcount",
-    ],
-    toolbar:
-      "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-    content_style:
-      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-    directionality: "ltr",
-  }}
-/>
-</Grid>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
+                          fontWeight: 700,
+                          my: 0,
+                        }}
+                      >
+                        Term Summary
+                      </InputLabel>
+                    </Grid>
+
+                    {/* Editor Column */}
+                    <Grid size={isMobile ? 12 : 9.05}>
+                      <Editor
+                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
+                        onInit={(_evt, editor) => (editorRef.current = editor)}
+                        value={term?.summary || ""}
+                        onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
+                        init={{
+                          base_url: "/scorecard/admin/tinymce",
+                          height: 250,
+                          menubar: false,
+                          plugins: [
+                            "advlist",
+                            "autolink",
+                            "lists",
+                            "link",
+                            "image",
+                            "charmap",
+                            "preview",
+                            "anchor",
+                            "searchreplace",
+                            "visualblocks",
+                            "code",
+                            "fullscreen",
+                            "insertdatetime",
+                            "media",
+                            "table",
+                            "code",
+                            "help",
+                            "wordcount",
+                          ],
+                          toolbar:
+                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                          content_style:
+                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+                          directionality: "ltr",
+                        }}
+                      />
+                    </Grid>
                     {/* {term?.summaries?.map((summary, summaryIndex) => (
                       <>
                         
@@ -2649,7 +2627,26 @@ export default function AddSenator(props) {
                                     <MenuItem value="" disabled>
                                       Select a Bill
                                     </MenuItem>
-                                    {(() => {
+                                    {allVotes.length > 0 ? (
+                                      allVotes
+                                        .filter(voteItem => voteItem.type === "senate_bill") // Filter by type "senate_bill"
+                                        .map((voteItem) => {
+                                          // Find the senator's score for this vote
+                                          const senatorVote = senatorVotes.find(
+                                            (v) => {
+                                              const vId =
+                                                typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                                              return (
+                                                vId === voteItem._id ||
+                                                v.quorumId === voteItem.quorumId ||
+                                                (v.billNumber &&
+                                                  voteItem.billNumber &&
+                                                  v.billNumber === voteItem.billNumber)
+                                              );
+                                            }
+                                          );
+
+                                          {/* {(() => {
                                       // Get votes for this specific term that senator participated in
                                       let termVotes = [];
                                       if (term.termId) {
@@ -2696,11 +2693,11 @@ export default function AddSenator(props) {
                                                 return (
                                                   vId === vote._id ||
                                                   v.quorumId ===
-                                                    vote.quorumId ||
+                                                  vote.quorumId ||
                                                   (v.billNumber &&
                                                     vote.billNumber &&
                                                     v.billNumber ===
-                                                      v.billNumber)
+                                                    v.billNumber)
                                                 );
                                               });
                                             }
@@ -2720,14 +2717,14 @@ export default function AddSenator(props) {
                                               return (
                                                 vId === voteItem._id ||
                                                 v.quorumId ===
-                                                  voteItem.quorumId ||
+                                                voteItem.quorumId ||
                                                 (v.billNumber &&
                                                   voteItem.billNumber &&
                                                   v.billNumber ===
-                                                    voteItem.billNumber)
+                                                  voteItem.billNumber)
                                               );
                                             }
-                                          );
+                                          ); */}
 
                                           const score =
                                             senatorVote?.score || "";
@@ -2748,19 +2745,21 @@ export default function AddSenator(props) {
                                                 }}
                                               >
                                                 {voteItem.title}
-                                                {scoreText}
+                                              
                                               </Typography>
                                             </MenuItem>
                                           );
                                         })
-                                      ) : (
-                                        <MenuItem value="" disabled>
-                                          {term.termId
-                                            ? "No bills available for this term"
-                                            : "Select a term first"}
-                                        </MenuItem>
-                                      );
-                                    })()}
+                                    ) : (
+                                      <MenuItem value="" disabled>
+                                        {term.termId
+                                          ? "No bills available for this term"
+                                          : "Select a term first"}
+                                      </MenuItem>
+                                    )
+                                    }
+                                    {/* ) */}
+                                    {/* ()} */}
                                   </Select>
                                 </FormControl>
                               </Grid>
@@ -2952,45 +2951,47 @@ export default function AddSenator(props) {
                                       Select an Activity
                                     </MenuItem>
                                     {allActivities.length > 0 ? (
-                                      allActivities.map((activityItem) => {
-                                        // Find if this activity has a score for this senator
-                                        const hasScore = senatorActivities.some(
-                                          (a) => {
-                                            const aId =
-                                              typeof a.activityId === "object"
-                                                ? a.activityId?._id
-                                                : a.activityId;
-                                            return (
-                                              aId === activityItem._id &&
-                                              a.score &&
-                                              a.score.trim() !== ""
-                                            );
-                                          }
-                                        );
+                                      allActivities
+                                        .filter(activityItem => activityItem.type === "senate")
+                                        .map((activityItem) => {
+                                          // Find if this activity has a score for this senator
+                                          const hasScore = senatorActivities.some(
+                                            (a) => {
+                                              const aId =
+                                                typeof a.activityId === "object"
+                                                  ? a.activityId?._id
+                                                  : a.activityId;
+                                              return (
+                                                aId === activityItem._id &&
+                                                a.score &&
+                                                a.score.trim() !== ""
+                                              );
+                                            }
+                                          );
 
-                                        const scoreText = hasScore
-                                          ? " (scored)"
-                                          : "";
+                                          const scoreText = hasScore
+                                            ? " (scored)"
+                                            : "";
 
-                                        return (
-                                          <MenuItem
-                                            key={activityItem._id}
-                                            value={activityItem._id}
-                                            sx={{ py: 1.5 }}
-                                          >
-                                            <Typography
-                                              sx={{
-                                                whiteSpace: "normal",
-                                                overflowWrap: "break-word",
-                                              }}
+                                          return (
+                                            <MenuItem
+                                              key={activityItem._id}
+                                              value={activityItem._id}
+                                              sx={{ py: 1.5 }}
                                             >
-                                              {activityItem.title ||
-                                                "Untitled Activity"}
-                                              {scoreText}
-                                            </Typography>
-                                          </MenuItem>
-                                        );
-                                      })
+                                              <Typography
+                                                sx={{
+                                                  whiteSpace: "normal",
+                                                  overflowWrap: "break-word",
+                                                }}
+                                              >
+                                                {activityItem.title ||
+                                                  "Untitled Activity"}
+
+                                              </Typography>
+                                            </MenuItem>
+                                          );
+                                        })
                                     ) : (
                                       <MenuItem value="" disabled>
                                         No activities available
@@ -3134,44 +3135,44 @@ export default function AddSenator(props) {
               Add Another Term
             </Button>
 
-           <Snackbar
-  open={openSnackbar}
-  autoHideDuration={6000}
-  onClose={handleSnackbarClose}
-  anchorOrigin={{ vertical: "top", horizontal: "right" }}
->
-  <MuiAlert
-    onClose={handleSnackbarClose}
-    severity={snackbarSeverity}
-    sx={{
-      width: "100%",
-      bgcolor:
-        snackbarMessage === "Changes Published successfully!"
-          ? "#daf4f0"
-          : undefined,
-      "& .MuiAlert-icon": {
-        color:
-          snackbarMessage === "Changes Published successfully!"
-            ? "#099885"
-            : undefined,
-      },
-      "& .MuiAlert-message": {
-        color:
-          snackbarMessage === "Changes Published successfully!"
-            ? "#099885"
-            : undefined,
-            
-      },
-    }}
-    elevation={6}
-    variant="filled"
-  >
-    {snackbarMessage}
-  </MuiAlert>
-</Snackbar>
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={6000}
+              onClose={handleSnackbarClose}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <MuiAlert
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{
+                  width: "100%",
+                  bgcolor:
+                    snackbarMessage === "Changes Published successfully!"
+                      ? "#daf4f0"
+                      : undefined,
+                  "& .MuiAlert-icon": {
+                    color:
+                      snackbarMessage === "Changes Published successfully!"
+                        ? "#099885"
+                        : undefined,
+                  },
+                  "& .MuiAlert-message": {
+                    color:
+                      snackbarMessage === "Changes Published successfully!"
+                        ? "#099885"
+                        : undefined,
+
+                  },
+                }}
+                elevation={6}
+                variant="filled"
+              >
+                {snackbarMessage}
+              </MuiAlert>
+            </Snackbar>
 
           </Stack>
-          <Box sx={{ mb: "40px" ,mx:"15px" }}>
+          <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
           </Box>
         </Box>
