@@ -1589,10 +1589,50 @@ export default function AddSenator(props) {
               alignItems: "center",
               mx: 3,
               // pb: 5,
-              mt: { xs: 8, md: 2 },
+              mt: { xs: 8, md: 2.8 },
               gap:1
             }}
           >
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleDiscard}
+                sx={{
+                  backgroundColor: "#E24042 !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#C91E37 !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Discard" : "Undo"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleSave}
+                sx={{
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                  },
+                }}
+              >
+                {userRole === "admin" ? "Publish" : "Save Changes"}
+              </Button>
+            </Stack>
             {userRole &&
               formData.publishStatus &&
               (formData.publishStatus !== "published" ||
@@ -1898,63 +1938,7 @@ export default function AddSenator(props) {
                   </Box>
                 </Box>
               )}
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
-
-              {/* <Button
-                variant="outlined"
-                onClick={(e) => {
-                  handleSave(e, "save");
-                }}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                Save Changes
-              </Button> */}
-            </Stack>
+            
 
             <Paper  sx={{ width: "100%" , bgcolor:"#fff",borderRadius:0.8, border:'1px solid' , borderColor:'divider' }}> 
               <Dialog
@@ -2020,8 +2004,8 @@ export default function AddSenator(props) {
                   </Stack>
                 </DialogActions>
               </Dialog>
-              <Box sx={{ p: 5 }}>
-                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
+              <Box sx={{ p: 0 }}>
+                <Typography variant="h6"  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
                   Senator's Information
                 </Typography>
                 <Grid
@@ -2029,6 +2013,8 @@ export default function AddSenator(props) {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
+                  // mt={2}
+                  py={3}
                   // flexDirection={isMobile ? "column" : "row"}
                 >
                   <Grid size={isMobile ? 12 : 2}>
@@ -2037,7 +2023,7 @@ export default function AddSenator(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2062,7 +2048,7 @@ export default function AddSenator(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2139,7 +2125,7 @@ export default function AddSenator(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2166,7 +2152,7 @@ export default function AddSenator(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2193,7 +2179,7 @@ export default function AddSenator(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -2256,7 +2242,6 @@ export default function AddSenator(props) {
             {senatorTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-             
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
@@ -2267,18 +2252,22 @@ export default function AddSenator(props) {
                   borderColor: "divider",
                 }}
               >
-                <Box sx={{ padding: 5 }}>
+                <Box sx={{ padding: 0 }}>
+                  
                   <Box
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      marginBottom: 3,
+                      // marginBottom: 3,
+                      borderBottom:'1px solid', borderColor:'divider',
+                       p:1.5,px:3
                     }}
                   >
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6"  >
                       Senator's Term Information {termIndex + 1}
                     </Typography>
+                    
                     {termIndex > 0 && (
                       <Button
                         variant="outlined"
@@ -2295,6 +2284,7 @@ export default function AddSenator(props) {
                     rowSpacing={2}
                     columnSpacing={2}
                     alignItems={"center"}
+                    py={3}
                   >
                     <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
@@ -2302,7 +2292,7 @@ export default function AddSenator(props) {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -2349,7 +2339,7 @@ export default function AddSenator(props) {
                         sx={{
                           display: "flex",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -2371,7 +2361,7 @@ export default function AddSenator(props) {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                         }}
                       >
@@ -2406,7 +2396,7 @@ export default function AddSenator(props) {
     sx={{
       display: "flex",
       justifyContent: isMobile ? "flex-start" : "flex-end",
-      fontWeight: 700,
+      fontWeight: 500,
       my: 0,
     }}
   >
@@ -2586,7 +2576,7 @@ export default function AddSenator(props) {
                                     justifyContent: isMobile
                                       ? "flex-start"
                                       : "flex-end",
-                                    fontWeight: 700,
+                                    fontWeight: 500,
                                     my: 0,
                                   }}
                                 >
@@ -2804,7 +2794,7 @@ export default function AddSenator(props) {
                                 justifyContent: isMobile
                                   ? "flex-start"
                                   : "flex-end",
-                                fontWeight: 700,
+                                fontWeight: 500,
                                 my: 0,
                               }}
                             >
@@ -2887,7 +2877,7 @@ export default function AddSenator(props) {
                                     justifyContent: isMobile
                                       ? "flex-start"
                                       : "flex-end",
-                                    fontWeight: 700,
+                                    fontWeight: 500,
                                     my: 0,
                                   }}
                                 >
@@ -3042,7 +3032,7 @@ export default function AddSenator(props) {
                                 justifyContent: isMobile
                                   ? "flex-start"
                                   : "flex-end",
-                                fontWeight: 700,
+                                fontWeight: 500,
                                 my: 0,
                               }}
                             >

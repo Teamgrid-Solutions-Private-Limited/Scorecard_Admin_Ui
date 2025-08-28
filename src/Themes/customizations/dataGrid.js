@@ -22,6 +22,9 @@ export const dataGridCustomizations = {
         [`& .${gridClasses.columnHeader}`]: {
           backgroundColor: '#eef1f4',
         },
+        [`& .${gridClasses.columnSeparator}`]: {
+  display: 'none', // vertical white line remove
+},
         [`& .${gridClasses.footerContainer}`]: {
           backgroundColor: '#fff',
         },
@@ -81,7 +84,7 @@ export const dataGridCustomizations = {
           border: 'none',
           backgroundColor: 'transparent',
           '&:hover': {
-            backgroundColor: alpha(theme.palette.action.selected, 0.3),
+            backgroundColor: 'transparent',
           },
           '&:active': {
             backgroundColor: gray[200],

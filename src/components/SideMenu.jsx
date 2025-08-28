@@ -79,7 +79,7 @@ export default function SideMenu() {
 				}}
 			>
 				
-				<img className="logo-lg" src={logo} />
+				<img className="logo-lg" src={logo} style={{ width: "140px", height: "auto" }}  />
 
 			</Stack>
 

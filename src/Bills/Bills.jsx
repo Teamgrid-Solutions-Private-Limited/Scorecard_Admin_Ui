@@ -268,9 +268,9 @@ export default function Bills(props) {
                 // py: 3,
               }}
             >
-              <Typography component="h2" variant="h6" >
+              {/* <Typography component="h2" variant="h6" >
                 All Bills
-              </Typography>
+              </Typography> */}
 
               <Stack
                 direction={{ xs: "column", sm: "row" }}
@@ -286,6 +286,7 @@ export default function Bills(props) {
                       "& .MuiBadge-badge": {
                         top: 6, 
                         right: 6, 
+                        bgcolor:'#E24042'
                       },
                     }}
                   >
@@ -301,9 +302,9 @@ export default function Bills(props) {
                         minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
                         color:  "#fff",
-                        backgroundColor:  "#173A5E",
+                        backgroundColor:  "#497BB2",
                         "&:hover": {
-                          backgroundColor: "#1E4C80",
+                          backgroundColor: "#3B6799",
                         },
                       }}
                     >
@@ -316,31 +317,33 @@ export default function Bills(props) {
                       <Paper
                         sx={{
                           position: "absolute",
-                          right: 0,
+                          // right: 0,
+                          left:0,
                           top: "100%",
-                          mt: 1,
-                          width: 200,
+                          mt: 0.5,
+                          width: 180,
                           zIndex: 1,
                           boxShadow: 3,
-                          borderRadius: 2,
+                          borderRadius: 1,
                           overflow: "hidden",
                         }}
                       >
                         <Box
                           sx={{
-                            p: 2,
+                            p: 0.5,
+                            
                             borderBottom: "1px solid",
                             borderColor: "divider",
                           }}
                         >
                           <Box
                             display="flex"
-                            justifyContent="space-between"
+                            justifyContent="flex-end"
                             alignItems="center"
                           >
-                            <Typography variant="subtitle1" fontWeight="bold">
+                            {/* <Typography variant="subtitle1" >
                               Status
-                            </Typography>
+                            </Typography> */}
                             <IconButton size="small" onClick={toggleFilter}>
                               <CloseIcon fontSize="small" />
                             </IconButton>
@@ -379,15 +382,16 @@ export default function Bills(props) {
                         {/* Clear All Button */}
                         <Box
                           sx={{
-                            p: 2,
-                            borderTop: "1px solid",
-                            borderColor: "divider",
+                            // p: 2,
+                            // borderTop: "1px solid",
+                            // borderColor: "divider",
                           }}
                         >
                           <Button
                             fullWidth
-                            variant="outlined"
-                            color="secondary"
+                            // variant="outlined"
+                            // color="secondary"
+                             sx={{borderRadius:0, bgcolor:'#fff',borderTop:'1px solid' , borderColor:'divider',justifyContent:'flex-start',pl:5}}
                             onClick={clearAllFilters}
                             disabled={!statusFilter.length}
                           >

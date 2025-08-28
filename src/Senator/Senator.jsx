@@ -476,7 +476,7 @@ export default function Senator(props) {
                 width: "100%",
                 display: "flex",
                 flexDirection: { xs: "column", sm: "row" },
-                justifyContent: "space-between",
+                justifyContent: "flex-end",
                 alignItems: { xs: "stretch", sm: "center" },
                 mt: { xs: 2, md: 4 },
                 gap: 2,
@@ -491,9 +491,7 @@ export default function Senator(props) {
                 // mx:2.5
               }}
             >
-              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 } ,ml:2}}>
-                All Senators
-              </Typography>
+              
               {userRole === "admin" && (
               <Box sx={{ width: "60%", display: { xs: "block", sm: "none" },  }}>
                 <Button
@@ -516,7 +514,7 @@ export default function Senator(props) {
               </Box>
             )}
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" },mr:2 }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" } }}>
                  {/* Mobile: Show Fetch button above search/filter */}
             
                 <TextField
@@ -567,6 +565,7 @@ export default function Senator(props) {
                       "& .MuiBadge-badge": {
                         top: 6,
                         right: 6,
+                        bgcolor:'#E24042'
                       },
                     }}
                   >
@@ -578,11 +577,11 @@ export default function Senator(props) {
                       sx={{
                         padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                         minWidth: { xs: "100%", sm: "120px" },
-                        borderColor: filterOpen ? "primary.main" : "divider",
+                        borderColor:  "divider",
                         color:  "#fff",
-                        backgroundColor:  "#173A5E",
+                        backgroundColor:  "#497BB2",
                         "&:hover": {
-                          backgroundColor:  "#1E4C80",
+                          backgroundColor:  "#3B6799",
                         },
                         width: { xs: "100%", sm: "auto" },
                       }}
@@ -599,30 +598,30 @@ export default function Senator(props) {
                           position: "absolute",
                           right: {xs:'40%',sm:0},
                           top: "100%",
-                          mt: 1,
-                          width: {xs:'60vw',sm:320},
+                          mt: 0.5,
+                          width: {xs:'60vw',sm:300},
                           height: {xs:'60vh',sm: 'auto'},
                           zIndex: 1,
                           boxShadow: 3,
-                          borderRadius: 2,
+                          borderRadius: 1,
                           overflow: "hidden",
                         }}
                       >
                         <Box
                           sx={{
-                            p: 2,
+                            p: 0.5,
                             borderBottom: "1px solid",
                             borderColor: "divider",
                           }}
                         >
                           <Box
                             display="flex"
-                            justifyContent="space-between"
+                            justifyContent="flex-end"
                             alignItems="center"
                           >
-                            <Typography variant="subtitle1" fontWeight="bold">
+                            {/* <Typography variant="subtitle1" fontWeight="bold">
                               Filters
-                            </Typography>
+                            </Typography> */}
                             <IconButton size="small" onClick={toggleFilter}>
                               <CloseIcon fontSize="small" />
                             </IconButton>
@@ -637,14 +636,14 @@ export default function Senator(props) {
                             bgcolor:
                               expandedFilter === "party"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer", }}
+                            sx={{ p: 1.5,px:2, cursor: "pointer", }}
                             onClick={() => toggleFilterSection("party")}
                           >
                             <Typography variant="body1">Party</Typography>
@@ -655,7 +654,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "party" && (
-                            <Box sx={{ py: 2, pt: 0,bgcolor:'#fff' }}>
+                            <Box sx={{ py: 1, pt: 0,bgcolor:'#fff' }}>
                               {/* <TextField
                                 fullWidth
                                 size="small"
@@ -728,14 +727,14 @@ export default function Senator(props) {
                             bgcolor:
                               expandedFilter === "state"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("state")}
                           >
                             <Typography variant="body1">State</Typography>
@@ -746,7 +745,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "state" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                              <Box sx={{ mb: 2 ,px:2}}>
                                <TextField
                                 fullWidth
@@ -821,14 +820,14 @@ export default function Senator(props) {
                             bgcolor:
                               expandedFilter === "rating"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("rating")}
                           >
                             <Typography variant="body1">Rating</Typography>
@@ -839,7 +838,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "rating" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                               {/* <TextField
                                 fullWidth
                                 size="small"
@@ -912,14 +911,14 @@ export default function Senator(props) {
                             bgcolor:
                               expandedFilter === "year"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("year")}
                           >
                             <Typography variant="body1">Year</Typography>
@@ -930,7 +929,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "year" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                              <Box  sx={{ mb: 2, px:2 }}>
                                <TextField
                                 fullWidth
@@ -1059,14 +1058,14 @@ export default function Senator(props) {
                                                     bgcolor:
                                                       expandedFilter === "term"
                                                         ? "action.hover"
-                                                        : "background.paper",
+                                                        : "#fff",
                                                   }}
                                                 >
                                                   <Box
                                                     display="flex"
                                                     justifyContent="space-between"
                                                     alignItems="center"
-                                                    sx={{ p: 2, cursor: "pointer" }}
+                                                    sx={{ p: 1.5,px:2, cursor: "pointer" }}
                                                     onClick={() => toggleFilterSection("term")}
                                                   >
                                                     <Typography variant="body1">Term</Typography>
@@ -1077,7 +1076,7 @@ export default function Senator(props) {
                                                     )}
                                                   </Box>
                                                   {expandedFilter === "term" && (
-                                                    <Box sx={{ py: 2, pt: 0 }}>
+                                                    <Box sx={{ py: 1, pt: 0 }}>
                                                       <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
                                                         {["current"/*, "past"*/].map((term) => (
                                                           <Box
@@ -1120,14 +1119,14 @@ export default function Senator(props) {
                             bgcolor:
                               expandedFilter === "status"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("status")}
                           >
                             <Typography variant="body1">Status</Typography>
@@ -1138,7 +1137,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "status" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1.3, pt: 0 }}>
                               <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {statusOptions.map((status) => (
                                   <Box
@@ -1173,15 +1172,16 @@ export default function Senator(props) {
                         {/* Clear All Button */}
                         <Box
                           sx={{
-                            p: 2,
-                            borderTop: "1px solid",
-                            borderColor: "divider",
+                            // p: 1,
+                            // borderTop: "1px solid",
+                            // borderColor: "divider",
                           }}
                         >
                           <Button
                             fullWidth
-                            variant="outlined"
-                            color="secondary"
+                            // variant="outlined"
+                            // color="secondary"
+                            sx={{borderRadius:0, bgcolor:'#fff'}}
                             onClick={clearAllFilters}
                             disabled={
                               !partyFilter.length &&

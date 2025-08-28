@@ -556,6 +556,54 @@ export default function AddActivity(props) {
               mt: { xs: 8, md: 2 },
             }}
           >
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              {/* Show Discard button only for existing activities */}
+              {id && (
+                <Button
+                  variant="outlined"
+                  onClick={handleDiscard}
+                  sx={{
+                    backgroundColor: "#E24042 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1.5rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#C91E37 !important",
+                    },
+                  }}
+                >
+                  {userRole === "admin" ? "Discard" : "Undo"}
+                </Button>
+              )}
+
+              <Button
+                variant="outlined"
+                onClick={handleSubmit}
+                sx={{
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                  },
+                }}
+              >
+                {id
+                  ? userRole === "admin"
+                    ? "Publish"
+                    : "Save Changes"
+                  : "Create"}
+              </Button>
+            </Stack>
             {userRole &&
               statusData &&
               (currentStatus !== "published" || hasAnyChanges) && (
@@ -821,54 +869,7 @@ export default function AddActivity(props) {
                 </Box>
               </Box>
             )}
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              {/* Show Discard button only for existing activities */}
-              {id && (
-                <Button
-                  variant="outlined"
-                  onClick={handleDiscard}
-                  sx={{
-                    backgroundColor: "#173A5E !important",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    "&:hover": {
-                      backgroundColor: "#1E4C80 !important",
-                    },
-                  }}
-                >
-                  {userRole === "admin" ? "Discard" : "Undo"}
-                </Button>
-              )}
-
-              <Button
-                variant="outlined"
-                onClick={handleSubmit}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {id
-                  ? userRole === "admin"
-                    ? "Publish"
-                    : "Save Changes"
-                  : "Create"}
-              </Button>
-            </Stack>
+            
 
             <Paper  sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff',borderRadius:0.8, border:'1px solid', borderColor:'divider'}}>
               <Dialog
@@ -934,8 +935,8 @@ export default function AddActivity(props) {
                   </Stack>
                 </DialogActions>
               </Dialog>
-              <Box sx={{ padding: 5 }}>
-                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
+              <Box sx={{ padding: 0 }}>
+                <Typography variant="h6"  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
                   Activity Information
                 </Typography>
                 <Grid
@@ -943,6 +944,8 @@ export default function AddActivity(props) {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
+                  py={3}
+                  pr={7}
                 >
                   <Grid size={2}>
                     <InputLabel
@@ -950,7 +953,7 @@ export default function AddActivity(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -978,7 +981,7 @@ export default function AddActivity(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1007,7 +1010,7 @@ export default function AddActivity(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -1059,7 +1062,7 @@ export default function AddActivity(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1089,7 +1092,7 @@ export default function AddActivity(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1120,7 +1123,7 @@ export default function AddActivity(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         my: 0,
                         width: "100%",
                       }}
@@ -1231,7 +1234,7 @@ export default function AddActivity(props) {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 700,
+                          fontWeight: 500,
                           my: 0,
                           width: "100%",
                         }}
