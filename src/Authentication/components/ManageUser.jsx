@@ -482,7 +482,7 @@ export default function ManageUser(props) {
                 {snackbarMessage}
               </Alert>
             </Snackbar>
-            <Box sx={{ mb: "50px" }}>
+            <Box sx={{ mb: "40px" }}>
             <Footer />
           </Box>
           </Box>
