@@ -1437,13 +1437,21 @@ export default function AddSenator(props) {
             'Status changed to "Under Review" for admin to moderate.',
             "info"
           );
-    } catch (error) {
+    }  catch (error) {
       console.error("Save failed:", error);
-      handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
+    
+      const errorMessage =
+        error?.response?.data?.message ||
+        (error.code === 11000
+          ? "Duplicate entry: This senator term already exists."
+          : "Failed to create senator data. Please try again.");
+    
+      handleSnackbarOpen(errorMessage, "error");
+    
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
