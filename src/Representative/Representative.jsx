@@ -463,7 +463,7 @@ export default function Representative(props) {
                 width: "100%",
                 display: "flex",
                 flexDirection: { xs: "column", sm: "row" },
-                justifyContent: "space-between",
+                justifyContent: "flex-end",
                 alignItems: { xs: "stretch", sm: "center" },
                 mt: { xs: 2, md: 4 },
                 gap: 2,
@@ -477,11 +477,11 @@ export default function Representative(props) {
                 // py: 3,
               }}
             >
-              <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 }}}>
+              {/* <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 }}}>
                 All Representatives
-              </Typography>
+              </Typography> */}
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" },mr:2 }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" }}}>
                 {/* Mobile: Show Fetch button above search/filter */}
                             {userRole === "admin" && (
                               <Box sx={{ width: "100%", display: { xs: "block", sm: "none" },  }}>
@@ -549,6 +549,7 @@ export default function Representative(props) {
     "& .MuiBadge-badge": {
       top: 6, 
       right: 6, 
+      bgcolor:'#E24042'
     },
   }}
                   >
@@ -564,9 +565,9 @@ export default function Representative(props) {
                         minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
                         color:  "#fff",
-                        backgroundColor: "#173A5E",
+                        backgroundColor: "#497BB2",
                         "&:hover": {
-                          backgroundColor:  "#1E4C80",
+                          backgroundColor:  "#3B6799",
                         },
                       }}
                     >
@@ -581,29 +582,29 @@ export default function Representative(props) {
                           position: "absolute",
                           right: 0,
                           top: "100%",
-                          mt: 1,
+                          mt: 0.5,
                           width: 320,
                           zIndex: 1,
                           boxShadow: 3,
-                          borderRadius: 2,
+                          borderRadius: 1,
                           overflow: "hidden",
                         }}
                       >
                         <Box
                           sx={{
-                            p: 2,
+                            p: 0.5,
                             borderBottom: "1px solid",
                             borderColor: "divider",
                           }}
                         >
                           <Box
                             display="flex"
-                            justifyContent="space-between"
+                            justifyContent="flex-end"
                             alignItems="center"
                           >
-                            <Typography variant="subtitle1" fontWeight="bold">
+                            {/* <Typography variant="subtitle1" fontWeight="bold">
                               Filters
-                            </Typography>
+                            </Typography> */}
                             <IconButton size="small" onClick={toggleFilter}>
                               <CloseIcon fontSize="small" />
                             </IconButton>
@@ -618,14 +619,14 @@ export default function Representative(props) {
                             bgcolor:
                               expandedFilter === "party"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("party")}
                           >
                             <Typography variant="body1">Party</Typography>
@@ -636,7 +637,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "party" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                               {/* <TextField
                                 fullWidth
                                 size="small"
@@ -706,14 +707,14 @@ export default function Representative(props) {
                             bgcolor:
                               expandedFilter === "district"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("district")}
                           >
                             <Typography variant="body1">District</Typography>
@@ -724,7 +725,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "district" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                              <Box  sx={{ mb: 2,px:2 }}>
                                <TextField
                                 fullWidth
@@ -796,14 +797,14 @@ export default function Representative(props) {
                             bgcolor:
                               expandedFilter === "rating"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("rating")}
                           >
                             <Typography variant="body1">Rating</Typography>
@@ -814,7 +815,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "rating" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                               {/* <TextField
                                 fullWidth
                                 size="small"
@@ -884,14 +885,14 @@ export default function Representative(props) {
                             bgcolor:
                               expandedFilter === "year"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("year")}
                           >
                             <Typography variant="body1">Year</Typography>
@@ -902,7 +903,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "year" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                               <Box sx={{ mb: 2,px:2 }}>
                                 <TextField
                                 fullWidth
@@ -976,14 +977,14 @@ export default function Representative(props) {
                             bgcolor:
                               expandedFilter === "term"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("term")}
                           >
                             <Typography variant="body1">Term</Typography>
@@ -994,7 +995,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "term" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                               <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
                                 {["current"/*, "past"*/].map((term) => (
                                   <Box
@@ -1037,14 +1038,14 @@ export default function Representative(props) {
                             bgcolor:
                               expandedFilter === "status"
                                 ? "action.hover"
-                                : "background.paper",
+                                : "#fff",
                           }}
                         >
                           <Box
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 2, cursor: "pointer" }}
+                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("status")}
                           >
                             <Typography variant="body1">Status</Typography>
@@ -1055,7 +1056,7 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "status" && (
-                            <Box sx={{ py: 2, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                               <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {statusOptions.map((status) => (
                                   <Box
@@ -1090,15 +1091,16 @@ export default function Representative(props) {
                         {/* Clear All Button */}
                         <Box
                           sx={{
-                            p: 2,
-                            borderTop: "1px solid",
-                            borderColor: "divider",
+                            // p: 2,
+                            // borderTop: "1px solid",
+                            // borderColor: "divider",
                           }}
                         >
                           <Button
                             fullWidth
-                            variant="outlined"
-                            color="secondary"
+                            // variant="outlined"
+                            // color="secondary"
+                            sx={{borderRadius:0, bgcolor:'#fff'}}
                             onClick={clearAllFilters}
                             disabled={
                               !partyFilter.length &&
