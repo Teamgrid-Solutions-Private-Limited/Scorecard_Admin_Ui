@@ -987,7 +987,31 @@ export default function Addrepresentative(props) {
       setLoading(false);
     }
   };
+  // Helper function to get filtered votes based on selected term
+  const getFilteredVotes = (termIndex) => {
+    const term = houseTermData[termIndex];
+    if (!term || !term.termId) return votes || [];
 
+    const selectedTerm = terms.find(t => t._id === term.termId);
+    if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+
+    return (votes || []).filter(vote =>
+      vote.type === "house_bill" &&
+      selectedTerm.congresses.includes(Number(vote.congress))
+    );
+  };
+  // Helper function to get filtered activities based on selected term
+  const getFilteredActivities = (termIndex) => {
+    const term = houseTermData[termIndex];
+    if (!term || !term.termId) return houseActivities || [];
+
+    const selectedTerm = terms.find(t => t._id === term.termId);
+    if (!selectedTerm || !selectedTerm.congresses) return houseActivities || [];
+
+    return (houseActivities || []).filter(activity =>
+      selectedTerm.congresses.includes(Number(activity.congress))
+    );
+  };
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
@@ -1082,17 +1106,17 @@ export default function Addrepresentative(props) {
         descColor: "#795548",
       },
       published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Unsaved Changes",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
+        titleColor: "#5D4037",
+        descColor: "#795548",
       },
       // published: {
       //   backgroundColor: "rgba(76, 175, 80, 0.12)",
@@ -1196,7 +1220,7 @@ export default function Addrepresentative(props) {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2.8 },
-              gap:1
+              gap: 1
             }}
           >
             <Stack
@@ -1239,7 +1263,7 @@ export default function Addrepresentative(props) {
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
             </Stack>
-             {userRole &&
+            {userRole &&
               formData.publishStatus &&
               statusData &&
               (formData.publishStatus !== "published" || localChanges.length > 0) && (
@@ -1302,7 +1326,7 @@ export default function Addrepresentative(props) {
                           {statusData.title}
                         </Typography>
 
-                        {userRole === "admin" && (
+                        {/* {userRole === "admin" && (
                           <Chip
                             label={`${Array.isArray(formData?.editedFields)
                               ? formData.editedFields.length
@@ -1312,7 +1336,7 @@ export default function Addrepresentative(props) {
                             color="warning"
                             variant="outlined"
                           />
-                        )}
+                        )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -1481,7 +1505,7 @@ export default function Addrepresentative(props) {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    Unsaved Changes
+                                    {formData.publishStatus === "published" ? "" : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -1541,9 +1565,9 @@ export default function Addrepresentative(props) {
 
 
 
-            
 
-            <Paper  sx={{ width: "100%", bgcolor:"#fff",borderRadius:0.8,border:'1px solid',borderColor:'divider', }} >
+
+            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider', }} >
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1609,7 +1633,7 @@ export default function Addrepresentative(props) {
               </Dialog>
 
               <Box sx={{ p: 0 }}>
-                <Typography variant="h6"  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+                <Typography variant="h6" sx={{ borderBottom: '1px solid', borderColor: 'divider', p: 1.5, px: 3 }}>
                   Representative's Information
                 </Typography>
                 <Grid
@@ -1782,7 +1806,7 @@ export default function Addrepresentative(props) {
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                       justifyContent: isMobile ? "flex-start" : "flex-end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 500,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1848,16 +1872,16 @@ export default function Addrepresentative(props) {
             {houseTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-               
+
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
-                   bgcolor:"#fff",
+                  bgcolor: "#fff",
                   borderRadius: 0.8,
-                  border:'1px solid',
-                  borderColor:'divider'
-                
+                  border: '1px solid',
+                  borderColor: 'divider'
+
                 }}
               >
                 <Box sx={{ padding: 0 }}>
@@ -1867,8 +1891,8 @@ export default function Addrepresentative(props) {
                       justifyContent: "space-between",
                       alignItems: "center",
                       // marginBottom: 3,
-                       borderBottom:'1px solid', borderColor:'divider',
-                       p:1.5,px:3
+                      borderBottom: '1px solid', borderColor: 'divider',
+                      p: 1.5, px: 3
                     }}
                   >
                     <Typography variant="h6" >
@@ -1926,16 +1950,16 @@ export default function Addrepresentative(props) {
                                 t.endYear % 2 === 0 && // must be even
                                 t.startYear >= 2015 && // no terms before 1789
                                 t.endYear >= 2015)     // must be even
-                                  .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
-                                  // Hide terms already selected in other term sections
-                                  .filter((t) => !houseTermData.some((ht, idx) => idx !== termIndex && ht.termId === t._id))
-                                  .sort((a, b) => a.congresses[0] - b.congresses[0])
-                                  .map((t) => (
-                                    <MenuItem key={t._id} value={t._id}>
-                                      {`${t.congresses[0]}th Congress`}
-                                    </MenuItem>
-                                  ))
-                              ) : (
+                              .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                              // Hide terms already selected in other term sections
+                              .filter((t) => !houseTermData.some((ht, idx) => idx !== termIndex && ht.termId === t._id))
+                              .sort((a, b) => a.congresses[0] - b.congresses[0])
+                              .map((t) => (
+                                <MenuItem key={t._id} value={t._id}>
+                                  {`${t.congresses[0]}th Congress`}
+                                </MenuItem>
+                              ))
+                          ) : (
                             <MenuItem value="" disabled>
                               No terms available
                             </MenuItem>
@@ -2180,8 +2204,8 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="" disabled>
                                     Select a Bill
                                   </MenuItem>
-                                  {votes && votes.length > 0 ? (
-                                    votes.filter((vote) => vote.type === "house_bill").map((voteItem) => (
+                                  {getFilteredVotes(termIndex).length > 0 ? (
+                                    getFilteredVotes(termIndex).map((voteItem) => (
                                       <MenuItem
                                         key={voteItem._id}
                                         value={voteItem._id}
@@ -2199,9 +2223,10 @@ export default function Addrepresentative(props) {
                                     ))
                                   ) : (
                                     <MenuItem value="" disabled>
-                                      No bills available
+                                      {term.termId ? "No bills available for this congress" : "Select a term first"}
                                     </MenuItem>
                                   )}
+
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -2263,134 +2288,133 @@ export default function Addrepresentative(props) {
                     {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) => (
                       activity.activityId != null ? (
-                      <Grid
-                        rowSpacing={2}
-                        sx={{ width: "100%", mt: 2 }}
-                        key={activityIndex}
-                      >
                         <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
+                          rowSpacing={2}
+                          sx={{ width: "100%", mt: 2 }}
+                          key={activityIndex}
                         >
-                          <Grid size={isMobile?12:2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile ? "flex-start" : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
-                            >
-                              Tracked Activity
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile?8:7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={activity.activityId || ""}
-                                onChange={(event) =>
-                                  handleActivityChange(
-                                    termIndex,
-                                    activityIndex,
-                                    "activityId",
-                                    event.target.value
-                                  )
-                                }
+                          <Grid
+                            size={12}
+                            display="flex"
+                            alignItems="center"
+                            columnGap={"15px"}
+                          >
+                            <Grid size={isMobile ? 12 : 2}>
+                              <InputLabel
                                 sx={{
-                                  background: "#fff",
-                                  width: "100%",
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedActivity = houseActivities.find(
-                                    (a) => a._id === selected
-                                  );
-                                  return (
-                                    <Typography
-                                      sx={{
-                                        overflow: "hidden",
-                                        whiteSpace: "nowrap",
-                                        textOverflow: "ellipsis",
-                                      }}
-                                    >
-                                      {selectedActivity?.title ||
-                                        "Select an Activity"}
-                                    </Typography>
-                                  );
-                                }}
-                                MenuProps={{
-                                  PaperProps: {
-                                    sx: {
-                                      maxHeight: 300,
-                                      width: 400,
-                                      "& .MuiMenuItem-root": {
-                                        minHeight: "48px",
-                                      },
-                                    },
-                                  },
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: isMobile ? "flex-start" : "flex-end",
+                                  fontWeight: 500,
+                                  my: 0,
                                 }}
                               >
-                                <MenuItem value="" disabled>
-                                  Select an Activity
-                                </MenuItem>
-                                {houseActivities &&
-                                houseActivities.length > 0 ? (
-                                  houseActivities.map((activityItem) => (
-                                    <MenuItem
-                                      key={activityItem._id}
-                                      value={activityItem._id}
-                                      sx={{ py: 1.5 }}
-                                    >
+                                Tracked Activity
+                              </InputLabel>
+                            </Grid>
+                            <Grid size={isMobile ? 8 : 7.5}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={activity.activityId || ""}
+                                  onChange={(event) =>
+                                    handleActivityChange(
+                                      termIndex,
+                                      activityIndex,
+                                      "activityId",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{
+                                    background: "#fff",
+                                    width: "100%",
+                                  }}
+                                  renderValue={(selected) => {
+                                    const selectedActivity = houseActivities.find(
+                                      (a) => a._id === selected
+                                    );
+                                    return (
                                       <Typography
                                         sx={{
-                                          whiteSpace: "normal",
-                                          overflowWrap: "break-word",
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                          textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {activityItem.title}
+                                        {selectedActivity?.title ||
+                                          "Select an Activity"}
                                       </Typography>
-                                    </MenuItem>
-                                  ))
-                                ) : (
+                                    );
+                                  }}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 300,
+                                        width: 400,
+                                        "& .MuiMenuItem-root": {
+                                          minHeight: "48px",
+                                        },
+                                      },
+                                    },
+                                  }}
+                                >
                                   <MenuItem value="" disabled>
-                                    No activities available
+                                    Select an Activity
                                   </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={isMobile?6:1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={activity?.score || ""}
-                                onChange={(event) =>
-                                  handleActivityChange(
-                                    termIndex,
-                                    activityIndex,
-                                    "score",
-                                    event.target.value
-                                  )
+                                  {getFilteredActivities(termIndex).length > 0 ? (
+                                    getFilteredActivities(termIndex).map((activityItem) => (
+                                      <MenuItem
+                                        key={activityItem._id}
+                                        value={activityItem._id}
+                                        sx={{ py: 1.5 }}
+                                      >
+                                        <Typography
+                                          sx={{
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                          }}
+                                        >
+                                          {activityItem.title} 
+                                        </Typography>
+                                      </MenuItem>
+                                    ))
+                                  ) : (
+                                    <MenuItem value="" disabled>
+                                      {term.termId ? "No activities available for this congress" : "Select a term first"}
+                                    </MenuItem>
+                                  )}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={isMobile ? 6 : 1.6}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={activity?.score || ""}
+                                  onChange={(event) =>
+                                    handleActivityChange(
+                                      termIndex,
+                                      activityIndex,
+                                      "score",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{ background: "#fff" }}
+                                >
+                                  <MenuItem value="yes">Yea</MenuItem>
+                                  <MenuItem value="no">Nay</MenuItem>
+                                  <MenuItem value="other">Other</MenuItem>
+                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1}>
+                              <DeleteForeverIcon
+                                onClick={() =>
+                                  handleRemoveActivity(termIndex, activityIndex)
                                 }
-                                sx={{ background: "#fff" }}
-                              >
-                                <MenuItem value="yes">Yea</MenuItem>
-                                <MenuItem value="no">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                                {/* <MenuItem value="None">None</MenuItem> */}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveActivity(termIndex, activityIndex)
-                              }
-                            />
+                              />
+                            </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
                       ) : null
                     ))}
                     {/* Activities Repeater Ends */}
@@ -2475,7 +2499,7 @@ export default function Addrepresentative(props) {
               </MuiAlert>
             </Snackbar>
           </Stack>
-          <Box sx={{ mb: "40px" ,mx:"15px" }}>
+          <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
           </Box>
         </Box>
