@@ -552,6 +552,8 @@ const statusOptions = ["published", "draft", "under review"];
             severity={snackbarSeverity}
             sx={{
               width: "100%",
+              border:"none",
+              boxShadow:"none",
               // ✅ Background conditions
               bgcolor:
                 snackbarMessage === `This activity has been successfully deleted.`

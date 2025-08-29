@@ -1414,7 +1414,7 @@ export default function AddSenator(props) {
       setDeletedTermIds([]);
 
       userRole === "admin"
-        ? handleSnackbarOpen("Changes Published successfully!", "success")
+        ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
             'Status changed to "Under Review" for admin to moderate.',
             "info"
@@ -1630,7 +1630,7 @@ export default function AddSenator(props) {
               statusData && (
                 <Box
                   sx={{
-                    width: "98%",
+                    width: "97%",
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -1991,7 +1991,7 @@ export default function AddSenator(props) {
                 </DialogActions>
               </Dialog>
               <Box sx={{ p: 0 }}>
-                <Typography variant="h6"  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
+                <Typography fontSize={'1rem'} fontWeight={500}  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
                   Senator's Information
                 </Typography>
                 <Grid
@@ -2047,6 +2047,7 @@ export default function AddSenator(props) {
                       aria-label="Basic button group"
                       sx={{
                         "& .MuiButton-outlined": {
+                          height: "36px",
                           borderColor: "#4CAF50",
                           color: "#4CAF50",
                           "&:hover": {
@@ -2250,7 +2251,7 @@ export default function AddSenator(props) {
                        p:1.5,px:3
                     }}
                   >
-                    <Typography variant="h6"  >
+                    <Typography fontSize={'1rem'} fontWeight={500}  >
                       Senator's Term Information {termIndex + 1}
                     </Typography>
                     
@@ -3136,19 +3137,21 @@ export default function AddSenator(props) {
                 severity={snackbarSeverity}
                 sx={{
                   width: "100%",
+                  border: "none",
+                  boxShadow:"none",
                   bgcolor:
-                    snackbarMessage === "Changes Published successfully!"
+                    snackbarMessage === "Changes published successfully!"
                       ? "#daf4f0"
                       : undefined,
                   "& .MuiAlert-icon": {
                     color:
-                      snackbarMessage === "Changes Published successfully!"
+                      snackbarMessage === "Changes published successfully!"
                         ? "#099885"
                         : undefined,
                   },
                   "& .MuiAlert-message": {
                     color:
-                      snackbarMessage === "Changes Published successfully!"
+                      snackbarMessage === "Changes published successfully!"
                         ? "#099885"
                         : undefined,
 

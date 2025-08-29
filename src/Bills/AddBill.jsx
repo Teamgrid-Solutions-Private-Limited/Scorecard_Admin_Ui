@@ -543,7 +543,28 @@ export default function AddBill(props) {
         <MuiAlert
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
-          sx={{ width: "100%" }}
+          sx={{
+                  width: "100%",
+                  border: "none",
+                  boxShadow:"none",
+                  bgcolor:
+                    snackbarMessage === "Changes published successfully!"
+                      ? "#daf4f0"
+                      : undefined,
+                  "& .MuiAlert-icon": {
+                    color:
+                      snackbarMessage === "Changes published successfully!"
+                        ? "#099885"
+                        : undefined,
+                  },
+                  "& .MuiAlert-message": {
+                    color:
+                      snackbarMessage === "Changes published successfully!"
+                        ? "#099885"
+                        : undefined,
+
+                  },
+                }}
           elevation={6}
           variant="filled"
         >
@@ -632,7 +653,7 @@ export default function AddBill(props) {
               (currentStatus !== "published" || hasAnyChanges) && (
                 <Box
                   sx={{
-                    width: "98%",
+                    width: "97%",
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -965,7 +986,7 @@ export default function AddBill(props) {
                 </DialogActions>
               </Dialog>
               <Box sx={{ padding: 0 }}>
-                <Typography variant="h6"  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+                <Typography fontSize={'1rem'} fontWeight={500}  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
                   Bill's Information
                 </Typography>
                 <Grid

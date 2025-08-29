@@ -530,6 +530,8 @@ export default function Bills(props) {
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
           sx={{
+            border: "none",
+            boxShadow:"none",
             width: "100%",
             bgcolor:
               snackbarMessage === "This bill has been successfully deleted."
