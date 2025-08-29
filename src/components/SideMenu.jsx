@@ -71,15 +71,18 @@ export default function SideMenu() {
 			<Stack
 				direction="row"
 				sx={{
-					p: 5,
-					gap: 1,
+					py: 5,
+					// gap: 1,
+           width: "100%",
+          display:'flex',
 					alignItems: "center",
-					borderTop: "1px solid",
-					borderColor: "divider",
+          justifyContent:'center',
+					// borderTop: "1px solid",
+					// borderColor: "divider",
 				}}
 			>
 				
-				<img className="logo-lg" src={logo} style={{ width: "140px", height: "auto" }}  />
+				<img className="" src={logo} style={{ width: "155px", height: "auto" }}  />
 
 			</Stack>
 

@@ -515,11 +515,11 @@ export default function Representative(props) {
                       ),
                     }}
                   sx={{
-                   marginLeft: { xs: 0, sm: "0.5rem" },
-    width: { xs: "50%", sm: "220px" },
+                  //  marginLeft: { xs: 0, sm: "0.5rem" },
+    width: { xs: "50%", sm: "235px" },
     "& .MuiOutlinedInput-root": {
-      // borderRadius: "12px",
       backgroundColor: "#fff",
+      padding:'19.1px',
       transition: "all 0.2s ease-in-out",
       "& fieldset": {
         borderColor: "#e5e7eb",
@@ -561,9 +561,9 @@ export default function Representative(props) {
                       }
                       onClick={toggleFilter}
                       sx={{
-                        padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                        // padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                         minWidth: { xs: "100%", sm: "120px" },
-                        borderColor: filterOpen ? "primary.main" : "divider",
+                        // borderColor: filterOpen ? "primary.main" : "divider",
                         color:  "#fff",
                         backgroundColor: "#497BB2",
                         "&:hover": {
@@ -1124,7 +1124,7 @@ export default function Representative(props) {
                   sx={{
                     backgroundColor: "#173A5E !important",
                     color: "#fff !important",
-                    padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                    // padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                     marginLeft: { xs: 0, sm: "0.5rem" },
                     display: { xs: "none", sm: "block" },
                     "&:hover": {
@@ -1160,6 +1160,8 @@ export default function Representative(props) {
               onClose={() => setSnackbarOpen(false)}
               severity={snackbarSeverity}
               sx={{
+                border: "none",
+                boxShadow:"none",
                 width: "100%",
                 // ✅ Background conditions
                 bgcolor:

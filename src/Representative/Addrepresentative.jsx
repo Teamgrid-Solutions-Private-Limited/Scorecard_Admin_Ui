@@ -1220,7 +1220,7 @@ export default function Addrepresentative(props) {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2.8 },
-              gap: 1
+              gap:1
             }}
           >
             <Stack
@@ -1263,13 +1263,13 @@ export default function Addrepresentative(props) {
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
             </Stack>
-            {userRole &&
+             {userRole &&
               formData.publishStatus &&
               statusData &&
               (formData.publishStatus !== "published" || localChanges.length > 0) && (
                 <Box
                   sx={{
-                    width: "98%",
+                    width: "97%",
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -1565,9 +1565,9 @@ export default function Addrepresentative(props) {
 
 
 
+            
 
-
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider', }} >
+            <Paper  sx={{ width: "100%", bgcolor:"#fff",borderRadius:0.8,border:'1px solid',borderColor:'divider', }} >
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1633,7 +1633,7 @@ export default function Addrepresentative(props) {
               </Dialog>
 
               <Box sx={{ p: 0 }}>
-                <Typography variant="h6" sx={{ borderBottom: '1px solid', borderColor: 'divider', p: 1.5, px: 3 }}>
+                <Typography fontSize={'1rem'} fontWeight={500}  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
                   Representative's Information
                 </Typography>
                 <Grid
@@ -1691,6 +1691,7 @@ export default function Addrepresentative(props) {
                       aria-label="Basic button group"
                       sx={{
                         "& .MuiButton-outlined": {
+                          height:"36px",
                           borderColor: "#4CAF50",
                           color: "#4CAF50",
                           "&:hover": {
@@ -1806,7 +1807,7 @@ export default function Addrepresentative(props) {
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
+                       justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 500,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1872,16 +1873,16 @@ export default function Addrepresentative(props) {
             {houseTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-
+               
                 sx={{
                   width: "100%",
                   marginBottom: "50px",
                   position: "relative",
-                  bgcolor: "#fff",
+                   bgcolor:"#fff",
                   borderRadius: 0.8,
-                  border: '1px solid',
-                  borderColor: 'divider'
-
+                  border:'1px solid',
+                  borderColor:'divider'
+                
                 }}
               >
                 <Box sx={{ padding: 0 }}>
@@ -1891,11 +1892,11 @@ export default function Addrepresentative(props) {
                       justifyContent: "space-between",
                       alignItems: "center",
                       // marginBottom: 3,
-                      borderBottom: '1px solid', borderColor: 'divider',
-                      p: 1.5, px: 3
+                       borderBottom:'1px solid', borderColor:'divider',
+                       p:1.5,px:3
                     }}
                   >
-                    <Typography variant="h6" >
+                    <Typography fontSize={'1rem'} fontWeight={500} >
                       Representative's Term Information {termIndex + 1}
                     </Typography>
                     {termIndex > 0 && (
@@ -2499,7 +2500,7 @@ export default function Addrepresentative(props) {
               </MuiAlert>
             </Snackbar>
           </Stack>
-          <Box sx={{ mb: "40px", mx: "15px" }}>
+          <Box sx={{ mb: "40px" ,mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

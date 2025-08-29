@@ -209,12 +209,12 @@ export default function ManageUser(props) {
         <Box sx={{ flexGrow: 1, width: "80%",  }}>
           <FixedHeader />
           <MobileHeader/>
-          <Box sx={{ maxWidth: "100%", mt: 4,mx:3, }}>
+          <Box sx={{ maxWidth: "100%", mt: 2,mx:3, }}>
             <Stack
               direction="row"
-              justifyContent="space-between"
+              justifyContent="flex-end"
               alignItems="center"
-              mb={3}
+              mb={2}
               // sx={{ bgcolor: "#fff",
               //   borderTop: "1px solid ",
               //   borderLeft: "1px solid ",
@@ -224,9 +224,9 @@ export default function ManageUser(props) {
               //   borderColor: "divider",
               //   py: 3, px:2}}
             >
-              <Typography variant="h5" fontWeight="bold" >
+              {/* <Typography fontSize={'1rem'} fontWeight={500}  >
                 Manage Users
-              </Typography>
+              </Typography> */}
               <Button
                 startIcon={<PersonAddAltRoundedIcon />}
                 onClick={handleAddUserOpen}
@@ -478,6 +478,32 @@ export default function ManageUser(props) {
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 }
+                 sx={{
+      border: "none",
+      boxShadow:"none",
+      width: "100%",
+      // ✅ Background conditions
+      bgcolor:
+        snackbarMessage === `User deleted successfully`
+          ? "#fde8e4"
+          : undefined,
+
+      // ✅ Icon color conditions
+      "& .MuiAlert-icon": {
+        color:
+          snackbarMessage === `User deleted successfully`
+            ? "#cc563d"
+            : undefined,
+      },
+
+      // ✅ Text color conditions
+      "& .MuiAlert-message": {
+        color:
+          snackbarMessage === `User deleted successfully`
+            ? "#cc563d"
+            : undefined,
+      },
+    }}
               >
                 {snackbarMessage}
               </Alert>

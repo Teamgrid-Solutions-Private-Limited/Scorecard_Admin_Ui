@@ -204,9 +204,8 @@ const handleSearch = async () => {
                 {snackbarMessage}
               </MuiAlert>
             </Snackbar>
-      <FixedHeader />
-      <MobileHeader/>
-      <Box sx={{ display: "flex" ,bgcolor:'#f6f6f6ff',}}>
+      
+      <Box sx={{ display: "flex" ,bgcolor:'#f6f6f6ff ',height:'100vh'}}>
         <SideMenu />
         <Box
           component="main"
@@ -215,17 +214,17 @@ const handleSearch = async () => {
             minHeight: '80vh',
             display: 'flex',
             flexDirection: 'column',
-            backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
-              : alpha(theme.palette.background.default, 1),
+            backgroundColor: "#f6f6f6ff",
           })}
         >
+          <FixedHeader />
+      <MobileHeader/>
           <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 0, mt: { xs: 8, md: 4 }, flex: 1 }}>
             
 
             <Paper elevation={2} sx={{ width: "100%",bgcolor:'#fff' }}>
-              <Box sx={{ padding: 5, pb: 10 }}>
-                <Typography variant="h6" gutterBottom sx={{ paddingBottom: 3 }}>
+              <Box sx={{ padding: 0, pb: 5 }}>
+                <Typography fontSize={'1rem'} fontWeight={500} sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
                   Search For Bills In Quorum
                 </Typography>
                 <Grid
@@ -234,6 +233,8 @@ const handleSearch = async () => {
                   columnSpacing={2}
                   alignItems="center"
                   justifyContent="center"
+                  pt={3}
+                  
                 >
                   <Grid
                     item
@@ -245,7 +246,8 @@ const handleSearch = async () => {
                       flexDirection: { xs: "column", md: "row" },
                       gap: { xs: 2, md: 3 },
                       width: "100%",
-                      marginLeft: { xs: "0px", lg: "20px" },
+                      mt:5
+                      // marginLeft: { xs: "0px", lg: "20px" },
                     }}
                   >
                     {/* <Typography
@@ -267,7 +269,7 @@ const handleSearch = async () => {
                       onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                       fullWidth
                       sx={{
-                        maxWidth: { xs: "110%", md: "800px" },
+                        maxWidth: { xs: "100%", md: "800px" },
                         "& .MuiOutlinedInput-root": {
                           "&:hover .MuiOutlinedInput-notchedOutline": {
                             borderColor: "gray !important",
@@ -275,7 +277,7 @@ const handleSearch = async () => {
                         },
                         "& .MuiInputBase-root": {
                           "&.Mui-focused": {
-                            borderColor: "#CC9A3A !important",
+                            // borderColor: "#CC9A3A !important",
                             boxShadow: "none !important",
                             outline: "none !important",
                           },
@@ -301,8 +303,10 @@ const handleSearch = async () => {
                       Search
                     </Button>
                   </Grid>
-
-                  {loading ? (
+                </Grid>  
+              </Box>
+              <Box sx={{p:3}}>
+                {loading ? (
                     <Box
                       sx={{
                         display: "flex",
@@ -316,7 +320,7 @@ const handleSearch = async () => {
                     Array.isArray(searchResults) && searchResults.length > 0 && (
                       <TableContainer
                         component={Paper}
-                        sx={{ marginTop: 6, border: "1px solid #ddd", backgroundColor: '#fff' }}
+                        sx={{ border: "1px solid #ddd", backgroundColor: '#fff',}}
                       >
                         <Table size="large" >
                           
@@ -386,11 +390,10 @@ const handleSearch = async () => {
                       </Typography>
                     </Box>
                   )}
-                </Grid>
               </Box>
             </Paper>
           </Stack>
-          <Box sx={{  mx:"15px" }}>
+          <Box sx={{  mx:"15px",py:5 }}>
             <Footer />
           </Box>
         </Box>

@@ -391,8 +391,8 @@ export const inputsCustomizations = {
           borderColor: gray[400],
         },
         [`&.${outlinedInputClasses.focused}`]: {
-          outline: `3px solid ${alpha(brand[500], 0.5)}`,
-          borderColor: brand[400],
+          // outline: `3px solid ${alpha(brand[500], 0.5)}`,
+          // borderColor: brand[400],
         },
         ...theme.applyStyles('dark', {
           '&:hover': {

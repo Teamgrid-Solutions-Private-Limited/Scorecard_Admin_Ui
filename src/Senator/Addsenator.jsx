@@ -498,30 +498,30 @@ export default function AddSenator(props) {
   // };
 
   const handleSummaryChange = (termIndex, content) => {
-    const fieldName = `term${termIndex}_summary`;
-
-    setSenatorTermData((prev) => {
-      const newTerms = prev.map((term, idx) => {
-        if (idx !== termIndex) return term;
-
-        return { ...term, summary: content };
-      });
-
-      // Compare with original data
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalSummary = originalTerm.summary || "";
-      const isActualChange = compareValues(content, originalSummary);
-
-      if (isActualChange && !localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => [...prev, fieldName]);
-      } else if (!isActualChange && localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
-      }
-
-      return newTerms;
+  const fieldName = `term${termIndex}_summary`;
+ 
+  setSenatorTermData((prev) => {
+    const newTerms = prev.map((term, idx) => {
+      if (idx !== termIndex) return term;
+ 
+      return { ...term, summary: content };
     });
-  };
-
+ 
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalSummary = originalTerm.summary || "";
+    const isActualChange = compareValues(content, originalSummary);
+ 
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+    }
+ 
+    return newTerms;
+  });
+};
+ 
 
   const handleAddVote = (termIndex) => {
     setSenatorTermData((prev) =>
@@ -1098,15 +1098,15 @@ export default function AddSenator(props) {
         )
           return;
 
-        if (key === "summary") {
-          const currentSummary = term.summary || "";
-          const originalSummary = originalTerm.summary || "";
-
-          // Track only if content is changed
-          if (currentSummary.trim() !== originalSummary.trim()) {
-            changes.push(`term${termIndex}_summary`);
-          }
-        } else if (["votesScore", "activitiesScore"].includes(key)) {
+         if (key === "summary") {
+  const currentSummary = term.summary || "";
+  const originalSummary = originalTerm.summary || "";
+ 
+  // Track only if content is changed
+  if (currentSummary.trim() !== originalSummary.trim()) {
+    changes.push(`term${termIndex}_summary`);
+  }
+} else if (["votesScore", "activitiesScore"].includes(key)) {
           const current = (term[key] || []).filter((item) =>
             Object.values(item).some((val) => val !== "" && val !== null)
           );
@@ -1403,7 +1403,7 @@ export default function AddSenator(props) {
           //   ...summary,
           //   congress: congressArray[summaryIndex] || null, // Get the congress at the same index
           // })),
-          summary: term.summary
+          summary:term.summary
         };
 
         return term._id
@@ -1425,7 +1425,7 @@ export default function AddSenator(props) {
       setDeletedTermIds([]);
 
       userRole === "admin"
-        ? handleSnackbarOpen("Changes Published successfully!", "success")
+        ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
           'Status changed to "Under Review" for admin to moderate.',
           "info"
@@ -1591,7 +1591,7 @@ export default function AddSenator(props) {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2.8 },
-              gap: 1
+              gap:1
             }}
           >
             <Stack
@@ -1641,7 +1641,7 @@ export default function AddSenator(props) {
               statusData && (
                 <Box
                   sx={{
-                    width: "98%",
+                    width: "97%",
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -1934,9 +1934,9 @@ export default function AddSenator(props) {
                   </Box>
                 </Box>
               )}
+            
 
-
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider' }}>
+            <Paper  sx={{ width: "100%" , bgcolor:"#fff",borderRadius:0.8, border:'1px solid' , borderColor:'divider' }}> 
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -2001,7 +2001,7 @@ export default function AddSenator(props) {
                 </DialogActions>
               </Dialog>
               <Box sx={{ p: 0 }}>
-                <Typography variant="h6" sx={{ borderBottom: '1px solid', borderColor: 'divider', p: 1.5, px: 3 }}>
+                <Typography fontSize={'1rem'} fontWeight={500}  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
                   Senator's Information
                 </Typography>
                 <Grid
@@ -2011,7 +2011,7 @@ export default function AddSenator(props) {
                   alignItems={"center"}
                   // mt={2}
                   py={3}
-                // flexDirection={isMobile ? "column" : "row"}
+                  // flexDirection={isMobile ? "column" : "row"}
                 >
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
@@ -2057,6 +2057,7 @@ export default function AddSenator(props) {
                       aria-label="Basic button group"
                       sx={{
                         "& .MuiButton-outlined": {
+                          height: "36px",
                           borderColor: "#4CAF50",
                           color: "#4CAF50",
                           "&:hover": {
@@ -2249,21 +2250,21 @@ export default function AddSenator(props) {
                 }}
               >
                 <Box sx={{ padding: 0 }}>
-
+                  
                   <Box
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
                       // marginBottom: 3,
-                      borderBottom: '1px solid', borderColor: 'divider',
-                      p: 1.5, px: 3
+                      borderBottom:'1px solid', borderColor:'divider',
+                       p:1.5,px:3
                     }}
                   >
-                    <Typography variant="h6"  >
+                    <Typography fontSize={'1rem'} fontWeight={500}  >
                       Senator's Term Information {termIndex + 1}
                     </Typography>
-
+                    
                     {termIndex > 0 && (
                       <Button
                         variant="outlined"
@@ -2388,58 +2389,58 @@ export default function AddSenator(props) {
                     </Grid>
                     {/*term repeater start*/}
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term Summary
-                      </InputLabel>
-                    </Grid>
-
-                    {/* Editor Column */}
-                    <Grid size={isMobile ? 12 : 9.05}>
-                      <Editor
-                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                        licenseKey="gpl"
-                        onInit={(_evt, editor) => (editorRef.current = editor)}
-                        value={term?.summary || ""}
-                        onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
-                        init={{
-                          base_url: "/scorecard/admin/tinymce",
-                          height: 250,
-                          menubar: false,
-                          plugins: [
-                            "advlist",
-                            "autolink",
-                            "lists",
-                            "link",
-                            "image",
-                            "charmap",
-                            "preview",
-                            "anchor",
-                            "searchreplace",
-                            "visualblocks",
-                            "code",
-                            "fullscreen",
-                            "insertdatetime",
-                            "media",
-                            "table",
-                            "code",
-                            "help",
-                            "wordcount",
-                          ],
-                          toolbar:
-                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                          content_style:
-                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-                          directionality: "ltr",
-                        }}
-                      />
-                    </Grid>
+  <InputLabel
+    sx={{
+      display: "flex",
+      justifyContent: isMobile ? "flex-start" : "flex-end",
+      fontWeight: 500,
+      my: 0,
+    }}
+  >
+    Term Summary
+  </InputLabel>
+</Grid>
+ 
+{/* Editor Column */}
+<Grid size={isMobile ? 12 : 9.05}>
+<Editor
+  tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+  licenseKey="gpl"
+  onInit={(_evt, editor) => (editorRef.current = editor)}
+  value={term?.summary || ""}
+  onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
+  init={{
+    base_url: "/scorecard/admin/tinymce",
+    height: 250,
+    menubar: false,
+    plugins: [
+      "advlist",
+      "autolink",
+      "lists",
+      "link",
+      "image",
+      "charmap",
+      "preview",
+      "anchor",
+      "searchreplace",
+      "visualblocks",
+      "code",
+      "fullscreen",
+      "insertdatetime",
+      "media",
+      "table",
+      "code",
+      "help",
+      "wordcount",
+    ],
+    toolbar:
+      "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+    content_style:
+      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+    directionality: "ltr",
+  }}
+/>
+</Grid>
                     {/* {term?.summaries?.map((summary, summaryIndex) => (
                       <>
                         
@@ -3146,19 +3147,21 @@ export default function AddSenator(props) {
                 severity={snackbarSeverity}
                 sx={{
                   width: "100%",
+                  border: "none",
+                  boxShadow:"none",
                   bgcolor:
-                    snackbarMessage === "Changes Published successfully!"
+                    snackbarMessage === "Changes published successfully!"
                       ? "#daf4f0"
                       : undefined,
                   "& .MuiAlert-icon": {
                     color:
-                      snackbarMessage === "Changes Published successfully!"
+                      snackbarMessage === "Changes published successfully!"
                         ? "#099885"
                         : undefined,
                   },
                   "& .MuiAlert-message": {
                     color:
-                      snackbarMessage === "Changes Published successfully!"
+                      snackbarMessage === "Changes published successfully!"
                         ? "#099885"
                         : undefined,
 
@@ -3172,7 +3175,7 @@ export default function AddSenator(props) {
             </Snackbar>
 
           </Stack>
-          <Box sx={{ mb: "40px", mx: "15px" }}>
+          <Box sx={{ mb: "40px" ,mx:"15px" }}>
             <Footer />
           </Box>
         </Box>

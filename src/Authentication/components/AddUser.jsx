@@ -189,14 +189,15 @@ function AddUser({ open = false, onClose }) {
         scroll="body"
       >
         <DialogTitle sx={{ p: 0,  position: 'relative' }}>
-          <Header>
+          <Header sx={{bgcolor:'#173A5E'}}>
             <PersonAddAltRoundedIcon sx={{ fontSize: 30, color: 'white', }} />
-            <Typography variant="h6" fontWeight="bold" color="white" fontSize={18}>
+            <Typography variant="h6" fontWeight="400" color="white" fontSize={18}>
               Add New User
             </Typography>
             <Typography
               variant="body1"
               color="white"
+              fontWeight={300}
               sx={{ mb: 1, fontSize: 15 }}
             >
               Fill in the details below
@@ -210,6 +211,9 @@ function AddUser({ open = false, onClose }) {
         top: 8,
         right: 8,
         color: 'white',
+        "&:hover":{
+          bgcolor:'#173A5E'
+        }
       }}
     >
       <CloseIcon fontSize="small"/>
@@ -227,6 +231,7 @@ function AddUser({ open = false, onClose }) {
             paddingX: 3,
             pt: 2,
             pb: 3,
+            bgcolor:'#f6f6f6ff'
           }}
         >
           <FormControl>
