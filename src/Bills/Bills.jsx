@@ -548,6 +548,12 @@ export default function Bills(props) {
                     ? "#cc563d"
                     : undefined,
               },
+              "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
           }}
         >
           {snackbarMessage}

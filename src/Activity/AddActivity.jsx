@@ -546,6 +546,12 @@ export default function AddActivity(props) {
                         : undefined,
 
                   },
+                  "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
                 }}
           elevation={6}
           variant="filled"

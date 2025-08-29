@@ -1190,6 +1190,12 @@ export default function Representative(props) {
                       ? "#099885"
                       : undefined,
                 },
+                "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
               }}
             >
               {snackbarMessage}

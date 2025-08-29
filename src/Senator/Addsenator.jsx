@@ -2796,7 +2796,7 @@ export default function AddSenator(props) {
                         ))}
                       </>
                     ) : (
-                      // 🔹 Agar termId nahi hai, to ek blank vote dikhao
+                     
                       <Grid rowSpacing={2} sx={{ width: "100%" }}>
                         <Grid
                           size={12}
@@ -3036,7 +3036,7 @@ export default function AddSenator(props) {
                         ))}
                       </>
                     ) : (
-                      // Agar termId nahi h to ek blank activity dikhao
+                      
                       <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
                         <Grid
                           size={12}
@@ -3166,6 +3166,12 @@ export default function AddSenator(props) {
                         : undefined,
 
                   },
+                  "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",   
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
                 }}
                 elevation={6}
                 variant="filled"
