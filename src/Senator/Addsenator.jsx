@@ -236,7 +236,18 @@ export default function AddSenator(props) {
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
   };
+  // Add this function near the top of your component
+  const getAvailableTerms = (currentTermIndex) => {
+    const selectedTermIds = senatorTermData
+      .map((term, index) => {
+        // Don't exclude the current term being edited
+        if (index === currentTermIndex) return null;
+        return term.termId?._id || term.termId;
+      })
+      .filter(Boolean);
 
+    return terms?.filter(term => !selectedTermIds.includes(term._id)) || [];
+  };
   // Helper function to get display name
   const getFieldDisplayName = (field) => {
     // Handle term fields (term0_fieldName)
@@ -1416,20 +1427,20 @@ export default function AddSenator(props) {
       userRole === "admin"
         ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
-    }  catch (error) {
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
+    } catch (error) {
       console.error("Save failed:", error);
-    
+
       const errorMessage =
         error?.response?.data?.message ||
         (error.code === 11000
           ? "Duplicate entry: This senator term already exists."
           : "Failed to create senator data. Please try again.");
-    
+
       handleSnackbarOpen(errorMessage, "error");
-    
+
     } finally {
       setLoading(false);
     }
@@ -1491,17 +1502,17 @@ export default function AddSenator(props) {
         descColor: "#795548",
       },
       published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Unsaved Changes",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
+        titleColor: "#5D4037",
+        descColor: "#795548",
       },
 
     };
@@ -1652,10 +1663,9 @@ export default function AddSenator(props) {
                           : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                              ? ""
+                              ? "76, 175, 80"
                               : "244, 67, 54"
-                          }, 0.2)`,
-                        display: "grid",
+                          }, 0.2)`, display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
                       }}
@@ -1688,7 +1698,7 @@ export default function AddSenator(props) {
                           {statusData.title}
                         </Typography>
 
-                        {userRole === "admin" && (
+                        {/* {userRole === "admin" && (
                           <Chip
                             label={`${Array.isArray(formData?.editedFields)
                               ? formData.editedFields.length +
@@ -1699,7 +1709,7 @@ export default function AddSenator(props) {
                             color="warning"
                             variant="outlined"
                           />
-                        )}
+                        )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -1870,7 +1880,7 @@ export default function AddSenator(props) {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    Unsaved Changes
+                                    {formData.publishStatus === "published" ? "" : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -2304,8 +2314,8 @@ export default function AddSenator(props) {
                           <MenuItem value="" disabled>
                             Select an option
                           </MenuItem>
-                          {terms && terms.length > 0 ? (
-                            terms.map((t) => (
+                          {getAvailableTerms(termIndex).length > 0 ? (
+                            getAvailableTerms(termIndex).map((t) => (
                               <MenuItem key={t._id} value={t._id}>
                                 {t.name}
                               </MenuItem>
@@ -2736,7 +2746,7 @@ export default function AddSenator(props) {
                                                 }}
                                               >
                                                 {voteItem.title}
-                                              
+
                                               </Typography>
                                             </MenuItem>
                                           );

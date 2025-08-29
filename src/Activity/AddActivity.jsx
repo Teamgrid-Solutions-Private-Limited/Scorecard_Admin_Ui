@@ -455,19 +455,19 @@ export default function AddActivity(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-             published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
-        description:
-          editedFields.length > 0
-            ? `${editedFields.length} pending changes`
-            : "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
-      },
+            published: {
+                              backgroundColor: "rgba(255, 193, 7, 0.12)",
+                              borderColor: "#FFC107",
+                              iconColor: "#FFA000",
+                             icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+                              title: "Unsaved Changes",
+                              description:
+                                editedFields.length > 0
+                                  ? `${editedFields.length} pending changes`
+                                  : "Published and live",
+                              titleColor: "#5D4037",
+                              descColor: "#795548",
+                            },
     };
 
     return configs[currentStatus];
@@ -645,15 +645,14 @@ export default function AddActivity(props) {
                     sx={{
                       p: 1,
                       borderRadius: "50%",
-                      backgroundColor: `rgba(${
-                        currentStatus === "draft"
+                      backgroundColor: `rgba(${formData.status === "draft"
                           ? "66, 165, 245"
-                          : currentStatus === "review"
-                          ? "255, 193, 7"
-                          : currentStatus === "published"
-                          ? ""
-                          : "244, 67, 54"
-                      }, 0.2)`,
+                          : formData.status === "under review"
+                            ? "230, 81, 0"
+                            : formData.status === "published"
+                              ? "76, 175, 80"
+                              : "244, 67, 54"
+                          }, 0.2)`,
                       display: "grid",
                       placeItems: "center",
                       flexShrink: 0,
@@ -686,7 +685,7 @@ export default function AddActivity(props) {
                         {statusData.title}
                       </Typography>
 
-                      {userRole === "admin" && (
+                      {/* {userRole === "admin" && (
                         <Chip
                           label={`${(() => {
                             const backend = Array.isArray(
@@ -706,7 +705,7 @@ export default function AddActivity(props) {
                           color="warning"
                           variant="outlined"
                         />
-                      )}
+                      )} */}
                     </Box>
 
                     {/* Pending / New fields list */}
@@ -842,7 +841,7 @@ export default function AddActivity(props) {
                                   variant="overline"
                                   sx={{ color: "text.secondary", mb: 1 }}
                                 >
-                                  Unsaved Changes
+                                  {formData.status === "published" ? "" : "Unsaved Changes"}
                                 </Typography>
                                 <List dense sx={{ py: 0 }}>
                                   {localChanges.map((field) => (
