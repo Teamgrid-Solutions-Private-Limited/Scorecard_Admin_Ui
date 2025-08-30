@@ -576,6 +576,12 @@ const statusOptions = ["published", "draft", "under review"];
 
                     : undefined,
               },
+              "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
             }}
           >
             {snackbarMessage}
