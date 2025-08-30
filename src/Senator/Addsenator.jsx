@@ -611,19 +611,40 @@ export default function AddSenator(props) {
       setLoading(false);
     }
   };
-
-  const handleRemoveVote = (termIndex, voteIndex) => {
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+const handleRemoveVote = (termIndex, voteIndex) => {
+  setSenatorTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
             votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
           }
-          : term
+        : term
+    );
+
+    // Clean up tracked changes for this vote
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_ScoredVote_${voteIndex + 1}`)
       )
     );
-  };
+
+    return updatedTerms;
+  });
+};
+  // const handleRemoveVote = (termIndex, voteIndex) => {
+  //   setSenatorTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //           ...term,
+  //           votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+  //         }
+  //         : term
+  //     )
+  //   );
+  // };
   //   // Construct the field name for change tracking
   //   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
 
@@ -699,20 +720,44 @@ export default function AddSenator(props) {
     );
   };
 
-  const handleRemoveActivity = (termIndex, activityIndex) => {
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+  // const handleRemoveActivity = (termIndex, activityIndex) => {
+  //   setSenatorTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //           ...term,
+  //           activitiesScore: term.activitiesScore.filter(
+  //             (_, i) => i !== activityIndex
+  //           ),
+  //         }
+  //         : term
+  //     )
+  //   );
+  // };
+const handleRemoveActivity = (termIndex, activityIndex) => {
+  setSenatorTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
             activitiesScore: term.activitiesScore.filter(
               (_, i) => i !== activityIndex
             ),
           }
-          : term
+        : term
+    );
+
+    // Clean up tracked changes for this activity
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_TrackedActivity_${activityIndex + 1}`)
       )
     );
-  };
+
+    return updatedTerms;
+  });
+};
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
@@ -1272,6 +1317,28 @@ export default function AddSenator(props) {
     setLoading(true);
 
     try {
+        // Prevent duplicate termId selections before any API calls
+            const termIdCounts = senatorTermData
+              .map(t => t.termId)
+              .filter(Boolean)
+              .reduce((acc, id) => {
+                acc[id] = (acc[id] || 0) + 1;
+                return acc;
+              }, {});
+      
+            const hasDuplicateTerms = Object.values(termIdCounts).some(count => count > 1);
+            if (hasDuplicateTerms) {
+              setLoading(false);
+              handleSnackbarOpen("Duplicate term selected. Each term can only be added once.", "error");
+              return;
+            }
+            const currentTerms = senatorTermData.filter(term => term.currentTerm);
+            if (currentTerms.length > 1) {
+              setLoading(false);
+              handleSnackbarOpen("Only one term can be marked as current term.", "error");
+              return;
+            }
+            
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,

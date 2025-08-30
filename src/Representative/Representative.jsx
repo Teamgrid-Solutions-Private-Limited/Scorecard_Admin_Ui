@@ -71,11 +71,11 @@ export default function Representative(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRepresentative, setSelectedRepresentative] = useState(null);
   const token = localStorage.getItem("token");
-// Decode token to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
-    
+
   const [partyFilter, setPartyFilter] = useState([]);
   const [districtFilter, setDistrictFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
@@ -140,7 +140,7 @@ export default function Representative(props) {
         };
       });
 
-      
+
       setMergedHouses(merged);
     }
   }, [houses, houseData, terms]);
@@ -373,7 +373,7 @@ export default function Representative(props) {
     }
   };
 
-  
+
 
   const handleToggleStatusHouse = async (house) => {
     const newStatus =
@@ -426,21 +426,21 @@ export default function Representative(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: { xs: "block", md: "flex" } ,bgcolor:'#f6f6f6ff',}}>
+      <Box sx={{ display: { xs: "block", md: "flex" }, bgcolor: '#f6f6f6ff', }}>
         <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
         <Box
           sx={{
             flexGrow: 1,
             // overflow: "auto",
-             width: { xs: "100%", md: "80%" },
+            width: { xs: "100%", md: "80%" },
             filter: fetching ? "blur(1px)" : "none",
             pointerEvents: fetching ? "none" : "auto",
             px: { xs: 0.5, sm: 2, md: 0 },
             pt: { xs: 1, md: 0 },
           }}
         >
-          <FixedHeader sx={{ display: { xs: "none", md: "block" } }}/>
-          <MobileHeader/>
+          <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
+          <MobileHeader />
           <Stack
             spacing={2}
             sx={{
@@ -481,77 +481,77 @@ export default function Representative(props) {
                 All Representatives
               </Typography> */}
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" }}}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ width: { xs: "100%", sm: "auto" } }}>
                 {/* Mobile: Show Fetch button above search/filter */}
-                            {userRole === "admin" && (
-                              <Box sx={{ width: "100%", display: { xs: "block", sm: "none" },  }}>
-                                <Button
-                                  variant="outlined"
-                                  sx={{
-                                    backgroundColor: "#173A5E !important",
-                                    color: "#fff !important",
-                                    width: "100%",
-                                    "&:hover": {
-                                      backgroundColor: "#357ABD !important",
-                                    },
-                                  }}
-                                  onClick={fetchRepresentativeFromQuorum}
-                                  fullWidth
-                                >
-                                  Fetch Representatives from Quorum
-                                </Button>
-                              </Box>
-                            )}
+                {userRole === "admin" && (
+                  <Box sx={{ width: "100%", display: { xs: "block", sm: "none" }, }}>
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        backgroundColor: "#173A5E !important",
+                        color: "#fff !important",
+                        width: "100%",
+                        "&:hover": {
+                          backgroundColor: "#357ABD !important",
+                        },
+                      }}
+                      onClick={fetchRepresentativeFromQuorum}
+                      fullWidth
+                    >
+                      Fetch Representatives from Quorum
+                    </Button>
+                  </Box>
+                )}
                 <TextField
                   placeholder="Search Representatives"
                   size="small"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: "#173A5E", fontSize: 20 }} />
-                        </InputAdornment>
-                      ),
-                    }}
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: "#173A5E", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  }}
                   sx={{
-                   marginLeft: { xs: 0, sm: "0.5rem" },
-    width: { xs: "50%", sm: "220px" },
-    "& .MuiOutlinedInput-root": {
-      // borderRadius: "12px",
-      backgroundColor: "#fff",
-      transition: "all 0.2s ease-in-out",
-      "& fieldset": {
-        borderColor: "#e5e7eb",
-      },
-      "&:hover fieldset": {
-        borderColor: "#cbd5e1",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#173A5E", 
-        borderWidth: "2px",
-      },   
-    },
-   
-    "& input::placeholder": {
-      fontSize: "0.9rem",
-      color: "#9ca3af",
-    },
-  }}
+                    marginLeft: { xs: 0, sm: "0.5rem" },
+                    width: { xs: "50%", sm: "220px" },
+                    "& .MuiOutlinedInput-root": {
+                      // borderRadius: "12px",
+                      backgroundColor: "#fff",
+                      transition: "all 0.2s ease-in-out",
+                      "& fieldset": {
+                        borderColor: "#e5e7eb",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#173A5E",
+                        borderWidth: "2px",
+                      },
+                    },
+
+                    "& input::placeholder": {
+                      fontSize: "0.9rem",
+                      color: "#9ca3af",
+                    },
+                  }}
                 />
 
 
-                <Box sx={{ position: "relative", display: "inline-block",width: { xs: "100%", sm: "auto" } }}>
+                <Box sx={{ position: "relative", display: "inline-block", width: { xs: "100%", sm: "auto" } }}>
                   <Badge
                     badgeContent={activeFilterCount}
                     color="primary"
                     sx={{
-    "& .MuiBadge-badge": {
-      top: 6, 
-      right: 6, 
-      bgcolor:'#E24042'
-    },
-  }}
+                      "& .MuiBadge-badge": {
+                        top: 6,
+                        right: 6,
+                        bgcolor: '#E24042'
+                      },
+                    }}
                   >
                     <Button
                       variant="outlined"
@@ -564,10 +564,10 @@ export default function Representative(props) {
                         padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                         minWidth: { xs: "100%", sm: "120px" },
                         borderColor: filterOpen ? "primary.main" : "divider",
-                        color:  "#fff",
+                        color: "#fff",
                         backgroundColor: "#497BB2",
                         "&:hover": {
-                          backgroundColor:  "#3B6799",
+                          backgroundColor: "#3B6799",
                         },
                       }}
                     >
@@ -626,7 +626,7 @@ export default function Representative(props) {
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
+                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("party")}
                           >
                             <Typography variant="body1">Party</Typography>
@@ -655,7 +655,7 @@ export default function Representative(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
                                 {filteredPartyOptions.length > 0 ? (
                                   filteredPartyOptions.map((party) => (
                                     <Box
@@ -714,7 +714,7 @@ export default function Representative(props) {
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
+                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("district")}
                           >
                             <Typography variant="body1">District</Typography>
@@ -726,26 +726,26 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "district" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                             <Box  sx={{ mb: 2,px:2 }}>
-                               <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search districts..."
-                                value={searchTerms.district}
-                                onChange={(e) =>
-                                  handleSearchChange("district", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                               
-                              />
-                             </Box>
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
+                              <Box sx={{ mb: 2, px: 2 }}>
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  placeholder="Search districts..."
+                                  value={searchTerms.district}
+                                  onChange={(e) =>
+                                    handleSearchChange("district", e.target.value)
+                                  }
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+
+                                />
+                              </Box>
+                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
                                 {filteredDistrictOptions.length > 0 ? (
                                   filteredDistrictOptions.map((district) => (
                                     <Box
@@ -804,7 +804,7 @@ export default function Representative(props) {
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
+                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("rating")}
                           >
                             <Typography variant="body1">Rating</Typography>
@@ -833,7 +833,7 @@ export default function Representative(props) {
                                 }}
                                 sx={{ mb: 2 }}
                               /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
                                 {filteredRatingOptions.length > 0 ? (
                                   filteredRatingOptions.map((rating) => (
                                     <Box
@@ -892,7 +892,7 @@ export default function Representative(props) {
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
+                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("year")}
                           >
                             <Typography variant="body1">Year</Typography>
@@ -904,26 +904,26 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "year" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                              <Box sx={{ mb: 2,px:2 }}>
+                              <Box sx={{ mb: 2, px: 2 }}>
                                 <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search years..."
-                                value={searchTerms.year}
-                                onChange={(e) =>
-                                  handleSearchChange("year", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                
-                              />
+                                  fullWidth
+                                  size="small"
+                                  placeholder="Search years..."
+                                  value={searchTerms.year}
+                                  onChange={(e) =>
+                                    handleSearchChange("year", e.target.value)
+                                  }
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+
+                                />
                               </Box>
-                              <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
                                 {filteredYearOptions.length > 0 ? (
                                   filteredYearOptions.map((year) => (
                                     <Box
@@ -984,7 +984,7 @@ export default function Representative(props) {
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
+                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("term")}
                           >
                             <Typography variant="body1">Term</Typography>
@@ -996,7 +996,7 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "term" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
                                 {["current"/*, "past"*/].map((term) => (
                                   <Box
                                     key={term}
@@ -1045,7 +1045,7 @@ export default function Representative(props) {
                             display="flex"
                             justifyContent="space-between"
                             alignItems="center"
-                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
+                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("status")}
                           >
                             <Typography variant="body1">Status</Typography>
@@ -1057,7 +1057,7 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "status" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
+                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}
@@ -1100,7 +1100,7 @@ export default function Representative(props) {
                             fullWidth
                             // variant="outlined"
                             // color="secondary"
-                            sx={{borderRadius:0, bgcolor:'#fff'}}
+                            sx={{ borderRadius: 0, bgcolor: '#fff' }}
                             onClick={clearAllFilters}
                             disabled={
                               !partyFilter.length &&
@@ -1119,7 +1119,7 @@ export default function Representative(props) {
                   )}
                 </Box>
 
-        {userRole === "admin" && (  <Button
+                {userRole === "admin" && (<Button
                   variant="outlined"
                   sx={{
                     backgroundColor: "#173A5E !important",
@@ -1135,7 +1135,7 @@ export default function Representative(props) {
                 >
                   Fetch Representatives from Quorum
                 </Button>
-        )}
+                )}
               </Stack>
             </Box>
             {/* Representative Table */}
@@ -1157,41 +1157,41 @@ export default function Representative(props) {
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
-              onClose={() => setSnackbarOpen(false)}
-              severity={snackbarSeverity}
-              sx={{
-                width: "100%",
-                // ✅ Background conditions
-                bgcolor:
-                  snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#fde8e4"
-                    : snackbarMessage === "Success: Representatives fetched successfully!"
+            onClose={() => setSnackbarOpen(false)}
+            severity={snackbarSeverity}
+            sx={{
+              width: "100%",
+              // ✅ Background conditions
+              bgcolor:
+                snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                  ? "#fde8e4"
+                  : snackbarMessage === "Success: Representatives fetched successfully!"
                     ? "#daf4f0"
                     : undefined,
-          
-                // ✅ Icon color conditions
-                "& .MuiAlert-icon": {
-                  color:
-                    snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
-                      ? "#cc563d"
-                      : snackbarMessage === "Success: Representatives fetched successfully!"
+
+              // ✅ Icon color conditions
+              "& .MuiAlert-icon": {
+                color:
+                  snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                    ? "#cc563d"
+                    : snackbarMessage === "Success: Representatives fetched successfully!"
                       ? "#099885"
                       : undefined,
-                },
-          
-                // ✅ Text color conditions
-                "& .MuiAlert-message": {
-                  color:
-                    snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
-                      ? "#cc563d"
-                      : snackbarMessage === "Success: Representatives fetched successfully!"
+              },
+
+              // ✅ Text color conditions
+              "& .MuiAlert-message": {
+                color:
+                  snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                    ? "#cc563d"
+                    : snackbarMessage === "Success: Representatives fetched successfully!"
                       ? "#099885"
                       : undefined,
-                },
-              }}
-            >
-              {snackbarMessage}
-            </Alert>
+              },
+            }}
+          >
+            {snackbarMessage}
+          </Alert>
         </Snackbar>
 
         <Dialog

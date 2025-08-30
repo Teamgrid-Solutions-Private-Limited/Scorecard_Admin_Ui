@@ -167,29 +167,143 @@ export default function Addrepresentative(props) {
   //   );
   // };
 
-  const handleTermChange = (e, termIndex) => {
-    const { name, value } = e.target;
-    const fieldName = `term${termIndex}_${e.target.name}`;
+  // const handleTermChange = (e, termIndex) => {
+  //   const { name, value } = e.target;
+  //   const fieldName = `term${termIndex}_${e.target.name}`;
 
-    setHouseTermData((prev) => {
-      const newTerms = prev.map((term, index) =>
-        index === termIndex ? { ...term, [name]: value } : term
-      );
+  //   setHouseTermData((prev) => {
+  //     const newTerms = prev.map((term, index) =>
+  //       index === termIndex ? { ...term, [name]: value } : term
+  //     );
 
-      // Compare with original data
-      const originalTerm = originalTermData[termIndex] || {};
-      const isActualChange = compareValues(value, originalTerm[name]);
+  //     // Compare with original data
+  //     const originalTerm = originalTermData[termIndex] || {};
+  //     const isActualChange = compareValues(value, originalTerm[name]);
 
-      if (isActualChange && !localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => [...prev, fieldName]);
-      } else if (!isActualChange && localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+  //     if (isActualChange && !localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => [...prev, fieldName]);
+  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+  //     }
+
+  //     return newTerms;
+  //   });
+
+  // };
+ const handleTermChange = (e, termIndex) => {
+  const { name, value } = e.target;
+  const fieldName = `term${termIndex}_${name}`;
+
+  setHouseTermData((prev) => {
+    const newTerms = prev.map((term, index) => {
+      if (index !== termIndex) return term;
+      
+      // If term is changing, check if we have existing data for this term
+      if (name === "termId" && value !== term.termId) {
+        const newTermId = value;
+        const selectedTerm = terms.find(t => t._id === newTermId);
+        const termCongresses = selectedTerm?.congresses || [];
+        
+        // Convert congress numbers to strings for comparison
+        const termCongressStrings = termCongresses.map(c => c.toString());
+        
+        // Check if we have existing data for this term in houseData
+        const existingTermData = houseData?.currentHouse?.find(
+          ht => ht.termId && 
+          (ht.termId._id === newTermId || ht.termId === newTermId || 
+           (typeof ht.termId === 'object' && ht.termId.name === selectedTerm?.name))
+        );
+        
+        console.log("Existing term data:", existingTermData);
+        
+        let votesScore = [];
+        let activitiesScore = [];
+        let summary = ""; // Initialize as empty
+        let rating = ""; // Initialize as empty
+        let currentTerm = false; // Initialize as false
+        
+        // If we have existing data for this term, use it
+        if (existingTermData) {
+          // Map votes from existing data
+          votesScore = existingTermData.votesScore?.map(vote => ({
+            voteId: vote.voteId?._id || vote.voteId || "",
+            score: vote.score || ""
+          })) || [];
+          
+          // Map activities from existing data
+          activitiesScore = existingTermData.activitiesScore?.map(activity => ({
+            activityId: activity.activityId?._id || activity.activityId || "",
+            score: activity.score || ""
+          })) || [];
+          
+          // Only use existing values if they exist
+          summary = existingTermData.summary || "";
+          rating = existingTermData.rating || "";
+          currentTerm = existingTermData.currentTerm !== undefined ? existingTermData.currentTerm : false;
+        } else {
+          // Filter votes to keep only those that belong to the new term's congresses
+          votesScore = term.votesScore.filter(vote => {
+            if (!vote.voteId || vote.voteId === "") return true; // keep placeholder
+            
+            const voteItem = votes.find(v => v._id === vote.voteId);
+            if (!voteItem) return false;
+            
+            return termCongressStrings.includes(voteItem.congress);
+          });
+          
+          // Filter activities to keep only those that belong to the new term's congresses
+          activitiesScore = term.activitiesScore.filter(activity => {
+            if (!activity.activityId || activity.activityId === "") return true; // keep placeholder
+            
+            const activityItem = houseActivities.find(a => a._id === activity.activityId);
+            if (!activityItem) return false;
+            
+            return termCongressStrings.includes(activityItem.congress);
+          });
+          
+          // Set all fields to empty/false for new terms without existing data
+          summary = "";
+          rating = "";
+          currentTerm = false;
+        }
+        
+        // If no votes remain after filtering, add an empty vote
+        const finalVotesScore = votesScore.length > 0 
+          ? votesScore 
+          : [{ voteId: "", score: "" }];
+        
+        // If no activities remain after filtering, add an empty activity
+        const finalActivitiesScore = activitiesScore.length > 0 
+          ? activitiesScore 
+          : [{ activityId: "", score: "" }];
+        
+        return { 
+          ...term, 
+          [name]: value,
+          votesScore: finalVotesScore,
+          activitiesScore: finalActivitiesScore,
+          summary, // Will be empty if no existing data
+          rating,  // Will be empty if no existing data
+          currentTerm // Will be false if no existing data
+        };
       }
-
-      return newTerms;
+      
+      return { ...term, [name]: value };
     });
 
-  };
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const isActualChange = compareValues(value, originalTerm[name]);
+
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+    }
+
+    return newTerms;
+  });
+};
   // const handleSwitchChange = (e, termIndex) => {
   //   const fieldName = `term${termIndex}_${e.target.name}`;
   //   if (!localChanges.includes(fieldName)) {
@@ -230,7 +344,43 @@ export default function Addrepresentative(props) {
   };
 
 
+  // const handleSwitchChange = (e, termIndex) => {
+  //   const { name, checked } = e.target;
+  //   const fieldName = `term${termIndex}_${name}`;
 
+  //   setHouseTermData((prev) => {
+  //     let newTerms;
+
+  //     // If setting currentTerm to true, ensure only one term is current
+  //     if (name === "currentTerm" && checked) {
+  //       newTerms = prev.map((term, index) => ({
+  //         ...term,
+  //         currentTerm: index === termIndex
+  //       }));
+  //     } else {
+  //       newTerms = prev.map((term, index) =>
+  //         index === termIndex ? { ...term, [name]: checked } : term
+  //       );
+  //     }
+
+  //     // Compare with original data
+  //     const originalTerm = originalTermData[termIndex] || {};
+  //     const isActualChange = compareValues(
+  //       name === "currentTerm" && checked 
+  //         ? true // For currentTerm, we need to check if this specific term should be current
+  //         : checked, 
+  //       originalTerm[name]
+  //     );
+
+  //     if (isActualChange && !localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => [...prev, fieldName]);
+  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+  //     }
+
+  //     return newTerms;
+  //   });
+  // };
   const handleAddVote = (termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
@@ -244,19 +394,41 @@ export default function Addrepresentative(props) {
     );
   };
 
-  const handleRemoveVote = (termIndex, voteIndex) => {
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+  // const handleRemoveVote = (termIndex, voteIndex) => {
+    
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //           ...term,
+  //           votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+  //         }
+  //         : term
+  //     )
+  //   );
+  // };
+const handleRemoveVote = (termIndex, voteIndex) => {
+  setHouseTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
             votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
           }
-          : term
+        : term
+    );
+
+    // Clean up tracked changes for this vote
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_ScoredVote_${voteIndex + 1}`)
       )
     );
-  };
 
+    return updatedTerms;
+  });
+};
   // const handleVoteChange = (termIndex, voteIndex, field, value) => {
   //   // Construct the field name for change tracking
   //   // Construct the field name for change tracking
@@ -333,20 +505,29 @@ export default function Addrepresentative(props) {
     );
   };
 
-  const handleRemoveActivity = (termIndex, activityIndex) => {
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+ 
+const handleRemoveActivity = (termIndex, activityIndex) => {
+  setHouseTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
-            activitiesScore: term.activitiesScore.filter(
-              (_, i) => i !== activityIndex
-            ),
+            activitiesScore: term.activitiesScore.filter((_, i) => i !== activityIndex),
           }
-          : term
+        : term
+    );
+
+    // Clean up tracked changes for this activity
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_TrackedActivity_${activityIndex + 1}`)
       )
     );
-  };
+
+    return updatedTerms;
+  });
+};
 
   // const handleActivityChange = (termIndex, activityIndex, field, value) => {
   //   // Construct the field name for change tracking
@@ -824,6 +1005,13 @@ export default function Addrepresentative(props) {
         handleSnackbarOpen("Duplicate term selected. Each term can only be added once.", "error");
         return;
       }
+      const currentTerms = houseTermData.filter(term => term.currentTerm);
+      if (currentTerms.length > 1) {
+        setLoading(false);
+        handleSnackbarOpen("Only one term can be marked as current term.", "error");
+        return;
+      }
+    
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -2174,9 +2362,10 @@ export default function Addrepresentative(props) {
                                     width: "100%",
                                   }}
                                   renderValue={(selected) => {
-                                    const selectedVote = votes.find(
+                                    const selectedVote = getFilteredVotes(termIndex).find(
                                       (v) => v._id === selected
                                     );
+                                    console.log(selectedVote);
                                     return (
                                       <Typography
                                         sx={{
@@ -2185,7 +2374,9 @@ export default function Addrepresentative(props) {
                                           textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {selectedVote?.title || "Select a Bill"}
+                                        {selectedVote?.title
+                                          // || "Select a Bill"
+                                        }
                                       </Typography>
                                     );
                                   }}
@@ -2329,7 +2520,7 @@ export default function Addrepresentative(props) {
                                     width: "100%",
                                   }}
                                   renderValue={(selected) => {
-                                    const selectedActivity = houseActivities.find(
+                                    const selectedActivity = getFilteredActivities(termIndex).find(
                                       (a) => a._id === selected
                                     );
                                     return (
@@ -2340,8 +2531,9 @@ export default function Addrepresentative(props) {
                                           textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {selectedActivity?.title ||
-                                          "Select an Activity"}
+                                        {selectedActivity?.title
+                                          //  ||"Select an Activity"
+                                        }
                                       </Typography>
                                     );
                                   }}
@@ -2373,7 +2565,7 @@ export default function Addrepresentative(props) {
                                             overflowWrap: "break-word",
                                           }}
                                         >
-                                          {activityItem.title} 
+                                          {activityItem.title}
                                         </Typography>
                                       </MenuItem>
                                     ))
