@@ -515,29 +515,29 @@ export default function Representative(props) {
                     ),
                   }}
                   sx={{
-                    marginLeft: { xs: 0, sm: "0.5rem" },
-                    width: { xs: "50%", sm: "220px" },
-                    "& .MuiOutlinedInput-root": {
-                      // borderRadius: "12px",
-                      backgroundColor: "#fff",
-                      transition: "all 0.2s ease-in-out",
-                      "& fieldset": {
-                        borderColor: "#e5e7eb",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#cbd5e1",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#173A5E",
-                        borderWidth: "2px",
-                      },
-                    },
-
-                    "& input::placeholder": {
-                      fontSize: "0.9rem",
-                      color: "#9ca3af",
-                    },
-                  }}
+                  //  marginLeft: { xs: 0, sm: "0.5rem" },
+    width: { xs: "50%", sm: "235px" },
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+      padding:'19.1px',
+      transition: "all 0.2s ease-in-out",
+      "& fieldset": {
+        borderColor: "#e5e7eb",
+      },
+      "&:hover fieldset": {
+        borderColor: "#cbd5e1",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#173A5E", 
+        borderWidth: "2px",
+      },   
+    },
+   
+    "& input::placeholder": {
+      fontSize: "0.9rem",
+      color: "#9ca3af",
+    },
+  }}
                 />
 
 
@@ -561,10 +561,10 @@ export default function Representative(props) {
                       }
                       onClick={toggleFilter}
                       sx={{
-                        padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                        // padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                         minWidth: { xs: "100%", sm: "120px" },
-                        borderColor: filterOpen ? "primary.main" : "divider",
-                        color: "#fff",
+                        // borderColor: filterOpen ? "primary.main" : "divider",
+                        color:  "#fff",
                         backgroundColor: "#497BB2",
                         "&:hover": {
                           backgroundColor: "#3B6799",
@@ -1124,7 +1124,7 @@ export default function Representative(props) {
                   sx={{
                     backgroundColor: "#173A5E !important",
                     color: "#fff !important",
-                    padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                    // padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                     marginLeft: { xs: 0, sm: "0.5rem" },
                     display: { xs: "none", sm: "block" },
                     "&:hover": {
@@ -1157,15 +1157,17 @@ export default function Representative(props) {
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity={snackbarSeverity}
-            sx={{
-              width: "100%",
-              // ✅ Background conditions
-              bgcolor:
-                snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
-                  ? "#fde8e4"
-                  : snackbarMessage === "Success: Representatives fetched successfully!"
+              onClose={() => setSnackbarOpen(false)}
+              severity={snackbarSeverity}
+              sx={{
+                border: "none",
+                boxShadow:"none",
+                width: "100%",
+                // ✅ Background conditions
+                bgcolor:
+                  snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                    ? "#fde8e4"
+                    : snackbarMessage === "Success: Representatives fetched successfully!"
                     ? "#daf4f0"
                     : undefined,
 

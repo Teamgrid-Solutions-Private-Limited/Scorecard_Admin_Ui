@@ -74,12 +74,12 @@ export default function SideMenu() {
 					p: 5,
 					gap: 1,
 					alignItems: "center",
-					borderTop: "1px solid",
+					// borderTop: "1px solid",
 					borderColor: "divider",
 				}}
 			>
 				
-				<img className="logo-lg" src={logo} style={{ width: "140px", height: "auto" }}  />
+				<img className="logo-lg" src={logo} style={{ width: "155px", height: "auto" }}  />
 
 			</Stack>
 
