@@ -321,10 +321,10 @@ const handleConfirmDelete = async () => {
                             fontWeight: 500,
                           }}
                         >
-                          Congress:{" "}
+                          <Typography sx={{fontSize:'12px'}}>Congress:{" "}
                           {term.congresses?.length
                             ? term.congresses.join(", ")
-                            : "N/A"}
+                            : "N/A"}</Typography>
                         </Paper>
                       </Stack>
 

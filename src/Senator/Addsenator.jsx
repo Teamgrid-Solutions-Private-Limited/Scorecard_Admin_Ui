@@ -2315,7 +2315,7 @@ export default function AddSenator(props) {
                             Select an option
                           </MenuItem>
                           {getAvailableTerms(termIndex).length > 0 ? (
-                            getAvailableTerms(termIndex).map((t) => (
+                            getAvailableTerms(termIndex).sort((a, b) => b.endYear - a.endYear).map((t) => (
                               <MenuItem key={t._id} value={t._id}>
                                 {t.name}
                               </MenuItem>
