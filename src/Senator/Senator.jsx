@@ -532,11 +532,11 @@ export default function Senator(props) {
   }}
   sx={{
     
-    marginLeft: { xs: 0, sm: "0.5rem" },
+    // marginLeft: { xs: 0, sm: "0.5rem" },
     width: { xs: "50%", sm: "220px" },
     "& .MuiOutlinedInput-root": {
-      // borderRadius: "12px",
       backgroundColor: "#fff",
+      padding:'19.1px',
       transition: "all 0.2s ease-in-out",
       "& fieldset": {
         borderColor: "#e5e7eb",
@@ -575,9 +575,7 @@ export default function Senator(props) {
                       endIcon={filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                       onClick={toggleFilter}
                       sx={{
-                        padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                         minWidth: { xs: "100%", sm: "120px" },
-                        borderColor:  "divider",
                         color:  "#fff",
                         backgroundColor:  "#497BB2",
                         "&:hover": {
@@ -1207,9 +1205,9 @@ export default function Senator(props) {
                     sx={{
                       backgroundColor: "#173A5E !important",
                       color: "#fff !important",
-                      padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
+                      // padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
                       marginLeft: { xs: 0, sm: "0.5rem" },
-                      width: { xs: "100%", sm: "auto" },
+                      // width: { xs: "100%", sm: "auto" },
                       mt: { xs: 1, sm: 0 },
                       display: { xs: "none", sm: "block" },
                       "&:hover": {
@@ -1217,7 +1215,6 @@ export default function Senator(props) {
                       },
                     }}
                     onClick={fetchSenatorsFromQuorum}
-                    fullWidth={true}
                   >
                     Fetch Senators from Quorum
                   </Button>
@@ -1249,6 +1246,8 @@ export default function Senator(props) {
     onClose={() => setSnackbarOpen(false)}
     severity={snackbarSeverity}
     sx={{
+      border: "none",
+      boxShadow:"none",
       width: "100%",
       // ✅ Background conditions
       bgcolor:
@@ -1277,6 +1276,12 @@ export default function Senator(props) {
             ? "#099885"
             : undefined,
       },
+      "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
     }}
   >
     {snackbarMessage}

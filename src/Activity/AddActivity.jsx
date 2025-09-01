@@ -473,19 +473,19 @@ export default function AddActivity(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-             published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
-        description:
-          editedFields.length > 0
-            ? `${editedFields.length} pending changes`
-            : "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
-      },
+            published: {
+                              backgroundColor: "rgba(255, 193, 7, 0.12)",
+                              borderColor: "#FFC107",
+                              iconColor: "#FFA000",
+                             icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+                              title: "Unsaved Changes",
+                              description:
+                                editedFields.length > 0
+                                  ? `${editedFields.length} pending changes`
+                                  : "Published and live",
+                              titleColor: "#5D4037",
+                              descColor: "#795548",
+                            },
     };
 
     return configs[currentStatus];
@@ -543,7 +543,34 @@ export default function AddActivity(props) {
         <Alert
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
-          sx={{ width: "100%" }}
+          sx={{
+                  width: "100%",
+                  border: "none",
+                  boxShadow:"none",
+                  bgcolor:
+                    snackbarMessage === "Changes published successfully!"
+                      ? "#daf4f0"
+                      : undefined,
+                  "& .MuiAlert-icon": {
+                    color:
+                      snackbarMessage === "Changes published successfully!"
+                        ? "#099885"
+                        : undefined,
+                  },
+                  "& .MuiAlert-message": {
+                    color:
+                      snackbarMessage === "Changes published successfully!"
+                        ? "#099885"
+                        : undefined,
+
+                  },
+                  "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
+                }}
           elevation={6}
           variant="filled"
         >
@@ -622,12 +649,60 @@ export default function AddActivity(props) {
                   : "Create"}
               </Button>
             </Stack>
+            <Stack
+              direction="row"
+              spacing={2}
+              width="100%"
+              sx={{
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              {/* Show Discard button only for existing activities */}
+              {id && (
+                <Button
+                  variant="outlined"
+                  onClick={handleDiscard}
+                  sx={{
+                    backgroundColor: "#E24042 !important",
+                    color: "white !important",
+                    padding: "0.5rem 1.5rem",
+                    marginLeft: "0.5rem",
+                    "&:hover": {
+                      backgroundColor: "#C91E37 !important",
+                    },
+                  }}
+                >
+                  {userRole === "admin" ? "Discard" : "Undo"}
+                </Button>
+              )}
+
+              <Button
+                variant="outlined"
+                onClick={handleSubmit}
+                sx={{
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  padding: "0.5rem 1.5rem",
+                  marginLeft: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                  },
+                }}
+              >
+                {id
+                  ? userRole === "admin"
+                    ? "Publish"
+                    : "Save Changes"
+                  : "Create"}
+              </Button>
+            </Stack>
             {userRole &&
               statusData &&
               (currentStatus !== "published" || hasAnyChanges) && (
               <Box
                 sx={{
-                  width: "98%",
+                  width: "97%",
                   p: 2,
                   backgroundColor: statusData.backgroundColor,
                   borderLeft: `4px solid ${statusData.borderColor}`,
@@ -642,15 +717,14 @@ export default function AddActivity(props) {
                     sx={{
                       p: 1,
                       borderRadius: "50%",
-                      backgroundColor: `rgba(${
-                        currentStatus === "draft"
+                      backgroundColor: `rgba(${formData.status === "draft"
                           ? "66, 165, 245"
-                          : currentStatus === "review"
-                          ? "255, 193, 7"
-                          : currentStatus === "published"
-                          ? ""
-                          : "244, 67, 54"
-                      }, 0.2)`,
+                          : formData.status === "under review"
+                            ? "230, 81, 0"
+                            : formData.status === "published"
+                              ? "76, 175, 80"
+                              : "244, 67, 54"
+                          }, 0.2)`,
                       display: "grid",
                       placeItems: "center",
                       flexShrink: 0,
@@ -683,7 +757,7 @@ export default function AddActivity(props) {
                         {statusData.title}
                       </Typography>
 
-                      {userRole === "admin" && (
+                      {/* {userRole === "admin" && (
                         <Chip
                           label={`${(() => {
                             const backend = Array.isArray(
@@ -703,7 +777,7 @@ export default function AddActivity(props) {
                           color="warning"
                           variant="outlined"
                         />
-                      )}
+                      )} */}
                     </Box>
 
                     {/* Pending / New fields list */}
@@ -839,7 +913,7 @@ export default function AddActivity(props) {
                                   variant="overline"
                                   sx={{ color: "text.secondary", mb: 1 }}
                                 >
-                                  Unsaved Changes
+                                  {formData.status === "published" ? "" : "Unsaved Changes"}
                                 </Typography>
                                 <List dense sx={{ py: 0 }}>
                                   {localChanges.map((field) => (
@@ -954,7 +1028,7 @@ export default function AddActivity(props) {
                 </DialogActions>
               </Dialog>
               <Box sx={{ padding: 0 }}>
-                <Typography variant="h6"  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+                <Typography fontSize={'1rem'} fontWeight={500}  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
                   Activity Information
                 </Typography>
                 <Grid
@@ -964,6 +1038,8 @@ export default function AddActivity(props) {
                   alignItems={"center"}
                   py={3}
                   pr={7}
+                  py={3}
+                  pr={7}
                 >
                   <Grid size={2}>
                     <InputLabel
@@ -971,6 +1047,7 @@ export default function AddActivity(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "end",
+                        fontWeight: 500,
                         fontWeight: 500,
                         my: 0,
                         width: "100%",
@@ -1028,6 +1105,7 @@ export default function AddActivity(props) {
                       sx={{
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
+                        fontWeight: 500,
                         fontWeight: 500,
                         my: 0,
                       }}

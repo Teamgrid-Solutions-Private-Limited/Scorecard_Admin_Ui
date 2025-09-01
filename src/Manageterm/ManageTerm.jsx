@@ -174,7 +174,38 @@ const handleConfirmDelete = async () => {
               <MuiAlert
                 onClose={handleSnackbarClose}
                 severity={snackbarSeverity}
-                sx={{ width: "100%" }}
+                 sx={{
+      border: "none",
+      boxShadow:"none",
+      width: "100%",
+      // ✅ Background conditions
+      bgcolor:
+        snackbarMessage === `Term deleted successfully`
+          ? "#fde8e4"
+          : snackbarMessage === "Term created successfully"
+          ? "#daf4f0"
+          : undefined,
+
+      // ✅ Icon color conditions
+      "& .MuiAlert-icon": {
+        color:
+          snackbarMessage === `Term deleted successfully`
+            ? "#cc563d"
+            : snackbarMessage === "Term created successfully"
+            ? "#099885"
+            : undefined,
+      },
+
+      // ✅ Text color conditions
+      "& .MuiAlert-message": {
+        color:
+          snackbarMessage === `Term deleted successfully`
+            ? "#cc563d"
+            : snackbarMessage === "Term created successfully"
+            ? "#099885"
+            : undefined,
+      },
+    }}
                 elevation={6}
                 variant="filled"
               >
@@ -290,10 +321,10 @@ const handleConfirmDelete = async () => {
                             fontWeight: 500,
                           }}
                         >
-                          Congress:{" "}
+                          <Typography sx={{fontSize:'12px'}}>Congress:{" "}
                           {term.congresses?.length
                             ? term.congresses.join(", ")
-                            : "N/A"}
+                            : "N/A"}</Typography>
                         </Paper>
                       </Stack>
 

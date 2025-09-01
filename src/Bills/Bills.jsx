@@ -530,6 +530,8 @@ export default function Bills(props) {
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
           sx={{
+            border: "none",
+            boxShadow:"none",
             width: "100%",
             bgcolor:
               snackbarMessage === "This bill has been successfully deleted."
@@ -546,6 +548,12 @@ export default function Bills(props) {
                     ? "#cc563d"
                     : undefined,
               },
+              "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
           }}
         >
           {snackbarMessage}

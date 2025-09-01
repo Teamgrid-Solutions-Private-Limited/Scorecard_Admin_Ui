@@ -236,7 +236,18 @@ export default function AddSenator(props) {
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
   };
+  // Add this function near the top of your component
+  const getAvailableTerms = (currentTermIndex) => {
+    const selectedTermIds = senatorTermData
+      .map((term, index) => {
+        // Don't exclude the current term being edited
+        if (index === currentTermIndex) return null;
+        return term.termId?._id || term.termId;
+      })
+      .filter(Boolean);
 
+    return terms?.filter(term => !selectedTermIds.includes(term._id)) || [];
+  };
   // Helper function to get display name
   const getFieldDisplayName = (field) => {
     // Handle term fields (term0_fieldName)
@@ -600,19 +611,40 @@ export default function AddSenator(props) {
       setLoading(false);
     }
   };
-
-  const handleRemoveVote = (termIndex, voteIndex) => {
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+const handleRemoveVote = (termIndex, voteIndex) => {
+  setSenatorTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
             votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
           }
-          : term
+        : term
+    );
+
+    // Clean up tracked changes for this vote
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_ScoredVote_${voteIndex + 1}`)
       )
     );
-  };
+
+    return updatedTerms;
+  });
+};
+  // const handleRemoveVote = (termIndex, voteIndex) => {
+  //   setSenatorTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //           ...term,
+  //           votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+  //         }
+  //         : term
+  //     )
+  //   );
+  // };
   //   // Construct the field name for change tracking
   //   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
 
@@ -688,20 +720,44 @@ export default function AddSenator(props) {
     );
   };
 
-  const handleRemoveActivity = (termIndex, activityIndex) => {
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+  // const handleRemoveActivity = (termIndex, activityIndex) => {
+  //   setSenatorTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //           ...term,
+  //           activitiesScore: term.activitiesScore.filter(
+  //             (_, i) => i !== activityIndex
+  //           ),
+  //         }
+  //         : term
+  //     )
+  //   );
+  // };
+const handleRemoveActivity = (termIndex, activityIndex) => {
+  setSenatorTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
             activitiesScore: term.activitiesScore.filter(
               (_, i) => i !== activityIndex
             ),
           }
-          : term
+        : term
+    );
+
+    // Clean up tracked changes for this activity
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_TrackedActivity_${activityIndex + 1}`)
       )
     );
-  };
+
+    return updatedTerms;
+  });
+};
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
@@ -1292,13 +1348,35 @@ const handleSave = async (e) => {
   e.preventDefault();
   setLoading(true);
 
-  try {
-    const decodedToken = jwtDecode(token);
-    const currentEditor = {
-      editorId: decodedToken.userId,
-      editorName: localStorage.getItem("user") || "Unknown User",
-      editedAt: new Date(),
-    };
+    try {
+        // Prevent duplicate termId selections before any API calls
+            const termIdCounts = senatorTermData
+              .map(t => t.termId)
+              .filter(Boolean)
+              .reduce((acc, id) => {
+                acc[id] = (acc[id] || 0) + 1;
+                return acc;
+              }, {});
+      
+            const hasDuplicateTerms = Object.values(termIdCounts).some(count => count > 1);
+            if (hasDuplicateTerms) {
+              setLoading(false);
+              handleSnackbarOpen("Duplicate term selected. Each term can only be added once.", "error");
+              return;
+            }
+            const currentTerms = senatorTermData.filter(term => term.currentTerm);
+            if (currentTerms.length > 1) {
+              setLoading(false);
+              handleSnackbarOpen("Only one term can be marked as current term.", "error");
+              return;
+            }
+            
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: localStorage.getItem("user") || "Unknown User",
+        editedAt: new Date(),
+      };
 
     if (deletedTermIds.length > 0) {
       await Promise.all(
@@ -1464,29 +1542,27 @@ const handleSave = async (e) => {
     // Update success message based on whether changes were made
     if (hasActualChanges) {
       userRole === "admin"
-        ? handleSnackbarOpen("Changes Published successfully!", "success")
+        ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
-    } else {
-      handleSnackbarOpen("No changes to save.", "info");
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
+    } catch (error) {
+      console.error("Save failed:", error);
+
+      const errorMessage =
+        error?.response?.data?.message ||
+        (error.code === 11000
+          ? "Duplicate entry: This senator term already exists."
+          : "Failed to create senator data. Please try again.");
+
+      handleSnackbarOpen(errorMessage, "error");
+
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Save failed:", error);
-  
-    const errorMessage =
-      error?.response?.data?.message ||
-      (error.code === 11000
-        ? "Duplicate entry: This senator term already exists."
-        : "Failed to create senator data. Please try again.");
-  
-    handleSnackbarOpen(errorMessage, "error");
-  
-  } finally {
-    setLoading(false);
   }
-}
+
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
@@ -1543,17 +1619,17 @@ const handleSave = async (e) => {
         descColor: "#795548",
       },
       published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Unsaved Changes",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
+        titleColor: "#5D4037",
+        descColor: "#795548",
       },
 
     };
@@ -1632,7 +1708,7 @@ const handleSave = async (e) => {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2.8 },
-              gap:1
+              gap: 1
             }}
           >
             <Stack
@@ -1682,7 +1758,7 @@ const handleSave = async (e) => {
               statusData && (
                 <Box
                   sx={{
-                    width: "98%",
+                    width: "97%",
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -1704,10 +1780,9 @@ const handleSave = async (e) => {
                           : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                              ? ""
+                              ? "76, 175, 80"
                               : "244, 67, 54"
-                          }, 0.2)`,
-                        display: "grid",
+                          }, 0.2)`, display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
                       }}
@@ -1740,7 +1815,7 @@ const handleSave = async (e) => {
                           {statusData.title}
                         </Typography>
 
-                        {userRole === "admin" && (
+                        {/* {userRole === "admin" && (
                           <Chip
                             label={`${Array.isArray(formData?.editedFields)
                               ? formData.editedFields.length +
@@ -1751,7 +1826,7 @@ const handleSave = async (e) => {
                             color="warning"
                             variant="outlined"
                           />
-                        )}
+                        )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -1922,7 +1997,7 @@ const handleSave = async (e) => {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    Unsaved Changes
+                                    {formData.publishStatus === "published" ? "" : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -1976,9 +2051,9 @@ const handleSave = async (e) => {
                   </Box>
                 </Box>
               )}
-            
 
-            <Paper  sx={{ width: "100%" , bgcolor:"#fff",borderRadius:0.8, border:'1px solid' , borderColor:'divider' }}> 
+
+            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider' }}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -2043,7 +2118,7 @@ const handleSave = async (e) => {
                 </DialogActions>
               </Dialog>
               <Box sx={{ p: 0 }}>
-                <Typography variant="h6"  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
+                <Typography fontSize={'1rem'} fontWeight={500}  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
                   Senator's Information
                 </Typography>
                 <Grid
@@ -2053,7 +2128,7 @@ const handleSave = async (e) => {
                   alignItems={"center"}
                   // mt={2}
                   py={3}
-                  // flexDirection={isMobile ? "column" : "row"}
+                // flexDirection={isMobile ? "column" : "row"}
                 >
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
@@ -2099,6 +2174,7 @@ const handleSave = async (e) => {
                       aria-label="Basic button group"
                       sx={{
                         "& .MuiButton-outlined": {
+                          height: "36px",
                           borderColor: "#4CAF50",
                           color: "#4CAF50",
                           "&:hover": {
@@ -2291,21 +2367,21 @@ const handleSave = async (e) => {
                 }}
               >
                 <Box sx={{ padding: 0 }}>
-                  
+
                   <Box
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
                       // marginBottom: 3,
-                      borderBottom:'1px solid', borderColor:'divider',
-                       p:1.5,px:3
+                      borderBottom: '1px solid', borderColor: 'divider',
+                      p: 1.5, px: 3
                     }}
                   >
-                    <Typography variant="h6"  >
+                    <Typography fontSize={'1rem'} fontWeight={500}  >
                       Senator's Term Information {termIndex + 1}
                     </Typography>
-                    
+
                     {termIndex > 0 && (
                       <Button
                         variant="outlined"
@@ -2355,8 +2431,8 @@ const handleSave = async (e) => {
                           <MenuItem value="" disabled>
                             Select an option
                           </MenuItem>
-                          {terms && terms.length > 0 ? (
-                            terms.map((t) => (
+                          {getAvailableTerms(termIndex).length > 0 ? (
+                            getAvailableTerms(termIndex).sort((a, b) => b.endYear - a.endYear).map((t) => (
                               <MenuItem key={t._id} value={t._id}>
                                 {t.name}
                               </MenuItem>
@@ -2430,58 +2506,58 @@ const handleSave = async (e) => {
                     </Grid>
                     {/*term repeater start*/}
                     <Grid size={isMobile ? 12 : 2}>
-  <InputLabel
-    sx={{
-      display: "flex",
-      justifyContent: isMobile ? "flex-start" : "flex-end",
-      fontWeight: 500,
-      my: 0,
-    }}
-  >
-    Term Summary
-  </InputLabel>
-</Grid>
- 
-{/* Editor Column */}
-<Grid size={isMobile ? 12 : 9.05}>
-<Editor
-  tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-  licenseKey="gpl"
-  onInit={(_evt, editor) => (editorRef.current = editor)}
-  value={term?.summary || ""}
-  onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
-  init={{
-    base_url: "/scorecard/admin/tinymce",
-    height: 250,
-    menubar: false,
-    plugins: [
-      "advlist",
-      "autolink",
-      "lists",
-      "link",
-      "image",
-      "charmap",
-      "preview",
-      "anchor",
-      "searchreplace",
-      "visualblocks",
-      "code",
-      "fullscreen",
-      "insertdatetime",
-      "media",
-      "table",
-      "code",
-      "help",
-      "wordcount",
-    ],
-    toolbar:
-      "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-    content_style:
-      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-    directionality: "ltr",
-  }}
-/>
-</Grid>
+                      <InputLabel
+                        sx={{
+                          display: "flex",
+                          justifyContent: isMobile ? "flex-start" : "flex-end",
+                          fontWeight: 500,
+                          my: 0,
+                        }}
+                      >
+                        Term Summary
+                      </InputLabel>
+                    </Grid>
+
+                    {/* Editor Column */}
+                    <Grid size={isMobile ? 12 : 9.05}>
+                      <Editor
+                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
+                        onInit={(_evt, editor) => (editorRef.current = editor)}
+                        value={term?.summary || ""}
+                        onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
+                        init={{
+                          base_url: "/scorecard/admin/tinymce",
+                          height: 250,
+                          menubar: false,
+                          plugins: [
+                            "advlist",
+                            "autolink",
+                            "lists",
+                            "link",
+                            "image",
+                            "charmap",
+                            "preview",
+                            "anchor",
+                            "searchreplace",
+                            "visualblocks",
+                            "code",
+                            "fullscreen",
+                            "insertdatetime",
+                            "media",
+                            "table",
+                            "code",
+                            "help",
+                            "wordcount",
+                          ],
+                          toolbar:
+                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+                          content_style:
+                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
+                          directionality: "ltr",
+                        }}
+                      />
+                    </Grid>
                     {/* {term?.summaries?.map((summary, summaryIndex) => (
                       <>
                         
@@ -2787,7 +2863,7 @@ const handleSave = async (e) => {
                                                 }}
                                               >
                                                 {voteItem.title}
-                                              
+
                                               </Typography>
                                             </MenuItem>
                                           );
@@ -2837,7 +2913,7 @@ const handleSave = async (e) => {
                         ))}
                       </>
                     ) : (
-                      // 🔹 Agar termId nahi hai, to ek blank vote dikhao
+                     
                       <Grid rowSpacing={2} sx={{ width: "100%" }}>
                         <Grid
                           size={12}
@@ -3077,7 +3153,7 @@ const handleSave = async (e) => {
                         ))}
                       </>
                     ) : (
-                      // Agar termId nahi h to ek blank activity dikhao
+                      
                       <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
                         <Grid
                           size={12}
@@ -3188,23 +3264,31 @@ const handleSave = async (e) => {
                 severity={snackbarSeverity}
                 sx={{
                   width: "100%",
+                  border: "none",
+                  boxShadow:"none",
                   bgcolor:
-                    snackbarMessage === "Changes Published successfully!"
+                    snackbarMessage === "Changes published successfully!"
                       ? "#daf4f0"
                       : undefined,
                   "& .MuiAlert-icon": {
                     color:
-                      snackbarMessage === "Changes Published successfully!"
+                      snackbarMessage === "Changes published successfully!"
                         ? "#099885"
                         : undefined,
                   },
                   "& .MuiAlert-message": {
                     color:
-                      snackbarMessage === "Changes Published successfully!"
+                      snackbarMessage === "Changes published successfully!"
                         ? "#099885"
                         : undefined,
 
                   },
+                  "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",   
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
                 }}
                 elevation={6}
                 variant="filled"

@@ -167,29 +167,143 @@ export default function Addrepresentative(props) {
   //   );
   // };
 
-  const handleTermChange = (e, termIndex) => {
-    const { name, value } = e.target;
-    const fieldName = `term${termIndex}_${e.target.name}`;
+  // const handleTermChange = (e, termIndex) => {
+  //   const { name, value } = e.target;
+  //   const fieldName = `term${termIndex}_${e.target.name}`;
 
-    setHouseTermData((prev) => {
-      const newTerms = prev.map((term, index) =>
-        index === termIndex ? { ...term, [name]: value } : term
-      );
+  //   setHouseTermData((prev) => {
+  //     const newTerms = prev.map((term, index) =>
+  //       index === termIndex ? { ...term, [name]: value } : term
+  //     );
 
-      // Compare with original data
-      const originalTerm = originalTermData[termIndex] || {};
-      const isActualChange = compareValues(value, originalTerm[name]);
+  //     // Compare with original data
+  //     const originalTerm = originalTermData[termIndex] || {};
+  //     const isActualChange = compareValues(value, originalTerm[name]);
 
-      if (isActualChange && !localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => [...prev, fieldName]);
-      } else if (!isActualChange && localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+  //     if (isActualChange && !localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => [...prev, fieldName]);
+  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+  //     }
+
+  //     return newTerms;
+  //   });
+
+  // };
+ const handleTermChange = (e, termIndex) => {
+  const { name, value } = e.target;
+  const fieldName = `term${termIndex}_${name}`;
+
+  setHouseTermData((prev) => {
+    const newTerms = prev.map((term, index) => {
+      if (index !== termIndex) return term;
+      
+      // If term is changing, check if we have existing data for this term
+      if (name === "termId" && value !== term.termId) {
+        const newTermId = value;
+        const selectedTerm = terms.find(t => t._id === newTermId);
+        const termCongresses = selectedTerm?.congresses || [];
+        
+        // Convert congress numbers to strings for comparison
+        const termCongressStrings = termCongresses.map(c => c.toString());
+        
+        // Check if we have existing data for this term in houseData
+        const existingTermData = houseData?.currentHouse?.find(
+          ht => ht.termId && 
+          (ht.termId._id === newTermId || ht.termId === newTermId || 
+           (typeof ht.termId === 'object' && ht.termId.name === selectedTerm?.name))
+        );
+        
+        console.log("Existing term data:", existingTermData);
+        
+        let votesScore = [];
+        let activitiesScore = [];
+        let summary = ""; // Initialize as empty
+        let rating = ""; // Initialize as empty
+        let currentTerm = false; // Initialize as false
+        
+        // If we have existing data for this term, use it
+        if (existingTermData) {
+          // Map votes from existing data
+          votesScore = existingTermData.votesScore?.map(vote => ({
+            voteId: vote.voteId?._id || vote.voteId || "",
+            score: vote.score || ""
+          })) || [];
+          
+          // Map activities from existing data
+          activitiesScore = existingTermData.activitiesScore?.map(activity => ({
+            activityId: activity.activityId?._id || activity.activityId || "",
+            score: activity.score || ""
+          })) || [];
+          
+          // Only use existing values if they exist
+          summary = existingTermData.summary || "";
+          rating = existingTermData.rating || "";
+          currentTerm = existingTermData.currentTerm !== undefined ? existingTermData.currentTerm : false;
+        } else {
+          // Filter votes to keep only those that belong to the new term's congresses
+          votesScore = term.votesScore.filter(vote => {
+            if (!vote.voteId || vote.voteId === "") return true; // keep placeholder
+            
+            const voteItem = votes.find(v => v._id === vote.voteId);
+            if (!voteItem) return false;
+            
+            return termCongressStrings.includes(voteItem.congress);
+          });
+          
+          // Filter activities to keep only those that belong to the new term's congresses
+          activitiesScore = term.activitiesScore.filter(activity => {
+            if (!activity.activityId || activity.activityId === "") return true; // keep placeholder
+            
+            const activityItem = houseActivities.find(a => a._id === activity.activityId);
+            if (!activityItem) return false;
+            
+            return termCongressStrings.includes(activityItem.congress);
+          });
+          
+          // Set all fields to empty/false for new terms without existing data
+          summary = "";
+          rating = "";
+          currentTerm = false;
+        }
+        
+        // If no votes remain after filtering, add an empty vote
+        const finalVotesScore = votesScore.length > 0 
+          ? votesScore 
+          : [{ voteId: "", score: "" }];
+        
+        // If no activities remain after filtering, add an empty activity
+        const finalActivitiesScore = activitiesScore.length > 0 
+          ? activitiesScore 
+          : [{ activityId: "", score: "" }];
+        
+        return { 
+          ...term, 
+          [name]: value,
+          votesScore: finalVotesScore,
+          activitiesScore: finalActivitiesScore,
+          summary, // Will be empty if no existing data
+          rating,  // Will be empty if no existing data
+          currentTerm // Will be false if no existing data
+        };
       }
-
-      return newTerms;
+      
+      return { ...term, [name]: value };
     });
 
-  };
+    // Compare with original data
+    const originalTerm = originalTermData[termIndex] || {};
+    const isActualChange = compareValues(value, originalTerm[name]);
+
+    if (isActualChange && !localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => [...prev, fieldName]);
+    } else if (!isActualChange && localChanges.includes(fieldName)) {
+      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+    }
+
+    return newTerms;
+  });
+};
   // const handleSwitchChange = (e, termIndex) => {
   //   const fieldName = `term${termIndex}_${e.target.name}`;
   //   if (!localChanges.includes(fieldName)) {
@@ -230,7 +344,43 @@ export default function Addrepresentative(props) {
   };
 
 
+  // const handleSwitchChange = (e, termIndex) => {
+  //   const { name, checked } = e.target;
+  //   const fieldName = `term${termIndex}_${name}`;
 
+  //   setHouseTermData((prev) => {
+  //     let newTerms;
+
+  //     // If setting currentTerm to true, ensure only one term is current
+  //     if (name === "currentTerm" && checked) {
+  //       newTerms = prev.map((term, index) => ({
+  //         ...term,
+  //         currentTerm: index === termIndex
+  //       }));
+  //     } else {
+  //       newTerms = prev.map((term, index) =>
+  //         index === termIndex ? { ...term, [name]: checked } : term
+  //       );
+  //     }
+
+  //     // Compare with original data
+  //     const originalTerm = originalTermData[termIndex] || {};
+  //     const isActualChange = compareValues(
+  //       name === "currentTerm" && checked 
+  //         ? true // For currentTerm, we need to check if this specific term should be current
+  //         : checked, 
+  //       originalTerm[name]
+  //     );
+
+  //     if (isActualChange && !localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => [...prev, fieldName]);
+  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+  //     }
+
+  //     return newTerms;
+  //   });
+  // };
   const handleAddVote = (termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
@@ -244,19 +394,41 @@ export default function Addrepresentative(props) {
     );
   };
 
-  const handleRemoveVote = (termIndex, voteIndex) => {
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+  // const handleRemoveVote = (termIndex, voteIndex) => {
+    
+  //   setHouseTermData((prev) =>
+  //     prev.map((term, index) =>
+  //       index === termIndex
+  //         ? {
+  //           ...term,
+  //           votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+  //         }
+  //         : term
+  //     )
+  //   );
+  // };
+const handleRemoveVote = (termIndex, voteIndex) => {
+  setHouseTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
             votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
           }
-          : term
+        : term
+    );
+
+    // Clean up tracked changes for this vote
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_ScoredVote_${voteIndex + 1}`)
       )
     );
-  };
 
+    return updatedTerms;
+  });
+};
   // const handleVoteChange = (termIndex, voteIndex, field, value) => {
   //   // Construct the field name for change tracking
   //   // Construct the field name for change tracking
@@ -333,20 +505,29 @@ export default function Addrepresentative(props) {
     );
   };
 
-  const handleRemoveActivity = (termIndex, activityIndex) => {
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
+ 
+const handleRemoveActivity = (termIndex, activityIndex) => {
+  setHouseTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
             ...term,
-            activitiesScore: term.activitiesScore.filter(
-              (_, i) => i !== activityIndex
-            ),
+            activitiesScore: term.activitiesScore.filter((_, i) => i !== activityIndex),
           }
-          : term
+        : term
+    );
+
+    // Clean up tracked changes for this activity
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_TrackedActivity_${activityIndex + 1}`)
       )
     );
-  };
+
+    return updatedTerms;
+  });
+};
 
   // const handleActivityChange = (termIndex, activityIndex, field, value) => {
   //   // Construct the field name for change tracking
@@ -824,6 +1005,13 @@ export default function Addrepresentative(props) {
         handleSnackbarOpen("Duplicate term selected. Each term can only be added once.", "error");
         return;
       }
+      const currentTerms = houseTermData.filter(term => term.currentTerm);
+      if (currentTerms.length > 1) {
+        setLoading(false);
+        handleSnackbarOpen("Only one term can be marked as current term.", "error");
+        return;
+      }
+    
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -997,7 +1185,31 @@ export default function Addrepresentative(props) {
       setLoading(false);
     }
   };
+  // Helper function to get filtered votes based on selected term
+  const getFilteredVotes = (termIndex) => {
+    const term = houseTermData[termIndex];
+    if (!term || !term.termId) return votes || [];
 
+    const selectedTerm = terms.find(t => t._id === term.termId);
+    if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+
+    return (votes || []).filter(vote =>
+      vote.type === "house_bill" &&
+      selectedTerm.congresses.includes(Number(vote.congress))
+    );
+  };
+  // Helper function to get filtered activities based on selected term
+  const getFilteredActivities = (termIndex) => {
+    const term = houseTermData[termIndex];
+    if (!term || !term.termId) return houseActivities || [];
+
+    const selectedTerm = terms.find(t => t._id === term.termId);
+    if (!selectedTerm || !selectedTerm.congresses) return houseActivities || [];
+
+    return (houseActivities || []).filter(activity =>
+      selectedTerm.congresses.includes(Number(activity.congress))
+    );
+  };
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
@@ -1092,17 +1304,17 @@ export default function Addrepresentative(props) {
         descColor: "#795548",
       },
       published: {
-        backgroundColor: "rgba(76, 175, 80, 0.12)",
-        borderColor: "#4CAF50",
-        iconColor: "#2E7D32",
-        icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-        title: "Published",
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Unsaved Changes",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#2E7D32",
-        descColor: "#388E3C",
+        titleColor: "#5D4037",
+        descColor: "#795548",
       },
       // published: {
       //   backgroundColor: "rgba(76, 175, 80, 0.12)",
@@ -1206,7 +1418,7 @@ export default function Addrepresentative(props) {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2.8 },
-              gap:1
+              gap: 1
             }}
           >
             <Stack
@@ -1249,13 +1461,13 @@ export default function Addrepresentative(props) {
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
             </Stack>
-             {userRole &&
+            {userRole &&
               formData.publishStatus &&
               statusData &&
               (formData.publishStatus !== "published" || localChanges.length > 0) && (
                 <Box
                   sx={{
-                    width: "98%",
+                    width: "97%",
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -1312,7 +1524,7 @@ export default function Addrepresentative(props) {
                           {statusData.title}
                         </Typography>
 
-                        {userRole === "admin" && (
+                        {/* {userRole === "admin" && (
                           <Chip
                             label={`${Array.isArray(formData?.editedFields)
                               ? formData.editedFields.length
@@ -1322,7 +1534,7 @@ export default function Addrepresentative(props) {
                             color="warning"
                             variant="outlined"
                           />
-                        )}
+                        )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -1491,7 +1703,7 @@ export default function Addrepresentative(props) {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    Unsaved Changes
+                                    {formData.publishStatus === "published" ? "" : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -1551,9 +1763,9 @@ export default function Addrepresentative(props) {
 
 
 
-            
 
-            <Paper  sx={{ width: "100%", bgcolor:"#fff",borderRadius:0.8,border:'1px solid',borderColor:'divider', }} >
+
+            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider', }} >
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1619,7 +1831,7 @@ export default function Addrepresentative(props) {
               </Dialog>
 
               <Box sx={{ p: 0 }}>
-                <Typography variant="h6"  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+                <Typography fontSize={'1rem'} fontWeight={500}  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
                   Representative's Information
                 </Typography>
                 <Grid
@@ -1629,6 +1841,8 @@ export default function Addrepresentative(props) {
                   alignItems={"center"}
                   py={3}
                   px={9}
+                  py={3}
+                  px={9}
                 >
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel
@@ -1636,6 +1850,7 @@ export default function Addrepresentative(props) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
+                        fontWeight: 500,
                         fontWeight: 500,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1665,6 +1880,7 @@ export default function Addrepresentative(props) {
                         display: "flex",
                         justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 500,
+                        fontWeight: 500,
                         my: 0,
                       }}
                     >
@@ -1677,6 +1893,7 @@ export default function Addrepresentative(props) {
                       aria-label="Basic button group"
                       sx={{
                         "& .MuiButton-outlined": {
+                          height:"36px",
                           borderColor: "#4CAF50",
                           color: "#4CAF50",
                           "&:hover": {
@@ -1792,7 +2009,7 @@ export default function Addrepresentative(props) {
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                       justifyContent: isMobile ? "flex-start" : "flex-end",
+                        justifyContent: isMobile ? "flex-start" : "flex-end",
                         fontWeight: 500,
                         my: 0,
                         whiteSpace: "normal", // allow wrapping
@@ -1877,11 +2094,11 @@ export default function Addrepresentative(props) {
                       justifyContent: "space-between",
                       alignItems: "center",
                       // marginBottom: 3,
-                       borderBottom:'1px solid', borderColor:'divider',
-                       p:1.5,px:3
+                      borderBottom: '1px solid', borderColor: 'divider',
+                      p: 1.5, px: 3
                     }}
                   >
-                    <Typography variant="h6" >
+                    <Typography fontSize={'1rem'} fontWeight={500} >
                       Representative's Term Information {termIndex + 1}
                     </Typography>
                     {termIndex > 0 && (
@@ -1936,16 +2153,16 @@ export default function Addrepresentative(props) {
                                 t.endYear % 2 === 0 && // must be even
                                 t.startYear >= 2015 && // no terms before 1789
                                 t.endYear >= 2015)     // must be even
-                                  .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
-                                  // Hide terms already selected in other term sections
-                                  .filter((t) => !houseTermData.some((ht, idx) => idx !== termIndex && ht.termId === t._id))
-                                  .sort((a, b) => a.congresses[0] - b.congresses[0])
-                                  .map((t) => (
-                                    <MenuItem key={t._id} value={t._id}>
-                                      {`${t.congresses[0]}th Congress`}
-                                    </MenuItem>
-                                  ))
-                              ) : (
+                              .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                              // Hide terms already selected in other term sections
+                              .filter((t) => !houseTermData.some((ht, idx) => idx !== termIndex && ht.termId === t._id))
+                              .sort((a, b) => a.congresses[0] - b.congresses[0])
+                              .map((t) => (
+                                <MenuItem key={t._id} value={t._id}>
+                                  {`${t.congresses[0]}th Congress`}
+                                </MenuItem>
+                              ))
+                          ) : (
                             <MenuItem value="" disabled>
                               No terms available
                             </MenuItem>
@@ -2160,9 +2377,10 @@ export default function Addrepresentative(props) {
                                     width: "100%",
                                   }}
                                   renderValue={(selected) => {
-                                    const selectedVote = votes.find(
+                                    const selectedVote = getFilteredVotes(termIndex).find(
                                       (v) => v._id === selected
                                     );
+                                    console.log(selectedVote);
                                     return (
                                       <Typography
                                         sx={{
@@ -2171,7 +2389,9 @@ export default function Addrepresentative(props) {
                                           textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {selectedVote?.title || "Select a Bill"}
+                                        {selectedVote?.title
+                                          // || "Select a Bill"
+                                        }
                                       </Typography>
                                     );
                                   }}
@@ -2190,8 +2410,8 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="" disabled>
                                     Select a Bill
                                   </MenuItem>
-                                  {votes && votes.length > 0 ? (
-                                    votes.filter((vote) => vote.type === "house_bill").map((voteItem) => (
+                                  {getFilteredVotes(termIndex).length > 0 ? (
+                                    getFilteredVotes(termIndex).map((voteItem) => (
                                       <MenuItem
                                         key={voteItem._id}
                                         value={voteItem._id}
@@ -2209,9 +2429,10 @@ export default function Addrepresentative(props) {
                                     ))
                                   ) : (
                                     <MenuItem value="" disabled>
-                                      No bills available
+                                      {term.termId ? "No bills available for this congress" : "Select a term first"}
                                     </MenuItem>
                                   )}
+
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -2273,134 +2494,134 @@ export default function Addrepresentative(props) {
                     {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) => (
                       activity.activityId != null ? (
-                      <Grid
-                        rowSpacing={2}
-                        sx={{ width: "100%", mt: 2 }}
-                        key={activityIndex}
-                      >
                         <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
+                          rowSpacing={2}
+                          sx={{ width: "100%", mt: 2 }}
+                          key={activityIndex}
                         >
-                          <Grid size={isMobile?12:2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile ? "flex-start" : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
-                            >
-                              Tracked Activity
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile?8:7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={activity.activityId || ""}
-                                onChange={(event) =>
-                                  handleActivityChange(
-                                    termIndex,
-                                    activityIndex,
-                                    "activityId",
-                                    event.target.value
-                                  )
-                                }
+                          <Grid
+                            size={12}
+                            display="flex"
+                            alignItems="center"
+                            columnGap={"15px"}
+                          >
+                            <Grid size={isMobile ? 12 : 2}>
+                              <InputLabel
                                 sx={{
-                                  background: "#fff",
-                                  width: "100%",
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedActivity = houseActivities.find(
-                                    (a) => a._id === selected
-                                  );
-                                  return (
-                                    <Typography
-                                      sx={{
-                                        overflow: "hidden",
-                                        whiteSpace: "nowrap",
-                                        textOverflow: "ellipsis",
-                                      }}
-                                    >
-                                      {selectedActivity?.title ||
-                                        "Select an Activity"}
-                                    </Typography>
-                                  );
-                                }}
-                                MenuProps={{
-                                  PaperProps: {
-                                    sx: {
-                                      maxHeight: 300,
-                                      width: 400,
-                                      "& .MuiMenuItem-root": {
-                                        minHeight: "48px",
-                                      },
-                                    },
-                                  },
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: isMobile ? "flex-start" : "flex-end",
+                                  fontWeight: 500,
+                                  my: 0,
                                 }}
                               >
-                                <MenuItem value="" disabled>
-                                  Select an Activity
-                                </MenuItem>
-                                {houseActivities &&
-                                houseActivities.length > 0 ? (
-                                  houseActivities.map((activityItem) => (
-                                    <MenuItem
-                                      key={activityItem._id}
-                                      value={activityItem._id}
-                                      sx={{ py: 1.5 }}
-                                    >
+                                Tracked Activity
+                              </InputLabel>
+                            </Grid>
+                            <Grid size={isMobile ? 8 : 7.5}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={activity.activityId || ""}
+                                  onChange={(event) =>
+                                    handleActivityChange(
+                                      termIndex,
+                                      activityIndex,
+                                      "activityId",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{
+                                    background: "#fff",
+                                    width: "100%",
+                                  }}
+                                  renderValue={(selected) => {
+                                    const selectedActivity = getFilteredActivities(termIndex).find(
+                                      (a) => a._id === selected
+                                    );
+                                    return (
                                       <Typography
                                         sx={{
-                                          whiteSpace: "normal",
-                                          overflowWrap: "break-word",
+                                          overflow: "hidden",
+                                          whiteSpace: "nowrap",
+                                          textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {activityItem.title}
+                                        {selectedActivity?.title
+                                          //  ||"Select an Activity"
+                                        }
                                       </Typography>
-                                    </MenuItem>
-                                  ))
-                                ) : (
+                                    );
+                                  }}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 300,
+                                        width: 400,
+                                        "& .MuiMenuItem-root": {
+                                          minHeight: "48px",
+                                        },
+                                      },
+                                    },
+                                  }}
+                                >
                                   <MenuItem value="" disabled>
-                                    No activities available
+                                    Select an Activity
                                   </MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={isMobile?6:1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value={activity?.score || ""}
-                                onChange={(event) =>
-                                  handleActivityChange(
-                                    termIndex,
-                                    activityIndex,
-                                    "score",
-                                    event.target.value
-                                  )
+                                  {getFilteredActivities(termIndex).length > 0 ? (
+                                    getFilteredActivities(termIndex).map((activityItem) => (
+                                      <MenuItem
+                                        key={activityItem._id}
+                                        value={activityItem._id}
+                                        sx={{ py: 1.5 }}
+                                      >
+                                        <Typography
+                                          sx={{
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                          }}
+                                        >
+                                          {activityItem.title}
+                                        </Typography>
+                                      </MenuItem>
+                                    ))
+                                  ) : (
+                                    <MenuItem value="" disabled>
+                                      {term.termId ? "No activities available for this congress" : "Select a term first"}
+                                    </MenuItem>
+                                  )}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={isMobile ? 6 : 1.6}>
+                              <FormControl fullWidth>
+                                <Select
+                                  value={activity?.score || ""}
+                                  onChange={(event) =>
+                                    handleActivityChange(
+                                      termIndex,
+                                      activityIndex,
+                                      "score",
+                                      event.target.value
+                                    )
+                                  }
+                                  sx={{ background: "#fff" }}
+                                >
+                                  <MenuItem value="yes">Yea</MenuItem>
+                                  <MenuItem value="no">Nay</MenuItem>
+                                  <MenuItem value="other">Other</MenuItem>
+                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid size={1}>
+                              <DeleteForeverIcon
+                                onClick={() =>
+                                  handleRemoveActivity(termIndex, activityIndex)
                                 }
-                                sx={{ background: "#fff" }}
-                              >
-                                <MenuItem value="yes">Yea</MenuItem>
-                                <MenuItem value="no">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                                {/* <MenuItem value="None">None</MenuItem> */}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveActivity(termIndex, activityIndex)
-                              }
-                            />
+                              />
+                            </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
                       ) : null
                     ))}
                     {/* Activities Repeater Ends */}
@@ -2477,6 +2698,12 @@ export default function Addrepresentative(props) {
                         : undefined,
 
                   },
+                  "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
                 }}
                 elevation={6}
                 variant="filled"

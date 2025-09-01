@@ -552,6 +552,8 @@ const statusOptions = ["published", "draft", "under review"];
             severity={snackbarSeverity}
             sx={{
               width: "100%",
+              border:"none",
+              boxShadow:"none",
               // ✅ Background conditions
               bgcolor:
                 snackbarMessage === `This activity has been successfully deleted.`
@@ -574,6 +576,12 @@ const statusOptions = ["published", "draft", "under review"];
 
                     : undefined,
               },
+              "& .MuiAlert-action": {
+      display: "flex",
+      alignItems: "center",  
+      paddingTop: 0,          
+      paddingBottom: 0,
+    },
             }}
           >
             {snackbarMessage}
