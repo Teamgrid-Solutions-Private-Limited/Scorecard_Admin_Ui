@@ -301,9 +301,14 @@ export default function AddActivity(props) {
       const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
         ? selectedActivity.editedFields
         : [];
-      const mergedEditedFields = Array.from(
-        new Set([...backendEditedFields, ...editedFields])
-      );
+      
+      // Check if there are any actual changes
+      const hasActualChanges = editedFields.length > 0;
+      
+      const mergedEditedFields = hasActualChanges 
+        ? Array.from(new Set([...backendEditedFields, ...editedFields]))
+        : backendEditedFields; // Keep only backend changes if no new changes
+      
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -311,11 +316,13 @@ export default function AddActivity(props) {
         editedAt: new Date(),
       };
 
-      // Create updated fieldEditors map
+      // Create updated fieldEditors map only if there are changes
       const updatedFieldEditors = { ...(selectedActivity?.fieldEditors || {}) };
-      editedFields.forEach((field) => {
-        updatedFieldEditors[field] = currentEditor;
-      });
+      if (hasActualChanges) {
+        editedFields.forEach((field) => {
+          updatedFieldEditors[field] = currentEditor;
+        });
+      }
 
       // Add editedFields and fieldEditors to FormData
       formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
@@ -324,11 +331,17 @@ export default function AddActivity(props) {
         JSON.stringify(updatedFieldEditors)
       );
 
-      // Add status ONLY ONCE
-      const finalStatus = userRole === "admin" ? "published" : "under review";
+      // Determine the final status - only change if there are actual changes
+      let finalStatus;
+      if (userRole === "admin") {
+        finalStatus = "published";
+      } else {
+        // For editors, only change to "under review" if there are actual changes
+        // Otherwise, maintain the current status
+        finalStatus = hasActualChanges ? "under review" : (formData.status || "draft");
+      }
+      
       formDataToSend.append("status", finalStatus);
-
-     
 
       if (id) {
         await dispatch(
@@ -336,22 +349,28 @@ export default function AddActivity(props) {
         ).unwrap();
         await dispatch(getActivityById(id)).unwrap();
 
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
-        );
+        // Update success message based on whether changes were made
+        if (hasActualChanges) {
+          setSnackbarMessage(
+            userRole === "admin"
+              ? "Changes published successfully!"
+              : 'Status changed to "Under Review" for admin to moderate.'
+          );
+        } else {
+          setSnackbarMessage("No changes to save.");
+        }
         setSnackbarSeverity("success");
 
-        if (userRole !== "admin") {
-          setFormData((prev) => ({ ...prev, status: "under review" }));
-          // setOriginalFormData({ ...formData, status: "under review" }); // Keep tracking changes
-        } else {
-          // Only clear locally if status is published
-          if (finalStatus === "published") {
-            setEditedFields([]);
-            // Update originalFormData to current form data to stop tracking changes
-            setOriginalFormData({ ...formData, status: "published" });
+        // Update local state only if there were changes
+        if (hasActualChanges) {
+          if (userRole !== "admin") {
+            setFormData((prev) => ({ ...prev, status: "under review" }));
+          } else {
+            // Only clear locally if status is published and there were changes
+            if (finalStatus === "published") {
+              setEditedFields([]);
+              setOriginalFormData({ ...formData, status: "published" });
+            }
           }
         }
       } else {
@@ -368,9 +387,8 @@ export default function AddActivity(props) {
         setSnackbarSeverity("success");
 
         // Reset editedFields after successful creation
-        setHasLocalChanges(false); // Reset after save
+        setHasLocalChanges(false);
         setEditedFields([]);
-        // Update originalFormData to current form data
         setOriginalFormData({ ...formData, status: finalStatus });
       }
 

@@ -266,7 +266,7 @@ export default function AddBill(props) {
     }
   };
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     if (!formData.termId) {
       setSnackbarMessage("Term is required!");
       setSnackbarSeverity("error");
@@ -298,9 +298,13 @@ export default function AddBill(props) {
       const filteredEditedFields = editedFields.filter(
         (field) => field !== "status"
       );
-      const mergedEditedFields = Array.from(
-        new Set([...backendEditedFields, ...filteredEditedFields])
-      );
+      
+      // Check if there are any actual changes (excluding status field)
+      const hasActualChanges = filteredEditedFields.length > 0;
+      
+      const mergedEditedFields = hasActualChanges 
+        ? Array.from(new Set([...backendEditedFields, ...filteredEditedFields]))
+        : backendEditedFields; // Keep only backend changes if no new changes
 
       const decodedToken = jwtDecode(token);
       const currentEditor = {
@@ -309,11 +313,13 @@ export default function AddBill(props) {
         editedAt: new Date(),
       };
 
-      // Create updated fieldEditors map
+      // Create updated fieldEditors map only if there are changes
       const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
-      filteredEditedFields.forEach((field) => {
-        updatedFieldEditors[field] = currentEditor;
-      });
+      if (hasActualChanges) {
+        filteredEditedFields.forEach((field) => {
+          updatedFieldEditors[field] = currentEditor;
+        });
+      }
 
       // Add editedFields and fieldEditors to FormData
       formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
@@ -322,8 +328,16 @@ export default function AddBill(props) {
         JSON.stringify(updatedFieldEditors)
       );
 
-      // Add status ONLY ONCE
-      const finalStatus = userRole === "admin" ? "published" : "under review";
+      // Determine the final status - only change if there are actual changes
+      let finalStatus;
+      if (userRole === "admin") {
+        finalStatus = "published";
+      } else {
+        // For editors, only change to "under review" if there are actual changes
+        // Otherwise, maintain the current status
+        finalStatus = hasActualChanges ? "under review" : (formData.status || "draft");
+      }
+      
       formDataToSend.append("status", finalStatus);
 
       if (id) {
@@ -333,21 +347,28 @@ export default function AddBill(props) {
         // After admin publishes, reload vote to get cleared editedFields
         await dispatch(getVoteById(id)).unwrap();
 
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
-        );
+        // Update success message based on whether changes were made
+        if (hasActualChanges) {
+          setSnackbarMessage(
+            userRole === "admin"
+              ? "Changes published successfully!"
+              : 'Status changed to "Under Review" for admin to moderate.'
+          );
+        } else {
+          setSnackbarMessage("No changes to save.");
+        }
         setSnackbarSeverity("success");
 
         if (userRole !== "admin") {
-          setFormData((prev) => ({ ...prev, status: "under review" }));
-          // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
-          // Remove status from editedFields after update
-          setEditedFields((prev) => prev.filter((field) => field !== "status"));
+          // Only update status locally if there were actual changes
+          if (hasActualChanges) {
+            setFormData((prev) => ({ ...prev, status: "under review" }));
+            // Remove status from editedFields after update
+            setEditedFields((prev) => prev.filter((field) => field !== "status"));
+          }
         } else {
-          // Only clear locally if status is published
-          if (finalStatus === "published") {
+          // Only clear locally if status is published and there were changes
+          if (finalStatus === "published" && hasActualChanges) {
             setEditedFields([]);
           }
         }

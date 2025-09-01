@@ -804,7 +804,7 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-  const handleSave = async (e) => {
+ const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -857,50 +857,61 @@ export default function Addrepresentative(props) {
         return change;
       });
 
-      const allChanges = [
-        ...new Set([
-          ...(Array.isArray(formData.editedFields)
-            ? formData.editedFields
-            : []),
-          ...detailedChanges,
-        ]),
-      ];
+      // Check if there are any actual changes
+      const hasActualChanges = detailedChanges.length > 0 || localChanges.length > 0;
+      
+      const allChanges = hasActualChanges
+        ? [
+            ...new Set([
+              ...(Array.isArray(formData.editedFields)
+                ? formData.editedFields
+                : []),
+              ...detailedChanges,
+            ]),
+          ]
+        : (Array.isArray(formData.editedFields) ? formData.editedFields : []);
 
-      // const allChanges = [
-      //   ...new Set([
-      //     ...(Array.isArray(formData.editedFields)
-      //       ? formData.editedFields
-      //       : []),
-      //     ...localChanges,
-      //   ]),
-      // ];
-
-      // Update field editors with current changes
-      // Update field editors with current changes
+      // Update field editors with current changes only if there are actual changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      localChanges.forEach((field) => {
-        // For senator-level fields
-        if (field in formData) {
-          if (compareValues(formData[field], originalFormData?.[field] || '')) {
+      if (hasActualChanges) {
+        localChanges.forEach((field) => {
+          // For senator-level fields
+          if (field in formData) {
+            if (compareValues(formData[field], originalFormData?.[field] || '')) {
+              updatedFieldEditors[field] = currentEditor;
+            }
+          }
+          // For term-level fields
+          else if (field.startsWith('term')) {
             updatedFieldEditors[field] = currentEditor;
           }
-        }
-        // For term-level fields
-        else if (field.startsWith('term')) {
-          updatedFieldEditors[field] = currentEditor;
-        }
-      });
+        });
+      }
+
+      // Determine the final status - only change if there are actual changes
+      let finalStatus;
+      if (userRole === "admin") {
+        finalStatus = "published";
+      } else {
+        // For editors, only change to "under review" if there are actual changes
+        // Otherwise, maintain the current status
+        finalStatus = hasActualChanges ? "under review" : (formData.publishStatus || "draft");
+      }
+       // Check if this is a transition TO published status
+    const isTransitioningToPublished = 
+      finalStatus === "published" && 
+      formData.publishStatus !== "published";
 
       // Prepare representative update
       const representativeUpdate = {
         ...formData,
         editedFields: allChanges,
         fieldEditors: updatedFieldEditors,
-        publishStatus: userRole === "admin" ? "published" : "under review",
+        publishStatus: finalStatus,
       };
 
-      // Clear editedFields if publishing
-      if (representativeUpdate.publishStatus === "published") {
+      // Clear editedFields only if publishing AND there were actual changes
+      if (representativeUpdate.publishStatus === "published" && hasActualChanges) {
         representativeUpdate.editedFields = [];
         representativeUpdate.fieldEditors = {};
       }
@@ -936,7 +947,6 @@ export default function Addrepresentative(props) {
           activityId: activity.activityId === "" ? null : activity.activityId
         })).filter(activity => activity.activityId !== null);
 
-
         // Get changes specific to this term
         const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
 
@@ -964,22 +974,22 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseById(id)).unwrap();
 
       // Update originals to match latest backend data
-      // if (houseData?.currentHouse) {
-      //   setOriginalTermData(JSON.parse(JSON.stringify(houseData.currentHouse)));
-      // }
-      // if (house) {
-      //   setOriginalFormData(JSON.parse(JSON.stringify(house)));
-      // }
       setOriginalFormData(JSON.parse(JSON.stringify(formData)));
       setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
 
       setLocalChanges([]);
-      userRole === "admin"
-        ? handleSnackbarOpen("Changes Published successfully!", "success")
-        : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
-          "info"
-        );
+      
+      // Update success message based on whether changes were made
+      if (hasActualChanges) {
+        userRole === "admin"
+          ? handleSnackbarOpen("Changes Published successfully!", "success")
+          : handleSnackbarOpen(
+            'Status changed to "Under Review" for admin to moderate.',
+            "info"
+          );
+      } else {
+        handleSnackbarOpen("No changes to save.", "info");
+      }
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");

@@ -814,79 +814,99 @@ export default function AddSenator(props) {
     return newVal !== oldVal;
   };
 
-  const termPreFill = () => {
-    if (senatorData?.currentSenator?.length > 0) {
-      const termsData = senatorData.currentSenator.map((term) => {
-        const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+ const termPreFill = () => {
+  if (senatorData?.currentSenator?.length > 0) {
+    const termsData = senatorData.currentSenator.map((term) => {
+      const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
 
-        // Helper function to determine the score for a vote
-        const getVoteScore = (voteId) => {
-          // Find the senator's vote for this bill
-          const senatorVote = senatorVotes.find(
-            (v) =>
-              v.voteId === voteId ||
-              v.voteId?._id === voteId ||
+      // Helper function to determine the score for a vote
+      const getVoteScore = (voteId) => {
+        // Find the senator's vote for this bill
+        const senatorVote = senatorVotes.find(
+          (v) =>
+            v.voteId === voteId ||
+            v.voteId?._id === voteId ||
+            (v.billNumber &&
+              participatedVotes.find((pv) => pv._id === voteId)
+                ?.billNumber === v.billNumber)
+        );
+
+        if (!senatorVote) return "";
+
+        // Map the vote to the appropriate score
+        const voteScore = senatorVote.score?.toLowerCase();
+        if (voteScore?.includes("yea")) return "yea";
+        if (voteScore?.includes("nay")) return "nay";
+        if (voteScore?.includes("other")) return "other";
+
+        return "";
+      };
+
+      // Get votes that fall under this specific term AND senator participated in
+      let termVotes = [];
+      if (matchedTerm) {
+        const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+        const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+
+        termVotes = allVotes.filter((vote) => {
+          const voteDate = new Date(vote.date);
+
+          // Must be inside the term range
+          const inTerm =
+            voteDate >= termStart &&
+            voteDate <= termEnd &&
+            matchedTerm.congresses.includes(Number(vote.congress));
+
+          if (!inTerm) return false;
+
+          // Senator must have participated (have a score) for this vote
+          return senatorVotes.some((v) => {
+            if (!v?.score || v.score.trim() === "") return false;
+
+            const vId =
+              typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+
+            return (
+              vId === vote._id ||
+              v.quorumId === vote.quorumId ||
               (v.billNumber &&
-                participatedVotes.find((pv) => pv._id === voteId)
-                  ?.billNumber === v.billNumber)
-          );
+                vote.billNumber &&
+                v.billNumber === vote.billNumber)
+            );
+          });
+        });
+      }
 
-          if (!senatorVote) return "";
+      // FIXED: Only use term-specific participated votes for new/empty votesScore, preserve existing data
+      let votesScore;
 
-          // Map the vote to the appropriate score
-          const voteScore = senatorVote.score?.toLowerCase();
-          if (voteScore?.includes("yea")) return "yea";
-          if (voteScore?.includes("nay")) return "nay";
-          if (voteScore?.includes("other")) return "other";
-
-          return "";
-        };
-
-        // Get votes that fall under this specific term AND senator participated in
-        let termVotes = [];
-        if (matchedTerm) {
-          const termStart = new Date(`${matchedTerm.startYear}-01-01`);
-          const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
-
-          termVotes = allVotes.filter((vote) => {
-            const voteDate = new Date(vote.date);
-
-            // Must be inside the term range
-            const inTerm =
+      // If term has existing votesScore with data, keep it but filter out non-term votes
+      if (
+        Array.isArray(term.votesScore) &&
+        term.votesScore.length > 0 &&
+        term.votesScore.some((vote) => vote.voteId && vote.voteId !== "")
+      ) {
+        // Filter to only include votes that belong to this term
+        votesScore = term.votesScore
+          .filter((vote) => {
+            const voteId = vote.voteId?._id || vote.voteId;
+            if (!voteId) return false;
+            
+            // Find the vote in allVotes to check if it belongs to this term
+            const voteData = allVotes.find(v => v._id === voteId);
+            if (!voteData || !matchedTerm) return false;
+            
+            const voteDate = new Date(voteData.date);
+            const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+            const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+            
+            return (
               voteDate >= termStart &&
               voteDate <= termEnd &&
-              matchedTerm.congresses.includes(Number(vote.congress));
-
-            if (!inTerm) return false;
-
-            // Senator must have participated (have a score) for this vote
-            return senatorVotes.some((v) => {
-              if (!v?.score || v.score.trim() === "") return false;
-
-              const vId =
-                typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-
-              return (
-                vId === vote._id ||
-                v.quorumId === vote.quorumId ||
-                (v.billNumber &&
-                  vote.billNumber &&
-                  v.billNumber === vote.billNumber)
-              );
-            });
-          });
-        }
-
-        // FIXED: Only use term-specific participated votes for new/empty votesScore, preserve existing data
-        let votesScore;
-
-        // If term has existing votesScore with data, keep it
-        if (
-          Array.isArray(term.votesScore) &&
-          term.votesScore.length > 0 &&
-          term.votesScore.some((vote) => vote.voteId && vote.voteId !== "")
-        ) {
-          votesScore = term.votesScore.map((vote) => {
+              matchedTerm.congresses.includes(Number(voteData.congress))
+            );
+          })
+          .map((vote) => {
             let scoreValue = "";
             const dbScore = vote.score?.toLowerCase();
             if (dbScore?.includes("yea")) {
@@ -904,74 +924,93 @@ export default function AddSenator(props) {
               score: scoreValue,
             };
           });
-        }
-        // Only use term-specific participated votes if no existing votesScore data
-        else if (termVotes.length > 0) {
-          votesScore = termVotes.map((vote) => ({
-            voteId: vote._id,
-            score: getVoteScore(vote._id),
-          }));
-        }
-        // Fallback to empty vote
-        else {
-          votesScore = [{ voteId: "", score: "" }];
-        }
+      }
+      // Only use term-specific participated votes if no existing votesScore data
+      else if (termVotes.length > 0) {
+        votesScore = termVotes.map((vote) => ({
+          voteId: vote._id,
+          score: getVoteScore(vote._id),
+        }));
+      }
+      // Fallback to empty vote
+      else {
+        votesScore = [{ voteId: "", score: "" }];
+      }
 
-        // Helper to map an activity id to senator's recorded score (mirror votes logic)
-        // Helper to map an activity id to senator's recorded score
-        const getActivityScore = (activityId) => {
-          const senAct = senatorActivities.find((a) => {
+      // Helper to map an activity id to senator's recorded score
+      const getActivityScore = (activityId) => {
+        const senAct = senatorActivities.find((a) => {
+          const aId =
+            typeof a.activityId === "object"
+              ? a.activityId?._id
+              : a.activityId;
+          return aId === activityId;
+        });
+
+        if (!senAct?.score) return "";
+        const s = String(senAct.score).toLowerCase();
+        if (s.includes("yea") || s === "yes") return "yes";
+        if (s.includes("nay") || s === "no") return "no";
+        if (s.includes("other")) return "other";
+        return senAct.score;
+      };
+
+      // Get activities that fall under this specific term AND senator participated in
+      let termActivities = [];
+      if (matchedTerm) {
+        const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+        const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+
+        termActivities = allActivities.filter((activity) => {
+          const activityDate = new Date(activity.date);
+
+          // Must be inside the term range
+          const inTerm =
+            activityDate >= termStart &&
+            activityDate <= termEnd &&
+            matchedTerm.congresses.includes(Number(activity.congress || 0));
+
+          if (!inTerm) return false;
+
+          // Senator must have participated (have a score) for this activity
+          return senatorActivities.some((a) => {
+            if (!a?.score || a.score.trim() === "") return false;
+
             const aId =
-              typeof a.activityId === "object"
-                ? a.activityId?._id
-                : a.activityId;
-            return aId === activityId;
+              typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+
+            return aId === activity._id;
           });
+        });
+      }
 
-          if (!senAct?.score) return "";
-          const s = String(senAct.score).toLowerCase();
-          if (s.includes("yea") || s === "yes") return "yes";
-          if (s.includes("nay") || s === "no") return "no";
-          if (s.includes("other")) return "other";
-          return senAct.score;
-        };
-
-        // Get activities that fall under this specific term AND senator participated in
-        let termActivities = [];
-        if (matchedTerm) {
-          const termStart = new Date(`${matchedTerm.startYear}-01-01`);
-          const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
-
-          termActivities = allActivities.filter((activity) => {
-            const activityDate = new Date(activity.date);
-
-            // Must be inside the term range
-            const inTerm =
+      // Use activities for this term that the senator participated in
+      let activitiesScore;
+      if (
+        Array.isArray(term.activitiesScore) &&
+        term.activitiesScore.length > 0
+      ) {
+        // Filter to only include activities that belong to this term
+        activitiesScore = term.activitiesScore
+          .filter((activity) => {
+            const activityId = activity.activityId?._id || activity.activityId;
+            if (!activityId) return false;
+            
+            // Find the activity in allActivities to check if it belongs to this term
+            const activityData = allActivities.find(a => a._id === activityId);
+            if (!activityData || !matchedTerm) return false;
+            
+            const activityDate = new Date(activityData.date);
+            const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+            const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+            
+            return (
               activityDate >= termStart &&
               activityDate <= termEnd &&
-              matchedTerm.congresses.includes(Number(activity.congress || 0));
-
-            if (!inTerm) return false;
-
-            // Senator must have participated (have a score) for this activity
-            return senatorActivities.some((a) => {
-              if (!a?.score || a.score.trim() === "") return false;
-
-              const aId =
-                typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
-
-              return aId === activity._id;
-            });
-          });
-        }
-
-        // Use activities for this term that the senator participated in
-        let activitiesScore;
-        if (
-          Array.isArray(term.activitiesScore) &&
-          term.activitiesScore.length > 0
-        ) {
-          activitiesScore = term.activitiesScore.map((activity) => {
+              matchedTerm.congresses.includes(Number(activityData.congress || 0))
+            );
+          })
+          .map((activity) => {
             // Find the actual activity object to get the title
             const actualActivity = allActivities.find(
               (a) => a._id === (activity.activityId?._id || activity.activityId)
@@ -984,59 +1023,52 @@ export default function AddSenator(props) {
               _activityTitle: actualActivity?.title || "Unknown Activity",
             };
           });
-        } else if (termActivities.length > 0) {
-          activitiesScore = termActivities.map((activity) => ({
-            activityId: activity._id,
-            score: getActivityScore(activity._id),
-            _activityTitle: activity.title || "Unknown Activity",
-          }));
-        } else {
-          activitiesScore = [{ activityId: "", score: "" }];
-        }
+      } else if (termActivities.length > 0) {
+        activitiesScore = termActivities.map((activity) => ({
+          activityId: activity._id,
+          score: getActivityScore(activity._id),
+          _activityTitle: activity.title || "Unknown Activity",
+        }));
+      } else {
+        activitiesScore = [{ activityId: "", score: "" }];
+      }
 
-        return {
-          _id: term._id,
-          summary: term.summary || "",
-          // summaries:
-          //   term.summaries && term.summaries.length > 0
-          //     ? term.summaries.map((s) =>
-          //         typeof s === "string" ? { content: s } : s
-          //       )
-          //     : [{ content: "" }],
-          rating: term.rating || "",
-          termId: matchedTerm?._id || "",
-          currentTerm: term.currentTerm || false,
-          editedFields: term.editedFields || [],
-          fieldEditors: term.fieldEditors || {},
-          isNew: false,
-          votesScore,
-          activitiesScore,
-        };
-      });
-      setSenatorTermData(termsData);
-      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
-    } else {
-      // For new senators, start with empty votes - they will be populated when a term is selected
-      const defaultTerm = [
-        {
-          senateId: id,
-          summary: "",
-          // summaries: [{ content: "" }], // ✅ use only summaries
-          rating: "",
-          votesScore: [{ voteId: "", score: "" }],
-          activitiesScore: [{ activityId: "", score: "" }],
-          currentTerm: false,
-          termId: null,
-          editedFields: [],
-          fieldEditors: {},
-          isNew: true,
-        },
-      ];
+      return {
+        _id: term._id,
+        summary: term.summary || "",
+        rating: term.rating || "",
+        termId: matchedTerm?._id || "",
+        currentTerm: term.currentTerm || false,
+        editedFields: term.editedFields || [],
+        fieldEditors: term.fieldEditors || {},
+        isNew: false,
+        votesScore,
+        activitiesScore,
+      };
+    });
+    setSenatorTermData(termsData);
+    setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
+  } else {
+    // For new senators, start with empty votes - they will be populated when a term is selected
+    const defaultTerm = [
+      {
+        senateId: id,
+        summary: "",
+        rating: "",
+        votesScore: [{ voteId: "", score: "" }],
+        activitiesScore: [{ activityId: "", score: "" }],
+        currentTerm: false,
+        termId: null,
+        editedFields: [],
+        fieldEditors: {},
+        isNew: true,
+      },
+    ];
 
-      setSenatorTermData(defaultTerm);
-      setOriginalTermData(JSON.parse(JSON.stringify(defaultTerm)));
-    }
-  };
+    setSenatorTermData(defaultTerm);
+    setOriginalTermData(JSON.parse(JSON.stringify(defaultTerm)));
+  }
+};
 
   useEffect(() => {
     if (originalFormData && formData) {
@@ -1256,185 +1288,205 @@ export default function AddSenator(props) {
     });
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+const handleSave = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const decodedToken = jwtDecode(token);
-      const currentEditor = {
-        editorId: decodedToken.userId,
-        editorName: localStorage.getItem("user") || "Unknown User",
-        editedAt: new Date(),
-      };
+  try {
+    const decodedToken = jwtDecode(token);
+    const currentEditor = {
+      editorId: decodedToken.userId,
+      editorName: localStorage.getItem("user") || "Unknown User",
+      editedAt: new Date(),
+    };
 
-      if (deletedTermIds.length > 0) {
-        await Promise.all(
-          deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
-        );
-        setDeletedTermIds([]); // clear after delete
+    if (deletedTermIds.length > 0) {
+      await Promise.all(
+        deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
+      );
+      setDeletedTermIds([]); // clear after delete
+    }
+
+    // Transform localChanges to track individual vote/activity edits
+    const detailedChanges = localChanges.map((change) => {
+      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId")
+      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
+      if (voteMatch) {
+        const [, termIdx, voteIdx] = voteMatch;
+        return `term${termIdx}_votesScore_${voteIdx}`;
       }
 
-      // Transform localChanges to track individual vote/activity edits
-      const detailedChanges = localChanges.map((change) => {
-        // Handle votesScore changes (e.g. "term1_votesScore_0_voteId")
-        const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
-        if (voteMatch) {
-          const [, termIdx, voteIdx] = voteMatch;
-          return `term${termIdx}_votesScore_${voteIdx}`;
-        }
+      // Handle activitiesScore changes
+      const activityMatch = change.match(
+        /^term(\d+)_activitiesScore_(\d+)_(.+)$/
+      );
+      if (activityMatch) {
+        const [, termIdx, activityIdx] = activityMatch;
+        return `term${termIdx}_activitiesScore_${activityIdx}`;
+      }
 
-        // Handle activitiesScore changes
-        const activityMatch = change.match(
-          /^term(\d+)_activitiesScore_(\d+)_(.+)$/
-        );
-        if (activityMatch) {
-          const [, termIdx, activityIdx] = activityMatch;
-          return `term${termIdx}_activitiesScore_${activityIdx}`;
-        }
+      return change;
+    });
 
-        return change;
-      });
+    const allChanges = [
+      ...new Set([
+        ...(Array.isArray(formData.editedFields)
+          ? formData.editedFields
+          : []),
+        ...detailedChanges,
+      ]),
+    ];
 
-      const allChanges = [
-        ...new Set([
-          ...(Array.isArray(formData.editedFields)
-            ? formData.editedFields
-            : []),
-          ...detailedChanges,
-        ]),
-      ];
-
-      // Update field editors with current changes
-      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      localChanges.forEach((field) => {
-        // For senator-level fields
-        if (field in formData) {
-          if (compareValues(formData[field], originalFormData?.[field] || "")) {
-            updatedFieldEditors[field] = currentEditor;
-          }
-        }
-        // For term-level fields
-        else if (field.startsWith("term")) {
+    // Update field editors with current changes
+    const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+    localChanges.forEach((field) => {
+      // For senator-level fields
+      if (field in formData) {
+        if (compareValues(formData[field], originalFormData?.[field] || "")) {
           updatedFieldEditors[field] = currentEditor;
         }
+      }
+      // For term-level fields
+      else if (field.startsWith("term")) {
+        updatedFieldEditors[field] = currentEditor;
+      }
+    });
+
+    // FIX: Only change status if there are actual changes
+    const hasActualChanges = allChanges.length > 0 || localChanges.length > 0;
+    
+    // Prepare senator update
+    let publishStatus = formData.publishStatus || "draft";
+
+    if (userRole === "admin") {
+      // Admin always publishes, but only clear editedFields if there were actual changes
+      publishStatus = "published";
+    } else {
+      // For editors, only change to "under review" if there are actual changes
+      if (hasActualChanges) {
+        publishStatus = "under review";
+      }
+      // If no changes, keep the current status
+      else {
+        publishStatus = formData.publishStatus;
+      }
+    }
+
+    // Prepare senator update
+    const senatorUpdate = {
+      ...formData,
+      editedFields: allChanges,
+      fieldEditors: updatedFieldEditors,
+      publishStatus: publishStatus, // Use the calculated status
+    };
+
+    // Clear editedFields only if publishing AND there were actual changes
+    if (senatorUpdate.publishStatus === "published" && hasActualChanges) {
+      senatorUpdate.editedFields = [];
+      senatorUpdate.fieldEditors = {};
+    }
+
+    // Rest of your handleSave function remains the same...
+    // Update senator
+    if (id) {
+      const formData = new FormData();
+      Object.entries(senatorUpdate).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          if (typeof value === "object" && !(value instanceof File)) {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, value);
+          }
+        }
       });
 
-      // Prepare senator update
-      const senatorUpdate = {
-        ...formData,
-        editedFields: allChanges,
+      await dispatch(updateSenator({ id, formData })).unwrap();
+    }
+
+    // Update terms
+    const termPromises = senatorTermData.map((term, index) => {
+      const transformedVotesScore = term.votesScore
+        .map((vote) => ({
+          ...vote,
+          voteId: vote.voteId === "" ? null : vote.voteId,
+        }))
+        .filter((vote) => vote.voteId !== null); // Optional: remove null entries
+      const transformedTrackedActivity = term.activitiesScore
+        .map((activity) => ({
+          ...activity,
+          activityId: activity.activityId === "" ? null : activity.activityId,
+        }))
+        .filter((activity) => activity.activityId !== null);
+
+      // Get changes specific to this term
+      const termChanges = allChanges.filter((f) =>
+        f.startsWith(`term${index}_`)
+      );
+
+      // Get the selected term to extract congress data
+      const selectedTerm = terms.find((t) => t._id === term.termId);
+
+      // Extract congress array from the term
+      const congressArray = selectedTerm?.congresses || [];
+
+      // Extract years if available
+      const years = selectedTerm?.years || null;
+
+      const termUpdate = {
+        ...term,
+        votesScore: transformedVotesScore,
+        activitiesScore: transformedTrackedActivity,
+        isNew: false,
+        senateId: id,
+        editedFields: termChanges,
         fieldEditors: updatedFieldEditors,
-        publishStatus: userRole === "admin" ? "published" : "under review",
+        summary: term.summary
       };
 
-      // Clear editedFields if publishing
-      if (senatorUpdate.publishStatus === "published") {
-        senatorUpdate.editedFields = [];
-        senatorUpdate.fieldEditors = {};
-      }
+      return term._id
+        ? dispatch(
+          updateSenatorData({ id: term._id, data: termUpdate })
+        ).unwrap()
+        : dispatch(createSenatorData(termUpdate)).unwrap();
+    });
 
-      // Update senator
-      if (id) {
-        const formData = new FormData();
-        Object.entries(senatorUpdate).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            if (typeof value === "object" && !(value instanceof File)) {
-              formData.append(key, JSON.stringify(value));
-            } else {
-              formData.append(key, value);
-            }
-          }
-        });
+    await Promise.all(termPromises);
 
-        await dispatch(updateSenator({ id, formData })).unwrap();
-      }
+    await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+    await dispatch(getSenatorById(id)).unwrap();
 
-      // Update terms
-      const termPromises = senatorTermData.map((term, index) => {
-        const transformedVotesScore = term.votesScore
-          .map((vote) => ({
-            ...vote,
-            voteId: vote.voteId === "" ? null : vote.voteId,
-          }))
-          .filter((vote) => vote.voteId !== null); // Optional: remove null entries
-        const transformedTrackedActivity = term.activitiesScore
-          .map((activity) => ({
-            ...activity,
-            activityId: activity.activityId === "" ? null : activity.activityId,
-          }))
-          .filter((activity) => activity.activityId !== null);
+    setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+    setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
+    setLocalChanges([]);
 
-        // Get changes specific to this term
-        const termChanges = allChanges.filter((f) =>
-          f.startsWith(`term${index}_`)
-        );
+    setDeletedTermIds([]);
 
-        // Get the selected term to extract congress data
-        const selectedTerm = terms.find((t) => t._id === term.termId);
-
-        // Extract congress array from the term
-        const congressArray = selectedTerm?.congresses || [];
-
-        // Extract years if available
-        const years = selectedTerm?.years || null;
-
-        const termUpdate = {
-          ...term,
-          votesScore: transformedVotesScore,
-          activitiesScore: transformedTrackedActivity,
-          isNew: false,
-          senateId: id,
-          editedFields: termChanges,
-          fieldEditors: updatedFieldEditors,
-          // Map each summary to include the corresponding congress
-          // summaries: term.summaries.map((summary, summaryIndex) => ({
-          //   ...summary,
-          //   congress: congressArray[summaryIndex] || null, // Get the congress at the same index
-          // })),
-          summary:term.summary
-        };
-
-        return term._id
-          ? dispatch(
-            updateSenatorData({ id: term._id, data: termUpdate })
-          ).unwrap()
-          : dispatch(createSenatorData(termUpdate)).unwrap();
-      });
-
-      await Promise.all(termPromises);
-
-      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-      await dispatch(getSenatorById(id)).unwrap();
-
-      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
-      setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
-      setLocalChanges([]);
-
-      setDeletedTermIds([]);
-
+    // Update success message based on whether changes were made
+    if (hasActualChanges) {
       userRole === "admin"
         ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
             'Status changed to "Under Review" for admin to moderate.',
             "info"
           );
-    }  catch (error) {
-      console.error("Save failed:", error);
-    
-      const errorMessage =
-        error?.response?.data?.message ||
-        (error.code === 11000
-          ? "Duplicate entry: This senator term already exists."
-          : "Failed to create senator data. Please try again.");
-    
-      handleSnackbarOpen(errorMessage, "error");
-    
-    } finally {
-      setLoading(false);
+    } else {
+      handleSnackbarOpen("No changes to save.", "info");
     }
+  } catch (error) {
+    console.error("Save failed:", error);
+  
+    const errorMessage =
+      error?.response?.data?.message ||
+      (error.code === 11000
+        ? "Duplicate entry: This senator term already exists."
+        : "Failed to create senator data. Please try again.");
+  
+    handleSnackbarOpen(errorMessage, "error");
+  
+  } finally {
+    setLoading(false);
   }
-
+}
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
