@@ -1369,24 +1369,11 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
   return (
     <AppTheme key={componentKey}>
       {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex", bgcolor: '#f6f6f6ff', }}>
+      <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -1423,30 +1410,14 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               <Button
                 variant="outlined"
                 onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#E24042 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#C91E37 !important",
-                  },
-                }}
+                className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
+                className="publishBtn"
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
@@ -1755,7 +1726,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
 
 
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider', }} >
+            <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1821,7 +1792,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               </Dialog>
 
               <Box sx={{ p: 0 }}>
-                <Typography fontSize={'1rem'} fontWeight={500}  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+               <Typography className="customTypography">
                   Representative's Information
                 </Typography>
                 <Grid
@@ -1834,16 +1805,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                 >
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        whiteSpace: "normal", // allow wrapping
-                        overflowWrap: "break-word", // break long words
-                        width: "100%", // take full width of grid cell
-                      }}
+                      className="nameLabel"
                     >
                       Representative's Name
                     </InputLabel>
@@ -1862,14 +1824,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 1}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel className="label">
                       Status
                     </InputLabel>
                   </Grid>
@@ -1877,63 +1832,19 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
-                      sx={{
-                        "& .MuiButton-outlined": {
-                          height:"36px",
-                          borderColor: "#4CAF50",
-                          color: "#4CAF50",
-                          "&:hover": {
-                            backgroundColor: "rgba(76, 175, 80, 0.04)",
-                            borderColor: "#4CAF50",
-                          },
-                        },
-                      }}
+                      className="customButtonGroup"
                     >
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Active")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Active"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Active"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Active"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                         className={`statusBtn ${formData.status === "Active" ? "active" : ""}`}
                       >
                         Active
                       </Button>
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Former")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Former"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Former"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Former"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                        className={`statusBtn ${formData.status === "Former" ? "active" : ""}`}
                       >
                         Former
                       </Button>
@@ -1941,12 +1852,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   </Grid>
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
+                      className="label"
                     >
                       District
                     </InputLabel>
@@ -1965,12 +1871,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   </Grid>
                   <Grid size={isMobile ? 12 : 1} sx={{ alignContent: "center" }}>
                     <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
+                      className="label"
                     >
                       Party
                     </InputLabel>
@@ -1992,16 +1893,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        whiteSpace: "normal", // allow wrapping
-                        overflowWrap: "break-word", // break long words
-                        width: "100%",
-                      }}
+                      className="label"
                     >
                       Representative's Photo
                     </InputLabel>
@@ -2032,15 +1924,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       <Button
                         component="label"
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="uploadBtn"
                         startIcon={<CloudUploadIcon />}
                       >
                         Upload files
@@ -2061,28 +1945,11 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
             {houseTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-
-                sx={{
-                  width: "100%",
-                  marginBottom: "50px",
-                  position: "relative",
-                  bgcolor: "#fff",
-                  borderRadius: 0.8,
-                  border: '1px solid',
-                  borderColor: 'divider'
-
-                }}
+                className="termData-paper"
               >
                 <Box sx={{ padding: 0 }}>
                   <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      // marginBottom: 3,
-                      borderBottom: '1px solid', borderColor: 'divider',
-                      p: 1.5, px: 3
-                    }}
+                    className="termData-header"
                   >
                     <Typography fontSize={'1rem'} fontWeight={500} >
                       Representative's Term Information {termIndex + 1}
@@ -2107,13 +1974,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   >
                     <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
+                        className="label"
                       >
                         Term
                       </InputLabel>
@@ -2156,48 +2017,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         </Select>
                       </FormControl>
                     </Grid>
-                    {/* <Grid size={isMobile ? 12 : 2.2}>
-  <FormControl fullWidth>
-    <Autocomplete
-      options={
-        terms
-          ? terms.filter(
-              (t) => Array.isArray(t.congresses) && t.congresses.length === 1
-            )
-          : []
-      }
-      getOptionLabel={(t) =>
-        t.congresses && t.congresses.length === 1
-          ? `${ordinal(t.congresses[0])} Congress`
-          : ""
-      }
-      value={
-        terms.find((t) => t._id === term.termId) || null
-      }
-      onChange={(event, newValue) =>
-        handleTermChange(
-          { target: { name: "termId", value: newValue?._id || "" } },
-          termIndex
-        )
-      }
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          // label="Select an option"
-          sx={{ background: "#fff" }}
-        />
-      )}
-    />
-  </FormControl>
-</Grid> */}
+                    
                     <Grid size={isMobile ? 6 : 2.1} sx={{ alignContent: "center" }}>
                       <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
+                        className="label"
                       >
                         Current Term
                       </InputLabel>
@@ -2214,13 +2037,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
                     <Grid size={isMobile ? 6 : 2.39}>
                       <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
+                        className="label"
                       >
                         SBA Rating
                       </InputLabel>
@@ -2250,12 +2067,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
                     <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
+                        className="label"
                       >
                         Term Summary
                       </InputLabel>
@@ -2335,13 +2147,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                           >
                             <Grid size={isMobile ? 12 : 2}>
                               <InputLabel
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "end",
-                                  fontWeight: 500,
-                                  my: 0,
-                                }}
+                                className="label"
                               >
                                 Scored Vote
                               </InputLabel>
@@ -2460,15 +2266,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddVote(termIndex)}
                       >
@@ -2493,13 +2291,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                           >
                             <Grid size={isMobile ? 12 : 2}>
                               <InputLabel
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: isMobile ? "flex-start" : "flex-end",
-                                  fontWeight: 500,
-                                  my: 0,
-                                }}
+                                className="label"
                               >
                                 Tracked Activity
                               </InputLabel>
@@ -2616,15 +2408,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
@@ -2642,16 +2426,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{
-                alignSelf: "flex-start",
-                backgroundColor: "#173A5E !important",
-                color: "white !important",
-                padding: "0.5rem 1rem",
-                marginLeft: "0.5rem",
-                "&:hover": {
-                  backgroundColor: "#1E4C80 !important",
-                },
-              }}
+              className="addTerm-btn"
             >
               Add Another Term
             </Button>

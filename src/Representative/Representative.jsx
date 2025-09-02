@@ -24,7 +24,7 @@ import {
   InputAdornment,
   IconButton,
   ClickAwayListener,
-  Paper
+  Paper,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
@@ -75,11 +75,10 @@ export default function Representative(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-
   const [partyFilter, setPartyFilter] = useState([]);
   const [districtFilter, setDistrictFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
-  const { houseData } = useSelector((state) => state.houseData)
+  const { houseData } = useSelector((state) => state.houseData);
   const [mergedHouses, setMergedHouses] = useState([]);
   const [yearFilter, setYearFilter] = useState([]);
   const [termFilter, setTermFilter] = useState(null);
@@ -102,7 +101,6 @@ export default function Representative(props) {
   for (let y = currentYear; y >= 2015; y--) {
     years.push(y);
   }
-
 
   useEffect(() => {
     dispatch(getAllHouses());
@@ -129,31 +127,33 @@ export default function Representative(props) {
       const merged = houses.map((house) => {
         const match = houseData.find((data) => data.houseId === house._id);
         const termId = match ? match.termId : house.termId;
-        const termObj = terms.find(t => t._id === termId);
+        const termObj = terms.find((t) => t._id === termId);
 
         return {
           ...house,
           rating: match ? match.rating : "N/A",
           termId: termId,
           termName: termObj ? termObj.name : "",
-          currentTerm: match ? match.currentTerm : false // Add currentTerm from houseData
+          currentTerm: match ? match.currentTerm : false, // Add currentTerm from houseData
         };
       });
-
 
       setMergedHouses(merged);
     }
   }, [houses, houseData, terms]);
 
-
   const transformedHouses = mergedHouses.map((house) => ({
     ...house,
     district: house.district?.split(", ").pop() || "Unknown",
-    currentTerm: house.currentTerm || false // Ensure currentTerm exists
+    currentTerm: house.currentTerm || false, // Ensure currentTerm exists
   }));
 
-  const partyOptions = [...new Set(transformedHouses.map(rep => rep.party))].filter(Boolean);
-  const districtOptions = [...new Set(transformedHouses.map(rep => rep.district))].filter(Boolean);
+  const partyOptions = [
+    ...new Set(transformedHouses.map((rep) => rep.party)),
+  ].filter(Boolean);
+  const districtOptions = [
+    ...new Set(transformedHouses.map((rep) => rep.district)),
+  ].filter(Boolean);
 
   const filteredPartyOptions = partyOptions.filter((party) =>
     party.toLowerCase().includes(searchTerms.party)
@@ -171,20 +171,22 @@ export default function Representative(props) {
     year.toString().includes(searchTerms.year)
   );
 
-
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
       // Term filter logic - now properly checking currentTerm field
-      if (termFilter === 'current') {
+      if (termFilter === "current") {
         if (transformedHouse.currentTerm !== true) return false;
-      } else if (termFilter === 'past') {
+      } else if (termFilter === "past") {
         if (transformedHouse.currentTerm === true) return false;
       }
       // const nameMatch = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
       // .every((word) => transformedHouse.name.toLowerCase().includes(word));
       if (yearFilter.length > 0) {
-        const [start, end] = transformedHouse.termName?.split("-").map(Number) || [];
-        const matchesYear = yearFilter.some(year => start && end && year >= start && year <= end);
+        const [start, end] =
+          transformedHouse.termName?.split("-").map(Number) || [];
+        const matchesYear = yearFilter.some(
+          (year) => start && end && year >= start && year <= end
+        );
         if (!matchesYear) return false;
       }
 
@@ -193,25 +195,33 @@ export default function Representative(props) {
         .toLowerCase()
         .split(/\s+/)
         .filter(Boolean)
-        .every(word => transformedHouse.name.toLowerCase().includes(word));
+        .every((word) => transformedHouse.name.toLowerCase().includes(word));
 
       // Rating filter
-      const ratingMatch = ratingFilter.length === 0 ||
-        (transformedHouse.rating && ratingFilter.includes(transformedHouse.rating));
+      const ratingMatch =
+        ratingFilter.length === 0 ||
+        (transformedHouse.rating &&
+          ratingFilter.includes(transformedHouse.rating));
 
       // Party filter
-      const partyMatch = partyFilter.length === 0 || partyFilter.includes(transformedHouse.party);
+      const partyMatch =
+        partyFilter.length === 0 ||
+        partyFilter.includes(transformedHouse.party);
 
       // District filter
-      const districtMatch = districtFilter.length === 0 || districtFilter.includes(transformedHouse.district);
+      const districtMatch =
+        districtFilter.length === 0 ||
+        districtFilter.includes(transformedHouse.district);
 
       // Status filter
       const statusMatch =
         statusFilter.length === 0 ||
-        (transformedHouse.publishStatus && statusFilter.includes(transformedHouse.publishStatus));
+        (transformedHouse.publishStatus &&
+          statusFilter.includes(transformedHouse.publishStatus));
 
-
-      return nameMatch && partyMatch && districtMatch && ratingMatch && statusMatch;
+      return (
+        nameMatch && partyMatch && districtMatch && ratingMatch && statusMatch
+      );
     }
   );
 
@@ -232,59 +242,43 @@ export default function Representative(props) {
       ...prev,
       [filterType]: value.toLowerCase(),
     }));
-  }
-
-  // Filter handlers
-
-
-  const handleFilterClose = () => {
-    setFilterAnchorEl(null);
   };
 
-
   const handlePartyFilter = (party) => {
-    setPartyFilter(prev =>
-      prev.includes(party)
-        ? prev.filter(p => p !== party)
-        : [...prev, party]
+    setPartyFilter((prev) =>
+      prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party]
     );
   };
 
   const handleDistrictFilter = (district) => {
-    setDistrictFilter(prev =>
+    setDistrictFilter((prev) =>
       prev.includes(district)
-        ? prev.filter(s => s !== district)
+        ? prev.filter((s) => s !== district)
         : [...prev, district]
     );
   };
 
   const handleRatingFilter = (rating) => {
-    setRatingFilter(prev =>
+    setRatingFilter((prev) =>
       prev.includes(rating)
-        ? prev.filter(r => r !== rating)
+        ? prev.filter((r) => r !== rating)
         : [...prev, rating]
     );
   };
   const handleYearFilter = (year) => {
-    setYearFilter(prev =>
-      prev.includes(year)
-        ? prev.filter(y => y !== year)
-        : [...prev, year]
+    setYearFilter((prev) =>
+      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
     );
   };
 
   const handleTermFilter = (term) => {
     setTermFilter((prev) => (prev === term ? null : term));
   };
-  // Add this handler
-  const handleTermMenuOpen = (event) => {
-    setTermFilterAnchorEl(event.currentTarget);
-  };
 
   const handleStatusFilter = (status) => {
-    setStatusFilter(prev =>
+    setStatusFilter((prev) =>
       prev.includes(status)
-        ? prev.filter(s => s !== status)
+        ? prev.filter((s) => s !== status)
         : [...prev, status]
     );
   };
@@ -357,7 +351,9 @@ export default function Representative(props) {
     try {
       await dispatch(deleteHouse(selectedRepresentative._id));
       await dispatch(getAllHouses());
-      setSnackbarMessage(`${selectedRepresentative?.name} deleted successfully.`);
+      setSnackbarMessage(
+        `${selectedRepresentative?.name} deleted successfully.`
+      );
       setSnackbarSeverity("success");
     } catch (error) {
       setSnackbarMessage("Error deleting representative.");
@@ -372,8 +368,6 @@ export default function Representative(props) {
       setOpenDeleteDialog(false);
     }
   };
-
-
 
   const handleToggleStatusHouse = async (house) => {
     const newStatus =
@@ -409,99 +403,34 @@ export default function Representative(props) {
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       {(loading || fetching) && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: { xs: "block", md: "flex" }, bgcolor: '#f6f6f6ff', }}>
-        <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
-        <Box
-          sx={{
-            flexGrow: 1,
-            // overflow: "auto",
-            width: { xs: "100%", md: "80%" },
-            filter: fetching ? "blur(1px)" : "none",
-            pointerEvents: fetching ? "none" : "auto",
-            px: { xs: 0.5, sm: 2, md: 0 },
-            pt: { xs: 1, md: 0 },
-          }}
-        >
-          <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
+      <Box className="container">
+        <SideMenu />
+        <Box className={`contentBox ${fetching ? "fetching" : "notFetching"}`}>
+          <FixedHeader />
           <MobileHeader />
-          <Stack
-            spacing={2}
-            sx={{
-              alignItems: { xs: "stretch", md: "center" },
-              mx: { xs: 0, md: 3 },
-              pb: { xs: 2, md: 5 },
-              mt: { xs: 2, md: 4 },
-            }}
-          >
-            {/* <Typography
-              variant="h4"
-              align="center"
-              sx={{ paddingTop: "50px", paddingBottom: "70px", color: "text.secondary", mb: 6 }}
-            >
-              SBA Scorecard Management System
-            </Typography> */}
-
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                justifyContent: "flex-end",
-                alignItems: { xs: "stretch", sm: "center" },
-                mt: { xs: 2, md: 4 },
-                gap: 2,
-                // bgcolor: "#fff",
-                // borderTop: "1px solid ",
-                // borderLeft: "1px solid ",
-                // borderRight: "1px solid ",
-                // borderTopLeftRadius: 8,
-                // borderTopRightRadius: 8,
-                // borderColor: "divider",
-                // py: 3,
-              }}
-            >
-              {/* <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 }}}>
-                All Representatives
-              </Typography> */}
-
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ width: { xs: "100%", sm: "auto" } }}>
-                {/* Mobile: Show Fetch button above search/filter */}
-                {userRole === "admin" && (
-                  <Box sx={{ width: "100%", display: { xs: "block", sm: "none" }, }}>
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        backgroundColor: "#173A5E !important",
-                        color: "#fff !important",
-                        width: "100%",
-                        "&:hover": {
-                          backgroundColor: "#357ABD !important",
-                        },
-                      }}
-                      onClick={fetchRepresentativeFromQuorum}
-                      fullWidth
-                    >
-                      Fetch Representatives from Quorum
-                    </Button>
-                  </Box>
-                )}
+          <Stack spacing={2} className="stackBox">
+            <Box className="actionsBox">
+              {userRole === "admin" && (
+                <Box className="adminBox">
+                  <Button
+                    variant="outlined"
+                    className="fetchBtn"
+                    onClick={fetchRepresentativeFromQuorum}
+                  >
+                    Fetch Senators from Quorum
+                  </Button>
+                </Box>
+              )}
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1}
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
                 <TextField
                   placeholder="Search Representatives"
                   size="small"
@@ -515,43 +444,44 @@ export default function Representative(props) {
                     ),
                   }}
                   sx={{
-                  //  marginLeft: { xs: 0, sm: "0.5rem" },
-    width: { xs: "50%", sm: "235px" },
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-      padding:'19.1px',
-      transition: "all 0.2s ease-in-out",
-      "& fieldset": {
-        borderColor: "#e5e7eb",
-      },
-      "&:hover fieldset": {
-        borderColor: "#cbd5e1",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#173A5E", 
-        borderWidth: "2px",
-      },   
-    },
-   
-    "& input::placeholder": {
-      fontSize: "0.9rem",
-      color: "#9ca3af",
-    },
-  }}
+                    //  marginLeft: { xs: 0, sm: "0.5rem" },
+                    width: { xs: "50%", sm: "235px" },
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#fff",
+                      padding: "19.1px",
+                      transition: "all 0.2s ease-in-out",
+                      "& fieldset": {
+                        borderColor: "#e5e7eb",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#173A5E",
+                        borderWidth: "2px",
+                      },
+                    },
+
+                    "& input::placeholder": {
+                      fontSize: "0.9rem",
+                      color: "#9ca3af",
+                    },
+                  }}
                 />
 
-
-                <Box sx={{ position: "relative", display: "inline-block", width: { xs: "100%", sm: "auto" } }}>
+                <Box
+                  sx={{
+                    position: "relative",
+                    display: "inline-block",
+                    width: { xs: "100%", sm: "auto" },
+                  }}
+                >
                   <Badge
-                    badgeContent={activeFilterCount}
+                    badgeContent={
+                      activeFilterCount > 0 ? activeFilterCount : null
+                    }
                     color="primary"
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        top: 6,
-                        right: 6,
-                        bgcolor: '#E24042'
-                      },
-                    }}
+                    className="filter-badge"
                   >
                     <Button
                       variant="outlined"
@@ -560,16 +490,7 @@ export default function Representative(props) {
                         filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
                       }
                       onClick={toggleFilter}
-                      sx={{
-                        // padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
-                        minWidth: { xs: "100%", sm: "120px" },
-                        // borderColor: filterOpen ? "primary.main" : "divider",
-                        color:  "#fff",
-                        backgroundColor: "#497BB2",
-                        "&:hover": {
-                          backgroundColor: "#3B6799",
-                        },
-                      }}
+                      className="filter-button"
                     >
                       Filters
                     </Button>
@@ -577,34 +498,13 @@ export default function Representative(props) {
 
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
-                      <Paper
-                        sx={{
-                          position: "absolute",
-                          right: 0,
-                          top: "100%",
-                          mt: 0.5,
-                          width: 320,
-                          zIndex: 1,
-                          boxShadow: 3,
-                          borderRadius: 1,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            p: 0.5,
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        >
+                      <Paper className="filter-paper">
+                        <Box className="filter-header">
                           <Box
                             display="flex"
                             justifyContent="flex-end"
                             alignItems="center"
                           >
-                            {/* <Typography variant="subtitle1" fontWeight="bold">
-                              Filters
-                            </Typography> */}
                             <IconButton size="small" onClick={toggleFilter}>
                               <CloseIcon fontSize="small" />
                             </IconButton>
@@ -613,20 +513,12 @@ export default function Representative(props) {
 
                         {/* Party Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "party"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "party" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("party")}
                           >
                             <Typography variant="body1">Party</Typography>
@@ -638,39 +530,13 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "party" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                              {/* <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search parties..."
-                                value={searchTerms.party}
-                                onChange={(e) =>
-                                  handleSearchChange("party", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                sx={{ mb: 2 }}
-                              /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
+                              <Box className="filter-scroll">
                                 {filteredPartyOptions.length > 0 ? (
                                   filteredPartyOptions.map((party) => (
                                     <Box
                                       key={party}
                                       onClick={() => handlePartyFilter(party)}
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
+                                      className="filter-option"
                                     >
                                       {partyFilter.includes(party) ? (
                                         <CheckIcon
@@ -680,8 +546,12 @@ export default function Representative(props) {
                                       ) : (
                                         <Box sx={{ width: 24, height: 24 }} />
                                       )}
-                                      <Typography variant="body2" sx={{ ml: 1 }}>
-                                        {party.charAt(0).toUpperCase() + party.slice(1)}
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ ml: 1 }}
+                                      >
+                                        {party.charAt(0).toUpperCase() +
+                                          party.slice(1)}
                                       </Typography>
                                     </Box>
                                   ))
@@ -701,20 +571,12 @@ export default function Representative(props) {
 
                         {/* District Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "district"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "district" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("district")}
                           >
                             <Typography variant="body1">District</Typography>
@@ -733,7 +595,10 @@ export default function Representative(props) {
                                   placeholder="Search districts..."
                                   value={searchTerms.district}
                                   onChange={(e) =>
-                                    handleSearchChange("district", e.target.value)
+                                    handleSearchChange(
+                                      "district",
+                                      e.target.value
+                                    )
                                   }
                                   InputProps={{
                                     startAdornment: (
@@ -742,25 +607,17 @@ export default function Representative(props) {
                                       </InputAdornment>
                                     ),
                                   }}
-
                                 />
                               </Box>
-                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
+                              <Box className="filter-scroll">
                                 {filteredDistrictOptions.length > 0 ? (
                                   filteredDistrictOptions.map((district) => (
                                     <Box
                                       key={district}
-                                      onClick={() => handleDistrictFilter(district)}
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
+                                      onClick={() =>
+                                        handleDistrictFilter(district)
+                                      }
+                                      className="filter-option"
                                     >
                                       {districtFilter.includes(district) ? (
                                         <CheckIcon
@@ -770,7 +627,10 @@ export default function Representative(props) {
                                       ) : (
                                         <Box sx={{ width: 24, height: 24 }} />
                                       )}
-                                      <Typography variant="body2" sx={{ ml: 1 }}>
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ ml: 1 }}
+                                      >
                                         {district}
                                       </Typography>
                                     </Box>
@@ -791,20 +651,12 @@ export default function Representative(props) {
 
                         {/* Rating Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "rating"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "rating" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("rating")}
                           >
                             <Typography variant="body1">Rating</Typography>
@@ -816,39 +668,13 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "rating" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                              {/* <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search ratings..."
-                                value={searchTerms.rating}
-                                onChange={(e) =>
-                                  handleSearchChange("rating", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                sx={{ mb: 2 }}
-                              /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
+                              <Box className="filter-scroll">
                                 {filteredRatingOptions.length > 0 ? (
                                   filteredRatingOptions.map((rating) => (
                                     <Box
                                       key={rating}
                                       onClick={() => handleRatingFilter(rating)}
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
+                                      className="filter-option"
                                     >
                                       {ratingFilter.includes(rating) ? (
                                         <CheckIcon
@@ -858,7 +684,10 @@ export default function Representative(props) {
                                       ) : (
                                         <Box sx={{ width: 24, height: 24 }} />
                                       )}
-                                      <Typography variant="body2" sx={{ ml: 1 }}>
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ ml: 1 }}
+                                      >
                                         {rating}
                                       </Typography>
                                     </Box>
@@ -879,20 +708,12 @@ export default function Representative(props) {
 
                         {/* Year Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "year"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "year" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("year")}
                           >
                             <Typography variant="body1">Year</Typography>
@@ -920,27 +741,15 @@ export default function Representative(props) {
                                       </InputAdornment>
                                     ),
                                   }}
-
                                 />
                               </Box>
-                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
+                              <Box className="filter-scroll">
                                 {filteredYearOptions.length > 0 ? (
                                   filteredYearOptions.map((year) => (
                                     <Box
                                       key={year}
-                                      onClick={() =>
-                                        handleYearFilter(year)
-                                      }
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
+                                      onClick={() => handleYearFilter(year)}
+                                      className="filter-option"
                                     >
                                       {yearFilter.includes(year) ? (
                                         <CheckIcon
@@ -950,7 +759,10 @@ export default function Representative(props) {
                                       ) : (
                                         <Box sx={{ width: 24, height: 24 }} />
                                       )}
-                                      <Typography variant="body2" sx={{ ml: 1 }}>
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ ml: 1 }}
+                                      >
                                         {year}
                                       </Typography>
                                     </Box>
@@ -971,20 +783,12 @@ export default function Representative(props) {
 
                         {/* Term Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "term"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "term" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("term")}
                           >
                             <Typography variant="body1">Term</Typography>
@@ -996,21 +800,12 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "term" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
-                                {["current"/*, "past"*/].map((term) => (
+                              <Box className="filter-scroll">
+                                {["current" /*, "past"*/].map((term) => (
                                   <Box
                                     key={term}
                                     onClick={() => handleTermFilter(term)}
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      p: 1,
-                                      borderRadius: 1,
-                                      cursor: "pointer",
-                                      "&:hover": {
-                                        bgcolor: "action.hover",
-                                      },
-                                    }}
+                                    className="filter-option"
                                   >
                                     {termFilter === term ? (
                                       <CheckIcon
@@ -1021,7 +816,9 @@ export default function Representative(props) {
                                       <Box sx={{ width: 24, height: 24 }} />
                                     )}
                                     <Typography variant="body2" sx={{ ml: 1 }}>
-                                      {term === "current" ? "Current Term" : "Past Terms"}
+                                      {term === "current"
+                                        ? "Current Term"
+                                        : "Past Terms"}
                                     </Typography>
                                   </Box>
                                 ))}
@@ -1032,20 +829,12 @@ export default function Representative(props) {
 
                         {/* Status Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "status"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "status" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ p: 1.5, px: 2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("status")}
                           >
                             <Typography variant="body1">Status</Typography>
@@ -1057,29 +846,24 @@ export default function Representative(props) {
                           </Box>
                           {expandedFilter === "status" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
+                              <Box className="filter-scroll">
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}
                                     onClick={() => handleStatusFilter(status)}
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      p: 1,
-                                      borderRadius: 1,
-                                      cursor: "pointer",
-                                      "&:hover": {
-                                        bgcolor: "action.hover",
-                                      },
-                                    }}
+                                    className="filter-option"
                                   >
                                     {statusFilter.includes(status) ? (
-                                      <CheckIcon color="primary" fontSize="small" />
+                                      <CheckIcon
+                                        color="primary"
+                                        fontSize="small"
+                                      />
                                     ) : (
                                       <Box sx={{ width: 24, height: 24 }} />
                                     )}
                                     <Typography variant="body2" sx={{ ml: 1 }}>
-                                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                                      {status.charAt(0).toUpperCase() +
+                                        status.slice(1)}
                                     </Typography>
                                   </Box>
                                 ))}
@@ -1089,18 +873,10 @@ export default function Representative(props) {
                         </Box>
 
                         {/* Clear All Button */}
-                        <Box
-                          sx={{
-                            // p: 2,
-                            // borderTop: "1px solid",
-                            // borderColor: "divider",
-                          }}
-                        >
+                        <Box>
                           <Button
                             fullWidth
-                            // variant="outlined"
-                            // color="secondary"
-                            sx={{ borderRadius: 0, bgcolor: '#fff' }}
+                            sx={{ borderRadius: 0, bgcolor: "#fff" }}
                             onClick={clearAllFilters}
                             disabled={
                               !partyFilter.length &&
@@ -1119,22 +895,14 @@ export default function Representative(props) {
                   )}
                 </Box>
 
-                {userRole === "admin" && (<Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#173A5E !important",
-                    color: "#fff !important",
-                    // padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
-                    marginLeft: { xs: 0, sm: "0.5rem" },
-                    display: { xs: "none", sm: "block" },
-                    "&:hover": {
-                      backgroundColor: "#1E4C80 !important",
-                    },
-                  }}
-                  onClick={fetchRepresentativeFromQuorum}
-                >
-                  Fetch Representatives from Quorum
-                </Button>
+                {userRole === "admin" && (
+                  <Button
+                    variant="outlined"
+                    className="fetch-btn"
+                    onClick={fetchRepresentativeFromQuorum}
+                  >
+                    Fetch Representatives from Quorum
+                  </Button>
                 )}
               </Stack>
             </Box>
@@ -1157,49 +925,52 @@ export default function Representative(props) {
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
-              onClose={() => setSnackbarOpen(false)}
-              severity={snackbarSeverity}
-              sx={{
-                border: "none",
-                boxShadow:"none",
-                width: "100%",
-                // ✅ Background conditions
-                bgcolor:
-                  snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#fde8e4"
-                    : snackbarMessage === "Success: Representatives fetched successfully!"
-                    ? "#daf4f0"
-                    : undefined,
+            onClose={() => setSnackbarOpen(false)}
+            severity={snackbarSeverity}
+            sx={{
+              border: "none",
+              boxShadow: "none",
+              width: "100%",
+              bgcolor:
+                snackbarMessage ===
+                `${selectedRepresentative?.name} deleted successfully.`
+                  ? "#fde8e4"
+                  : snackbarMessage ===
+                    "Success: Representatives fetched successfully!"
+                  ? "#daf4f0"
+                  : undefined,
 
-              // ✅ Icon color conditions
               "& .MuiAlert-icon": {
                 color:
-                  snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                  snackbarMessage ===
+                  `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d"
-                    : snackbarMessage === "Success: Representatives fetched successfully!"
-                      ? "#099885"
-                      : undefined,
+                    : snackbarMessage ===
+                      "Success: Representatives fetched successfully!"
+                    ? "#099885"
+                    : undefined,
               },
 
-              // ✅ Text color conditions
               "& .MuiAlert-message": {
                 color:
-                  snackbarMessage === `${selectedRepresentative?.name} deleted successfully.`
+                  snackbarMessage ===
+                  `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d"
-                    : snackbarMessage === "Success: Representatives fetched successfully!"
-                      ? "#099885"
-                      : undefined,
-                },
-                "& .MuiAlert-action": {
-      display: "flex",
-      alignItems: "center",  
-      paddingTop: 0,          
-      paddingBottom: 0,
-    },
-              }}
-            >
-              {snackbarMessage}
-            </Alert>
+                    : snackbarMessage ===
+                      "Success: Representatives fetched successfully!"
+                    ? "#099885"
+                    : undefined,
+              },
+              "& .MuiAlert-action": {
+                display: "flex",
+                alignItems: "center",
+                paddingTop: 0,
+                paddingBottom: 0,
+              },
+            }}
+          >
+            {snackbarMessage}
+          </Alert>
         </Snackbar>
 
         <Dialog
