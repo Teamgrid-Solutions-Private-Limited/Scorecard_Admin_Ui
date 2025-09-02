@@ -4,7 +4,6 @@ import { alpha, styled } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
-
 import { getSenatorDataBySenetorId } from "../redux/reducer/senetorTermSlice";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -25,32 +24,21 @@ import { Editor } from "@tinymce/tinymce-react";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import Switch from "@mui/material/Switch";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../../src/Dashboard/global/common";
 import { useParams, useNavigate } from "react-router-dom";
-import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
-import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
-import CheckCircle from "@mui/icons-material/CheckCircle";
 import { jwtDecode } from "jwt-decode";
-import CircleIcon from "@mui/icons-material/Circle";
-import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import { discardSenatorChanges } from "../redux/reducer/senetorSlice";
 import {
-  getVoteById,
-  clearVoteState,
-  updateVote,
-  createVote,
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import {
-  Alert,
   Dialog,
   DialogActions,
   DialogContent,
@@ -98,8 +86,6 @@ export default function AddSenator(props) {
   const allVotes = useSelector((state) => state.vote.votes);
   const allActivities = useSelector((state) => state.activity.activities);
 
-  const startYear = senatorData?.currentSenator?.[0]?.termId?.startYear;
-
   const termStart = new Date(
     `${senatorData?.currentSenator?.[0]?.termId?.startYear}-01-01`
   );
@@ -116,15 +102,11 @@ export default function AddSenator(props) {
       )
     );
   });
-
-  // Senator's scored votes
   const senatorr = senatorData?.currentSenator?.[0];
   const senatorVotes = senatorr?.votesScore || [];
 
   const participatedVotes = allVotes.filter((vote) => {
     const voteDate = new Date(vote.date);
-
-    // ✅ Condition 1: Must be inside the senator's term range
     const inTerm =
       voteDate >= termStart &&
       voteDate <= termEnd &&
@@ -132,7 +114,6 @@ export default function AddSenator(props) {
 
     if (!inTerm) return false;
 
-    // ✅ Condition 2: Must have a non-empty score
     return senatorVotes.some((v) => {
       if (!v?.score || v.score.trim() === "") return false;
 
@@ -161,34 +142,7 @@ export default function AddSenator(props) {
   // Senator's scored activities
   const senatorActivities = senatorr?.activitiesScore || [];
 
-  // Participated activities (only those with non-empty score)
-  const participatedActivities = allActivities.filter((activity) => {
-    const activityDate = new Date(activity.date);
-
-    //  Condition 1: Must be inside the senator's term range
-    const inTerm =
-      activityDate >= termStart &&
-      activityDate <= termEnd &&
-      senatorr?.termId?.congresses.includes(Number(activity.congress));
-
-    if (!inTerm) return false;
-
-    //  Condition 2: Must have a non-empty score
-    return senatorActivities.some((a) => {
-      if (!a?.score || a.score.trim() === "") return false;
-
-      const aId =
-        typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
-
-      return (
-        aId === activity._id ||
-        (a.actionId && activity.actionId && a.actionId === activity.actionId) ||
-        (a.billNumber &&
-          activity.billNumber &&
-          a.billNumber === activity.billNumber)
-      );
-    });
-  });
+  
 
   // Add this near the top of your component
   const fieldLabels = {
@@ -215,27 +169,7 @@ export default function AddSenator(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-  const formatRelativeTime = (date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-
-    if (diffInSeconds < 60) {
-      return "just now";
-    }
-
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} min${diffInMinutes !== 1 ? "s" : ""} ago`;
-    }
-
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
-    }
-
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
-  };
+ 
   // Add this function near the top of your component
   const getAvailableTerms = (currentTermIndex) => {
     const selectedTermIds = senatorTermData
@@ -467,35 +401,7 @@ export default function AddSenator(props) {
     });
   };
 
-  // Handle changes to a specific summary
-  // const handleSummaryChange = (termIndex, summaryIndex, content) => {
-  //   const fieldName = `term${termIndex}_summary_${summaryIndex + 1}`;
 
-  //   setSenatorTermData((prev) => {
-  //     const newTerms = prev.map((term, idx) => {
-  //       if (idx !== termIndex) return term;
-
-  //       const newSummaries = [...term.summaries];
-  //       newSummaries[summaryIndex] = { content: content };
-
-  //       return { ...term, summaries: newSummaries };
-  //     });
-
-  //     // Compare with original data
-  //     const originalTerm = originalTermData[termIndex] || {};
-  //     const originalSummary =
-  //       originalTerm.summaries?.[summaryIndex]?.content || "";
-  //     const isActualChange = compareValues(content, originalSummary);
-
-  //     if (isActualChange && !localChanges.includes(fieldName)) {
-  //       setLocalChanges((prev) => [...prev, fieldName]);
-  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
-  //       setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
-  //     }
-
-  //     return newTerms;
-  //   });
-  // };
 
   const handleSummaryChange = (termIndex, content) => {
     const fieldName = `term${termIndex}_summary`;
@@ -536,40 +442,7 @@ export default function AddSenator(props) {
     );
   };
 
-  // ... (previous functions remain the same)
-
-  // Add a new summary to a specific term
-  // const handleAddSummary = (termIndex) => {
-  //   setSenatorTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //             ...term,
-  //             summaries: [...term.summaries, { content: "" }],
-  //           }
-  //         : term
-  //     )
-  //   );
-  // };
-
-  // Remove a summary from a specific term
-  // const handleRemoveSummary = (termIndex, summaryIndex) => {
-  //   // Don't allow removing if there's only one summary left
-  //   if (senatorTermData[termIndex].summaries.length <= 1) {
-  //     return;
-  //   }
-
-  //   setSenatorTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //             ...term,
-  //             summaries: term.summaries.filter((_, i) => i !== summaryIndex),
-  //           }
-  //         : term
-  //     )
-  //   );
-  // };
+  
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -633,47 +506,7 @@ const handleRemoveVote = (termIndex, voteIndex) => {
     return updatedTerms;
   });
 };
-  // const handleRemoveVote = (termIndex, voteIndex) => {
-  //   setSenatorTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //           ...term,
-  //           votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-  //         }
-  //         : term
-  //     )
-  //   );
-  // };
-  //   // Construct the field name for change tracking
-  //   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex+1}`;
-
-  //   // Update local changes if not already tracked
-  //   setLocalChanges((prev) =>
-  //     prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
-  //   );
-
-  //   // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
-
-  //   // setLocalChanges((prev) =>
-  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-  //   // );
-
-  //   // Update the actual term data
-  //   setSenatorTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //           ...term,
-  //           votesScore: term.votesScore.map((vote, i) =>
-  //             i === voteIndex ? { ...vote, [field]: value } : vote
-  //           ),
-  //         }
-  //         : term
-  //     )
-  //   );
-  // };
-
+  
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
 
@@ -720,20 +553,7 @@ const handleRemoveVote = (termIndex, voteIndex) => {
     );
   };
 
-  // const handleRemoveActivity = (termIndex, activityIndex) => {
-  //   setSenatorTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //           ...term,
-  //           activitiesScore: term.activitiesScore.filter(
-  //             (_, i) => i !== activityIndex
-  //           ),
-  //         }
-  //         : term
-  //     )
-  //   );
-  // };
+
 const handleRemoveActivity = (termIndex, activityIndex) => {
   setSenatorTermData((prev) => {
     const updatedTerms = prev.map((term, index) =>
@@ -870,79 +690,81 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     return newVal !== oldVal;
   };
 
-  const termPreFill = () => {
-    if (senatorData?.currentSenator?.length > 0) {
-      const termsData = senatorData.currentSenator.map((term) => {
-        const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
-
-        // Helper function to determine the score for a vote
-        const getVoteScore = (voteId) => {
-          // Find the senator's vote for this bill
-          const senatorVote = senatorVotes.find(
-            (v) =>
-              v.voteId === voteId ||
-              v.voteId?._id === voteId ||
+   const termPreFill = () => {
+  if (senatorData?.currentSenator?.length > 0) {
+    const termsData = senatorData.currentSenator.map((term) => {
+      const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+      const getVoteScore = (voteId) => {
+        const senatorVote = senatorVotes.find(
+          (v) =>
+            v.voteId === voteId ||
+            v.voteId?._id === voteId ||
+            (v.billNumber &&
+              participatedVotes.find((pv) => pv._id === voteId)
+                ?.billNumber === v.billNumber)
+        );
+ 
+        if (!senatorVote) return "";
+        const voteScore = senatorVote.score?.toLowerCase();
+        if (voteScore?.includes("yea")) return "yea";
+        if (voteScore?.includes("nay")) return "nay";
+        if (voteScore?.includes("other")) return "other";
+ 
+        return "";
+      };
+      let termVotes = [];
+      if (matchedTerm) {
+        const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+        const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+ 
+        termVotes = allVotes.filter((vote) => {
+          const voteDate = new Date(vote.date);
+          const inTerm =
+            voteDate >= termStart &&
+            voteDate <= termEnd &&
+            matchedTerm.congresses.includes(Number(vote.congress));
+ 
+          if (!inTerm) return false;
+          return senatorVotes.some((v) => {
+            if (!v?.score || v.score.trim() === "") return false;
+ 
+            const vId =
+              typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+ 
+            return (
+              vId === vote._id ||
+              v.quorumId === vote.quorumId ||
               (v.billNumber &&
-                participatedVotes.find((pv) => pv._id === voteId)
-                  ?.billNumber === v.billNumber)
-          );
-
-          if (!senatorVote) return "";
-
-          // Map the vote to the appropriate score
-          const voteScore = senatorVote.score?.toLowerCase();
-          if (voteScore?.includes("yea")) return "yea";
-          if (voteScore?.includes("nay")) return "nay";
-          if (voteScore?.includes("other")) return "other";
-
-          return "";
-        };
-
-        // Get votes that fall under this specific term AND senator participated in
-        let termVotes = [];
-        if (matchedTerm) {
-          const termStart = new Date(`${matchedTerm.startYear}-01-01`);
-          const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
-
-          termVotes = allVotes.filter((vote) => {
-            const voteDate = new Date(vote.date);
-
-            // Must be inside the term range
-            const inTerm =
+                vote.billNumber &&
+                v.billNumber === vote.billNumber)
+            );
+          });
+        });
+      }
+      let votesScore;
+      if (
+        Array.isArray(term.votesScore) &&
+        term.votesScore.length > 0 &&
+        term.votesScore.some((vote) => vote.voteId && vote.voteId !== "")
+      ) {
+        votesScore = term.votesScore
+          .filter((vote) => {
+            const voteId = vote.voteId?._id || vote.voteId;
+            if (!voteId) return false;
+            const voteData = allVotes.find(v => v._id === voteId);
+            if (!voteData || !matchedTerm) return false;
+           
+            const voteDate = new Date(voteData.date);
+            const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+            const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+           
+            return (
               voteDate >= termStart &&
               voteDate <= termEnd &&
-              matchedTerm.congresses.includes(Number(vote.congress));
-
-            if (!inTerm) return false;
-
-            // Senator must have participated (have a score) for this vote
-            return senatorVotes.some((v) => {
-              if (!v?.score || v.score.trim() === "") return false;
-
-              const vId =
-                typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-
-              return (
-                vId === vote._id ||
-                v.quorumId === vote.quorumId ||
-                (v.billNumber &&
-                  vote.billNumber &&
-                  v.billNumber === vote.billNumber)
-              );
-            });
-          });
-        }
-
-        // FIXED: Only use term-specific participated votes for new/empty votesScore, preserve existing data
-        let votesScore;
-
-        // If term has existing votesScore with data, keep it
-        if (
-          Array.isArray(term.votesScore) &&
-          term.votesScore.length > 0 &&
-          term.votesScore.some((vote) => vote.voteId && vote.voteId !== "")
-        ) {
-          votesScore = term.votesScore.map((vote) => {
+              matchedTerm.congresses.includes(Number(voteData.congress))
+            );
+          })
+          .map((vote) => {
             let scoreValue = "";
             const dbScore = vote.score?.toLowerCase();
             if (dbScore?.includes("yea")) {
@@ -954,145 +776,139 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
             } else {
               scoreValue = vote.score || "";
             }
-
+ 
             return {
               voteId: vote.voteId?._id || vote.voteId || "",
               score: scoreValue,
             };
           });
-        }
-        // Only use term-specific participated votes if no existing votesScore data
-        else if (termVotes.length > 0) {
-          votesScore = termVotes.map((vote) => ({
-            voteId: vote._id,
-            score: getVoteScore(vote._id),
-          }));
-        }
-        // Fallback to empty vote
-        else {
-          votesScore = [{ voteId: "", score: "" }];
-        }
-
-        // Helper to map an activity id to senator's recorded score (mirror votes logic)
-        // Helper to map an activity id to senator's recorded score
-        const getActivityScore = (activityId) => {
-          const senAct = senatorActivities.find((a) => {
+      }
+      else if (termVotes.length > 0) {
+        votesScore = termVotes.map((vote) => ({
+          voteId: vote._id,
+          score: getVoteScore(vote._id),
+        }));
+      }
+      else {
+        votesScore = [{ voteId: "", score: "" }];
+      }
+      const getActivityScore = (activityId) => {
+        const senAct = senatorActivities.find((a) => {
+          const aId =
+            typeof a.activityId === "object"
+              ? a.activityId?._id
+              : a.activityId;
+          return aId === activityId;
+        });
+ 
+        if (!senAct?.score) return "";
+        const s = String(senAct.score).toLowerCase();
+        if (s.includes("yea") || s === "yes") return "yes";
+        if (s.includes("nay") || s === "no") return "no";
+        if (s.includes("other")) return "other";
+        return senAct.score;
+      };
+      let termActivities = [];
+      if (matchedTerm) {
+        const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+        const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+ 
+        termActivities = allActivities.filter((activity) => {
+          const activityDate = new Date(activity.date);
+          const inTerm =
+            activityDate >= termStart &&
+            activityDate <= termEnd &&
+            matchedTerm.congresses.includes(Number(activity.congress || 0));
+ 
+          if (!inTerm) return false;
+          return senatorActivities.some((a) => {
+            if (!a?.score || a.score.trim() === "") return false;
+ 
             const aId =
-              typeof a.activityId === "object"
-                ? a.activityId?._id
-                : a.activityId;
-            return aId === activityId;
+              typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+ 
+            return aId === activity._id;
           });
-
-          if (!senAct?.score) return "";
-          const s = String(senAct.score).toLowerCase();
-          if (s.includes("yea") || s === "yes") return "yes";
-          if (s.includes("nay") || s === "no") return "no";
-          if (s.includes("other")) return "other";
-          return senAct.score;
-        };
-
-        // Get activities that fall under this specific term AND senator participated in
-        let termActivities = [];
-        if (matchedTerm) {
-          const termStart = new Date(`${matchedTerm.startYear}-01-01`);
-          const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
-
-          termActivities = allActivities.filter((activity) => {
-            const activityDate = new Date(activity.date);
-
-            // Must be inside the term range
-            const inTerm =
+        });
+      }
+      let activitiesScore;
+      if (
+        Array.isArray(term.activitiesScore) &&
+        term.activitiesScore.length > 0
+      ) {
+        activitiesScore = term.activitiesScore
+          .filter((activity) => {
+            const activityId = activity.activityId?._id || activity.activityId;
+            if (!activityId) return false;
+            const activityData = allActivities.find(a => a._id === activityId);
+            if (!activityData || !matchedTerm) return false;
+           
+            const activityDate = new Date(activityData.date);
+            const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+            const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+           
+            return (
               activityDate >= termStart &&
               activityDate <= termEnd &&
-              matchedTerm.congresses.includes(Number(activity.congress || 0));
-
-            if (!inTerm) return false;
-
-            // Senator must have participated (have a score) for this activity
-            return senatorActivities.some((a) => {
-              if (!a?.score || a.score.trim() === "") return false;
-
-              const aId =
-                typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
-
-              return aId === activity._id;
-            });
-          });
-        }
-
-        // Use activities for this term that the senator participated in
-        let activitiesScore;
-        if (
-          Array.isArray(term.activitiesScore) &&
-          term.activitiesScore.length > 0
-        ) {
-          activitiesScore = term.activitiesScore.map((activity) => {
-            // Find the actual activity object to get the title
+              matchedTerm.congresses.includes(Number(activityData.congress || 0))
+            );
+          })
+          .map((activity) => {
             const actualActivity = allActivities.find(
               (a) => a._id === (activity.activityId?._id || activity.activityId)
             );
-
+ 
             return {
               activityId: activity.activityId?._id || activity.activityId || "",
               score: activity.score || "",
-              // Store the title for easy access if needed
               _activityTitle: actualActivity?.title || "Unknown Activity",
             };
           });
-        } else if (termActivities.length > 0) {
-          activitiesScore = termActivities.map((activity) => ({
-            activityId: activity._id,
-            score: getActivityScore(activity._id),
-            _activityTitle: activity.title || "Unknown Activity",
-          }));
-        } else {
-          activitiesScore = [{ activityId: "", score: "" }];
-        }
-
-        return {
-          _id: term._id,
-          summary: term.summary || "",
-          // summaries:
-          //   term.summaries && term.summaries.length > 0
-          //     ? term.summaries.map((s) =>
-          //         typeof s === "string" ? { content: s } : s
-          //       )
-          //     : [{ content: "" }],
-          rating: term.rating || "",
-          termId: matchedTerm?._id || "",
-          currentTerm: term.currentTerm || false,
-          editedFields: term.editedFields || [],
-          fieldEditors: term.fieldEditors || {},
-          isNew: false,
-          votesScore,
-          activitiesScore,
-        };
-      });
-      setSenatorTermData(termsData);
-      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
-    } else {
-      // For new senators, start with empty votes - they will be populated when a term is selected
-      const defaultTerm = [
-        {
-          senateId: id,
-          summary: "",
-          // summaries: [{ content: "" }], // ✅ use only summaries
-          rating: "",
-          votesScore: [{ voteId: "", score: "" }],
-          activitiesScore: [{ activityId: "", score: "" }],
-          currentTerm: false,
-          termId: null,
-          editedFields: [],
-          fieldEditors: {},
-          isNew: true,
-        },
-      ];
-
-      setSenatorTermData(defaultTerm);
-      setOriginalTermData(JSON.parse(JSON.stringify(defaultTerm)));
-    }
-  };
+      } else if (termActivities.length > 0) {
+        activitiesScore = termActivities.map((activity) => ({
+          activityId: activity._id,
+          score: getActivityScore(activity._id),
+          _activityTitle: activity.title || "Unknown Activity",
+        }));
+      } else {
+        activitiesScore = [{ activityId: "", score: "" }];
+      }
+ 
+      return {
+        _id: term._id,
+        summary: term.summary || "",
+        rating: term.rating || "",
+        termId: matchedTerm?._id || "",
+        currentTerm: term.currentTerm || false,
+        editedFields: term.editedFields || [],
+        fieldEditors: term.fieldEditors || {},
+        isNew: false,
+        votesScore,
+        activitiesScore,
+      };
+    });
+    setSenatorTermData(termsData);
+    setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
+  } else {
+    const defaultTerm = [
+      {
+        senateId: id,
+        summary: "",
+        rating: "",
+        votesScore: [{ voteId: "", score: "" }],
+        activitiesScore: [{ activityId: "", score: "" }],
+        currentTerm: false,
+        termId: null,
+        editedFields: [],
+        fieldEditors: {},
+        isNew: true,
+      },
+    ];
+ 
+    setSenatorTermData(defaultTerm);
+    setOriginalTermData(JSON.parse(JSON.stringify(defaultTerm)));
+  }
+};
 
   useEffect(() => {
     if (originalFormData && formData) {
@@ -1276,17 +1092,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
     setFormData((prev) => ({ ...prev, photo: file }));
   };
-  // const handleStatusChange = (status) => {
-  //   const fieldName = "status"; // The field being changed
 
-  //   // Update local changes if not already tracked
-  //   setLocalChanges((prev) =>
-  //     prev.includes(fieldName) ? prev : [...prev, fieldName]
-  //   );
-
-  //   // Update the form data
-  //   setFormData((prev) => ({ ...prev, status }));
-  // };
 
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
@@ -1605,38 +1411,15 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     return voteExists ? voteId : "";
   };
 
-  // const backendChanges = Array.isArray(formData?.editedFields)
-  //   ? formData.editedFields
-  //   : [];
-  // const localOnlyChanges = (
-  //   Array.isArray(editedFields) ? editedFields : []
-  // ).filter((field) => !backendChanges.includes(field));
-  // const isStatusReady = !id || Boolean(originalFormData);
-
-  // const hasAnyChanges =
-  //   backendChanges.length > 0 || localOnlyChanges.length > 0;
 
   return (
     <AppTheme key={componentKey}>
       {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex", bgcolor: '#f6f6f6ff', }}>
+      <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -1656,7 +1439,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
             sx={{
               alignItems: "center",
               mx: 3,
-              // pb: 5,
               mt: { xs: 8, md: 2.8 },
               gap: 1
             }}
@@ -1673,30 +1455,14 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               <Button
                 variant="outlined"
                 onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#E24042 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#C91E37 !important",
-                  },
-                }}
+                className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
+                className="publishBtn"
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
@@ -2003,7 +1769,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               )}
 
 
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider' }}>
+            <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -2068,7 +1834,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                 </DialogActions>
               </Dialog>
               <Box sx={{ p: 0 }}>
-                <Typography fontSize={'1rem'} fontWeight={500}  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3}}>
+                <Typography className="customTypography">
                   Senator's Information
                 </Typography>
                 <Grid
@@ -2076,19 +1842,12 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
-                  // mt={2}
                   py={3}
-                // flexDirection={isMobile ? "column" : "row"}
+
                 >
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
+                      className="nameLabel"
                     >
                       Senator's Name
                     </InputLabel>
@@ -2107,14 +1866,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 1}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel className="label">
                       Status
                     </InputLabel>
                   </Grid>
@@ -2122,63 +1874,19 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
-                      sx={{
-                        "& .MuiButton-outlined": {
-                          height: "36px",
-                          borderColor: "#4CAF50",
-                          color: "#4CAF50",
-                          "&:hover": {
-                            backgroundColor: "rgba(76, 175, 80, 0.04)",
-                            borderColor: "#4CAF50",
-                          },
-                        },
-                      }}
+                      className="customButtonGroup"
                     >
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Active")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Active"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Active"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Active"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                        className={`statusBtn ${formData.status === "Active" ? "active" : ""}`}
                       >
                         Active
                       </Button>
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Former")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Former"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Former"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Former"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                        className={`statusBtn ${formData.status === "Former" ? "active" : ""}`}
                       >
                         Former
                       </Button>
@@ -2186,12 +1894,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
+                      className="label"
                     >
                       State
                     </InputLabel>
@@ -2213,12 +1916,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     sx={{ alignContent: "center" }}
                   >
                     <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
+                     className="label"
                     >
                       Party
                     </InputLabel>
@@ -2240,12 +1938,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
+                      className="label"
                     >
                       Senator's Photo
                     </InputLabel>
@@ -2276,15 +1969,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       <Button
                         component="label"
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="uploadBtn"
                         startIcon={<CloudUploadIcon />}
                       >
                         Upload files
@@ -2306,27 +1991,11 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
             {senatorTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-                sx={{
-                  width: "100%",
-                  marginBottom: "50px",
-                  position: "relative",
-                  bgcolor: "#fff",
-                  borderRadius: 0.8,
-                  border: "1px solid",
-                  borderColor: "divider",
-                }}
+                className="termData-paper"
               >
                 <Box sx={{ padding: 0 }}>
-
                   <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      // marginBottom: 3,
-                      borderBottom: '1px solid', borderColor: 'divider',
-                      p: 1.5, px: 3
-                    }}
+                    className="termData-header"
                   >
                     <Typography fontSize={'1rem'} fontWeight={500}  >
                       Senator's Term Information {termIndex + 1}
@@ -2352,13 +2021,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   >
                     <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
+                        className="label"
                       >
                         Term
                       </InputLabel>
@@ -2366,11 +2029,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <Grid size={isMobile ? 12 : 2.2}>
                       <FormControl fullWidth>
                         <Select
-                          // value={term.termId || ""}
                           value={getValidTermId(
                             term.termId?._id || term.termId || ""
                           )}
-                          // value={terms.some(t => t._id === term.termId) ? term.termId : ''}
                           id="term"
                           name="termId"
                           onChange={(event) =>
@@ -2400,12 +2061,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       sx={{ alignContent: "center" }}
                     >
                       <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
+                        className="label"
                       >
                         Current Term
                       </InputLabel>
@@ -2421,13 +2077,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     </Grid>
                     <Grid size={isMobile ? 6 : 2.39}>
                       <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
+                        className="label"
                       >
                         SBA Rating
                       </InputLabel>
@@ -2454,15 +2104,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         </Select>
                       </FormControl>
                     </Grid>
-                    {/*term repeater start*/}
+                
                     <Grid size={isMobile ? 12 : 2}>
                       <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
+                        className="label"
                       >
                         Term Summary
                       </InputLabel>
@@ -2508,116 +2153,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         }}
                       />
                     </Grid>
-                    {/* {term?.summaries?.map((summary, summaryIndex) => (
-                      <>
-                        
-                        <Grid size={isMobile ? 12 : 2}>
-                          <InputLabel
-                            sx={{
-                              display: "flex",
-                              justifyContent: isMobile
-                                ? "flex-start"
-                                : "flex-end",
-                              fontWeight: 700,
-                              my: 0,
-                            }}
-                          >
-                            Term Summary 
-                          </InputLabel>
-                        </Grid>
-
-                        
-                        <Grid size={isMobile ? 12 : 9.05}>
-                          <Editor
-                            tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                            licenseKey="gpl"
-                            onInit={(_evt, editor) =>
-                              (editorRef.current = editor)
-                            }
-                            value={summary.content || ""}
-                            onEditorChange={(content) => {
-                              handleSummaryChange(
-                                termIndex,
-                                summaryIndex,
-                                content
-                              );
-                            }}
-                            init={{
-                              base_url: "/scorecard/admin/tinymce",
-                              height: 250,
-                              menubar: false,
-                              plugins: [
-                                "advlist",
-                                "autolink",
-                                "lists",
-                                "link",
-                                "image",
-                                "charmap",
-                                "preview",
-                                "anchor",
-                                "searchreplace",
-                                "visualblocks",
-                                "code",
-                                "fullscreen",
-                                "insertdatetime",
-                                "media",
-                                "table",
-                                "code",
-                                "help",
-                                "wordcount",
-                              ],
-                              toolbar:
-                                "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                              content_style:
-                                "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-                              directionality: "ltr",
-                            }}
-                          />
-                        </Grid>
-                        
-                        <Grid
-                          gridColumn={{ xs: 12, sm: 1 }}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {summaryIndex > 0 ? (
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveSummary(termIndex, summaryIndex)
-                              }
-                              sx={{ cursor: "pointer", color: "black" }}
-                            />
-                          ) : (
-                            
-                            <Box sx={{ width: 24, height: 24 }} />
-                          )}
-                        </Grid>
-                      </>
-                    ))} */}
-                    {/*term repeater end*/}
                     <Grid size={1}></Grid>
-                    {/* <Grid size={10} sx={{ textAlign: "right" }}>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginTop: "1rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
-                        startIcon={<AddIcon />}
-                        onClick={() => handleAddSummary(termIndex)}
-                      >
-                        Add Another Summary
-                      </Button>
-                    </Grid> */}
+                    
                     <Grid size={1}></Grid>
-                    {/* Vote Repeater Start */}
+            
                     {term.termId ? (
                       <>
                         {term.votesScore.map((vote, voteIndex) => (
@@ -2634,15 +2173,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                             >
                               <Grid size={isMobile ? 12 : 2}>
                                 <InputLabel
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: isMobile
-                                      ? "flex-start"
-                                      : "flex-end",
-                                    fontWeight: 500,
-                                    my: 0,
-                                  }}
+                                  className="label"
                                 >
                                   Scored Vote {voteIndex + 1}
                                 </InputLabel>
@@ -2713,86 +2244,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                               );
                                             }
                                           );
-
-                                          {/* {(() => {
-                                      // Get votes for this specific term that senator participated in
-                                      let termVotes = [];
-                                      if (term.termId) {
-                                        const selectedTerm = terms?.find(
-                                          (t) => t._id === term.termId
-                                        );
-                                        if (selectedTerm) {
-                                          const termStart = new Date(
-                                            `${selectedTerm.startYear}-01-01`
-                                          );
-                                          const termEnd = new Date(
-                                            `${selectedTerm.endYear}-12-31`
-                                          );
-
-                                          termVotes = allVotes.filter(
-                                            (vote) => {
-                                              const voteDate = new Date(
-                                                vote.date
-                                              );
-
-                                              // Must be inside the term range
-                                              const inTerm =
-                                                voteDate >= termStart &&
-                                                voteDate <= termEnd &&
-                                                selectedTerm.congresses.includes(
-                                                  Number(vote.congress)
-                                                );
-
-                                              if (!inTerm) return false;
-
-                                              // Senator must have participated (have a score) for this vote
-                                              return senatorVotes.some((v) => {
-                                                if (
-                                                  !v?.score ||
-                                                  v.score.trim() === ""
-                                                )
-                                                  return false;
-
-                                                const vId =
-                                                  typeof v.voteId === "object"
-                                                    ? v.voteId?._id
-                                                    : v.voteId;
-
-                                                return (
-                                                  vId === vote._id ||
-                                                  v.quorumId ===
-                                                  vote.quorumId ||
-                                                  (v.billNumber &&
-                                                    vote.billNumber &&
-                                                    v.billNumber ===
-                                                    v.billNumber)
-                                                );
-                                              });
-                                            }
-                                          );
-                                        }
-                                      }
-
-                                      return termVotes.length > 0 ? (
-                                        termVotes.map((voteItem) => {
-                                          // Find the senator's score for this vote
-                                          const senatorVote = senatorVotes.find(
-                                            (v) => {
-                                              const vId =
-                                                typeof v.voteId === "object"
-                                                  ? v.voteId?._id
-                                                  : v.voteId;
-                                              return (
-                                                vId === voteItem._id ||
-                                                v.quorumId ===
-                                                voteItem.quorumId ||
-                                                (v.billNumber &&
-                                                  voteItem.billNumber &&
-                                                  v.billNumber ===
-                                                  voteItem.billNumber)
-                                              );
-                                            }
-                                          ); */}
 
                                           const score =
                                             senatorVote?.score || "";
@@ -2873,15 +2324,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         >
                           <Grid size={isMobile ? 12 : 2}>
                             <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
+                              className="label"
                             >
                               Scored Vote 1
                             </InputLabel>
@@ -2923,15 +2366,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddVote(termIndex)}
                       >
@@ -2956,15 +2391,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                             >
                               <Grid size={isMobile ? 12 : 2}>
                                 <InputLabel
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: isMobile
-                                      ? "flex-start"
-                                      : "flex-end",
-                                    fontWeight: 500,
-                                    my: 0,
-                                  }}
+                                  className="label"
                                 >
                                   Tracked Activity {activityIndex + 1}
                                 </InputLabel>
@@ -3113,15 +2540,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         >
                           <Grid size={isMobile ? 12 : 2}>
                             <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
+                             className="label"
                             >
                               Tracked Activity 1
                             </InputLabel>
@@ -3163,15 +2582,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
@@ -3189,16 +2600,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{
-                alignSelf: "flex-start",
-                backgroundColor: "#173A5E !important",
-                color: "white !important",
-                padding: "0.5rem 1rem",
-                marginLeft: "0.5rem",
-                "&:hover": {
-                  backgroundColor: "#1E4C80 !important",
-                },
-              }}
+              className="addTerm-btn"
             >
               Add Another Term
             </Button>

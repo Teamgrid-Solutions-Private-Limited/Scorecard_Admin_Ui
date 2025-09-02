@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteSenator, getAllSenators ,updateSenatorStatus} from "../redux/reducer/senetorSlice"; // Import actions
+import {
+  deleteSenator,
+  getAllSenators,
+  updateSenatorStatus,
+} from "../redux/reducer/senetorSlice"; 
 import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
   Box,
@@ -17,13 +21,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Menu,
-  MenuItem,
-  Chip,
-  Divider,
-  Autocomplete,
   Paper,
-  Popover,
   IconButton,
   ClickAwayListener,
   Badge,
@@ -55,7 +53,6 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 import { getAllTerms } from "../redux/reducer/termSlice";
-import { FormControl, InputLabel, Select } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
@@ -81,28 +78,18 @@ export default function Senator(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedSenator, setSelectedSenator] = useState(null);
-  const [selectedYear, setSelectedYear] = useState("");
   const { terms } = useSelector((state) => state.term);
-// Decode token to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
-
-     
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
   const [partyFilter, setPartyFilter] = useState([]);
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
-  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const [partyMenuAnchorEl, setPartyMenuAnchorEl] = useState(null);
-  const [stateMenuAnchorEl, setStateMenuAnchorEl] = useState(null);
-  const [ratingMenuAnchorEl, setRatingMenuAnchorEl] = useState(null);
   const [mergedSenators, setMergedSenators] = useState([]);
-  const [yearMenuAnchorEl, setYearMenuAnchorEl] = useState(null);
-  const [termFilter, setTermFilter] = useState(null); // 'current' or 'past'
-  const [termFilterAnchorEl, setTermFilterAnchorEl] = useState(null);
+  const [termFilter, setTermFilter] = useState(null); 
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedFilter, setExpandedFilter] = useState(null);
-  const [selectedYears, setSelectedYears] = useState([]); // Changed from selectedYear
+  const [selectedYears, setSelectedYears] = useState([]); 
   const [searchTerms, setSearchTerms] = useState({
     party: "",
     state: "",
@@ -147,21 +134,20 @@ export default function Senator(props) {
           termId: termId,
           votesScore: match ? match.votesScore : [],
           termName: termObj ? termObj.name : "",
-          currentTerm: match?.currentTerm ?? null // Ensure currentTerm is included
+          currentTerm: match?.currentTerm ?? null, // Ensure currentTerm is included
         };
       });
       setMergedSenators(merged);
-  
     }
   }, [senators, senatorData, terms]);
- 
+
   // Build list of years from 2015 to current year
   const currentYear = new Date().getFullYear();
   const years = [];
   for (let y = currentYear; y >= 2015; y--) {
     years.push(y);
   }
- 
+
   const partyOptions = [
     ...new Set(senators.map((senator) => senator.party)),
   ].filter(Boolean);
@@ -261,42 +247,6 @@ export default function Senator(props) {
     }
   };
 
-  // Filter handlers
-  const handleFilterClick = (event) => {
-    setFilterAnchorEl(event.currentTarget);
-  };
-
-  const handleFilterClose = () => {
-    setFilterAnchorEl(null);
-  };
-
-  const handlePartyMenuOpen = (event) => {
-    setPartyMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleStateMenuOpen = (event) => {
-    setStateMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleRatingMenuOpen = (event) => {
-    setRatingMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleYearMenuOpen = (event) => {
-    setYearMenuAnchorEl(event.currentTarget);
-  };
-
-  // const handleYearFilter = (year) => {
-  //   setSelectedYear((prev) => (prev === year ? "" : year)); // toggle
-  // };
-
-  const handleMenuClose = () => {
-    setPartyMenuAnchorEl(null);
-    setStateMenuAnchorEl(null);
-    setRatingMenuAnchorEl(null);
-    setYearMenuAnchorEl(null);
-  };
-
   const handlePartyFilter = (party) => {
     setPartyFilter((prev) =>
       prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party]
@@ -317,24 +267,22 @@ export default function Senator(props) {
     );
   };
   const handleYearFilter = (year) => {
-    setSelectedYears(prev =>
-      prev.includes(year)
-        ? prev.filter(y => y !== year)
-        : [...prev, year]
+    setSelectedYears((prev) =>
+      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
     );
   };
   const handleStatusFilter = (status) => {
     setStatusFilter((prev) =>
-      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
     );
   };
 
-   const handleTermFilter = (term) => {
+  const handleTermFilter = (term) => {
     setTermFilter((prev) => (prev === term ? null : term));
   };
-  const handleTermMenuOpen = (event) => {
-    setTermFilterAnchorEl(event.currentTarget);
-  };
+
   const clearAllFilters = () => {
     setPartyFilter([]);
     setStateFilter([]);
@@ -347,16 +295,16 @@ export default function Senator(props) {
 
   const filteredSenators = mergedSenators.filter((senator) => {
     // Term filter logic
-    if (termFilter === 'current') {
+    if (termFilter === "current") {
       if (senator.currentTerm !== true) return false;
-    } else if (termFilter === 'past') {
+    } else if (termFilter === "past") {
       if (senator.currentTerm === true) return false;
     }
     // Year filter
     if (selectedYears.length > 0) {
       if (senator.termName && senator.termName.includes("-")) {
         const [start, end] = senator.termName.split("-").map(Number);
-        const hasMatchingYear = selectedYears.some(year => {
+        const hasMatchingYear = selectedYears.some((year) => {
           const yearNum = Number(year);
           return yearNum >= start && yearNum <= end;
         });
@@ -366,8 +314,6 @@ export default function Senator(props) {
       }
     }
 
-    
-
     const nameMatch = searchQuery
       .toLowerCase()
       .split(/\s+/)
@@ -375,13 +321,13 @@ export default function Senator(props) {
       .every((word) => senator.name.toLowerCase().includes(word));
     const filteredSenators = senators
       ? senators.filter((senator) => {
-        const name = senator.name?.toLowerCase() || "";
-        return searchQuery
-          .toLowerCase()
-          .split(/\s+/)
-          .filter(Boolean)
-          .every((word) => name.includes(word));
-      })
+          const name = senator.name?.toLowerCase() || "";
+          return searchQuery
+            .toLowerCase()
+            .split(/\s+/)
+            .filter(Boolean)
+            .every((word) => name.includes(word));
+        })
       : [];
 
     const partyMatch =
@@ -410,9 +356,9 @@ export default function Senator(props) {
     selectedYears.length +
     (termFilter ? 1 : 0) +
     statusFilter.length;
-   const handleToggleStatusSenator = (senator) => {
-    const newStatus = senator.publishStatus === "published" ? "draft" : "published";
-   
+  const handleToggleStatusSenator = (senator) => {
+    const newStatus =
+      senator.publishStatus === "published" ? "draft" : "published";
 
     dispatch(updateSenatorStatus({ id: senator._id, publishStatus: newStatus }))
       .then(() => {
@@ -429,197 +375,88 @@ export default function Senator(props) {
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       {(loading || fetching) && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: { xs: "block", md: "flex"},bgcolor:'#f6f6f6ff', }}>
-        <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
+      <Box className="container">
+        <SideMenu />
 
-        <Box
-          sx={{
-            flexGrow: 1,
-            width: { xs: "100%", md: "80%" },
-            filter: fetching ? "blur(1px)" : "none",
-            pointerEvents: fetching ? "none" : "auto",
-            px: { xs: 2, sm: 2, md: 0 },
-            pt: { xs: 1, md: 0 },
-            minHeight: '100vh',
-          }}
-        >
-          <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
-          <MobileHeader/>
-          <Stack
-            spacing={2}
-            sx={{
-              alignItems: { xs: "stretch", md: "center" },
-              mx: { xs: 0, md: 3 },
-              pb: { xs: 2, md: 5 },
-              mt: { xs: 2, md: 4 },
-            }}
-          >
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                justifyContent: "flex-end",
-                alignItems: { xs: "stretch", sm: "center" },
-                mt: { xs: 2, md: 4 },
-                gap: 2,
-                // bgcolor: "#fff",
-                // borderTop: "1px solid ",
-                // borderLeft: "1px solid ",
-                // borderRight: "1px solid ",
-                // borderTopLeftRadius: 8,
-                // borderTopRightRadius: 8,
-                // borderColor: "divider",
-                // py: 3,
-                // mx:2.5
-              }}
-            >
-              
+        <Box className={`contentBox ${fetching ? "fetching" : "notFetching"}`}>
+          <FixedHeader />
+          <MobileHeader />
+          <Stack spacing={2} className="stackBox">
+            <Box className="actionsBox">
               {userRole === "admin" && (
-              <Box sx={{ width: "60%", display: { xs: "block", sm: "none" },  }}>
-                <Button
-                  variant="outlined"
-                  sx={{
-                    p:0,
-                    backgroundColor: "#173A5E !important",
-                    color: "white !important",
-                    fontSize:'14px',
-                    width: "100%",
-                    "&:hover": {
-                      backgroundColor: "#1E4C80 !important",
-                    },
-                  }}
-                  onClick={fetchSenatorsFromQuorum}
-                  // fullWidth
-                >
-                  Fetch Senators from Quorum
-                </Button>
-              </Box>
-            )}
+                <Box className="adminBox">
+                  <Button
+                    variant="outlined"
+                    className="fetchBtn"
+                    onClick={fetchSenatorsFromQuorum}
+                  >
+                    Fetch Senators from Quorum
+                  </Button>
+                </Box>
+              )}
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" } }}>
-                 {/* Mobile: Show Fetch button above search/filter */}
-            
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1}
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
                 <TextField
-  placeholder="Search Senators"
-  size="small"
-  value={searchQuery}
-  onChange={(e) => setSearchQuery(e.target.value)}
-  fullWidth={true}
-  InputProps={{
-    startAdornment: (
-      <InputAdornment position="start">
-        <SearchIcon sx={{ color: "#173A5E", fontSize: 20 }} />
-      </InputAdornment>
-    ),
-  }}
-  sx={{
-    
-    // marginLeft: { xs: 0, sm: "0.5rem" },
-    width: { xs: "50%", sm: "220px" },
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-      padding:'19.1px',
-      transition: "all 0.2s ease-in-out",
-      "& fieldset": {
-        borderColor: "#e5e7eb",
-      },
-      "&:hover fieldset": {
-        borderColor: "#cbd5e1",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#173A5E", 
-        borderWidth: "2px",
-      },   
-    },
-   
-    "& input::placeholder": {
-      fontSize: "0.9rem",
-      color: "#9ca3af",
-    },
-  }}
-/>
+                  placeholder="Search Senators"
+                  size="small"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  fullWidth={true}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon className="search-icon" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  className="custom-search"
+                />
 
-                <Box sx={{ position: "relative", display: "inline-block", width: { xs: "100%", sm: "auto" } }}>
+                <Box
+                  sx={{
+                    position: "relative",
+                    display: "inline-block",
+                    width: { xs: "100%", sm: "auto" },
+                  }}
+                >
                   <Badge
-                    badgeContent={activeFilterCount > 0 ? activeFilterCount : null}
+                    badgeContent={
+                      activeFilterCount > 0 ? activeFilterCount : null
+                    }
                     color="primary"
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        top: 6,
-                        right: 6,
-                        bgcolor:'#E24042'
-                      },
-                    }}
+                    className="filter-badge"
                   >
                     <Button
                       variant="outlined"
                       startIcon={<FilterListIcon />}
-                      endIcon={filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      endIcon={
+                        filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                      }
                       onClick={toggleFilter}
-                      sx={{
-                        minWidth: { xs: "100%", sm: "120px" },
-                        color:  "#fff",
-                        backgroundColor:  "#497BB2",
-                        "&:hover": {
-                          backgroundColor:  "#3B6799",
-                        },
-                        width: { xs: "100%", sm: "auto" },
-                      }}
-                      fullWidth={true}
+                      className="filter-button"
                     >
                       Filters
                     </Button>
                   </Badge>
-                
+
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
-                      <Paper
-                        sx={{
-                          position: "absolute",
-                          right: {xs:'40%',sm:0},
-                          top: "100%",
-                          mt: 0.5,
-                          width: {xs:'60vw',sm:300},
-                          height: {xs:'60vh',sm: 'auto'},
-                          zIndex: 1,
-                          boxShadow: 3,
-                          borderRadius: 1,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            p: 0.5,
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        >
+                      <Paper className="filter-paper">
+                        <Box className="filter-header">
                           <Box
                             display="flex"
                             justifyContent="flex-end"
                             alignItems="center"
                           >
-                            {/* <Typography variant="subtitle1" fontWeight="bold">
-                              Filters
-                            </Typography> */}
                             <IconButton size="small" onClick={toggleFilter}>
                               <CloseIcon fontSize="small" />
                             </IconButton>
@@ -628,20 +465,12 @@ export default function Senator(props) {
 
                         {/* Party Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "party"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "party" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ p: 1.5,px:2, cursor: "pointer", }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("party")}
                           >
                             <Typography variant="body1">Party</Typography>
@@ -652,40 +481,14 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "party" && (
-                            <Box sx={{ py: 1, pt: 0,bgcolor:'#fff' }}>
-                              {/* <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search parties..."
-                                value={searchTerms.party}
-                                onChange={(e) =>
-                                  handleSearchChange("party", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                sx={{ mb: 2 }}
-                              /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto", }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
                                 {filteredPartyOptions.length > 0 ? (
                                   filteredPartyOptions.map((party) => (
                                     <Box
                                       key={party}
+                                      className="filter-option"
                                       onClick={() => handlePartyFilter(party)}
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
                                     >
                                       {partyFilter.includes(party) ? (
                                         <CheckIcon
@@ -699,7 +502,8 @@ export default function Senator(props) {
                                         variant="body2"
                                         sx={{ ml: 1 }}
                                       >
-                                        {party.charAt(0).toUpperCase()+party.slice(1)}
+                                        {party.charAt(0).toUpperCase() +
+                                          party.slice(1)}
                                       </Typography>
                                     </Box>
                                   ))
@@ -719,20 +523,12 @@ export default function Senator(props) {
 
                         {/* State Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "state"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "state" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("state")}
                           >
                             <Typography variant="body1">State</Typography>
@@ -743,42 +539,32 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "state" && (
-                            <Box sx={{ py: 1, pt: 0 }}>
-                             <Box sx={{ mb: 2 ,px:2}}>
-                               <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search states..."
-                                value={searchTerms.state}
-                                onChange={(e) =>
-                                  handleSearchChange("state", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                
-                              />
-                             </Box>
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
+                           <Box sx={{ py: 1, pt: 0 }}>
+                              <Box sx={{ mb: 2, px: 2 }}>
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  placeholder="Search states..."
+                                  value={searchTerms.state}
+                                  onChange={(e) =>
+                                    handleSearchChange("state", e.target.value)
+                                  }
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Box>
+                              <Box className="filter-scroll">
                                 {filteredStateOptions.length > 0 ? (
                                   filteredStateOptions.map((state) => (
                                     <Box
                                       key={state}
                                       onClick={() => handleStateFilter(state)}
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
+                                      className="filter-option"
                                     >
                                       {stateFilter.includes(state) ? (
                                         <CheckIcon
@@ -812,20 +598,12 @@ export default function Senator(props) {
 
                         {/* Rating Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "rating"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "rating" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("rating")}
                           >
                             <Typography variant="body1">Rating</Typography>
@@ -837,39 +615,13 @@ export default function Senator(props) {
                           </Box>
                           {expandedFilter === "rating" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                              {/* <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search ratings..."
-                                value={searchTerms.rating}
-                                onChange={(e) =>
-                                  handleSearchChange("rating", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                sx={{ mb: 2 }}
-                              /> */}
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
+                              <Box className="filter-scroll">
                                 {filteredRatingOptions.length > 0 ? (
                                   filteredRatingOptions.map((rating) => (
                                     <Box
                                       key={rating}
                                       onClick={() => handleRatingFilter(rating)}
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
+                                      className="filter-option"
                                     >
                                       {ratingFilter.includes(rating) ? (
                                         <CheckIcon
@@ -903,20 +655,12 @@ export default function Senator(props) {
 
                         {/* Year Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "year"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "year" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("year")}
                           >
                             <Typography variant="body1">Year</Typography>
@@ -928,78 +672,25 @@ export default function Senator(props) {
                           </Box>
                           {expandedFilter === "year" && (
                             <Box sx={{ py: 1, pt: 0 }}>
-                             <Box  sx={{ mb: 2, px:2 }}>
-                               <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search years..."
-                                value={searchTerms.year}
-                                onChange={(e) => handleSearchChange("year", e.target.value)}
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                               
-                              />
-                             </Box>
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
-                                {filteredYearOptions.length > 0 ? (
-                                  filteredYearOptions.map((year) => (
-                                    <Box
-                                      key={year}
-                                      onClick={() => handleYearFilter(year.toString())}
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
-                                    >
-                                      {selectedYears.includes(year.toString()) ? (
-                                        <CheckIcon color="primary" fontSize="small" />
-                                      ) : (
-                                        <Box sx={{ width: 24, height: 24 }} />
-                                      )}
-                                      <Typography variant="body2" sx={{ ml: 1 }}>
-                                        {year}
-                                      </Typography>
-                                    </Box>
-                                  ))
-                                ) : (
-                                  <Typography variant="body2" color="textSecondary" sx={{ p: 1 }}>
-                                    No years found
-                                  </Typography>
-                                )}
+                              <Box sx={{ mb: 2, px: 2 }}>
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  placeholder="Search years..."
+                                  value={searchTerms.year}
+                                  onChange={(e) =>
+                                    handleSearchChange("year", e.target.value)
+                                  }
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
                               </Box>
-                            </Box>
-                          )}
-                          {/* {expandedFilter === "year" && (
-                            <Box sx={{ p: 2, pt: 0 }}>
-                              <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search years..."
-                                value={searchTerms.year}
-                                onChange={(e) =>
-                                  handleSearchChange("year", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                sx={{ mb: 2 }}
-                              />
-                              <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              <Box className="filter-scroll">
                                 {filteredYearOptions.length > 0 ? (
                                   filteredYearOptions.map((year) => (
                                     <Box
@@ -1007,18 +698,11 @@ export default function Senator(props) {
                                       onClick={() =>
                                         handleYearFilter(year.toString())
                                       }
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        p: 1,
-                                        borderRadius: 1,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          bgcolor: "action.hover",
-                                        },
-                                      }}
+                                      className="filter-option"
                                     >
-                                      {selectedYear === year.toString() ? (
+                                      {selectedYears.includes(
+                                        year.toString()
+                                      ) ? (
                                         <CheckIcon
                                           color="primary"
                                           fontSize="small"
@@ -1045,86 +729,63 @@ export default function Senator(props) {
                                 )}
                               </Box>
                             </Box>
-                          )} */}
+                          )}
                         </Box>
 
                         {/* Term Filter */}
-                         <Box
-                                                  sx={{
-                                                    borderBottom: "1px solid",
-                                                    borderColor: "divider",
-                                                    bgcolor:
-                                                      expandedFilter === "term"
-                                                        ? "action.hover"
-                                                        : "#fff",
-                                                  }}
-                                                >
-                                                  <Box
-                                                    display="flex"
-                                                    justifyContent="space-between"
-                                                    alignItems="center"
-                                                    sx={{ p: 1.5,px:2, cursor: "pointer" }}
-                                                    onClick={() => toggleFilterSection("term")}
-                                                  >
-                                                    <Typography variant="body1">Term</Typography>
-                                                    {expandedFilter === "term" ? (
-                                                      <ExpandLessIcon />
-                                                    ) : (
-                                                      <ExpandMoreIcon />
-                                                    )}
-                                                  </Box>
-                                                  {expandedFilter === "term" && (
-                                                    <Box sx={{ py: 1, pt: 0 }}>
-                                                      <Box sx={{ maxHeight: 200, overflow: "auto" ,bgcolor:'#fff'}}>
-                                                        {["current"/*, "past"*/].map((term) => (
-                                                          <Box
-                                                            key={term}
-                                                            onClick={() => handleTermFilter(term)}
-                                                            sx={{
-                                                              display: "flex",
-                                                              alignItems: "center",
-                                                              p: 1,
-                                                              borderRadius: 1,
-                                                              cursor: "pointer",
-                                                              "&:hover": {
-                                                                bgcolor: "action.hover",
-                                                              },
-                                                            }}
-                                                          >
-                                                            {termFilter === term ? (
-                                                              <CheckIcon
-                                                                color="primary"
-                                                                fontSize="small"
-                                                              />
-                                                            ) : (
-                                                              <Box sx={{ width: 24, height: 24 }} />
-                                                            )}
-                                                            <Typography variant="body2" sx={{ ml: 1 }}>
-                                                              {term === "current" ? "Current Term" : "Past Terms"}
-                                                            </Typography>
-                                                          </Box>
-                                                        ))}
-                                                      </Box>
-                                                    </Box>
-                                                  )}
-                                                </Box>
+                        <Box
+                          className={`filter-section ${
+                            expandedFilter === "term" ? "active" : ""
+                          }`}
+                        >
+                          <Box
+                            className="filter-title"
+                            onClick={() => toggleFilterSection("term")}
+                          >
+                            <Typography variant="body1">Term</Typography>
+                            {expandedFilter === "term" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "term" && (
+                             <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
+                                {["current" /*, "past"*/].map((term) => (
+                                  <Box
+                                    key={term}
+                                    onClick={() => handleTermFilter(term)}
+                                    className="filter-option"
+                                  >
+                                    {termFilter === term ? (
+                                      <CheckIcon
+                                        color="primary"
+                                        fontSize="small"
+                                      />
+                                    ) : (
+                                      <Box sx={{ width: 24, height: 24 }} />
+                                    )}
+                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                      {term === "current"
+                                        ? "Current Term"
+                                        : "Past Terms"}
+                                    </Typography>
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
 
                         {/* Status Filter */}
                         <Box
-                          sx={{
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            bgcolor:
-                              expandedFilter === "status"
-                                ? "action.hover"
-                                : "#fff",
-                          }}
+                          className={`filter-section ${
+                            expandedFilter === "status" ? "active" : ""
+                          }`}
                         >
                           <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{  p: 1.5,px:2, cursor: "pointer" }}
+                            className="filter-title"
                             onClick={() => toggleFilterSection("status")}
                           >
                             <Typography variant="body1">Status</Typography>
@@ -1135,30 +796,25 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "status" && (
-                            <Box sx={{ py: 1.3, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}
                                     onClick={() => handleStatusFilter(status)}
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      p: 1,
-                                      borderRadius: 1,
-                                      cursor: "pointer",
-                                      "&:hover": {
-                                        bgcolor: "action.hover",
-                                      },
-                                    }}
+                                    className="filter-option"
                                   >
                                     {statusFilter.includes(status) ? (
-                                      <CheckIcon color="primary" fontSize="small" />
+                                      <CheckIcon
+                                        color="primary"
+                                        fontSize="small"
+                                      />
                                     ) : (
                                       <Box sx={{ width: 24, height: 24 }} />
                                     )}
                                     <Typography variant="body2" sx={{ ml: 1 }}>
-                                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                                      {status.charAt(0).toUpperCase() +
+                                        status.slice(1)}
                                     </Typography>
                                   </Box>
                                 ))}
@@ -1168,18 +824,10 @@ export default function Senator(props) {
                         </Box>
 
                         {/* Clear All Button */}
-                        <Box
-                          sx={{
-                            // p: 1,
-                            // borderTop: "1px solid",
-                            // borderColor: "divider",
-                          }}
-                        >
+                        <Box>
                           <Button
                             fullWidth
-                            // variant="outlined"
-                            // color="secondary"
-                            sx={{borderRadius:0, bgcolor:'#fff'}}
+                            sx={{ borderRadius: 0, bgcolor: "#fff" }}
                             onClick={clearAllFilters}
                             disabled={
                               !partyFilter.length &&
@@ -1202,18 +850,7 @@ export default function Senator(props) {
                 {userRole === "admin" && (
                   <Button
                     variant="outlined"
-                    sx={{
-                      backgroundColor: "#173A5E !important",
-                      color: "#fff !important",
-                      // padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
-                      marginLeft: { xs: 0, sm: "0.5rem" },
-                      // width: { xs: "100%", sm: "auto" },
-                      mt: { xs: 1, sm: 0 },
-                      display: { xs: "none", sm: "block" },
-                      "&:hover": {
-                        backgroundColor: "#1E4C80 !important",
-                      },
-                    }}
+                    className="fetch-btn"
                     onClick={fetchSenatorsFromQuorum}
                   >
                     Fetch Senators from Quorum
@@ -1221,7 +858,6 @@ export default function Senator(props) {
                 )}
               </Stack>
             </Box>
-          
 
             <MainGrid
               type="senator"
@@ -1230,63 +866,64 @@ export default function Senator(props) {
               onDelete={handleDeleteClick}
               onEdit={handleEdit}
               handleToggleStatusSenator={handleToggleStatusSenator}
-
             />
           </Stack>
         </Box>
 
-        {/* Snackbar for success/error messages */}
         <Snackbar
-  open={snackbarOpen}
-  autoHideDuration={4000}
-  onClose={() => setSnackbarOpen(false)}
-  anchorOrigin={{ vertical: "top", horizontal: "right" }}
->
-  <Alert
-    onClose={() => setSnackbarOpen(false)}
-    severity={snackbarSeverity}
-    sx={{
-      border: "none",
-      boxShadow:"none",
-      width: "100%",
-      // ✅ Background conditions
-      bgcolor:
-        snackbarMessage === `${selectedSenator?.name} deleted successfully.`
-          ? "#fde8e4"
-          : snackbarMessage === "Success: Senators fetched successfully!"
-          ? "#daf4f0"
-          : undefined,
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity={snackbarSeverity}
+            sx={{
+              border: "none",
+              boxShadow: "none",
+              width: "100%",
+              bgcolor:
+                snackbarMessage ===
+                `${selectedSenator?.name} deleted successfully.`
+                  ? "#fde8e4"
+                  : snackbarMessage ===
+                    "Success: Senators fetched successfully!"
+                  ? "#daf4f0"
+                  : undefined,
 
-      // ✅ Icon color conditions
-      "& .MuiAlert-icon": {
-        color:
-          snackbarMessage === `${selectedSenator?.name} deleted successfully.`
-            ? "#cc563d"
-            : snackbarMessage === "Success: Senators fetched successfully!"
-            ? "#099885"
-            : undefined,
-      },
+              "& .MuiAlert-icon": {
+                color:
+                  snackbarMessage ===
+                  `${selectedSenator?.name} deleted successfully.`
+                    ? "#cc563d"
+                    : snackbarMessage ===
+                      "Success: Senators fetched successfully!"
+                    ? "#099885"
+                    : undefined,
+              },
 
-      // ✅ Text color conditions
-      "& .MuiAlert-message": {
-        color:
-          snackbarMessage === `${selectedSenator?.name} deleted successfully.`
-            ? "#cc563d"
-            : snackbarMessage === "Success: Senators fetched successfully!"
-            ? "#099885"
-            : undefined,
-      },
-      "& .MuiAlert-action": {
-      display: "flex",
-      alignItems: "center",  
-      paddingTop: 0,          
-      paddingBottom: 0,
-    },
-    }}
-  >
-    {snackbarMessage}
-  </Alert>
-</Snackbar>
+              "& .MuiAlert-message": {
+                color:
+                  snackbarMessage ===
+                  `${selectedSenator?.name} deleted successfully.`
+                    ? "#cc563d"
+                    : snackbarMessage ===
+                      "Success: Senators fetched successfully!"
+                    ? "#099885"
+                    : undefined,
+              },
+              "& .MuiAlert-action": {
+                display: "flex",
+                alignItems: "center",
+                paddingTop: 0,
+                paddingBottom: 0,
+              },
+            }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
 
         <Dialog
           open={openDeleteDialog}
@@ -1344,7 +981,6 @@ export default function Senator(props) {
           </DialogActions>
         </Dialog>
       </Box>
-      {/* Snackbar for success/error messages */}
     </AppTheme>
   );
 }
