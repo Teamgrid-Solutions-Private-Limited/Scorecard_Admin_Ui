@@ -108,20 +108,6 @@ export default function Representative(props) {
     dispatch(getAllTerms());
   }, [dispatch]);
 
-  //  useEffect(() => {
-  //     if (houses && houseData) {
-  //       const merged = houses
-  //         .map((house) => {
-  //           const match = houseData.find((data) => data.houseId === house._id);
-  //           return {
-  //             ...house,
-  //             rating: match ? match.rating : "N/A",
-  //           };
-  //         });
-  //   console.log("Merged Houses:", merged);
-  //       setMergedHouses(merged);
-  //     }
-  //   }, [houses, houseData]);
   useEffect(() => {
     if (houses && houseData && terms) {
       const merged = houses.map((house) => {

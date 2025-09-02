@@ -218,8 +218,6 @@ export default function Addrepresentative(props) {
                   ht.termId.name === selectedTerm?.name))
           );
 
-          console.log("Existing term data:", existingTermData);
-
           let votesScore = [];
           let activitiesScore = [];
           let summary = ""; // Initialize as empty
@@ -2199,7 +2197,7 @@ export default function Addrepresentative(props) {
                                     const selectedVote = getFilteredVotes(
                                       termIndex
                                     ).find((v) => v._id === selected);
-                                    console.log(selectedVote);
+
                                     return (
                                       <Typography
                                         sx={{
