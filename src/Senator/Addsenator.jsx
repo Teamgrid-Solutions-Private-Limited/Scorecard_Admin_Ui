@@ -34,9 +34,7 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import { discardSenatorChanges } from "../redux/reducer/senetorSlice";
-import {
-  getAllVotes,
-} from "../redux/reducer/voteSlice";
+import { getAllVotes } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import {
   Dialog,
@@ -142,8 +140,6 @@ export default function AddSenator(props) {
   // Senator's scored activities
   const senatorActivities = senatorr?.activitiesScore || [];
 
-  
-
   // Add this near the top of your component
   const fieldLabels = {
     // Senator fields
@@ -169,7 +165,6 @@ export default function AddSenator(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
- 
   // Add this function near the top of your component
   const getAvailableTerms = (currentTermIndex) => {
     const selectedTermIds = senatorTermData
@@ -180,17 +175,19 @@ export default function AddSenator(props) {
       })
       .filter(Boolean);
 
-    return terms?.filter(term => !selectedTermIds.includes(term._id)) || [];
+    return terms?.filter((term) => !selectedTermIds.includes(term._id)) || [];
   };
   // Helper function to get display name
   const getFieldDisplayName = (field) => {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
     }
     return fieldLabels[field] || field;
   };
@@ -310,50 +307,60 @@ export default function AddSenator(props) {
             // In handleTermChange, update the activitiesScore section:
 
             // Update activitiesScore for the new term
-            const newParticipatedActivities = allActivities.filter((activity) => {
-              const activityDate = new Date(activity.date);
+            const newParticipatedActivities = allActivities.filter(
+              (activity) => {
+                const activityDate = new Date(activity.date);
 
-              //  Condition 1: Must be inside the senator's term range
-              const inTerm =
-                activityDate >= newTermStart &&
-                activityDate <= newTermEnd &&
-                selectedTerm.congresses.includes(Number(activity.congress || 0));
+                //  Condition 1: Must be inside the senator's term range
+                const inTerm =
+                  activityDate >= newTermStart &&
+                  activityDate <= newTermEnd &&
+                  selectedTerm.congresses.includes(
+                    Number(activity.congress || 0)
+                  );
 
-              if (!inTerm) return false;
+                if (!inTerm) return false;
 
-              //  Condition 2: Must have a non-empty score
-              return senatorActivities.some((a) => {
-                if (!a?.score || a.score.trim() === "") return false;
+                //  Condition 2: Must have a non-empty score
+                return senatorActivities.some((a) => {
+                  if (!a?.score || a.score.trim() === "") return false;
 
-                const aId =
-                  typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+                  const aId =
+                    typeof a.activityId === "object"
+                      ? a.activityId?._id
+                      : a.activityId;
 
-                return aId === activity._id;
-              });
-            });
+                  return aId === activity._id;
+                });
+              }
+            );
 
             // Create new activitiesScore array with senator's actual scores
-            updatedTerm.activitiesScore = newParticipatedActivities.map((activity) => {
-              const senAct = senatorActivities.find((a) => {
-                const aId =
-                  typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
-                return aId === activity._id;
-              });
+            updatedTerm.activitiesScore = newParticipatedActivities.map(
+              (activity) => {
+                const senAct = senatorActivities.find((a) => {
+                  const aId =
+                    typeof a.activityId === "object"
+                      ? a.activityId?._id
+                      : a.activityId;
+                  return aId === activity._id;
+                });
 
-              let mappedScore = "";
-              if (senAct?.score) {
-                const s = String(senAct.score).toLowerCase();
-                if (s.includes("yea") || s === "yes") mappedScore = "yes";
-                else if (s.includes("nay") || s === "no") mappedScore = "no";
-                else if (s.includes("other")) mappedScore = "other";
-                else mappedScore = senAct.score;
+                let mappedScore = "";
+                if (senAct?.score) {
+                  const s = String(senAct.score).toLowerCase();
+                  if (s.includes("yea") || s === "yes") mappedScore = "yes";
+                  else if (s.includes("nay") || s === "no") mappedScore = "no";
+                  else if (s.includes("other")) mappedScore = "other";
+                  else mappedScore = senAct.score;
+                }
+
+                return {
+                  activityId: activity._id,
+                  score: mappedScore,
+                };
               }
-
-              return {
-                activityId: activity._id,
-                score: mappedScore,
-              };
-            });
+            );
 
             // If no activities in the new term, ensure we have at least one empty entry
             if (updatedTerm.activitiesScore.length === 0) {
@@ -401,8 +408,6 @@ export default function AddSenator(props) {
     });
   };
 
-
-
   const handleSummaryChange = (termIndex, content) => {
     const fieldName = `term${termIndex}_summary`;
 
@@ -428,21 +433,19 @@ export default function AddSenator(props) {
     });
   };
 
-
   const handleAddVote = (termIndex) => {
     setSenatorTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: [...term.votesScore, { voteId: "", score: "" }],
-          }
+              ...term,
+              votesScore: [...term.votesScore, { voteId: "", score: "" }],
+            }
           : term
       )
     );
   };
 
-  
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -484,29 +487,29 @@ export default function AddSenator(props) {
       setLoading(false);
     }
   };
-const handleRemoveVote = (termIndex, voteIndex) => {
-  setSenatorTermData((prev) => {
-    const updatedTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
-            ...term,
-            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-          }
-        : term
-    );
+  const handleRemoveVote = (termIndex, voteIndex) => {
+    setSenatorTermData((prev) => {
+      const updatedTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+            }
+          : term
+      );
 
-    // Clean up tracked changes for this vote
-    setLocalChanges((prevChanges) =>
-      prevChanges.filter(
-        (change) =>
-          !change.startsWith(`term${termIndex}_ScoredVote_${voteIndex + 1}`)
-      )
-    );
+      // Clean up tracked changes for this vote
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter(
+          (change) =>
+            !change.startsWith(`term${termIndex}_ScoredVote_${voteIndex + 1}`)
+        )
+      );
 
-    return updatedTerms;
-  });
-};
-  
+      return updatedTerms;
+    });
+  };
+
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
 
@@ -514,11 +517,11 @@ const handleRemoveVote = (termIndex, voteIndex) => {
       const newTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
           : term
       );
 
@@ -542,46 +545,48 @@ const handleRemoveVote = (termIndex, voteIndex) => {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: "", score: "" },
-            ],
-          }
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: "", score: "" },
+              ],
+            }
           : term
       )
     );
   };
 
+  const handleRemoveActivity = (termIndex, activityIndex) => {
+    setSenatorTermData((prev) => {
+      const updatedTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
+            }
+          : term
+      );
 
-const handleRemoveActivity = (termIndex, activityIndex) => {
-  setSenatorTermData((prev) => {
-    const updatedTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
-            ...term,
-            activitiesScore: term.activitiesScore.filter(
-              (_, i) => i !== activityIndex
-            ),
-          }
-        : term
-    );
+      // Clean up tracked changes for this activity
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter(
+          (change) =>
+            !change.startsWith(
+              `term${termIndex}_TrackedActivity_${activityIndex + 1}`
+            )
+        )
+      );
 
-    // Clean up tracked changes for this activity
-    setLocalChanges((prevChanges) =>
-      prevChanges.filter(
-        (change) =>
-          !change.startsWith(`term${termIndex}_TrackedActivity_${activityIndex + 1}`)
-      )
-    );
-
-    return updatedTerms;
-  });
-};
+      return updatedTerms;
+    });
+  };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
-      }`;
+    const activityChangeId = `term${termIndex}_TrackedActivity_${
+      activityIndex + 1
+    }`;
 
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, idx) => {
@@ -634,9 +639,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            summary: contentRefs.current[termIndex]?.content || "",
-          }
+              ...term,
+              summary: contentRefs.current[termIndex]?.content || "",
+            }
           : term
       )
     );
@@ -690,225 +695,232 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     return newVal !== oldVal;
   };
 
-   const termPreFill = () => {
-  if (senatorData?.currentSenator?.length > 0) {
-    const termsData = senatorData.currentSenator.map((term) => {
-      const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
-      const getVoteScore = (voteId) => {
-        const senatorVote = senatorVotes.find(
-          (v) =>
-            v.voteId === voteId ||
-            v.voteId?._id === voteId ||
-            (v.billNumber &&
-              participatedVotes.find((pv) => pv._id === voteId)
-                ?.billNumber === v.billNumber)
-        );
- 
-        if (!senatorVote) return "";
-        const voteScore = senatorVote.score?.toLowerCase();
-        if (voteScore?.includes("yea")) return "yea";
-        if (voteScore?.includes("nay")) return "nay";
-        if (voteScore?.includes("other")) return "other";
- 
-        return "";
-      };
-      let termVotes = [];
-      if (matchedTerm) {
-        const termStart = new Date(`${matchedTerm.startYear}-01-01`);
-        const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
- 
-        termVotes = allVotes.filter((vote) => {
-          const voteDate = new Date(vote.date);
-          const inTerm =
-            voteDate >= termStart &&
-            voteDate <= termEnd &&
-            matchedTerm.congresses.includes(Number(vote.congress));
- 
-          if (!inTerm) return false;
-          return senatorVotes.some((v) => {
-            if (!v?.score || v.score.trim() === "") return false;
- 
-            const vId =
-              typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
- 
-            return (
-              vId === vote._id ||
-              v.quorumId === vote.quorumId ||
+  const termPreFill = () => {
+    if (senatorData?.currentSenator?.length > 0) {
+      const termsData = senatorData.currentSenator.map((term) => {
+        const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
+        const getVoteScore = (voteId) => {
+          const senatorVote = senatorVotes.find(
+            (v) =>
+              v.voteId === voteId ||
+              v.voteId?._id === voteId ||
               (v.billNumber &&
-                vote.billNumber &&
-                v.billNumber === vote.billNumber)
-            );
-          });
-        });
-      }
-      let votesScore;
-      if (
-        Array.isArray(term.votesScore) &&
-        term.votesScore.length > 0 &&
-        term.votesScore.some((vote) => vote.voteId && vote.voteId !== "")
-      ) {
-        votesScore = term.votesScore
-          .filter((vote) => {
-            const voteId = vote.voteId?._id || vote.voteId;
-            if (!voteId) return false;
-            const voteData = allVotes.find(v => v._id === voteId);
-            if (!voteData || !matchedTerm) return false;
-           
-            const voteDate = new Date(voteData.date);
-            const termStart = new Date(`${matchedTerm.startYear}-01-01`);
-            const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
-           
-            return (
+                participatedVotes.find((pv) => pv._id === voteId)
+                  ?.billNumber === v.billNumber)
+          );
+
+          if (!senatorVote) return "";
+          const voteScore = senatorVote.score?.toLowerCase();
+          if (voteScore?.includes("yea")) return "yea";
+          if (voteScore?.includes("nay")) return "nay";
+          if (voteScore?.includes("other")) return "other";
+
+          return "";
+        };
+        let termVotes = [];
+        if (matchedTerm) {
+          const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+          const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+
+          termVotes = allVotes.filter((vote) => {
+            const voteDate = new Date(vote.date);
+            const inTerm =
               voteDate >= termStart &&
               voteDate <= termEnd &&
-              matchedTerm.congresses.includes(Number(voteData.congress))
-            );
-          })
-          .map((vote) => {
-            let scoreValue = "";
-            const dbScore = vote.score?.toLowerCase();
-            if (dbScore?.includes("yea")) {
-              scoreValue = "yea";
-            } else if (dbScore?.includes("nay")) {
-              scoreValue = "nay";
-            } else if (dbScore?.includes("other")) {
-              scoreValue = "other";
-            } else {
-              scoreValue = vote.score || "";
-            }
- 
-            return {
-              voteId: vote.voteId?._id || vote.voteId || "",
-              score: scoreValue,
-            };
+              matchedTerm.congresses.includes(Number(vote.congress));
+
+            if (!inTerm) return false;
+            return senatorVotes.some((v) => {
+              if (!v?.score || v.score.trim() === "") return false;
+
+              const vId =
+                typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+
+              return (
+                vId === vote._id ||
+                v.quorumId === vote.quorumId ||
+                (v.billNumber &&
+                  vote.billNumber &&
+                  v.billNumber === vote.billNumber)
+              );
+            });
           });
-      }
-      else if (termVotes.length > 0) {
-        votesScore = termVotes.map((vote) => ({
-          voteId: vote._id,
-          score: getVoteScore(vote._id),
-        }));
-      }
-      else {
-        votesScore = [{ voteId: "", score: "" }];
-      }
-      const getActivityScore = (activityId) => {
-        const senAct = senatorActivities.find((a) => {
-          const aId =
-            typeof a.activityId === "object"
-              ? a.activityId?._id
-              : a.activityId;
-          return aId === activityId;
-        });
- 
-        if (!senAct?.score) return "";
-        const s = String(senAct.score).toLowerCase();
-        if (s.includes("yea") || s === "yes") return "yes";
-        if (s.includes("nay") || s === "no") return "no";
-        if (s.includes("other")) return "other";
-        return senAct.score;
-      };
-      let termActivities = [];
-      if (matchedTerm) {
-        const termStart = new Date(`${matchedTerm.startYear}-01-01`);
-        const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
- 
-        termActivities = allActivities.filter((activity) => {
-          const activityDate = new Date(activity.date);
-          const inTerm =
-            activityDate >= termStart &&
-            activityDate <= termEnd &&
-            matchedTerm.congresses.includes(Number(activity.congress || 0));
- 
-          if (!inTerm) return false;
-          return senatorActivities.some((a) => {
-            if (!a?.score || a.score.trim() === "") return false;
- 
+        }
+        let votesScore;
+        if (
+          Array.isArray(term.votesScore) &&
+          term.votesScore.length > 0 &&
+          term.votesScore.some((vote) => vote.voteId && vote.voteId !== "")
+        ) {
+          votesScore = term.votesScore
+            .filter((vote) => {
+              const voteId = vote.voteId?._id || vote.voteId;
+              if (!voteId) return false;
+              const voteData = allVotes.find((v) => v._id === voteId);
+              if (!voteData || !matchedTerm) return false;
+
+              const voteDate = new Date(voteData.date);
+              const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+              const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+
+              return (
+                voteDate >= termStart &&
+                voteDate <= termEnd &&
+                matchedTerm.congresses.includes(Number(voteData.congress))
+              );
+            })
+            .map((vote) => {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
+
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+              };
+            });
+        } else if (termVotes.length > 0) {
+          votesScore = termVotes.map((vote) => ({
+            voteId: vote._id,
+            score: getVoteScore(vote._id),
+          }));
+        } else {
+          votesScore = [{ voteId: "", score: "" }];
+        }
+        const getActivityScore = (activityId) => {
+          const senAct = senatorActivities.find((a) => {
             const aId =
-              typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
- 
-            return aId === activity._id;
+              typeof a.activityId === "object"
+                ? a.activityId?._id
+                : a.activityId;
+            return aId === activityId;
           });
-        });
-      }
-      let activitiesScore;
-      if (
-        Array.isArray(term.activitiesScore) &&
-        term.activitiesScore.length > 0
-      ) {
-        activitiesScore = term.activitiesScore
-          .filter((activity) => {
-            const activityId = activity.activityId?._id || activity.activityId;
-            if (!activityId) return false;
-            const activityData = allActivities.find(a => a._id === activityId);
-            if (!activityData || !matchedTerm) return false;
-           
-            const activityDate = new Date(activityData.date);
-            const termStart = new Date(`${matchedTerm.startYear}-01-01`);
-            const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
-           
-            return (
+
+          if (!senAct?.score) return "";
+          const s = String(senAct.score).toLowerCase();
+          if (s.includes("yea") || s === "yes") return "yes";
+          if (s.includes("nay") || s === "no") return "no";
+          if (s.includes("other")) return "other";
+          return senAct.score;
+        };
+        let termActivities = [];
+        if (matchedTerm) {
+          const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+          const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+
+          termActivities = allActivities.filter((activity) => {
+            const activityDate = new Date(activity.date);
+            const inTerm =
               activityDate >= termStart &&
               activityDate <= termEnd &&
-              matchedTerm.congresses.includes(Number(activityData.congress || 0))
-            );
-          })
-          .map((activity) => {
-            const actualActivity = allActivities.find(
-              (a) => a._id === (activity.activityId?._id || activity.activityId)
-            );
- 
-            return {
-              activityId: activity.activityId?._id || activity.activityId || "",
-              score: activity.score || "",
-              _activityTitle: actualActivity?.title || "Unknown Activity",
-            };
+              matchedTerm.congresses.includes(Number(activity.congress || 0));
+
+            if (!inTerm) return false;
+            return senatorActivities.some((a) => {
+              if (!a?.score || a.score.trim() === "") return false;
+
+              const aId =
+                typeof a.activityId === "object"
+                  ? a.activityId?._id
+                  : a.activityId;
+
+              return aId === activity._id;
+            });
           });
-      } else if (termActivities.length > 0) {
-        activitiesScore = termActivities.map((activity) => ({
-          activityId: activity._id,
-          score: getActivityScore(activity._id),
-          _activityTitle: activity.title || "Unknown Activity",
-        }));
-      } else {
-        activitiesScore = [{ activityId: "", score: "" }];
-      }
- 
-      return {
-        _id: term._id,
-        summary: term.summary || "",
-        rating: term.rating || "",
-        termId: matchedTerm?._id || "",
-        currentTerm: term.currentTerm || false,
-        editedFields: term.editedFields || [],
-        fieldEditors: term.fieldEditors || {},
-        isNew: false,
-        votesScore,
-        activitiesScore,
-      };
-    });
-    setSenatorTermData(termsData);
-    setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
-  } else {
-    const defaultTerm = [
-      {
-        senateId: id,
-        summary: "",
-        rating: "",
-        votesScore: [{ voteId: "", score: "" }],
-        activitiesScore: [{ activityId: "", score: "" }],
-        currentTerm: false,
-        termId: null,
-        editedFields: [],
-        fieldEditors: {},
-        isNew: true,
-      },
-    ];
- 
-    setSenatorTermData(defaultTerm);
-    setOriginalTermData(JSON.parse(JSON.stringify(defaultTerm)));
-  }
-};
+        }
+        let activitiesScore;
+        if (
+          Array.isArray(term.activitiesScore) &&
+          term.activitiesScore.length > 0
+        ) {
+          activitiesScore = term.activitiesScore
+            .filter((activity) => {
+              const activityId =
+                activity.activityId?._id || activity.activityId;
+              if (!activityId) return false;
+              const activityData = allActivities.find(
+                (a) => a._id === activityId
+              );
+              if (!activityData || !matchedTerm) return false;
+
+              const activityDate = new Date(activityData.date);
+              const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+              const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+
+              return (
+                activityDate >= termStart &&
+                activityDate <= termEnd &&
+                matchedTerm.congresses.includes(
+                  Number(activityData.congress || 0)
+                )
+              );
+            })
+            .map((activity) => {
+              const actualActivity = allActivities.find(
+                (a) =>
+                  a._id === (activity.activityId?._id || activity.activityId)
+              );
+
+              return {
+                activityId:
+                  activity.activityId?._id || activity.activityId || "",
+                score: activity.score || "",
+                _activityTitle: actualActivity?.title || "Unknown Activity",
+              };
+            });
+        } else if (termActivities.length > 0) {
+          activitiesScore = termActivities.map((activity) => ({
+            activityId: activity._id,
+            score: getActivityScore(activity._id),
+            _activityTitle: activity.title || "Unknown Activity",
+          }));
+        } else {
+          activitiesScore = [{ activityId: "", score: "" }];
+        }
+
+        return {
+          _id: term._id,
+          summary: term.summary || "",
+          rating: term.rating || "",
+          termId: matchedTerm?._id || "",
+          currentTerm: term.currentTerm || false,
+          editedFields: term.editedFields || [],
+          fieldEditors: term.fieldEditors || {},
+          isNew: false,
+          votesScore,
+          activitiesScore,
+        };
+      });
+      setSenatorTermData(termsData);
+      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
+    } else {
+      const defaultTerm = [
+        {
+          senateId: id,
+          summary: "",
+          rating: "",
+          votesScore: [{ voteId: "", score: "" }],
+          activitiesScore: [{ activityId: "", score: "" }],
+          currentTerm: false,
+          termId: null,
+          editedFields: [],
+          fieldEditors: {},
+          isNew: true,
+        },
+      ];
+
+      setSenatorTermData(defaultTerm);
+      setOriginalTermData(JSON.parse(JSON.stringify(defaultTerm)));
+    }
+  };
 
   useEffect(() => {
     if (originalFormData && formData) {
@@ -1093,7 +1105,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
     setFormData((prev) => {
@@ -1123,28 +1134,36 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     setLoading(true);
 
     try {
-        // Prevent duplicate termId selections before any API calls
-            const termIdCounts = senatorTermData
-              .map(t => t.termId)
-              .filter(Boolean)
-              .reduce((acc, id) => {
-                acc[id] = (acc[id] || 0) + 1;
-                return acc;
-              }, {});
-      
-            const hasDuplicateTerms = Object.values(termIdCounts).some(count => count > 1);
-            if (hasDuplicateTerms) {
-              setLoading(false);
-              handleSnackbarOpen("Duplicate term selected. Each term can only be added once.", "error");
-              return;
-            }
-            const currentTerms = senatorTermData.filter(term => term.currentTerm);
-            if (currentTerms.length > 1) {
-              setLoading(false);
-              handleSnackbarOpen("Only one term can be marked as current term.", "error");
-              return;
-            }
-            
+      // Prevent duplicate termId selections before any API calls
+      const termIdCounts = senatorTermData
+        .map((t) => t.termId)
+        .filter(Boolean)
+        .reduce((acc, id) => {
+          acc[id] = (acc[id] || 0) + 1;
+          return acc;
+        }, {});
+
+      const hasDuplicateTerms = Object.values(termIdCounts).some(
+        (count) => count > 1
+      );
+      if (hasDuplicateTerms) {
+        setLoading(false);
+        handleSnackbarOpen(
+          "Duplicate term selected. Each term can only be added once.",
+          "error"
+        );
+        return;
+      }
+      const currentTerms = senatorTermData.filter((term) => term.currentTerm);
+      if (currentTerms.length > 1) {
+        setLoading(false);
+        handleSnackbarOpen(
+          "Only one term can be marked as current term.",
+          "error"
+        );
+        return;
+      }
+
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -1276,13 +1295,13 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
           //   ...summary,
           //   congress: congressArray[summaryIndex] || null, // Get the congress at the same index
           // })),
-          summary: term.summary
+          summary: term.summary,
         };
 
         return term._id
           ? dispatch(
-            updateSenatorData({ id: term._id, data: termUpdate })
-          ).unwrap()
+              updateSenatorData({ id: term._id, data: termUpdate })
+            ).unwrap()
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
@@ -1300,9 +1319,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
       userRole === "admin"
         ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
-          "info"
-        );
+            'Status changed to "Under Review" for admin to moderate.',
+            "info"
+          );
     } catch (error) {
       console.error("Save failed:", error);
 
@@ -1313,11 +1332,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
           : "Failed to create senator data. Please try again.");
 
       handleSnackbarOpen(errorMessage, "error");
-
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -1387,7 +1405,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-
     };
     return configs[currentStatus];
   };
@@ -1410,7 +1427,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     const voteExists = votes.some((v) => v._id === voteId);
     return voteExists ? voteId : "";
   };
-
 
   return (
     <AppTheme key={componentKey}>
@@ -1440,7 +1456,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               alignItems: "center",
               mx: 3,
               mt: { xs: 8, md: 2.8 },
-              gap: 1
+              gap: 1,
             }}
           >
             <Stack
@@ -1491,14 +1507,16 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${formData.publishStatus === "draft"
-                          ? "66, 165, 245"
-                          : formData.publishStatus === "under review"
+                        backgroundColor: `rgba(${
+                          formData.publishStatus === "draft"
+                            ? "66, 165, 245"
+                            : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                          }, 0.2)`, display: "grid",
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
+                        display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
                       }}
@@ -1593,8 +1611,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                               if (category === "activitiesScore") {
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
-                              return `Term ${termNumber}: ${fieldLabels[category] || category
-                                } Item ${itemNumber}`;
+                              return `Term ${termNumber}: ${
+                                fieldLabels[category] || category
+                              } Item ${itemNumber}`;
                             }
 
                             // Handle regular term fields (e.g., "term2_votesScore")
@@ -1603,8 +1622,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                               const termNumber =
                                 parseInt(parts[0].replace("term", "")) + 1;
                               const fieldKey = parts.slice(1).join("_");
-                              return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey
-                                }`;
+                              return `Term ${termNumber}: ${
+                                fieldLabels[fieldKey] || fieldKey
+                              }`;
                             }
 
                             // Handle non-term fields
@@ -1640,13 +1660,13 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                         "Unknown Editor";
                                       const editTime = editorInfo?.editedAt
                                         ? new Date(
-                                          editorInfo.editedAt
-                                        ).toLocaleString([], {
-                                          month: "short",
-                                          day: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
+                                            editorInfo.editedAt
+                                          ).toLocaleString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
                                         : "unknown time";
 
                                       return (
@@ -1713,7 +1733,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    {formData.publishStatus === "published" ? "" : "Unsaved Changes"}
+                                    {formData.publishStatus === "published"
+                                      ? ""
+                                      : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -1747,12 +1769,12 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                               </Typography>
                                             </Box>
                                           }
-                                        // secondary={
-                                        //   <Typography variant="caption" color="text.secondary">
-                                        //     Edited just now
-                                        //   </Typography>
-                                        // }
-                                        // sx={{ my: 0 }}
+                                          // secondary={
+                                          //   <Typography variant="caption" color="text.secondary">
+                                          //     Edited just now
+                                          //   </Typography>
+                                          // }
+                                          // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
@@ -1767,7 +1789,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   </Box>
                 </Box>
               )}
-
 
             <Paper className="customPaper">
               <Dialog
@@ -1843,12 +1864,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   columnSpacing={2}
                   alignItems={"center"}
                   py={3}
-
                 >
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
+                    <InputLabel className="nameLabel">
                       Senator's Name
                     </InputLabel>
                   </Grid>
@@ -1866,9 +1884,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 1}>
-                    <InputLabel className="label">
-                      Status
-                    </InputLabel>
+                    <InputLabel className="label">Status</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <ButtonGroup
@@ -1879,25 +1895,25 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Active")}
-                        className={`statusBtn ${formData.status === "Active" ? "active" : ""}`}
+                        className={`statusBtn ${
+                          formData.status === "Active" ? "active" : ""
+                        }`}
                       >
                         Active
                       </Button>
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Former")}
-                        className={`statusBtn ${formData.status === "Former" ? "active" : ""}`}
+                        className={`statusBtn ${
+                          formData.status === "Former" ? "active" : ""
+                        }`}
                       >
                         Former
                       </Button>
                     </ButtonGroup>
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      className="label"
-                    >
-                      State
-                    </InputLabel>
+                    <InputLabel className="label">State</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <TextField
@@ -1915,11 +1931,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     size={isMobile ? 12 : 1}
                     sx={{ alignContent: "center" }}
                   >
-                    <InputLabel
-                     className="label"
-                    >
-                      Party
-                    </InputLabel>
+                    <InputLabel className="label">Party</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <FormControl fullWidth>
@@ -1937,11 +1949,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      className="label"
-                    >
-                      Senator's Photo
-                    </InputLabel>
+                    <InputLabel className="label">Senator's Photo</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -1985,19 +1993,12 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               </Box>
             </Paper>
 
-
-
             {/* Render each term in senatorTermData */}
             {senatorTermData.map((term, termIndex) => (
-              <Paper
-                key={termIndex}
-                className="termData-paper"
-              >
+              <Paper key={termIndex} className="termData-paper">
                 <Box sx={{ padding: 0 }}>
-                  <Box
-                    className="termData-header"
-                  >
-                    <Typography fontSize={'1rem'} fontWeight={500}  >
+                  <Box className="termData-header">
+                    <Typography fontSize={"1rem"} fontWeight={500}>
                       Senator's Term Information {termIndex + 1}
                     </Typography>
 
@@ -2020,11 +2021,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     py={3}
                   >
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        className="label"
-                      >
-                        Term
-                      </InputLabel>
+                      <InputLabel className="label">Term</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 12 : 2.2}>
                       <FormControl fullWidth>
@@ -2043,11 +2040,13 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                             Select an option
                           </MenuItem>
                           {getAvailableTerms(termIndex).length > 0 ? (
-                            getAvailableTerms(termIndex).sort((a, b) => b.endYear - a.endYear).map((t) => (
-                              <MenuItem key={t._id} value={t._id}>
-                                {t.name}
-                              </MenuItem>
-                            ))
+                            getAvailableTerms(termIndex)
+                              .sort((a, b) => b.endYear - a.endYear)
+                              .map((t) => (
+                                <MenuItem key={t._id} value={t._id}>
+                                  {t.name}
+                                </MenuItem>
+                              ))
                           ) : (
                             <MenuItem value="" disabled>
                               No terms available
@@ -2060,11 +2059,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       size={isMobile ? 6 : 2.1}
                       sx={{ alignContent: "center" }}
                     >
-                      <InputLabel
-                        className="label"
-                      >
-                        Current Term
-                      </InputLabel>
+                      <InputLabel className="label">Current Term</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 6 : 0}>
                       <Switch
@@ -2076,11 +2071,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       />
                     </Grid>
                     <Grid size={isMobile ? 6 : 2.39}>
-                      <InputLabel
-                        className="label"
-                      >
-                        SBA Rating
-                      </InputLabel>
+                      <InputLabel className="label">SBA Rating</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 6 : 2.2}>
                       <FormControl fullWidth>
@@ -2104,15 +2095,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         </Select>
                       </FormControl>
                     </Grid>
-                
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        className="label"
-                      >
-                        Term Summary
-                      </InputLabel>
+                      <InputLabel className="label">Term Summary</InputLabel>
                     </Grid>
-
                     {/* Editor Column */}
                     <Grid size={isMobile ? 12 : 9.05}>
                       <Editor
@@ -2120,7 +2105,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term?.summary || ""}
-                        onEditorChange={(content) => handleSummaryChange(termIndex, content)} // Remove the extra 0
+                        onEditorChange={(content) =>
+                          handleSummaryChange(termIndex, content)
+                        } // Remove the extra 0
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -2154,9 +2141,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       />
                     </Grid>
                     <Grid size={1}></Grid>
-                    
                     <Grid size={1}></Grid>
-            
                     {term.termId ? (
                       <>
                         {term.votesScore.map((vote, voteIndex) => (
@@ -2172,9 +2157,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                               columnGap={"15px"}
                             >
                               <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel
-                                  className="label"
-                                >
+                                <InputLabel className="label">
                                   Scored Vote {voteIndex + 1}
                                 </InputLabel>
                               </Grid>
@@ -2228,19 +2211,26 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                     </MenuItem>
                                     {allVotes.length > 0 ? (
                                       allVotes
-                                        .filter(voteItem => voteItem.type === "senate_bill") // Filter by type "senate_bill"
+                                        .filter(
+                                          (voteItem) =>
+                                            voteItem.type === "senate_bill"
+                                        ) // Filter by type "senate_bill"
                                         .map((voteItem) => {
                                           // Find the senator's score for this vote
                                           const senatorVote = senatorVotes.find(
                                             (v) => {
                                               const vId =
-                                                typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                                                typeof v.voteId === "object"
+                                                  ? v.voteId?._id
+                                                  : v.voteId;
                                               return (
                                                 vId === voteItem._id ||
-                                                v.quorumId === voteItem.quorumId ||
+                                                v.quorumId ===
+                                                  voteItem.quorumId ||
                                                 (v.billNumber &&
                                                   voteItem.billNumber &&
-                                                  v.billNumber === voteItem.billNumber)
+                                                  v.billNumber ===
+                                                    voteItem.billNumber)
                                               );
                                             }
                                           );
@@ -2264,7 +2254,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                                 }}
                                               >
                                                 {voteItem.title}
-
                                               </Typography>
                                             </MenuItem>
                                           );
@@ -2275,8 +2264,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                           ? "No bills available for this term"
                                           : "Select a term first"}
                                       </MenuItem>
-                                    )
-                                    }
+                                    )}
                                     {/* ) */}
                                     {/* ()} */}
                                   </Select>
@@ -2314,7 +2302,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         ))}
                       </>
                     ) : (
-                     
                       <Grid rowSpacing={2} sx={{ width: "100%" }}>
                         <Grid
                           size={12}
@@ -2323,9 +2310,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                           columnGap={"15px"}
                         >
                           <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              className="label"
-                            >
+                            <InputLabel className="label">
                               Scored Vote 1
                             </InputLabel>
                           </Grid>
@@ -2390,9 +2375,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                               columnGap={"15px"}
                             >
                               <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel
-                                  className="label"
-                                >
+                                <InputLabel className="label">
                                   Tracked Activity {activityIndex + 1}
                                 </InputLabel>
                               </Grid>
@@ -2447,11 +2430,14 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                     </MenuItem>
                                     {allActivities.length > 0 ? (
                                       allActivities
-                                        .filter(activityItem => activityItem.type === "senate")
+                                        .filter(
+                                          (activityItem) =>
+                                            activityItem.type === "senate"
+                                        )
                                         .map((activityItem) => {
                                           // Find if this activity has a score for this senator
-                                          const hasScore = senatorActivities.some(
-                                            (a) => {
+                                          const hasScore =
+                                            senatorActivities.some((a) => {
                                               const aId =
                                                 typeof a.activityId === "object"
                                                   ? a.activityId?._id
@@ -2461,8 +2447,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                                 a.score &&
                                                 a.score.trim() !== ""
                                               );
-                                            }
-                                          );
+                                            });
 
                                           const scoreText = hasScore
                                             ? " (scored)"
@@ -2482,7 +2467,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                               >
                                                 {activityItem.title ||
                                                   "Untitled Activity"}
-
                                               </Typography>
                                             </MenuItem>
                                           );
@@ -2530,7 +2514,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         ))}
                       </>
                     ) : (
-                      
                       <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
                         <Grid
                           size={12}
@@ -2539,9 +2522,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                           columnGap={"15px"}
                         >
                           <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                             className="label"
-                            >
+                            <InputLabel className="label">
                               Tracked Activity 1
                             </InputLabel>
                           </Grid>
@@ -2617,7 +2598,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                 sx={{
                   width: "100%",
                   border: "none",
-                  boxShadow:"none",
+                  boxShadow: "none",
                   bgcolor:
                     snackbarMessage === "Changes published successfully!"
                       ? "#daf4f0"
@@ -2633,14 +2614,13 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       snackbarMessage === "Changes published successfully!"
                         ? "#099885"
                         : undefined,
-
                   },
                   "& .MuiAlert-action": {
-      display: "flex",
-      alignItems: "center",   
-      paddingTop: 0,          
-      paddingBottom: 0,
-    },
+                    display: "flex",
+                    alignItems: "center",
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                  },
                 }}
                 elevation={6}
                 variant="filled"
@@ -2648,7 +2628,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                 {snackbarMessage}
               </MuiAlert>
             </Snackbar>
-
           </Stack>
           <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />

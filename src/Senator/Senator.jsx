@@ -5,7 +5,7 @@ import {
   deleteSenator,
   getAllSenators,
   updateSenatorStatus,
-} from "../redux/reducer/senetorSlice"; 
+} from "../redux/reducer/senetorSlice";
 import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
 import {
   Box,
@@ -86,10 +86,10 @@ export default function Senator(props) {
   const [ratingFilter, setRatingFilter] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
   const [mergedSenators, setMergedSenators] = useState([]);
-  const [termFilter, setTermFilter] = useState(null); 
+  const [termFilter, setTermFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedFilter, setExpandedFilter] = useState(null);
-  const [selectedYears, setSelectedYears] = useState([]); 
+  const [selectedYears, setSelectedYears] = useState([]);
   const [searchTerms, setSearchTerms] = useState({
     party: "",
     state: "",
@@ -539,7 +539,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "state" && (
-                           <Box sx={{ py: 1, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                               <Box sx={{ mb: 2, px: 2 }}>
                                 <TextField
                                   fullWidth
@@ -750,7 +750,7 @@ export default function Senator(props) {
                             )}
                           </Box>
                           {expandedFilter === "term" && (
-                             <Box sx={{ py: 1, pt: 0 }}>
+                            <Box sx={{ py: 1, pt: 0 }}>
                               <Box className="filter-scroll">
                                 {["current" /*, "past"*/].map((term) => (
                                   <Box

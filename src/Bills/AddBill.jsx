@@ -132,7 +132,7 @@ export default function AddBill(props) {
     if (selectedVote) {
       const termId = selectedVote.termId || "";
       const newFormData = {
-          type: selectedVote.type.includes("senate")
+        type: selectedVote.type.includes("senate")
           ? "senate_bill"
           : selectedVote.type.includes("house")
           ? "house_bill"
@@ -473,19 +473,19 @@ export default function AddBill(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-           published: {
-                  backgroundColor: "rgba(255, 193, 7, 0.12)",
-                  borderColor: "#FFC107",
-                  iconColor: "#FFA000",
-                 icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-                  title: "Unsaved Changes",
-                  description:
-                    editedFields.length > 0
-                      ? `${editedFields.length} pending changes`
-                      : "Published and live",
-                  titleColor: "#5D4037",
-                  descColor: "#795548",
-                },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Unsaved Changes",
+        description:
+          editedFields.length > 0
+            ? `${editedFields.length} pending changes`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -517,7 +517,7 @@ export default function AddBill(props) {
   return (
     <AppTheme>
       {loading && (
-         <Box className="circularLoader">
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
@@ -531,40 +531,39 @@ export default function AddBill(props) {
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
           sx={{
-                  width: "100%",
-                  border: "none",
-                  boxShadow:"none",
-                  bgcolor:
-                    snackbarMessage === "Changes published successfully!"
-                      ? "#daf4f0"
-                      : undefined,
-                  "& .MuiAlert-icon": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-message": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-
-                  },
-                  "& .MuiAlert-action": {
-      display: "flex",
-      alignItems: "center",  
-      paddingTop: 0,          
-      paddingBottom: 0,
-    },
-                }}
+            width: "100%",
+            border: "none",
+            boxShadow: "none",
+            bgcolor:
+              snackbarMessage === "Changes published successfully!"
+                ? "#daf4f0"
+                : undefined,
+            "& .MuiAlert-icon": {
+              color:
+                snackbarMessage === "Changes published successfully!"
+                  ? "#099885"
+                  : undefined,
+            },
+            "& .MuiAlert-message": {
+              color:
+                snackbarMessage === "Changes published successfully!"
+                  ? "#099885"
+                  : undefined,
+            },
+            "& .MuiAlert-action": {
+              display: "flex",
+              alignItems: "center",
+              paddingTop: 0,
+              paddingBottom: 0,
+            },
+          }}
           elevation={6}
           variant="filled"
         >
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-       <Box className="flexContainer">
+      <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -576,7 +575,7 @@ export default function AddBill(props) {
           })}
         >
           <FixedHeader />
-          <MobileHeader/>
+          <MobileHeader />
           <Stack
             spacing={2}
             sx={{
@@ -598,7 +597,7 @@ export default function AddBill(props) {
               <Button
                 variant="outlined"
                 onClick={handleDiscard}
-                 className="discardBtn"
+                className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
@@ -609,7 +608,6 @@ export default function AddBill(props) {
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
-             
             </Stack>
             {userRole &&
               statusData &&
@@ -633,14 +631,15 @@ export default function AddBill(props) {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${formData.status === "draft"
-                          ? "66, 165, 245"
-                          : formData.status === "under review"
+                        backgroundColor: `rgba(${
+                          formData.status === "draft"
+                            ? "66, 165, 245"
+                            : formData.status === "under review"
                             ? "230, 81, 0"
                             : formData.status === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                          }, 0.2)`,
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
@@ -826,7 +825,9 @@ export default function AddBill(props) {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    {formData.status === "published" ? "" : "Unsaved Changes"}
+                                    {formData.status === "published"
+                                      ? ""
+                                      : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -880,8 +881,6 @@ export default function AddBill(props) {
                   </Box>
                 </Box>
               )}
-
-            
 
             <Paper className="customPaper">
               <Dialog
@@ -960,11 +959,7 @@ export default function AddBill(props) {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
-                      Type
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Type</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -974,18 +969,14 @@ export default function AddBill(props) {
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
-                         <MenuItem value="senate_bill">Senate</MenuItem>
+                        <MenuItem value="senate_bill">Senate</MenuItem>
                         <MenuItem value="house_bill">House</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
-                      Title
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Title</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1004,9 +995,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                     className="nameLabel"
-                    >
+                    <InputLabel className="nameLabel">
                       Short Description
                     </InputLabel>
                   </Grid>
@@ -1054,9 +1043,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
+                    <InputLabel className="nameLabel">
                       Long Description
                     </InputLabel>
                   </Grid>
@@ -1102,11 +1089,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
-                      Date
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Date</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1126,11 +1109,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 6 : 2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
-                      Congress
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Congress</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 6 : 10}>
                     <FormControl fullWidth>
@@ -1149,11 +1128,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                     className="nameLabel"
-                    >
-                      Term
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Term</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1187,11 +1162,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
-                      Roll Call
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Roll Call</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1222,11 +1193,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
-                      Read More
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Read More</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1292,11 +1259,7 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      className="nameLabel"
-                    >
-                      SBA Position
-                    </InputLabel>
+                    <InputLabel className="nameLabel">SBA Position</InputLabel>
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 10}>
@@ -1347,7 +1310,7 @@ export default function AddBill(props) {
               </Box>
             </Paper>
           </Stack>
-<Box sx={{ mb: "40px" ,mx:"15px" }}>
+          <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
           </Box>
         </Box>

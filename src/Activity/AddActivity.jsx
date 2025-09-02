@@ -91,15 +91,12 @@ export default function AddActivity(props) {
     userRole = "";
   }
 
- 
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
-           const theme = useTheme();
-         const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
-   const [hasLocalChanges, setHasLocalChanges] = useState(false);
- 
-  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   const fieldLabels = {
     type: "Type",
@@ -328,8 +325,6 @@ export default function AddActivity(props) {
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
 
-     
-
       if (id) {
         await dispatch(
           updateActivity({ id, updatedData: formDataToSend })
@@ -455,19 +450,19 @@ export default function AddActivity(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-            published: {
-                              backgroundColor: "rgba(255, 193, 7, 0.12)",
-                              borderColor: "#FFC107",
-                              iconColor: "#FFA000",
-                             icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-                              title: "Unsaved Changes",
-                              description:
-                                editedFields.length > 0
-                                  ? `${editedFields.length} pending changes`
-                                  : "Published and live",
-                              titleColor: "#5D4037",
-                              descColor: "#795548",
-                            },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Unsaved Changes",
+        description:
+          editedFields.length > 0
+            ? `${editedFields.length} pending changes`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -479,13 +474,14 @@ export default function AddActivity(props) {
     Array.isArray(editedFields) ? editedFields : [],
     currentStatus
   );
-    const backendChanges = Array.isArray(formData?.editedFields)
+  const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
     : [];
-  const localOnlyChanges = (Array.isArray(editedFields) ? editedFields : []).filter(
-    (field) => !backendChanges.includes(field)
-  );
-  const hasAnyChanges = backendChanges.length > 0 || localOnlyChanges.length > 0;
+  const localOnlyChanges = (
+    Array.isArray(editedFields) ? editedFields : []
+  ).filter((field) => !backendChanges.includes(field));
+  const hasAnyChanges =
+    backendChanges.length > 0 || localOnlyChanges.length > 0;
   const isStatusReady = !id || Boolean(originalFormData);
 
   // 5. The banner already uses editedFields, so no change needed there
@@ -513,33 +509,32 @@ export default function AddActivity(props) {
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
           sx={{
-                  width: "100%",
-                  border: "none",
-                  boxShadow:"none",
-                  bgcolor:
-                    snackbarMessage === "Changes published successfully!"
-                      ? "#daf4f0"
-                      : undefined,
-                  "& .MuiAlert-icon": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-message": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-
-                  },
-                  "& .MuiAlert-action": {
-      display: "flex",
-      alignItems: "center",  
-      paddingTop: 0,          
-      paddingBottom: 0,
-    },
-                }}
+            width: "100%",
+            border: "none",
+            boxShadow: "none",
+            bgcolor:
+              snackbarMessage === "Changes published successfully!"
+                ? "#daf4f0"
+                : undefined,
+            "& .MuiAlert-icon": {
+              color:
+                snackbarMessage === "Changes published successfully!"
+                  ? "#099885"
+                  : undefined,
+            },
+            "& .MuiAlert-message": {
+              color:
+                snackbarMessage === "Changes published successfully!"
+                  ? "#099885"
+                  : undefined,
+            },
+            "& .MuiAlert-action": {
+              display: "flex",
+              alignItems: "center",
+              paddingTop: 0,
+              paddingBottom: 0,
+            },
+          }}
           elevation={6}
           variant="filled"
         >
@@ -560,7 +555,7 @@ export default function AddActivity(props) {
           })}
         >
           <FixedHeader />
-          <MobileHeader/>
+          <MobileHeader />
           <Stack
             spacing={2}
             sx={{
@@ -605,64 +600,68 @@ export default function AddActivity(props) {
             {userRole &&
               statusData &&
               (currentStatus !== "published" || hasAnyChanges) && (
-              <Box
-                sx={{
-                  width: "97%",
-                  p: 2,
-                  backgroundColor: statusData.backgroundColor,
-                  borderLeft: `4px solid ${statusData.borderColor}`,
-                  borderRadius: "0 8px 8px 0",
-                  boxShadow: 1,
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                  {/* Status icon bubble */}
+                <Box
+                  sx={{
+                    width: "97%",
+                    p: 2,
+                    backgroundColor: statusData.backgroundColor,
+                    borderLeft: `4px solid ${statusData.borderColor}`,
+                    borderRadius: "0 8px 8px 0",
+                    boxShadow: 1,
+                    mb: 2,
+                  }}
+                >
                   <Box
-                    sx={{
-                      p: 1,
-                      borderRadius: "50%",
-                      backgroundColor: `rgba(${formData.status === "draft"
-                          ? "66, 165, 245"
-                          : formData.status === "under review"
-                            ? "230, 81, 0"
-                            : formData.status === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                          }, 0.2)`,
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
-                    }}
+                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
                   >
-                    {statusData.icon && React.cloneElement(statusData.icon, {
-                        sx: { color: statusData.iconColor },
-                      })}
-                  </Box>
-
-                  <Box sx={{ flex: 1 }}>
-                    {/* Header: title + pending count (admin only) */}
+                    {/* Status icon bubble */}
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
+                        p: 1,
+                        borderRadius: "50%",
+                        backgroundColor: `rgba(${
+                          formData.status === "draft"
+                            ? "66, 165, 245"
+                            : formData.status === "under review"
+                            ? "230, 81, 0"
+                            : formData.status === "published"
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
                       }}
                     >
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight="600"
+                      {statusData.icon &&
+                        React.cloneElement(statusData.icon, {
+                          sx: { color: statusData.iconColor },
+                        })}
+                    </Box>
+
+                    <Box sx={{ flex: 1 }}>
+                      {/* Header: title + pending count (admin only) */}
+                      <Box
                         sx={{
-                          color: statusData.titleColor,
                           display: "flex",
+                          justifyContent: "space-between",
                           alignItems: "center",
-                          gap: 1,
                         }}
                       >
-                        {statusData.title}
-                      </Typography>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="600"
+                          sx={{
+                            color: statusData.titleColor,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          {statusData.title}
+                        </Typography>
 
-                      {/* {userRole === "admin" && (
+                        {/* {userRole === "admin" && (
                         <Chip
                           label={`${(() => {
                             const backend = Array.isArray(
@@ -683,82 +682,153 @@ export default function AddActivity(props) {
                           variant="outlined"
                         />
                       )} */}
-                    </Box>
+                      </Box>
 
-                    {/* Pending / New fields list */}
-                    <Box sx={{ mt: 1.5 }}>
-                      {(() => {
-                        const backendChanges = Array.isArray(
-                          selectedActivity?.editedFields
-                        )
-                          ? selectedActivity.editedFields
-                          : [];
-                        const localChanges = Array.isArray(editedFields)
-                          ? editedFields
-                          : [];
-                        const hasChanges =
-                          backendChanges.length > 0 || localChanges.length > 0;
+                      {/* Pending / New fields list */}
+                      <Box sx={{ mt: 1.5 }}>
+                        {(() => {
+                          const backendChanges = Array.isArray(
+                            selectedActivity?.editedFields
+                          )
+                            ? selectedActivity.editedFields
+                            : [];
+                          const localChanges = Array.isArray(editedFields)
+                            ? editedFields
+                            : [];
+                          const hasChanges =
+                            backendChanges.length > 0 ||
+                            localChanges.length > 0;
 
-                        if (!hasChanges) {
-                          return (
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: "text.disabled",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
-                            >
-                              {typeof id !== "undefined" && id
-                                ? "No pending changes"
-                                : "Fill in the form to create a new activity"}
-                            </Typography>
-                          );
-                        }
-
-                        return (
-                          <>
-                            {/* Backend pending changes */}
-                            {backendChanges.length > 0 && (
-                              <Box
+                          if (!hasChanges) {
+                            return (
+                              <Typography
+                                variant="body2"
                                 sx={{
-                                  backgroundColor: "#fff",
-                                  borderRadius: 1,
-                                  p: 1.5,
-                                  border: "1px solid",
-                                  borderColor: "divider",
-                                  mb: 2,
+                                  color: "text.disabled",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
                                 }}
                               >
-                                <Typography
-                                  variant="overline"
-                                  sx={{ color: "text.secondary", mb: 1 }}
-                                >
-                                  {id ? "Saved Changes" : "New Fields"}
-                                </Typography>
-                                <List dense sx={{ py: 0 }}>
-                                  {backendChanges.map((field) => {
-                                    const editorInfo =
-                                      selectedActivity?.fieldEditors?.[field];
-                                    const editor =
-                                      editorInfo?.editorName ||
-                                      "Unknown Editor";
-                                    const editTime = editorInfo?.editedAt
-                                      ? new Date(
-                                          editorInfo.editedAt
-                                        ).toLocaleString([], {
-                                          month: "short",
-                                          day: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
-                                      : "unknown time";
+                                {typeof id !== "undefined" && id
+                                  ? "No pending changes"
+                                  : "Fill in the form to create a new activity"}
+                              </Typography>
+                            );
+                          }
 
-                                    return (
+                          return (
+                            <>
+                              {/* Backend pending changes */}
+                              {backendChanges.length > 0 && (
+                                <Box
+                                  sx={{
+                                    backgroundColor: "#fff",
+                                    borderRadius: 1,
+                                    p: 1.5,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    mb: 2,
+                                  }}
+                                >
+                                  <Typography
+                                    variant="overline"
+                                    sx={{ color: "text.secondary", mb: 1 }}
+                                  >
+                                    {id ? "Saved Changes" : "New Fields"}
+                                  </Typography>
+                                  <List dense sx={{ py: 0 }}>
+                                    {backendChanges.map((field) => {
+                                      const editorInfo =
+                                        selectedActivity?.fieldEditors?.[field];
+                                      const editor =
+                                        editorInfo?.editorName ||
+                                        "Unknown Editor";
+                                      const editTime = editorInfo?.editedAt
+                                        ? new Date(
+                                            editorInfo.editedAt
+                                          ).toLocaleString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
+                                        : "unknown time";
+
+                                      return (
+                                        <ListItem
+                                          key={`backend-${field}`}
+                                          sx={{ py: 0.5, px: 1 }}
+                                        >
+                                          <ListItemText
+                                            primary={
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  gap: 1,
+                                                }}
+                                              >
+                                                <Box
+                                                  sx={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: "50%",
+                                                    backgroundColor:
+                                                      statusData.iconColor,
+                                                  }}
+                                                />
+                                                <Typography
+                                                  variant="body2"
+                                                  fontWeight="500"
+                                                >
+                                                  {fieldLabels?.[field] ||
+                                                    field}
+                                                </Typography>
+                                              </Box>
+                                            }
+                                            secondary={
+                                              <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                              >
+                                                Updated by {editor} on{" "}
+                                                {editTime}
+                                              </Typography>
+                                            }
+                                            sx={{ my: 0 }}
+                                          />
+                                        </ListItem>
+                                      );
+                                    })}
+                                  </List>
+                                </Box>
+                              )}
+
+                              {/* Local unsaved changes - now matches senator style */}
+                              {localChanges.length > 0 && (
+                                <Box
+                                  sx={{
+                                    backgroundColor: "#fff",
+                                    borderRadius: 1,
+                                    p: 1.5,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                  }}
+                                >
+                                  <Typography
+                                    variant="overline"
+                                    sx={{ color: "text.secondary", mb: 1 }}
+                                  >
+                                    {formData.status === "published"
+                                      ? ""
+                                      : "Unsaved Changes"}
+                                  </Typography>
+                                  <List dense sx={{ py: 0 }}>
+                                    {localChanges.map((field) => (
                                       <ListItem
-                                        key={`backend-${field}`}
-                                        sx={{ py: 0.5, px: 1 }}
+                                        key={`local-${field}`}
+                                        sx={{ py: 0, px: 1 }}
                                       >
                                         <ListItemText
                                           primary={
@@ -786,89 +856,22 @@ export default function AddActivity(props) {
                                               </Typography>
                                             </Box>
                                           }
-                                          secondary={
-                                            <Typography
-                                              variant="caption"
-                                              color="text.secondary"
-                                            >
-                                              Updated by {editor} on {editTime}
-                                            </Typography>
-                                          }
-                                          sx={{ my: 0 }}
                                         />
                                       </ListItem>
-                                    );
-                                  })}
-                                </List>
-                              </Box>
-                            )}
-
-                            {/* Local unsaved changes - now matches senator style */}
-                            {localChanges.length > 0 && (
-                              <Box
-                                sx={{
-                                  backgroundColor: "#fff",
-                                  borderRadius: 1,
-                                  p: 1.5,
-                                  border: "1px solid",
-                                  borderColor: "divider",
-                                }}
-                              >
-                                <Typography
-                                  variant="overline"
-                                  sx={{ color: "text.secondary", mb: 1 }}
-                                >
-                                  {formData.status === "published" ? "" : "Unsaved Changes"}
-                                </Typography>
-                                <List dense sx={{ py: 0 }}>
-                                  {localChanges.map((field) => (
-                                    <ListItem
-                                      key={`local-${field}`}
-                                      sx={{ py: 0, px: 1 }}
-                                    >
-                                      <ListItemText
-                                        primary={
-                                          <Box
-                                            sx={{
-                                              display: "flex",
-                                              alignItems: "center",
-                                              gap: 1,
-                                            }}
-                                          >
-                                            <Box
-                                              sx={{
-                                                width: 8,
-                                                height: 8,
-                                                borderRadius: "50%",
-                                                backgroundColor:
-                                                  statusData.iconColor,
-                                              }}
-                                            />
-                                            <Typography
-                                              variant="body2"
-                                              fontWeight="500"
-                                            >
-                                              {fieldLabels?.[field] || field}
-                                            </Typography>
-                                          </Box>
-                                        }
-                                      />
-                                    </ListItem>
-                                  ))}
-                                </List>
-                              </Box>
-                            )}
-                          </>
-                        );
-                      })()}
+                                    ))}
+                                  </List>
+                                </Box>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </Box>
                     </Box>
                   </Box>
                 </Box>
-              </Box>
-            )}
-            
+              )}
 
-             <Paper className="customPaper">
+            <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -933,7 +936,16 @@ export default function AddActivity(props) {
                 </DialogActions>
               </Dialog>
               <Box sx={{ padding: 0 }}>
-                <Typography fontSize={'1rem'} fontWeight={500}  sx={{  borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+                <Typography
+                  fontSize={"1rem"}
+                  fontWeight={500}
+                  sx={{
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                    p: 1.5,
+                    px: 3,
+                  }}
+                >
                   Activity Information
                 </Typography>
                 <Grid
@@ -945,11 +957,7 @@ export default function AddActivity(props) {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Type
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Type</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -966,11 +974,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Name
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Name</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -988,14 +992,12 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?12:2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
+                  <Grid size={isMobile ? 12 : 2}>
+                    <InputLabel className="nameLabel">
                       Activity Details
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1034,14 +1036,10 @@ export default function AddActivity(props) {
                       }}
                     />
                   </Grid>
-                  <Grid size={isMobile?12:2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Congress
-                    </InputLabel>
+                  <Grid size={isMobile ? 12 : 2}>
+                    <InputLabel className="nameLabel">Congress</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1058,11 +1056,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Date
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Date</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1081,14 +1075,10 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?12:2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Read More
-                    </InputLabel>
+                  <Grid size={isMobile ? 12 : 2}>
+                    <InputLabel className="nameLabel">Read More</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?12:10}>
+                  <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <TextField
@@ -1151,86 +1141,80 @@ export default function AddActivity(props) {
                       )}
                     </FormControl>
                   </Grid>
-                
-                    <Grid size={isMobile?12:2}>
-                      <InputLabel
-                        className="nameLabel"
-                      >
-                        Tracked Activities
-                      </InputLabel>
-                    </Grid>
 
-                    <Grid size={10}>
-                      <FormControl
-                        sx={{
+                  <Grid size={isMobile ? 12 : 2}>
+                    <InputLabel className="nameLabel">
+                      Tracked Activities
+                    </InputLabel>
+                  </Grid>
+
+                  <Grid size={10}>
+                    <FormControl
+                      sx={{
+                        fontFamily: "'Be Vietnam Pro', sans-serif",
+                        "& .MuiFormControlLabel-label": {
+                          fontSize: "15px",
+
                           fontFamily: "'Be Vietnam Pro', sans-serif",
-                          "& .MuiFormControlLabel-label": {
-                            fontSize: "15px",
-
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
-                          },
-                        }}
+                        },
+                      }}
+                    >
+                      <RadioGroup
+                        row
+                        name="trackActivities"
+                        value={formData.trackActivities}
+                        onChange={handleChange}
                       >
-                        <RadioGroup
-                          row
-                          name="trackActivities"
-                          value={formData.trackActivities}
-                          onChange={handleChange}
-                        >
-                          <FormControlLabel
-                            value="completed"
-                            control={
-                              <Radio
-                                icon={
-                                  <CheckCircleIcon sx={{ color: "#D3D3D3" }} />
-                                }
-                                checkedIcon={
-                                  <CheckCircleIcon sx={{ color: "green" }} />
-                                }
-                              />
-                            }
-                            label="Completed"
-                          />
-                          <FormControlLabel
-                            value="pending"
-                            control={
-                              <Radio
-                                icon={
-                                  <RadioButtonUncheckedIcon
-                                    sx={{ color: "#D3D3D3" }}
-                                  />
-                                }
-                                checkedIcon={
-                                  <RadioButtonUncheckedIcon
-                                    sx={{ color: "#b4af4bff" }}
-                                  />
-                                }
-                              />
-                            }
-                            label="Pending"
-                          />
-                          <FormControlLabel
-                            value="failed"
-                            control={
-                              <Radio
-                                icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
-                                checkedIcon={
-                                  <CancelIcon sx={{ color: "red" }} />
-                                }
-                              />
-                            }
-                            label="Failed"
-                          />
-                        </RadioGroup>
-                      </FormControl>
-                  
+                        <FormControlLabel
+                          value="completed"
+                          control={
+                            <Radio
+                              icon={
+                                <CheckCircleIcon sx={{ color: "#D3D3D3" }} />
+                              }
+                              checkedIcon={
+                                <CheckCircleIcon sx={{ color: "green" }} />
+                              }
+                            />
+                          }
+                          label="Completed"
+                        />
+                        <FormControlLabel
+                          value="pending"
+                          control={
+                            <Radio
+                              icon={
+                                <RadioButtonUncheckedIcon
+                                  sx={{ color: "#D3D3D3" }}
+                                />
+                              }
+                              checkedIcon={
+                                <RadioButtonUncheckedIcon
+                                  sx={{ color: "#b4af4bff" }}
+                                />
+                              }
+                            />
+                          }
+                          label="Pending"
+                        />
+                        <FormControlLabel
+                          value="failed"
+                          control={
+                            <Radio
+                              icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
+                              checkedIcon={<CancelIcon sx={{ color: "red" }} />}
+                            />
+                          }
+                          label="Failed"
+                        />
+                      </RadioGroup>
+                    </FormControl>
                   </Grid>
                 </Grid>
               </Box>
             </Paper>
-            
           </Stack>
-          <Box sx={{ mb: "40px" ,mx:"15px" }}>
+          <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
           </Box>
         </Box>
