@@ -629,36 +629,7 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#E24042 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#C91E37 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleSubmit}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
+            
               {/* <Button
                 variant="outlined"
                 onClick={handleDiscard}
@@ -1075,8 +1046,6 @@ export default function AddBill(props) {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
-                  py={3}
-                  pr={7}
                   py={3}
                   pr={7}
                 >

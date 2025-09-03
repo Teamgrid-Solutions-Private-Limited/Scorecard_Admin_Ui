@@ -464,7 +464,6 @@ export default function Representative(props) {
                 display: "flex",
                 flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "flex-end",
-                justifyContent: "flex-end",
                 alignItems: { xs: "stretch", sm: "center" },
                 mt: { xs: 2, md: 4 },
                 gap: 2,
@@ -479,13 +478,10 @@ export default function Representative(props) {
               }}
             >
               {/* <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 }}}>
-              {/* <Typography component="h2" variant="h6" sx={{ mb: { xs: 1, sm: 0 }}}>
                 All Representatives
-              </Typography> */}
               </Typography> */}
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ width: { xs: "100%", sm: "auto" } }}>
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{xs:'flex-start',sm:'center'}} sx={{ width: { xs: "100%", sm: "auto" }}}>
                 {/* Mobile: Show Fetch button above search/filter */}
                 {userRole === "admin" && (
                   <Box sx={{ width: "100%", display: { xs: "block", sm: "none" }, }}>
@@ -556,12 +552,6 @@ export default function Representative(props) {
                         bgcolor: '#E24042'
                       },
                     }}
-    "& .MuiBadge-badge": {
-      top: 6, 
-      right: 6, 
-      bgcolor:'#E24042'
-    },
-  }}
                   >
                     <Button
                       variant="outlined"
@@ -593,18 +583,15 @@ export default function Representative(props) {
                           right: 0,
                           top: "100%",
                           mt: 0.5,
-                          mt: 0.5,
                           width: 320,
                           zIndex: 1,
                           boxShadow: 3,
-                          borderRadius: 1,
                           borderRadius: 1,
                           overflow: "hidden",
                         }}
                       >
                         <Box
                           sx={{
-                            p: 0.5,
                             p: 0.5,
                             borderBottom: "1px solid",
                             borderColor: "divider",
@@ -613,13 +600,10 @@ export default function Representative(props) {
                           <Box
                             display="flex"
                             justifyContent="flex-end"
-                            justifyContent="flex-end"
                             alignItems="center"
                           >
                             {/* <Typography variant="subtitle1" fontWeight="bold">
-                            {/* <Typography variant="subtitle1" fontWeight="bold">
                               Filters
-                            </Typography> */}
                             </Typography> */}
                             <IconButton size="small" onClick={toggleFilter}>
                               <CloseIcon fontSize="small" />
@@ -636,7 +620,6 @@ export default function Representative(props) {
                               expandedFilter === "party"
                                 ? "action.hover"
                                 : "#fff",
-                                : "#fff",
                           }}
                         >
                           <Box
@@ -644,7 +627,6 @@ export default function Representative(props) {
                             justifyContent="space-between"
                             alignItems="center"
                             sx={{ p: 1.5, px: 2, cursor: "pointer" }}
-                            sx={{ p: 1.5,px:2, cursor: "pointer" }}
                             onClick={() => toggleFilterSection("party")}
                           >
                             <Typography variant="body1">Party</Typography>
@@ -655,7 +637,6 @@ export default function Representative(props) {
                             )}
                           </Box>
                           {expandedFilter === "party" && (
-                            <Box sx={{ py: 1, pt: 0 }}>
                             <Box sx={{ py: 1, pt: 0 }}>
                               {/* <TextField
                                 fullWidth
@@ -765,27 +746,6 @@ export default function Representative(props) {
                                 />
                               </Box>
                               <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
-                            <Box sx={{ py: 1, pt: 0 }}>
-                             <Box  sx={{ mb: 2,px:2 }}>
-                               <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search districts..."
-                                value={searchTerms.district}
-                                onChange={(e) =>
-                                  handleSearchChange("district", e.target.value)
-                                }
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                               
-                              />
-                             </Box>
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {filteredDistrictOptions.length > 0 ? (
                                   filteredDistrictOptions.map((district) => (
                                     <Box
@@ -1098,8 +1058,6 @@ export default function Representative(props) {
                           {expandedFilter === "status" && (
                             <Box sx={{ py: 1, pt: 0 }}>
                               <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
-                            <Box sx={{ py: 1, pt: 0 }}>
-                              <Box sx={{ maxHeight: 200, overflow: "auto",bgcolor:'#fff' }}>
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}
@@ -1136,9 +1094,6 @@ export default function Representative(props) {
                             // p: 2,
                             // borderTop: "1px solid",
                             // borderColor: "divider",
-                            // p: 2,
-                            // borderTop: "1px solid",
-                            // borderColor: "divider",
                           }}
                         >
                           <Button
@@ -1146,9 +1101,6 @@ export default function Representative(props) {
                             // variant="outlined"
                             // color="secondary"
                             sx={{ borderRadius: 0, bgcolor: '#fff' }}
-                            // variant="outlined"
-                            // color="secondary"
-                            sx={{borderRadius:0, bgcolor:'#fff'}}
                             onClick={clearAllFilters}
                             disabled={
                               !partyFilter.length &&

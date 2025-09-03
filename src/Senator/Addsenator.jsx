@@ -1547,7 +1547,8 @@ const handleSave = async (e) => {
           'Status changed to "Under Review" for admin to moderate.',
           "info"
         );
-    } catch (error) {
+    }
+   } catch (error) {
       console.error("Save failed:", error);
 
       const errorMessage =
