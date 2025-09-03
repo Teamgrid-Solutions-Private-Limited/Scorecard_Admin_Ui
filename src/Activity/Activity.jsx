@@ -31,7 +31,9 @@ import {
   DialogActions,
   MenuItem,
   Badge,
-  IconButton, Paper, ClickAwayListener
+  IconButton,
+  Paper,
+  ClickAwayListener,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -61,16 +63,14 @@ export default function Activity(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
- const token = localStorage.getItem("token");
-// Decode token to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+  const token = localStorage.getItem("token");
+  // Decode token to get user role
+  const decodedToken = jwtDecode(token);
+  const userRole = decodedToken.role;
 
-
-
-      const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
-const statusOptions = ["published", "draft", "under review"];
+  const statusOptions = ["published", "draft", "under review"];
   const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); // Store selected activity IDs
   const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
   const [bulkTrackActivity, setBulkTrackActivity] = useState(""); // Store bulk track activity value
@@ -82,10 +82,10 @@ const statusOptions = ["published", "draft", "under review"];
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
-
   const filteredActivities = activities.filter((activity) => {
     // Status filter
-    const statusMatch = statusFilter.length === 0 || 
+    const statusMatch =
+      statusFilter.length === 0 ||
       (activity.status && statusFilter.includes(activity.status));
 
     return statusMatch;
@@ -99,8 +99,8 @@ const statusOptions = ["published", "draft", "under review"];
       ? activity.type.toLowerCase().includes("senate")
         ? "Senate"
         : activity.type.toLowerCase().includes("house")
-          ? "House"
-          : "Other"
+        ? "House"
+        : "Other"
       : "Other",
     status: activity.status,
   }));
@@ -111,9 +111,9 @@ const statusOptions = ["published", "draft", "under review"];
   };
 
   const handleStatusFilter = (status) => {
-    setStatusFilter(prev =>
+    setStatusFilter((prev) =>
       prev.includes(status)
-        ? prev.filter(s => s !== status)
+        ? prev.filter((s) => s !== status)
         : [...prev, status]
     );
   };
@@ -157,7 +157,6 @@ const statusOptions = ["published", "draft", "under review"];
 
   const handleToggleStatusAct = (activity) => {
     const newStatus = activity.status === "published" ? "draft" : "published";
- 
 
     dispatch(updateActivityStatus({ id: activity._id, status: newStatus }))
       .then(() => {
@@ -185,12 +184,14 @@ const statusOptions = ["published", "draft", "under review"];
       const result = await dispatch(
         bulkUpdateTrackActivities({
           ids: selectedTrackActivity,
-          trackActivities: bulkTrackActivity
+          trackActivities: bulkTrackActivity,
         })
       ).unwrap(); // This is crucial for proper error handling
 
       setSnackbarMessage(
-        `Successfully updated ${result.updatedActivities?.length || selectedTrackActivity.length} activities`
+        `Successfully updated ${
+          result.updatedActivities?.length || selectedTrackActivity.length
+        } activities`
       );
       setSnackbarSeverity("success");
 
@@ -203,9 +204,7 @@ const statusOptions = ["published", "draft", "under review"];
       dispatch(getAllActivity());
     } catch (error) {
       console.error("Bulk update failed:", error);
-      setSnackbarMessage(
-        error.message || "Failed to update activities"
-      );
+      setSnackbarMessage(error.message || "Failed to update activities");
       setSnackbarSeverity("error");
     } finally {
       setFetching(false);
@@ -258,9 +257,15 @@ const statusOptions = ["published", "draft", "under review"];
                 direction={{ xs: "column", sm: "row" }}
                 spacing={2}
                 alignItems="center"
-                sx={{ ml: "auto",width: { xs: "100%", sm: "auto" } }}
+                sx={{ ml: "auto", width: { xs: "100%", sm: "auto" } }}
               >
-                <Box sx={{ position: "relative", display: "inline-block",width: { xs: "100%", sm: "auto" } }}>
+                <Box
+                  sx={{
+                    position: "relative",
+                    display: "inline-block",
+                    width: { xs: "100%", sm: "auto" },
+                  }}
+                >
                   <Badge
                     badgeContent={activeFilterCount}
                     color="primary"
@@ -308,7 +313,8 @@ const statusOptions = ["published", "draft", "under review"];
                                 <Box sx={{ width: 24, height: 24 }} />
                               )}
                               <Typography variant="body2" sx={{ ml: 1 }}>
-                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                                {status.charAt(0).toUpperCase() +
+                                  status.slice(1)}
                               </Typography>
                             </Box>
                           ))}
@@ -318,7 +324,14 @@ const statusOptions = ["published", "draft", "under review"];
                         <Box>
                           <Button
                             fullWidth
-                             sx={{borderRadius:0, bgcolor:'#fff',borderTop:'1px solid' , borderColor:'divider',justifyContent:'flex-start',pl:5}}
+                            sx={{
+                              borderRadius: 0,
+                              bgcolor: "#fff",
+                              borderTop: "1px solid",
+                              borderColor: "divider",
+                              justifyContent: "flex-start",
+                              pl: 5,
+                            }}
                             onClick={clearAllFilters}
                             disabled={!statusFilter.length}
                           >
@@ -331,7 +344,7 @@ const statusOptions = ["published", "draft", "under review"];
                 </Box>
               </Stack>
 
-              <Stack direction="row" spacing={2} alignItems="center" >
+              <Stack direction="row" spacing={2} alignItems="center">
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
                   className={`bulkEditBtn ${isBulkEditMode ? "active" : ""}`}
@@ -369,7 +382,9 @@ const statusOptions = ["published", "draft", "under review"];
                   </TextField>
 
                   <Button
-                    disabled={!selectedTrackActivity.length || !bulkTrackActivity}
+                    disabled={
+                      !selectedTrackActivity.length || !bulkTrackActivity
+                    }
                     onClick={handleBulkUpdate}
                      className="applyBtn"
                   >
@@ -401,41 +416,42 @@ const statusOptions = ["published", "draft", "under review"];
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity={snackbarSeverity}
-            sx={{
-              width: "100%",
-              border:"none",
-              boxShadow:"none",
-              bgcolor:
-                snackbarMessage === `This activity has been successfully deleted.`
-                  ? "#fde8e4"
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{
+            width: "100%",
+            border: "none",
+            boxShadow: "none",
+            bgcolor:
+              snackbarMessage === `This activity has been successfully deleted.`
+                ? "#fde8e4"
+                : undefined,
+
+            "& .MuiAlert-icon": {
+              color:
+                snackbarMessage ===
+                `This activity has been successfully deleted.`
+                  ? "#cc563d"
                   : undefined,
+            },
 
-              "& .MuiAlert-icon": {
-                color:
-                  snackbarMessage === `This activity has been successfully deleted.`
-                    ? "#cc563d"
-                    : undefined,
-              },
-
-              "& .MuiAlert-message": {
-                color:
-                  snackbarMessage === `This activity has been successfully deleted.`
-                    ? "#cc563d"
-
-                    : undefined,
-              },
-              "& .MuiAlert-action": {
-      display: "flex",
-      alignItems: "center",  
-      paddingTop: 0,          
-      paddingBottom: 0,
-    },
-            }}
-          >
-            {snackbarMessage}
-          </Alert>
+            "& .MuiAlert-message": {
+              color:
+                snackbarMessage ===
+                `This activity has been successfully deleted.`
+                  ? "#cc563d"
+                  : undefined,
+            },
+            "& .MuiAlert-action": {
+              display: "flex",
+              alignItems: "center",
+              paddingTop: 0,
+              paddingBottom: 0,
+            },
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
       </Snackbar>
       <Dialog
         open={openDeleteDialog}

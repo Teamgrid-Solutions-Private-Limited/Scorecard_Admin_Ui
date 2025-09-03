@@ -1,14 +1,17 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { API_URL } from '../API';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+import { API_URL } from "../API";
 
 // Create a term
 export const createTerm = createAsyncThunk(
-  'terms/createTerm',
+  "terms/createTerm",
   async (termData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/term/terms/create/`, termData);
-     
+      const response = await axios.post(
+        `${API_URL}/term/terms/create/`,
+        termData
+      );
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -18,11 +21,11 @@ export const createTerm = createAsyncThunk(
 
 // Get all terms
 export const getAllTerms = createAsyncThunk(
-  'terms/getAllTerms',
+  "terms/getAllTerms",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/term/terms/viewAll/`,{
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+      const response = await axios.get(`${API_URL}/term/terms/viewAll/`, {
+        headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
       return response.data;
     } catch (error) {
@@ -33,13 +36,13 @@ export const getAllTerms = createAsyncThunk(
 
 // Get term by ID
 export const getTermById = createAsyncThunk(
-  'terms/getTermById',
+  "terms/getTermById",
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/term/terms/viewId/${id}`, {
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
+        headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
-      console.log(response.data);
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -49,12 +52,14 @@ export const getTermById = createAsyncThunk(
 
 // Update a term
 export const updateTerm = createAsyncThunk(
-  'terms/updateTerm',
+  "terms/updateTerm",
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/term/terms/update/${id}`, updatedData);
-     
-      
+      const response = await axios.put(
+        `${API_URL}/term/terms/update/${id}`,
+        updatedData
+      );
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -64,11 +69,11 @@ export const updateTerm = createAsyncThunk(
 
 // Delete a term
 export const deleteTerm = createAsyncThunk(
-  'terms/deleteTerm',
+  "terms/deleteTerm",
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`${API_URL}/term/terms/delete/${id}`);
-      
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -78,7 +83,7 @@ export const deleteTerm = createAsyncThunk(
 
 // Slice
 const termSlice = createSlice({
-  name: 'terms',
+  name: "terms",
   initialState: {
     terms: [],
     term: null,
@@ -154,7 +159,7 @@ const termSlice = createSlice({
       state.error = null;
     });
     builder.addCase(deleteTerm.fulfilled, (state, action) => {
-      state.loading = false;   
+      state.loading = false;
     });
     builder.addCase(deleteTerm.rejected, (state, action) => {
       state.loading = false;
