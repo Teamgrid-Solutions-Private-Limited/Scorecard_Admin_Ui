@@ -957,7 +957,11 @@ export default function AddActivity(props) {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Type</InputLabel>
+                    <InputLabel
+                       className="nameLabel"
+                    >
+                      Type
+                    </InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -974,7 +978,11 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Name</InputLabel>
+                    <InputLabel
+                       className="nameLabel"
+                    >
+                      Name
+                    </InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -992,8 +1000,10 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">
+                  <Grid size={isMobile?12:2}>
+                    <InputLabel
+                       className="nameLabel"
+                    >
                       Activity Details
                     </InputLabel>
                   </Grid>
@@ -1036,8 +1046,12 @@ export default function AddActivity(props) {
                       }}
                     />
                   </Grid>
-                  <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">Congress</InputLabel>
+                  <Grid size={isMobile?12:2}>
+                    <InputLabel
+                       className="nameLabel"
+                    >
+                      Congress
+                    </InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1056,7 +1070,11 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Date</InputLabel>
+                    <InputLabel
+                       className="nameLabel"
+                    >
+                      Date
+                    </InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1075,8 +1093,12 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">Read More</InputLabel>
+                  <Grid size={isMobile?12:2}>
+                    <InputLabel
+                       className="nameLabel"
+                    >
+                      Read More
+                    </InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>

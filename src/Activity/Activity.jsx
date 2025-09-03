@@ -244,13 +244,15 @@ export default function Activity(props) {
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box className="container">
-        <SideMenu />
-        <Box className={`contentBox ${fetching ? "fetching" : "notFetching"}`}>
+     <Box className="container">
+        <SideMenu/>
+        <Box
+          className={`contentBox ${fetching ? "fetching" : "notFetching"}`}
+        >
           <FixedHeader />
-          <MobileHeader />
-          <Stack spacing={2} className="stackBox">
-            <Box className="actionsBox">
+          <MobileHeader/>
+          <Stack spacing={2} className="stackBox" >
+            <Box className="actionsBox" >
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={2}
@@ -298,7 +300,7 @@ export default function Activity(props) {
                         </Box>
 
                         {/* Status Filter */}
-                        <Box className="filter-scroll">
+                         <Box className="filter-scroll">
                           {statusOptions.map((status) => (
                             <Box
                               key={status}
@@ -353,9 +355,9 @@ export default function Activity(props) {
                   <Button
                     onClick={() => navigate("/add-activity")}
                     className="addBillsBtn"
-                  >
-                    Add Activity
-                  </Button>
+                >
+                  Add Activity
+                </Button>
                 )}
               </Stack>
             </Box>
@@ -384,7 +386,7 @@ export default function Activity(props) {
                       !selectedTrackActivity.length || !bulkTrackActivity
                     }
                     onClick={handleBulkUpdate}
-                    className="applyBtn"
+                     className="applyBtn"
                   >
                     Apply
                   </Button>
@@ -406,7 +408,7 @@ export default function Activity(props) {
           </Stack>
         </Box>
       </Box>
-
+      
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

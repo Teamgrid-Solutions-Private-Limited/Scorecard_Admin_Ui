@@ -517,7 +517,7 @@ export default function AddBill(props) {
   return (
     <AppTheme>
       {loading && (
-        <Box className="circularLoader">
+         <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
