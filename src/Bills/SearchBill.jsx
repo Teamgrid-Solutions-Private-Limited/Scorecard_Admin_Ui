@@ -15,6 +15,7 @@ import {
   clearVoteState,
   updateVote,
   createVote,
+  getAllVotes,
 } from "../redux/reducer/voteSlice"; // Import clearVoteState
 import { getAllTerms } from "../redux/reducer/termSlice"; 
 import { useState } from "react";
@@ -44,6 +45,7 @@ export default function SearchBill(props) {
   const [loading, setLoading] = useState(false); 
   const [searchAttempted, setSearchAttempted] = useState(false); // Track if search was attempted
   const [draftBills, setDraftBills] = useState([]);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
@@ -145,8 +147,22 @@ const handleSearch = async () => {
   const handleAddBill = async (bill) => {
     setLoading(true);
     try {
+      const allVotes = await dispatch(getAllVotes()).unwrap();
+      const isDuplicate = allVotes.some(vote => 
+      String(vote.quorumId) === String(bill.quorumId)
+);
+  if (isDuplicate) {
+  setSnackbarMessage("Bill already exists");
+  setSnackbarSeverity("info");
+  setSnackbarOpen(true);
+  setLoading(false);
+  return;
+ 
+}
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [bill],
+
+        
         
       });
       

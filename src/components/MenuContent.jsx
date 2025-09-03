@@ -213,7 +213,7 @@ export default function MenuContent() {
               onClick={handleConfirmLogout}
               variant="contained"
               color="error"
-              sx={{ borderRadius: 2, paddingX: 3 }}
+              sx={{ borderRadius: 2, paddingX: 3,"&:hover":{backgroundColor:"#f22727ff"} }}
             >
               Logout
             </Button>
