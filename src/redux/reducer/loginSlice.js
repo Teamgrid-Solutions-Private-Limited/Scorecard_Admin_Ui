@@ -1,34 +1,34 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../API";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 // Async thunk for user login
-export const loginUser = createAsyncThunk("auth/loginUser", async (credentials, { rejectWithValue }) => {
-   
-    
-  try {
-    const response = await axios.post(`${API_URL}/user/login`, credentials);
-  
-    
-    return response.data; // Includes token and user details
-  } catch (error) {
-    return rejectWithValue(error.response?.data || "Login failed");
+export const loginUser = createAsyncThunk(
+  "auth/loginUser",
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/user/login`, credentials);
+
+      return response.data; // Includes token and user details
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Login failed");
+    }
   }
-});
+);
 
 export const getAllUsers = createAsyncThunk(
   "users/getAllUsers",
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         return rejectWithValue("Authentication token not found");
       }
       // Decode JWT to get user role
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role;
-      if (userRole !== 'admin') {
+      if (userRole !== "admin") {
         return rejectWithValue("Access denied: Admins only");
       }
       const response = await axios.get(`${API_URL}/user/users`, {
@@ -122,14 +122,13 @@ export const addUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message ||
-        error.response?.data ||
-        error.message ||
-        "Failed to add user"
+          error.response?.data ||
+          error.message ||
+          "Failed to add user"
       );
     }
   }
 );
-
 
 const authSlice = createSlice({
   name: "auth",
@@ -196,7 +195,7 @@ const authSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         // Do not set state.loading here
-        state.users = state.users.map(user => 
+        state.users = state.users.map((user) =>
           user._id === action.payload.user._id ? action.payload.user : user
         );
         if (state.user && state.user._id === action.payload.user._id) {
@@ -213,7 +212,7 @@ const authSlice = createSlice({
       })
       .addCase(deleteUser.fulfilled, (state, action) => {
         // Do not set state.loading here
-        state.users = state.users.filter(user => user._id !== action.payload);
+        state.users = state.users.filter((user) => user._id !== action.payload);
       })
       .addCase(deleteUser.rejected, (state, action) => {
         // Do not set state.loading here
@@ -229,9 +228,8 @@ const authSlice = createSlice({
       .addCase(addUser.rejected, (state, action) => {
         // Do not set state.loading here
       });
-
   },
 });
 
-export const { logout ,clearUsers} = authSlice.actions;
+export const { logout, clearUsers } = authSlice.actions;
 export default authSlice.reducer;

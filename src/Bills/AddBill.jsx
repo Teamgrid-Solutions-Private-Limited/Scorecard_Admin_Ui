@@ -132,7 +132,7 @@ export default function AddBill(props) {
     if (selectedVote) {
       const termId = selectedVote.termId || "";
       const newFormData = {
-          type: selectedVote.type.includes("senate")
+        type: selectedVote.type.includes("senate")
           ? "senate_bill"
           : selectedVote.type.includes("house")
           ? "house_bill"
@@ -494,19 +494,19 @@ export default function AddBill(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-           published: {
-                  backgroundColor: "rgba(255, 193, 7, 0.12)",
-                  borderColor: "#FFC107",
-                  iconColor: "#FFA000",
-                 icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-                  title: "Unsaved Changes",
-                  description:
-                    editedFields.length > 0
-                      ? `${editedFields.length} pending changes`
-                      : "Published and live",
-                  titleColor: "#5D4037",
-                  descColor: "#795548",
-                },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Unsaved Changes",
+        description:
+          editedFields.length > 0
+            ? `${editedFields.length} pending changes`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -538,20 +538,7 @@ export default function AddBill(props) {
   return (
     <AppTheme>
       {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+         <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
@@ -565,40 +552,39 @@ export default function AddBill(props) {
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
           sx={{
-                  width: "100%",
-                  border: "none",
-                  boxShadow:"none",
-                  bgcolor:
-                    snackbarMessage === "Changes published successfully!"
-                      ? "#daf4f0"
-                      : undefined,
-                  "& .MuiAlert-icon": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-message": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-
-                  },
-                  "& .MuiAlert-action": {
-      display: "flex",
-      alignItems: "center",  
-      paddingTop: 0,          
-      paddingBottom: 0,
-    },
-                }}
+            width: "100%",
+            border: "none",
+            boxShadow: "none",
+            bgcolor:
+              snackbarMessage === "Changes published successfully!"
+                ? "#daf4f0"
+                : undefined,
+            "& .MuiAlert-icon": {
+              color:
+                snackbarMessage === "Changes published successfully!"
+                  ? "#099885"
+                  : undefined,
+            },
+            "& .MuiAlert-message": {
+              color:
+                snackbarMessage === "Changes published successfully!"
+                  ? "#099885"
+                  : undefined,
+            },
+            "& .MuiAlert-action": {
+              display: "flex",
+              alignItems: "center",
+              paddingTop: 0,
+              paddingBottom: 0,
+            },
+          }}
           elevation={6}
           variant="filled"
         >
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-      <Box sx={{ display: "flex",bgcolor:'#f6f6f6ff', }}>
+      <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -610,7 +596,7 @@ export default function AddBill(props) {
           })}
         >
           <FixedHeader />
-          <MobileHeader/>
+          <MobileHeader />
           <Stack
             spacing={2}
             sx={{
@@ -631,31 +617,6 @@ export default function AddBill(props) {
             >
             
               {/* <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button> */}
-            </Stack>
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
                 variant="outlined"
                 onClick={handleDiscard}
                 sx={{
@@ -723,14 +684,15 @@ export default function AddBill(props) {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${formData.status === "draft"
-                          ? "66, 165, 245"
-                          : formData.status === "under review"
+                        backgroundColor: `rgba(${
+                          formData.status === "draft"
+                            ? "66, 165, 245"
+                            : formData.status === "under review"
                             ? "230, 81, 0"
                             : formData.status === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                          }, 0.2)`,
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
@@ -916,7 +878,9 @@ export default function AddBill(props) {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    {formData.status === "published" ? "" : "Unsaved Changes"}
+                                    {formData.status === "published"
+                                      ? ""
+                                      : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -971,9 +935,7 @@ export default function AddBill(props) {
                 </Box>
               )}
 
-            
-
-            <Paper sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff', borderRadius:0.8,border:'1px solid',borderColor:'divider'}}>
+            <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1038,7 +1000,7 @@ export default function AddBill(props) {
                 </DialogActions>
               </Dialog>
               <Box sx={{ padding: 0 }}>
-                <Typography fontSize={'1rem'} fontWeight={500}  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+                <Typography className="customTypography">
                   Bill's Information
                 </Typography>
                 <Grid
@@ -1050,19 +1012,7 @@ export default function AddBill(props) {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Type
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Type</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1072,26 +1022,14 @@ export default function AddBill(props) {
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
-                         <MenuItem value="senate_bill">Senate</MenuItem>
+                        <MenuItem value="senate_bill">Senate</MenuItem>
                         <MenuItem value="house_bill">House</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Title
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Title</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1110,15 +1048,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel className="nameLabel">
                       Short Description
                     </InputLabel>
                   </Grid>
@@ -1166,14 +1096,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel className="nameLabel">
                       Long Description
                     </InputLabel>
                   </Grid>
@@ -1219,19 +1142,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Date
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Date</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1251,19 +1162,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 6 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Congress
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Congress</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 6 : 10}>
                     <FormControl fullWidth>
@@ -1282,19 +1181,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Term
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Term</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1328,45 +1215,12 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Roll Call
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Roll Call</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <TextField
-                        sx={{
-                          fontFamily: "'Be Vietnam Pro', sans-serif",
-                          height: 38,
-                          "& .MuiOutlinedInput-root": {
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
-                            fontSize: "13px",
-                            height: 38,
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            alignItems: "center",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#CC9A3A !important",
-                              borderWidth: "1px",
-                            },
-                          },
-                        }}
+                        className="customTextField"
                         fullWidth
                         variant="outlined"
                         name="rollCall"
@@ -1392,48 +1246,13 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Read More
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Read More</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <TextField
-                          sx={{
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
-                            height: 38,
-                            flex: 1,
-                            "& .MuiOutlinedInput-root": {
-                              fontFamily: "'Be Vietnam Pro', sans-serif",
-                              fontSize: "13px",
-                              height: 38,
-                              padding: "4px 8px",
-                              borderRadius: "6px",
-                              alignItems: "center",
-                              "& .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#D3D3D3 !important",
-                              },
-                              "&:hover .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#D3D3D3 !important",
-                              },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                {
-                                  borderColor: "#CC9A3A !important",
-                                  borderWidth: "1px",
-                                },
-                            },
-                          }}
+                          className="customTextField"
                           fullWidth
                           variant="outlined"
                           name="readMore"
@@ -1467,17 +1286,7 @@ export default function AddBill(props) {
                           variant="outlined"
                           component="label"
                           startIcon={<CloudUploadIcon />}
-                          sx={{
-                            height: 38,
-                            minWidth: "auto",
-                            px: 2,
-                            borderColor: "#CC9A3A",
-                            color: "#CC9A3A",
-                            "&:hover": {
-                              borderColor: "#B8860B",
-                              backgroundColor: "rgba(204, 154, 58, 0.04)",
-                            },
-                          }}
+                          className="upload-btn"
                         >
                           Upload
                           <input
@@ -1503,21 +1312,7 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                        fontFamily: "'Be Vietnam Pro', sans-serif",
-                        fontSize: "13px",
-                      }}
-                    >
-                      SBA Position
-                    </InputLabel>
+                    <InputLabel className="nameLabel">SBA Position</InputLabel>
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 10}>
@@ -1568,7 +1363,7 @@ export default function AddBill(props) {
               </Box>
             </Paper>
           </Stack>
-<Box sx={{ mb: "40px" ,mx:"15px" }}>
+          <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
           </Box>
         </Box>

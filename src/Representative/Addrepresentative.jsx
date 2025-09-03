@@ -45,7 +45,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Autocomplete
+  Autocomplete,
 } from "@mui/material";
 
 import {
@@ -126,8 +126,9 @@ export default function Addrepresentative(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
     }
     return fieldLabels[field] || field;
   };
@@ -190,120 +191,130 @@ export default function Addrepresentative(props) {
   //   });
 
   // };
- const handleTermChange = (e, termIndex) => {
-  const { name, value } = e.target;
-  const fieldName = `term${termIndex}_${name}`;
+  const handleTermChange = (e, termIndex) => {
+    const { name, value } = e.target;
+    const fieldName = `term${termIndex}_${name}`;
 
-  setHouseTermData((prev) => {
-    const newTerms = prev.map((term, index) => {
-      if (index !== termIndex) return term;
-      
-      // If term is changing, check if we have existing data for this term
-      if (name === "termId" && value !== term.termId) {
-        const newTermId = value;
-        const selectedTerm = terms.find(t => t._id === newTermId);
-        const termCongresses = selectedTerm?.congresses || [];
-        
-        // Convert congress numbers to strings for comparison
-        const termCongressStrings = termCongresses.map(c => c.toString());
-        
-        // Check if we have existing data for this term in houseData
-        const existingTermData = houseData?.currentHouse?.find(
-          ht => ht.termId && 
-          (ht.termId._id === newTermId || ht.termId === newTermId || 
-           (typeof ht.termId === 'object' && ht.termId.name === selectedTerm?.name))
-        );
-        
-        console.log("Existing term data:", existingTermData);
-        
-        let votesScore = [];
-        let activitiesScore = [];
-        let summary = ""; // Initialize as empty
-        let rating = ""; // Initialize as empty
-        let currentTerm = false; // Initialize as false
-        
-        // If we have existing data for this term, use it
-        if (existingTermData) {
-          // Map votes from existing data
-          votesScore = existingTermData.votesScore?.map(vote => ({
-            voteId: vote.voteId?._id || vote.voteId || "",
-            score: vote.score || ""
-          })) || [];
-          
-          // Map activities from existing data
-          activitiesScore = existingTermData.activitiesScore?.map(activity => ({
-            activityId: activity.activityId?._id || activity.activityId || "",
-            score: activity.score || ""
-          })) || [];
-          
-          // Only use existing values if they exist
-          summary = existingTermData.summary || "";
-          rating = existingTermData.rating || "";
-          currentTerm = existingTermData.currentTerm !== undefined ? existingTermData.currentTerm : false;
-        } else {
-          // Filter votes to keep only those that belong to the new term's congresses
-          votesScore = term.votesScore.filter(vote => {
-            if (!vote.voteId || vote.voteId === "") return true; // keep placeholder
-            
-            const voteItem = votes.find(v => v._id === vote.voteId);
-            if (!voteItem) return false;
-            
-            return termCongressStrings.includes(voteItem.congress);
-          });
-          
-          // Filter activities to keep only those that belong to the new term's congresses
-          activitiesScore = term.activitiesScore.filter(activity => {
-            if (!activity.activityId || activity.activityId === "") return true; // keep placeholder
-            
-            const activityItem = houseActivities.find(a => a._id === activity.activityId);
-            if (!activityItem) return false;
-            
-            return termCongressStrings.includes(activityItem.congress);
-          });
-          
-          // Set all fields to empty/false for new terms without existing data
-          summary = "";
-          rating = "";
-          currentTerm = false;
+    setHouseTermData((prev) => {
+      const newTerms = prev.map((term, index) => {
+        if (index !== termIndex) return term;
+
+        // If term is changing, check if we have existing data for this term
+        if (name === "termId" && value !== term.termId) {
+          const newTermId = value;
+          const selectedTerm = terms.find((t) => t._id === newTermId);
+          const termCongresses = selectedTerm?.congresses || [];
+
+          // Convert congress numbers to strings for comparison
+          const termCongressStrings = termCongresses.map((c) => c.toString());
+
+          // Check if we have existing data for this term in houseData
+          const existingTermData = houseData?.currentHouse?.find(
+            (ht) =>
+              ht.termId &&
+              (ht.termId._id === newTermId ||
+                ht.termId === newTermId ||
+                (typeof ht.termId === "object" &&
+                  ht.termId.name === selectedTerm?.name))
+          );
+
+          let votesScore = [];
+          let activitiesScore = [];
+          let summary = ""; // Initialize as empty
+          let rating = ""; // Initialize as empty
+          let currentTerm = false; // Initialize as false
+
+          // If we have existing data for this term, use it
+          if (existingTermData) {
+            // Map votes from existing data
+            votesScore =
+              existingTermData.votesScore?.map((vote) => ({
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: vote.score || "",
+              })) || [];
+
+            // Map activities from existing data
+            activitiesScore =
+              existingTermData.activitiesScore?.map((activity) => ({
+                activityId:
+                  activity.activityId?._id || activity.activityId || "",
+                score: activity.score || "",
+              })) || [];
+
+            // Only use existing values if they exist
+            summary = existingTermData.summary || "";
+            rating = existingTermData.rating || "";
+            currentTerm =
+              existingTermData.currentTerm !== undefined
+                ? existingTermData.currentTerm
+                : false;
+          } else {
+            // Filter votes to keep only those that belong to the new term's congresses
+            votesScore = term.votesScore.filter((vote) => {
+              if (!vote.voteId || vote.voteId === "") return true; // keep placeholder
+
+              const voteItem = votes.find((v) => v._id === vote.voteId);
+              if (!voteItem) return false;
+
+              return termCongressStrings.includes(voteItem.congress);
+            });
+
+            // Filter activities to keep only those that belong to the new term's congresses
+            activitiesScore = term.activitiesScore.filter((activity) => {
+              if (!activity.activityId || activity.activityId === "")
+                return true; // keep placeholder
+
+              const activityItem = houseActivities.find(
+                (a) => a._id === activity.activityId
+              );
+              if (!activityItem) return false;
+
+              return termCongressStrings.includes(activityItem.congress);
+            });
+
+            // Set all fields to empty/false for new terms without existing data
+            summary = "";
+            rating = "";
+            currentTerm = false;
+          }
+
+          // If no votes remain after filtering, add an empty vote
+          const finalVotesScore =
+            votesScore.length > 0 ? votesScore : [{ voteId: "", score: "" }];
+
+          // If no activities remain after filtering, add an empty activity
+          const finalActivitiesScore =
+            activitiesScore.length > 0
+              ? activitiesScore
+              : [{ activityId: "", score: "" }];
+
+          return {
+            ...term,
+            [name]: value,
+            votesScore: finalVotesScore,
+            activitiesScore: finalActivitiesScore,
+            summary, // Will be empty if no existing data
+            rating, // Will be empty if no existing data
+            currentTerm, // Will be false if no existing data
+          };
         }
-        
-        // If no votes remain after filtering, add an empty vote
-        const finalVotesScore = votesScore.length > 0 
-          ? votesScore 
-          : [{ voteId: "", score: "" }];
-        
-        // If no activities remain after filtering, add an empty activity
-        const finalActivitiesScore = activitiesScore.length > 0 
-          ? activitiesScore 
-          : [{ activityId: "", score: "" }];
-        
-        return { 
-          ...term, 
-          [name]: value,
-          votesScore: finalVotesScore,
-          activitiesScore: finalActivitiesScore,
-          summary, // Will be empty if no existing data
-          rating,  // Will be empty if no existing data
-          currentTerm // Will be false if no existing data
-        };
+
+        return { ...term, [name]: value };
+      });
+
+      // Compare with original data
+      const originalTerm = originalTermData[termIndex] || {};
+      const isActualChange = compareValues(value, originalTerm[name]);
+
+      if (isActualChange && !localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => [...prev, fieldName]);
+      } else if (!isActualChange && localChanges.includes(fieldName)) {
+        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
-      
-      return { ...term, [name]: value };
+
+      return newTerms;
     });
-
-    // Compare with original data
-    const originalTerm = originalTermData[termIndex] || {};
-    const isActualChange = compareValues(value, originalTerm[name]);
-
-    if (isActualChange && !localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    } else if (!isActualChange && localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => prev.filter(f => f !== fieldName));
-    }
-
-    return newTerms;
-  });
-};
+  };
   // const handleSwitchChange = (e, termIndex) => {
   //   const fieldName = `term${termIndex}_${e.target.name}`;
   //   if (!localChanges.includes(fieldName)) {
@@ -318,11 +329,9 @@ export default function Addrepresentative(props) {
   //   );
   // };
 
-
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
     const fieldName = `term${termIndex}_${name}`;
-
 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) =>
@@ -336,13 +345,12 @@ export default function Addrepresentative(props) {
       if (isActualChange && !localChanges.includes(fieldName)) {
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
 
       return newTerms;
     });
   };
-
 
   // const handleSwitchChange = (e, termIndex) => {
   //   const { name, checked } = e.target;
@@ -366,9 +374,9 @@ export default function Addrepresentative(props) {
   //     // Compare with original data
   //     const originalTerm = originalTermData[termIndex] || {};
   //     const isActualChange = compareValues(
-  //       name === "currentTerm" && checked 
+  //       name === "currentTerm" && checked
   //         ? true // For currentTerm, we need to check if this specific term should be current
-  //         : checked, 
+  //         : checked,
   //       originalTerm[name]
   //     );
 
@@ -386,16 +394,16 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: [...term.votesScore, { voteId: "", score: "" }],
-          }
+              ...term,
+              votesScore: [...term.votesScore, { voteId: "", score: "" }],
+            }
           : term
       )
     );
   };
 
   // const handleRemoveVote = (termIndex, voteIndex) => {
-    
+
   //   setHouseTermData((prev) =>
   //     prev.map((term, index) =>
   //       index === termIndex
@@ -407,28 +415,28 @@ export default function Addrepresentative(props) {
   //     )
   //   );
   // };
-const handleRemoveVote = (termIndex, voteIndex) => {
-  setHouseTermData((prev) => {
-    const updatedTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
-            ...term,
-            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-          }
-        : term
-    );
+  const handleRemoveVote = (termIndex, voteIndex) => {
+    setHouseTermData((prev) => {
+      const updatedTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+            }
+          : term
+      );
 
-    // Clean up tracked changes for this vote
-    setLocalChanges((prevChanges) =>
-      prevChanges.filter(
-        (change) =>
-          !change.startsWith(`term${termIndex}_ScoredVote_${voteIndex + 1}`)
-      )
-    );
+      // Clean up tracked changes for this vote
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter(
+          (change) =>
+            !change.startsWith(`term${termIndex}_ScoredVote_${voteIndex + 1}`)
+        )
+      );
 
-    return updatedTerms;
-  });
-};
+      return updatedTerms;
+    });
+  };
   // const handleVoteChange = (termIndex, voteIndex, field, value) => {
   //   // Construct the field name for change tracking
   //   // Construct the field name for change tracking
@@ -461,16 +469,15 @@ const handleRemoveVote = (termIndex, voteIndex) => {
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
 
-
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
           : term
       );
 
@@ -482,7 +489,7 @@ const handleRemoveVote = (termIndex, voteIndex) => {
       if (isActualChange && !localChanges.includes(voteChangeId)) {
         setLocalChanges((prev) => [...prev, voteChangeId]);
       } else if (!isActualChange && localChanges.includes(voteChangeId)) {
-        setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
+        setLocalChanges((prev) => prev.filter((f) => f !== voteChangeId));
       }
 
       return newTerms;
@@ -494,40 +501,43 @@ const handleRemoveVote = (termIndex, voteIndex) => {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: "", score: "" },
-            ],
-          }
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: "", score: "" },
+              ],
+            }
           : term
       )
     );
   };
 
- 
-const handleRemoveActivity = (termIndex, activityIndex) => {
-  setHouseTermData((prev) => {
-    const updatedTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
-            ...term,
-            activitiesScore: term.activitiesScore.filter((_, i) => i !== activityIndex),
-          }
-        : term
-    );
+  const handleRemoveActivity = (termIndex, activityIndex) => {
+    setHouseTermData((prev) => {
+      const updatedTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
+              ...term,
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
+            }
+          : term
+      );
 
-    // Clean up tracked changes for this activity
-    setLocalChanges((prevChanges) =>
-      prevChanges.filter(
-        (change) =>
-          !change.startsWith(`term${termIndex}_TrackedActivity_${activityIndex + 1}`)
-      )
-    );
+      // Clean up tracked changes for this activity
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter(
+          (change) =>
+            !change.startsWith(
+              `term${termIndex}_TrackedActivity_${activityIndex + 1}`
+            )
+        )
+      );
 
-    return updatedTerms;
-  });
-};
+      return updatedTerms;
+    });
+  };
 
   // const handleActivityChange = (termIndex, activityIndex, field, value) => {
   //   // Construct the field name for change tracking
@@ -559,8 +569,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
   // };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
-
+    const activityChangeId = `term${termIndex}_TrackedActivity_${
+      activityIndex + 1
+    }`;
 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, idx) => {
@@ -575,14 +586,15 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
       // Compare with original data if available
       const originalTerm = originalTermData[termIndex] || {};
-      const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
+      const originalActivity =
+        originalTerm.activitiesScore?.[activityIndex] || {};
       const isActualChange = compareValues(value, originalActivity[field]);
 
       setLocalChanges((prevChanges) => {
         if (isActualChange && !prevChanges.includes(activityChangeId)) {
           return [...prevChanges, activityChangeId];
         } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
-          return prevChanges.filter(f => f !== activityChangeId);
+          return prevChanges.filter((f) => f !== activityChangeId);
         }
         return prevChanges;
       });
@@ -644,9 +656,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
       // Remove any tracked changes for this term
       setLocalChanges((prevChanges) =>
-        prevChanges.filter(
-          change => !change.startsWith(`term${termIndex}_`)
-        )
+        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
       );
 
       return prev.filter((_, index) => index !== termIndex);
@@ -668,7 +678,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     if (newVal == null || oldVal == null) return newVal !== oldVal;
 
     // Handle booleans and other primitives directly
-    if (typeof newVal !== 'object') return newVal !== oldVal;
+    if (typeof newVal !== "object") return newVal !== oldVal;
 
     // Handle arrays and objects
     return JSON.stringify(newVal) !== JSON.stringify(oldVal);
@@ -679,7 +689,11 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => {
           // Case 1: term.termId is an object with name property
-          if (term.termId && typeof term.termId === "object" && term.termId.name) {
+          if (
+            term.termId &&
+            typeof term.termId === "object" &&
+            term.termId.name
+          ) {
             return t.name === term.termId.name;
           }
           // Case 2: term.termId is a string (the term name)
@@ -687,7 +701,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
             return t.name === term.termId;
           }
           // Case 3: term.termId is an ObjectId - find by ID
-          else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
+          else if (
+            term.termId &&
+            mongoose.Types.ObjectId.isValid(term.termId)
+          ) {
             return t._id.toString() === term.termId.toString();
           }
           // Case 4: No valid termId found
@@ -697,23 +714,23 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
             ? term.votesScore.map((vote) => {
-              let scoreValue = "";
-              const dbScore = vote.score?.toLowerCase();
-              if (dbScore?.includes("yea")) {
-                scoreValue = "yea";
-              } else if (dbScore?.includes("nay")) {
-                scoreValue = "nay";
-              } else if (dbScore?.includes("other")) {
-                scoreValue = "other";
-              } else {
-                scoreValue = vote.score || "";
-              }
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase();
+                if (dbScore?.includes("yea")) {
+                  scoreValue = "yea";
+                } else if (dbScore?.includes("nay")) {
+                  scoreValue = "nay";
+                } else if (dbScore?.includes("other")) {
+                  scoreValue = "other";
+                } else {
+                  scoreValue = vote.score || "";
+                }
 
-              return {
-                voteId: vote.voteId?._id || vote.voteId || "",
-                score: scoreValue,
-              };
-            })
+                return {
+                  voteId: vote.voteId?._id || vote.voteId || "",
+                  score: scoreValue,
+                };
+              })
             : [{ voteId: "", score: "" }]; // Changed from empty string to null
 
         // If all voteId are null or array is empty, add a blank row
@@ -759,10 +776,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || null,
-                score: activity.score || "",
-              }))
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                }))
               : [{ activityId: "", score: "" }],
         };
       });
@@ -952,19 +969,18 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-
-    setFormData(prev => {
+    setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
       // Compare with original data
       if (originalFormData) {
         const isActualChange = compareValues(value, originalFormData[name]);
 
-        setLocalChanges(prevChanges => {
+        setLocalChanges((prevChanges) => {
           if (isActualChange && !prevChanges.includes(name)) {
             return [...prevChanges, name];
           } else if (!isActualChange && prevChanges.includes(name)) {
-            return prevChanges.filter(field => field !== name);
+            return prevChanges.filter((field) => field !== name);
           }
           return prevChanges;
         });
@@ -977,7 +993,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
-
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -992,26 +1007,34 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     try {
       // Prevent duplicate termId selections before any API calls
       const termIdCounts = houseTermData
-        .map(t => t.termId)
+        .map((t) => t.termId)
         .filter(Boolean)
         .reduce((acc, id) => {
           acc[id] = (acc[id] || 0) + 1;
           return acc;
         }, {});
 
-      const hasDuplicateTerms = Object.values(termIdCounts).some(count => count > 1);
+      const hasDuplicateTerms = Object.values(termIdCounts).some(
+        (count) => count > 1
+      );
       if (hasDuplicateTerms) {
         setLoading(false);
-        handleSnackbarOpen("Duplicate term selected. Each term can only be added once.", "error");
+        handleSnackbarOpen(
+          "Duplicate term selected. Each term can only be added once.",
+          "error"
+        );
         return;
       }
-      const currentTerms = houseTermData.filter(term => term.currentTerm);
+      const currentTerms = houseTermData.filter((term) => term.currentTerm);
       if (currentTerms.length > 1) {
         setLoading(false);
-        handleSnackbarOpen("Only one term can be marked as current term.", "error");
+        handleSnackbarOpen(
+          "Only one term can be marked as current term.",
+          "error"
+        );
         return;
       }
-    
+
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -1027,7 +1050,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
       }
 
       // Transform localChanges to track individual vote/activity edits
-      const detailedChanges = localChanges.map(change => {
+      const detailedChanges = localChanges.map((change) => {
         // Handle votesScore changes (e.g. "term1_votesScore_0_voteId" or "term1_votesScore_0_score")
         const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
         if (voteMatch) {
@@ -1036,7 +1059,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
         }
 
         // Handle activitiesScore changes
-        const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
+        const activityMatch = change.match(
+          /^term(\d+)_activitiesScore_(\d+)_(.+)$/
+        );
         if (activityMatch) {
           const [, termIdx, activityIdx] = activityMatch;
           return `term${termIdx}_activitiesScore_${activityIdx}`;
@@ -1061,34 +1086,18 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
       // Update field editors with current changes only if there are actual changes
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      if (hasActualChanges) {
-        localChanges.forEach((field) => {
-          // For senator-level fields
-          if (field in formData) {
-            if (compareValues(formData[field], originalFormData?.[field] || '')) {
-              updatedFieldEditors[field] = currentEditor;
-            }
-          }
-          // For term-level fields
-          else if (field.startsWith('term')) {
+      localChanges.forEach((field) => {
+        // For senator-level fields
+        if (field in formData) {
+          if (compareValues(formData[field], originalFormData?.[field] || "")) {
             updatedFieldEditors[field] = currentEditor;
           }
-        });
-      }
-
-      // Determine the final status - only change if there are actual changes
-      let finalStatus;
-      if (userRole === "admin") {
-        finalStatus = "published";
-      } else {
-        // For editors, only change to "under review" if there are actual changes
-        // Otherwise, maintain the current status
-        finalStatus = hasActualChanges ? "under review" : (formData.publishStatus || "draft");
-      }
-       // Check if this is a transition TO published status
-    const isTransitioningToPublished = 
-      finalStatus === "published" && 
-      formData.publishStatus !== "published";
+        }
+        // For term-level fields
+        else if (field.startsWith("term")) {
+          updatedFieldEditors[field] = currentEditor;
+        }
+      });
 
       // Prepare representative update
       const representativeUpdate = {
@@ -1130,13 +1139,17 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
             score: vote.score,
           }));
 
-        const transformedTrackedActivity = term.activitiesScore.map(activity => ({
-          ...activity,
-          activityId: activity.activityId === "" ? null : activity.activityId
-        })).filter(activity => activity.activityId !== null);
+        const transformedTrackedActivity = term.activitiesScore
+          .map((activity) => ({
+            ...activity,
+            activityId: activity.activityId === "" ? null : activity.activityId,
+          }))
+          .filter((activity) => activity.activityId !== null);
 
         // Get changes specific to this term
-        const termChanges = allChanges.filter(f => f.startsWith(`term${index}_`));
+        const termChanges = allChanges.filter((f) =>
+          f.startsWith(`term${index}_`)
+        );
 
         const termUpdate = {
           ...term,
@@ -1150,8 +1163,8 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
 
         return term._id
           ? dispatch(
-            updateHouseData({ id: term._id, data: termUpdate })
-          ).unwrap()
+              updateHouseData({ id: term._id, data: termUpdate })
+            ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -1166,18 +1179,12 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
       setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
 
       setLocalChanges([]);
-      
-      // Update success message based on whether changes were made
-      if (hasActualChanges) {
-        userRole === "admin"
-          ? handleSnackbarOpen("Changes Published successfully!", "success")
-          : handleSnackbarOpen(
+      userRole === "admin"
+        ? handleSnackbarOpen("Changes Published successfully!", "success")
+        : handleSnackbarOpen(
             'Status changed to "Under Review" for admin to moderate.',
             "info"
           );
-      } else {
-        handleSnackbarOpen("No changes to save.", "info");
-      }
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -1190,12 +1197,13 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     const term = houseTermData[termIndex];
     if (!term || !term.termId) return votes || [];
 
-    const selectedTerm = terms.find(t => t._id === term.termId);
+    const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return votes || [];
 
-    return (votes || []).filter(vote =>
-      vote.type === "house_bill" &&
-      selectedTerm.congresses.includes(Number(vote.congress))
+    return (votes || []).filter(
+      (vote) =>
+        vote.type === "house_bill" &&
+        selectedTerm.congresses.includes(Number(vote.congress))
     );
   };
   // Helper function to get filtered activities based on selected term
@@ -1203,10 +1211,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     const term = houseTermData[termIndex];
     if (!term || !term.termId) return houseActivities || [];
 
-    const selectedTerm = terms.find(t => t._id === term.termId);
+    const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return houseActivities || [];
 
-    return (houseActivities || []).filter(activity =>
+    return (houseActivities || []).filter((activity) =>
       selectedTerm.congresses.includes(Number(activity.congress))
     );
   };
@@ -1246,10 +1254,8 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
   //   setFormData((prev) => ({ ...prev, status }));
   // };
 
-
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
-
 
     setFormData((prev) => {
       const newData = { ...prev, status };
@@ -1264,7 +1270,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
         if (isActualChange && !prevChanges.includes(fieldName)) {
           return [...prevChanges, fieldName];
         } else if (!isActualChange && prevChanges.includes(fieldName)) {
-          return prevChanges.filter(field => field !== fieldName);
+          return prevChanges.filter((field) => field !== fieldName);
         }
         return prevChanges;
       });
@@ -1338,7 +1344,6 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     currentStatus
   );
 
-
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -1358,15 +1363,19 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
       navigate(0);
       await dispatch(getHouseById(id));
       await dispatch(getHouseDataByHouseId(id));
-      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+      setSnackbarMessage(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      );
       setSnackbarSeverity("success");
-      setComponentKey(prev => prev + 1);
+      setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+        (typeof error === "string"
+          ? error
+          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -1375,28 +1384,14 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     }
   };
 
-
   return (
     <AppTheme key={componentKey}>
       {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex", bgcolor: '#f6f6f6ff', }}>
+      <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -1418,7 +1413,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2.8 },
-              gap: 1
+              gap: 1,
             }}
           >
             <Stack
@@ -1433,30 +1428,14 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               <Button
                 variant="outlined"
                 onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#E24042 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#C91E37 !important",
-                  },
-                }}
+                className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
+                className="publishBtn"
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
@@ -1464,7 +1443,8 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
             {userRole &&
               formData.publishStatus &&
               statusData &&
-              (formData.publishStatus !== "published" || localChanges.length > 0) && (
+              (formData.publishStatus !== "published" ||
+                localChanges.length > 0) && (
                 <Box
                   sx={{
                     width: "97%",
@@ -1484,14 +1464,15 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${formData.publishStatus === "draft"
-                          ? "66, 165, 245"
-                          : formData.publishStatus === "under review"
+                        backgroundColor: `rgba(${
+                          formData.publishStatus === "draft"
+                            ? "66, 165, 245"
+                            : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                          }, 0.2)`,
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
@@ -1583,8 +1564,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                 const itemNumber = parseInt(itemIdx) + 1;
                                 return `Term ${termNumber}: Tracked Activity`;
                               }
-                              return `Term ${termNumber}: ${fieldLabels[category] || category
-                                }`;
+                              return `Term ${termNumber}: ${
+                                fieldLabels[category] || category
+                              }`;
                             }
 
                             // Handle regular term fields
@@ -1593,8 +1575,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                               const termNumber =
                                 parseInt(parts[0].replace("term", "")) + 1;
                               const fieldKey = parts.slice(1).join("_");
-                              return `Term ${termNumber}: ${fieldLabels[fieldKey] || fieldKey
-                                }`;
+                              return `Term ${termNumber}: ${
+                                fieldLabels[fieldKey] || fieldKey
+                              }`;
                             }
 
                             // Handle non-term fields
@@ -1630,13 +1613,13 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                         "Unknown Editor";
                                       const editTime = editorInfo?.editedAt
                                         ? new Date(
-                                          editorInfo.editedAt
-                                        ).toLocaleString([], {
-                                          month: "short",
-                                          day: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
+                                            editorInfo.editedAt
+                                          ).toLocaleString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
                                         : "unknown time";
 
                                       return (
@@ -1703,7 +1686,9 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    {formData.publishStatus === "published" ? "" : "Unsaved Changes"}
+                                    {formData.publishStatus === "published"
+                                      ? ""
+                                      : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -1737,15 +1722,15 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                               </Typography>
                                             </Box>
                                           }
-                                        // secondary={
-                                        //   <Typography
-                                        //     variant="caption"
-                                        //     color="text.secondary"
-                                        //   >
-                                        //     Edited just now
-                                        //   </Typography>
-                                        // }
-                                        // sx={{ my: 0 }}
+                                          // secondary={
+                                          //   <Typography
+                                          //     variant="caption"
+                                          //     color="text.secondary"
+                                          //   >
+                                          //     Edited just now
+                                          //   </Typography>
+                                          // }
+                                          // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
@@ -1761,11 +1746,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                 </Box>
               )}
 
-
-
-
-
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider', }} >
+            <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -1831,7 +1812,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               </Dialog>
 
               <Box sx={{ p: 0 }}>
-                <Typography fontSize={'1rem'} fontWeight={500}  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+                <Typography className="customTypography">
                   Representative's Information
                 </Typography>
                 <Grid
@@ -1845,19 +1826,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   px={9}
                 >
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                        whiteSpace: "normal", // allow wrapping
-                        overflowWrap: "break-word", // break long words
-                        width: "100%", // take full width of grid cell
-                      }}
-                    >
+                    <InputLabel className="nameLabel">
                       Representative's Name
                     </InputLabel>
                   </Grid>
@@ -1875,95 +1844,36 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 1}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Status
-                    </InputLabel>
+                    <InputLabel className="label">Status</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
-                      sx={{
-                        "& .MuiButton-outlined": {
-                          height:"36px",
-                          borderColor: "#4CAF50",
-                          color: "#4CAF50",
-                          "&:hover": {
-                            backgroundColor: "rgba(76, 175, 80, 0.04)",
-                            borderColor: "#4CAF50",
-                          },
-                        },
-                      }}
+                      className="customButtonGroup"
                     >
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Active")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Active"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Active"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Active"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                        className={`statusBtn ${
+                          formData.status === "Active" ? "active" : ""
+                        }`}
                       >
                         Active
                       </Button>
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Former")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Former"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Former"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Former"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                        className={`statusBtn ${
+                          formData.status === "Former" ? "active" : ""
+                        }`}
                       >
                         Former
                       </Button>
                     </ButtonGroup>
                   </Grid>
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      District
-                    </InputLabel>
+                    <InputLabel className="label">District</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <TextField
@@ -1977,17 +1887,11 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={isMobile ? 12 : 1} sx={{ alignContent: "center" }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Party
-                    </InputLabel>
+                  <Grid
+                    size={isMobile ? 12 : 1}
+                    sx={{ alignContent: "center" }}
+                  >
+                    <InputLabel className="label">Party</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <FormControl fullWidth>
@@ -2005,18 +1909,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        whiteSpace: "normal", // allow wrapping
-                        overflowWrap: "break-word", // break long words
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel className="label">
                       Representative's Photo
                     </InputLabel>
                   </Grid>
@@ -2046,15 +1939,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       <Button
                         component="label"
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="uploadBtn"
                         startIcon={<CloudUploadIcon />}
                       >
                         Upload files
@@ -2070,35 +1955,12 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               </Box>
             </Paper>
 
-
             {/* Render each term in houseTermData */}
             {houseTermData.map((term, termIndex) => (
-              <Paper
-                key={termIndex}
-               
-                sx={{
-                  width: "100%",
-                  marginBottom: "50px",
-                  position: "relative",
-                   bgcolor:"#fff",
-                  borderRadius: 0.8,
-                  border:'1px solid',
-                  borderColor:'divider'
-                
-                }}
-              >
+              <Paper key={termIndex} className="termData-paper">
                 <Box sx={{ padding: 0 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      // marginBottom: 3,
-                      borderBottom: '1px solid', borderColor: 'divider',
-                      p: 1.5, px: 3
-                    }}
-                  >
-                    <Typography fontSize={'1rem'} fontWeight={500} >
+                  <Box className="termData-header">
+                    <Typography fontSize={"1rem"} fontWeight={500}>
                       Representative's Term Information {termIndex + 1}
                     </Typography>
                     {termIndex > 0 && (
@@ -2120,17 +1982,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     py={3}
                   >
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term
-                      </InputLabel>
+                      <InputLabel className="label">Term</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 12 : 2.2}>
                       <FormControl fullWidth>
@@ -2148,14 +2000,29 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                           </MenuItem>
                           {terms && terms.length > 0 ? (
                             terms
-                              .filter((t) => t.startYear && t.endYear && (t.endYear - t.startYear === 1) &&
-                                t.startYear % 2 === 1 && // must be odd
-                                t.endYear % 2 === 0 && // must be even
-                                t.startYear >= 2015 && // no terms before 1789
-                                t.endYear >= 2015)     // must be even
-                              .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                              .filter(
+                                (t) =>
+                                  t.startYear &&
+                                  t.endYear &&
+                                  t.endYear - t.startYear === 1 &&
+                                  t.startYear % 2 === 1 && // must be odd
+                                  t.endYear % 2 === 0 && // must be even
+                                  t.startYear >= 2015 && // no terms before 1789
+                                  t.endYear >= 2015
+                              ) // must be even
+                              .filter(
+                                (t) =>
+                                  Array.isArray(t.congresses) &&
+                                  t.congresses.length > 0
+                              )
                               // Hide terms already selected in other term sections
-                              .filter((t) => !houseTermData.some((ht, idx) => idx !== termIndex && ht.termId === t._id))
+                              .filter(
+                                (t) =>
+                                  !houseTermData.some(
+                                    (ht, idx) =>
+                                      idx !== termIndex && ht.termId === t._id
+                                  )
+                              )
                               .sort((a, b) => a.congresses[0] - b.congresses[0])
                               .map((t) => (
                                 <MenuItem key={t._id} value={t._id}>
@@ -2170,51 +2037,12 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         </Select>
                       </FormControl>
                     </Grid>
-                    {/* <Grid size={isMobile ? 12 : 2.2}>
-  <FormControl fullWidth>
-    <Autocomplete
-      options={
-        terms
-          ? terms.filter(
-              (t) => Array.isArray(t.congresses) && t.congresses.length === 1
-            )
-          : []
-      }
-      getOptionLabel={(t) =>
-        t.congresses && t.congresses.length === 1
-          ? `${ordinal(t.congresses[0])} Congress`
-          : ""
-      }
-      value={
-        terms.find((t) => t._id === term.termId) || null
-      }
-      onChange={(event, newValue) =>
-        handleTermChange(
-          { target: { name: "termId", value: newValue?._id || "" } },
-          termIndex
-        )
-      }
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          // label="Select an option"
-          sx={{ background: "#fff" }}
-        />
-      )}
-    />
-  </FormControl>
-</Grid> */}
-                    <Grid size={isMobile ? 6 : 2.1} sx={{ alignContent: "center" }}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Current Term
-                      </InputLabel>
+
+                    <Grid
+                      size={isMobile ? 6 : 2.1}
+                      sx={{ alignContent: "center" }}
+                    >
+                      <InputLabel className="label">Current Term</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 6 : 0}>
                       <Switch
@@ -2227,17 +2055,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     </Grid>
 
                     <Grid size={isMobile ? 6 : 2.39}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        SBA Rating
-                      </InputLabel>
+                      <InputLabel className="label">SBA Rating</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 6 : 2.2}>
                       <FormControl fullWidth>
@@ -2263,16 +2081,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     </Grid>
 
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term Summary
-                      </InputLabel>
+                      <InputLabel className="label">Term Summary</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 12 : 9.05}>
                       <Editor
@@ -2281,25 +2090,32 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term.summary}
                         onEditorChange={(content) => {
-                          setHouseTermData(prev =>
+                          setHouseTermData((prev) =>
                             prev.map((t, idx) =>
                               idx === termIndex ? { ...t, summary: content } : t
                             )
                           );
                           // Optionally update localChanges here too
                           const fieldName = `term${termIndex}_summary`;
-                          const originalTerm = originalTermData[termIndex] || {};
-                          const isActualChange = compareValues(content, originalTerm.summary || "");
-                          setLocalChanges(prev => {
+                          const originalTerm =
+                            originalTermData[termIndex] || {};
+                          const isActualChange = compareValues(
+                            content,
+                            originalTerm.summary || ""
+                          );
+                          setLocalChanges((prev) => {
                             if (isActualChange && !prev.includes(fieldName)) {
                               return [...prev, fieldName];
-                            } else if (!isActualChange && prev.includes(fieldName)) {
-                              return prev.filter(f => f !== fieldName);
+                            } else if (
+                              !isActualChange &&
+                              prev.includes(fieldName)
+                            ) {
+                              return prev.filter((f) => f !== fieldName);
                             }
                             return prev;
                           });
                         }}
-                        onBlur={() => { }}
+                        onBlur={() => {}}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -2348,15 +2164,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                             columnGap={"15px"}
                           >
                             <Grid size={isMobile ? 12 : 2}>
-                              <InputLabel
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "end",
-                                  fontWeight: 500,
-                                  my: 0,
-                                }}
-                              >
+                              <InputLabel className="label">
                                 Scored Vote
                               </InputLabel>
                             </Grid>
@@ -2377,10 +2185,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                     width: "100%",
                                   }}
                                   renderValue={(selected) => {
-                                    const selectedVote = getFilteredVotes(termIndex).find(
-                                      (v) => v._id === selected
-                                    );
-                                    console.log(selectedVote);
+                                    const selectedVote = getFilteredVotes(
+                                      termIndex
+                                    ).find((v) => v._id === selected);
+
                                     return (
                                       <Typography
                                         sx={{
@@ -2389,7 +2197,8 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                           textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {selectedVote?.title
+                                        {
+                                          selectedVote?.title
                                           // || "Select a Bill"
                                         }
                                       </Typography>
@@ -2411,28 +2220,31 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                     Select a Bill
                                   </MenuItem>
                                   {getFilteredVotes(termIndex).length > 0 ? (
-                                    getFilteredVotes(termIndex).map((voteItem) => (
-                                      <MenuItem
-                                        key={voteItem._id}
-                                        value={voteItem._id}
-                                        sx={{ py: 1.5 }}
-                                      >
-                                        <Typography
-                                          sx={{
-                                            whiteSpace: "normal",
-                                            overflowWrap: "break-word",
-                                          }}
+                                    getFilteredVotes(termIndex).map(
+                                      (voteItem) => (
+                                        <MenuItem
+                                          key={voteItem._id}
+                                          value={voteItem._id}
+                                          sx={{ py: 1.5 }}
                                         >
-                                          {voteItem.title}
-                                        </Typography>
-                                      </MenuItem>
-                                    ))
+                                          <Typography
+                                            sx={{
+                                              whiteSpace: "normal",
+                                              overflowWrap: "break-word",
+                                            }}
+                                          >
+                                            {voteItem.title}
+                                          </Typography>
+                                        </MenuItem>
+                                      )
+                                    )
                                   ) : (
                                     <MenuItem value="" disabled>
-                                      {term.termId ? "No bills available for this congress" : "Select a term first"}
+                                      {term.termId
+                                        ? "No bills available for this congress"
+                                        : "Select a term first"}
                                     </MenuItem>
                                   )}
-
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -2474,15 +2286,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddVote(termIndex)}
                       >
@@ -2492,7 +2296,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                     <Grid size={1}></Grid>
 
                     {/* Activities Repeater Start */}
-                    {term.activitiesScore.map((activity, activityIndex) => (
+                    {term.activitiesScore.map((activity, activityIndex) =>
                       activity.activityId != null ? (
                         <Grid
                           rowSpacing={2}
@@ -2506,15 +2310,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                             columnGap={"15px"}
                           >
                             <Grid size={isMobile ? 12 : 2}>
-                              <InputLabel
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: isMobile ? "flex-start" : "flex-end",
-                                  fontWeight: 500,
-                                  my: 0,
-                                }}
-                              >
+                              <InputLabel className="label">
                                 Tracked Activity
                               </InputLabel>
                             </Grid>
@@ -2535,9 +2331,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                     width: "100%",
                                   }}
                                   renderValue={(selected) => {
-                                    const selectedActivity = getFilteredActivities(termIndex).find(
-                                      (a) => a._id === selected
-                                    );
+                                    const selectedActivity =
+                                      getFilteredActivities(termIndex).find(
+                                        (a) => a._id === selected
+                                      );
                                     return (
                                       <Typography
                                         sx={{
@@ -2546,7 +2343,8 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                           textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {selectedActivity?.title
+                                        {
+                                          selectedActivity?.title
                                           //  ||"Select an Activity"
                                         }
                                       </Typography>
@@ -2567,26 +2365,31 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                                   <MenuItem value="" disabled>
                                     Select an Activity
                                   </MenuItem>
-                                  {getFilteredActivities(termIndex).length > 0 ? (
-                                    getFilteredActivities(termIndex).map((activityItem) => (
-                                      <MenuItem
-                                        key={activityItem._id}
-                                        value={activityItem._id}
-                                        sx={{ py: 1.5 }}
-                                      >
-                                        <Typography
-                                          sx={{
-                                            whiteSpace: "normal",
-                                            overflowWrap: "break-word",
-                                          }}
+                                  {getFilteredActivities(termIndex).length >
+                                  0 ? (
+                                    getFilteredActivities(termIndex).map(
+                                      (activityItem) => (
+                                        <MenuItem
+                                          key={activityItem._id}
+                                          value={activityItem._id}
+                                          sx={{ py: 1.5 }}
                                         >
-                                          {activityItem.title}
-                                        </Typography>
-                                      </MenuItem>
-                                    ))
+                                          <Typography
+                                            sx={{
+                                              whiteSpace: "normal",
+                                              overflowWrap: "break-word",
+                                            }}
+                                          >
+                                            {activityItem.title}
+                                          </Typography>
+                                        </MenuItem>
+                                      )
+                                    )
                                   ) : (
                                     <MenuItem value="" disabled>
-                                      {term.termId ? "No activities available for this congress" : "Select a term first"}
+                                      {term.termId
+                                        ? "No activities available for this congress"
+                                        : "Select a term first"}
                                     </MenuItem>
                                   )}
                                 </Select>
@@ -2623,22 +2426,14 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                           </Grid>
                         </Grid>
                       ) : null
-                    ))}
+                    )}
                     {/* Activities Repeater Ends */}
 
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
@@ -2656,16 +2451,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{
-                alignSelf: "flex-start",
-                backgroundColor: "#173A5E !important",
-                color: "white !important",
-                padding: "0.5rem 1rem",
-                marginLeft: "0.5rem",
-                "&:hover": {
-                  backgroundColor: "#1E4C80 !important",
-                },
-              }}
+              className="addTerm-btn"
             >
               Add Another Term
             </Button>
@@ -2696,14 +2482,13 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
                       snackbarMessage === "Changes Published successfully!"
                         ? "#099885"
                         : undefined,
-
                   },
                   "& .MuiAlert-action": {
-      display: "flex",
-      alignItems: "center",  
-      paddingTop: 0,          
-      paddingBottom: 0,
-    },
+                    display: "flex",
+                    alignItems: "center",
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                  },
                 }}
                 elevation={6}
                 variant="filled"
