@@ -296,6 +296,7 @@ const handleConfirmDelete = async () => {
                       key={term._id}
                       elevation={0}
                       sx={{
+                        width:{xs:'undefined', lg:'50%'},
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",

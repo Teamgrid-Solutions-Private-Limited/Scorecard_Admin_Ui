@@ -219,16 +219,16 @@ export default function SearchBill(props) {
         </MuiAlert>
       </Snackbar>
 
-      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ", height: "100vh" }}>
+      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ",  minHeight: "100vh", }}>
         <SideMenu />
         <Box
           component="main"
           sx={(theme) => ({
             flexGrow: 1,
-            minHeight: "80vh",
+            // minHeight: "80vh",
             display: "flex",
             flexDirection: "column",
-            backgroundColor: "#f6f6f6ff",
+            // backgroundColor: "#f6f6f6ff",
           })}
         >
           <FixedHeader />
@@ -243,7 +243,7 @@ export default function SearchBill(props) {
               flex: 1,
             }}
           >
-            <Paper elevation={2} sx={{ width: "100%", bgcolor: "#fff" }}>
+            <Paper elevation={2} sx={{ width: "100%",bgcolor: "#fff" }}>
               <Box sx={{ padding: 0, pb: 5 }}>
                 <Typography
                   fontSize={"1rem"}

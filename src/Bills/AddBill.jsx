@@ -332,6 +332,7 @@ export default function AddBill(props) {
         ).unwrap();
         // After admin publishes, reload vote to get cleared editedFields
         await dispatch(getVoteById(id)).unwrap();
+        setSelectedFile(null);
 
         setSnackbarMessage(
           userRole === "admin"
