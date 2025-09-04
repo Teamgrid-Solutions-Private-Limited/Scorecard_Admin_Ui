@@ -975,8 +975,6 @@ export default function AddActivity(props) {
                   alignItems={"center"}
                   py={3}
                   pr={7}
-                  py={3}
-                  pr={7}
                 >
                   <Grid size={2}>
                     <InputLabel
