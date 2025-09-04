@@ -31,7 +31,7 @@ export const getAllVotes = createAsyncThunk(
   "votes/getAllVotes",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/votes/`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/votes/`, {
         headers: { "x-protected-key": "MySuperSecretApiKey123" },
       });
       return response.data;
