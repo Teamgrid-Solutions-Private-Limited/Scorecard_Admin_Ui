@@ -282,7 +282,7 @@ export default function AddActivity(props) {
     try {
       // Create FormData for file upload
       const formDataToSend = new FormData();
-
+ 
       // Add all form fields EXCEPT status (we'll add it separately)
       Object.keys(formData).forEach((key) => {
         if (key === "readMore" && selectedFile) {
@@ -293,26 +293,26 @@ export default function AddActivity(props) {
           formDataToSend.append(key, formData[key]);
         }
       });
-
+ 
       // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
         ? selectedActivity.editedFields
         : [];
-      
+     
       // Check if there are any actual changes
       const hasActualChanges = editedFields.length > 0;
-      
-      const mergedEditedFields = hasActualChanges 
+     
+      const mergedEditedFields = hasActualChanges
         ? Array.from(new Set([...backendEditedFields, ...editedFields]))
         : backendEditedFields; // Keep only backend changes if no new changes
-      
+     
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
         editorName: localStorage.getItem("user") || "Unknown Editor",
         editedAt: new Date(),
       };
-
+ 
       // Create updated fieldEditors map only if there are changes
       const updatedFieldEditors = { ...(selectedActivity?.fieldEditors || {}) };
       if (hasActualChanges) {
@@ -320,14 +320,14 @@ export default function AddActivity(props) {
           updatedFieldEditors[field] = currentEditor;
         });
       }
-
+ 
       // Add editedFields and fieldEditors to FormData
       formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
       formDataToSend.append(
         "fieldEditors",
         JSON.stringify(updatedFieldEditors)
       );
-
+ 
       // Determine the final status - only change if there are actual changes
       let finalStatus;
       if (userRole === "admin") {
@@ -337,15 +337,15 @@ export default function AddActivity(props) {
         // Otherwise, maintain the current status
         finalStatus = hasActualChanges ? "under review" : (formData.status || "draft");
       }
-      
+     
       formDataToSend.append("status", finalStatus);
-
+ 
       if (id) {
         await dispatch(
           updateActivity({ id, updatedData: formDataToSend })
         ).unwrap();
         await dispatch(getActivityById(id)).unwrap();
-
+ 
         // Update success message based on whether changes were made
         if (hasActualChanges) {
           setSnackbarMessage(
@@ -357,7 +357,7 @@ export default function AddActivity(props) {
           setSnackbarMessage("No changes to save.");
         }
         setSnackbarSeverity("success");
-
+ 
         // Update local state only if there were changes
         if (hasActualChanges) {
           if (userRole !== "admin") {
@@ -378,17 +378,17 @@ export default function AddActivity(props) {
           setLoading(false);
           return;
         }
-
+ 
         await dispatch(createActivity(formDataToSend)).unwrap();
         setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
-
+ 
         // Reset editedFields after successful creation
         setHasLocalChanges(false);
         setEditedFields([]);
         setOriginalFormData({ ...formData, status: finalStatus });
       }
-
+ 
       setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
@@ -399,7 +399,6 @@ export default function AddActivity(props) {
       setLoading(false);
     }
   };
-
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
