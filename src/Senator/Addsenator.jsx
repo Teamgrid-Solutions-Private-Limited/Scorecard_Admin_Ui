@@ -667,21 +667,44 @@ export default function AddSenator(props) {
     ]);
   };
 
-  const handleRemoveTerm = (termIndex) => {
-    setSenatorTermData((prev) => {
-      const removed = prev[termIndex];
-      if (removed && removed._id) {
-        setDeletedTermIds((ids) => [...ids, removed._id]);
+const handleRemoveTerm = (termIndex) => {
+  setSenatorTermData((prev) => {
+    const removed = prev[termIndex];
+    
+    // Get current user info
+    const decodedToken = jwtDecode(token);
+    const currentEditor = {
+      editorId: decodedToken.userId,
+      editorName: localStorage.getItem("user") || "Unknown User",
+      editedAt: new Date().toISOString() // Add ISO timestamp
+    };
+
+    // Update field editors in form data to track removal
+    const removalId = `removed_term_${termIndex}`;
+    setFormData(prevForm => ({
+      ...prevForm,
+      fieldEditors: {
+        ...(prevForm.fieldEditors || {}),
+        [removalId]: currentEditor
       }
+    }));
+    
+    if (removed && removed._id) {
+      setDeletedTermIds((ids) => [...ids, removed._id]);
+      if (!localChanges.includes(removalId)) {
+        setLocalChanges((prev) => [...prev, removalId]);
+      }
+    }
 
-      // Remove any tracked changes for this term
-      setLocalChanges((prevChanges) =>
-        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
-      );
+    // Remove any tracked changes for this term
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+    );
 
-      return prev.filter((_, index) => index !== termIndex);
-    });
-  };
+    return prev.filter((_, index) => index !== termIndex);
+  });
+};
+
   // const handleRemoveTerm = (termIndex) => {
   //   setSenatorTermData((prev) =>
   //     prev.filter((_, index) => index !== termIndex)
@@ -934,42 +957,42 @@ export default function AddSenator(props) {
     }
   }, [formData, originalFormData]);
 
-  useEffect(() => {
-    if (!originalFormData || !formData || !originalTermData || !senatorTermData)
+useEffect(() => {
+  if (!originalFormData || !formData || !originalTermData || !senatorTermData)
+    return;
+
+  const changes = [];
+
+  // Track senator-level changes
+  Object.keys(formData).forEach((key) => {
+    if (
+      key === "editedFields" ||
+      key === "fieldEditors" ||
+      key === "publishStatus"
+    )
       return;
+    if (compareValues(formData[key], originalFormData[key])) {
+      changes.push(key);
+    }
+  });
 
-    const changes = [];
+  // Track term-level changes
+  senatorTermData.forEach((term, termIndex) => {
+    const originalTerm = originalTermData[termIndex] || {};
+    const isNewTerm = term.isNew;
 
-    // Track senator-level changes
-    Object.keys(formData).forEach((key) => {
+    Object.keys(term).forEach((key) => {
       if (
-        key === "editedFields" ||
-        key === "fieldEditors" ||
-        key === "publishStatus"
+        [
+          "_id",
+          "senateId",
+          "editedFields",
+          "fieldEditors",
+          "isNew",
+          "publishStatus",
+        ].includes(key)
       )
         return;
-      if (compareValues(formData[key], originalFormData[key])) {
-        changes.push(key);
-      }
-    });
-
-    // Track term-level changes
-    senatorTermData.forEach((term, termIndex) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const isNewTerm = term.isNew;
-
-      Object.keys(term).forEach((key) => {
-        if (
-          [
-            "_id",
-            "senateId",
-            "editedFields",
-            "fieldEditors",
-            "isNew",
-            "publishStatus",
-          ].includes(key)
-        )
-          return;
 
         if (key === "summary") {
           const currentSummary = term.summary || "";
@@ -993,33 +1016,40 @@ export default function AddSenator(props) {
           const currentValue = term[key];
           const originalValue = originalTerm[key];
 
-          if (isNewTerm) {
-            if (
-              currentValue !== "" &&
-              currentValue !== null &&
-              currentValue !== false
-            ) {
-              changes.push(`term${termIndex}_${key}`);
-            }
-          } else {
-            if ((currentValue || "") !== (originalValue || "")) {
-              changes.push(`term${termIndex}_${key}`);
-            }
+        if (isNewTerm) {
+          if (
+            currentValue !== "" &&
+            currentValue !== null &&
+            currentValue !== false
+          ) {
+            changes.push(`term${termIndex}_${key}`);
+          }
+        } else {
+          if ((currentValue || "") !== (originalValue || "")) {
+            changes.push(`term${termIndex}_${key}`);
           }
         }
-      });
+      }
     });
+  });
 
-    // setEditedFields(changes);
-    const backendEditedFields = Array.isArray(formData.editedFields)
-      ? formData.editedFields
-      : [];
-    const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
+  // Track removed terms by comparing originalTermData with current senatorTermData
+  originalTermData.forEach((originalTerm, originalIndex) => {
+    // Check if this original term still exists in current data
+    const stillExists = senatorTermData.some(
+      (currentTerm, currentIndex) => 
+        (currentTerm._id && currentTerm._id === originalTerm._id) || 
+        currentIndex === originalIndex
+    );
+    
+    if (!stillExists && originalTerm._id) {
+      changes.push(`removed_term_${originalIndex}`);
+    }
+  });
 
-    setEditedFields(mergedChanges);
-    // Use only local diffs for editedFields so reverting removes from list
-    setEditedFields(changes);
-  }, [formData, originalFormData, senatorTermData, originalTermData]);
+  // Use only local diffs for editedFields so reverting removes from list
+  setEditedFields(changes);
+}, [formData, originalFormData, senatorTermData, originalTermData]);
 
   useEffect(() => {
     termPreFill();
@@ -1129,12 +1159,13 @@ export default function AddSenator(props) {
     });
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handleSave = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+ 
+  try {
 
-    try {
-      // Prevent duplicate termId selections before any API calls
+     // Prevent duplicate termId selections before any API calls
       const termIdCounts = senatorTermData
         .map((t) => t.termId)
         .filter(Boolean)
@@ -1164,178 +1195,200 @@ export default function AddSenator(props) {
         return;
       }
 
-      const decodedToken = jwtDecode(token);
-      const currentEditor = {
-        editorId: decodedToken.userId,
-        editorName: localStorage.getItem("user") || "Unknown User",
-        editedAt: new Date(),
-      };
-
-      if (deletedTermIds.length > 0) {
-        await Promise.all(
-          deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
-        );
-        setDeletedTermIds([]); // clear after delete
+    const decodedToken = jwtDecode(token);
+    const currentEditor = {
+      editorId: decodedToken.userId,
+      editorName: localStorage.getItem("user") || "Unknown User",
+      editedAt: new Date(),
+    };
+ 
+    if (deletedTermIds.length > 0) {
+      await Promise.all(
+        deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
+      );
+      setDeletedTermIds([]); // clear after delete
+    }
+ 
+    // Transform localChanges to track individual vote/activity edits
+    const detailedChanges = localChanges.map((change) => {
+      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId")
+      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
+      if (voteMatch) {
+        const [, termIdx, voteIdx] = voteMatch;
+        return `term${termIdx}_votesScore_${voteIdx}`;
       }
-
-      // Transform localChanges to track individual vote/activity edits
-      const detailedChanges = localChanges.map((change) => {
-        // Handle votesScore changes (e.g. "term1_votesScore_0_voteId")
-        const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
-        if (voteMatch) {
-          const [, termIdx, voteIdx] = voteMatch;
-          return `term${termIdx}_votesScore_${voteIdx}`;
-        }
-
-        // Handle activitiesScore changes
-        const activityMatch = change.match(
-          /^term(\d+)_activitiesScore_(\d+)_(.+)$/
-        );
-        if (activityMatch) {
-          const [, termIdx, activityIdx] = activityMatch;
-          return `term${termIdx}_activitiesScore_${activityIdx}`;
-        }
-
-        return change;
-      });
-
-      const allChanges = [
-        ...new Set([
-          ...(Array.isArray(formData.editedFields)
-            ? formData.editedFields
-            : []),
-          ...detailedChanges,
-        ]),
-      ];
-
-      // Update field editors with current changes
-      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-      localChanges.forEach((field) => {
-        // For senator-level fields
-        if (field in formData) {
-          if (compareValues(formData[field], originalFormData?.[field] || "")) {
-            updatedFieldEditors[field] = currentEditor;
-          }
-        }
-        // For term-level fields
-        else if (field.startsWith("term")) {
+ 
+      // Handle activitiesScore changes
+      const activityMatch = change.match(
+        /^term(\d+)_activitiesScore_(\d+)_(.+)$/
+      );
+      if (activityMatch) {
+        const [, termIdx, activityIdx] = activityMatch;
+        return `term${termIdx}_activitiesScore_${activityIdx}`;
+      }
+ 
+      return change;
+    });
+ 
+    const allChanges = [
+      ...new Set([
+        ...(Array.isArray(formData.editedFields)
+          ? formData.editedFields
+          : []),
+        ...detailedChanges,
+      ]),
+    ];
+ 
+    // Update field editors with current changes
+    const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+    localChanges.forEach((field) => {
+      // For senator-level fields
+      if (field in formData) {
+        if (compareValues(formData[field], originalFormData?.[field] || "")) {
           updatedFieldEditors[field] = currentEditor;
         }
-      });
-
-      // Prepare senator update
-      const senatorUpdate = {
-        ...formData,
-        editedFields: allChanges,
-        fieldEditors: updatedFieldEditors,
-        publishStatus: userRole === "admin" ? "published" : "under review",
-      };
-
-      // Clear editedFields if publishing
-      if (senatorUpdate.publishStatus === "published") {
-        senatorUpdate.editedFields = [];
-        senatorUpdate.fieldEditors = {};
       }
-
-      // Update senator
-      if (id) {
-        const formData = new FormData();
-        Object.entries(senatorUpdate).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            if (typeof value === "object" && !(value instanceof File)) {
-              formData.append(key, JSON.stringify(value));
-            } else {
-              formData.append(key, value);
-            }
+      // For term-level fields
+      else if (field.startsWith("term")) {
+        updatedFieldEditors[field] = currentEditor;
+      }
+    });
+ 
+    // FIX: Only change status if there are actual changes
+    const hasActualChanges = allChanges.length > 0 || localChanges.length > 0;
+   
+    // Prepare senator update
+    let publishStatus = formData.publishStatus || "draft";
+ 
+    if (userRole === "admin") {
+      // Admin always publishes, but only clear editedFields if there were actual changes
+      publishStatus = "published";
+    } else {
+      // For editors, only change to "under review" if there are actual changes
+      if (hasActualChanges) {
+        publishStatus = "under review";
+      }
+      // If no changes, keep the current status
+      else {
+        publishStatus = formData.publishStatus;
+      }
+    }
+ 
+    // Prepare senator update
+    const senatorUpdate = {
+      ...formData,
+      editedFields: allChanges,
+      fieldEditors: updatedFieldEditors,
+      publishStatus: publishStatus, // Use the calculated status
+    };
+ 
+    // Clear editedFields only if publishing AND there were actual changes
+    if (senatorUpdate.publishStatus === "published" && hasActualChanges) {
+      senatorUpdate.editedFields = [];
+      senatorUpdate.fieldEditors = {};
+    }
+ 
+    // Rest of your handleSave function remains the same...
+    // Update senator
+    if (id) {
+      const formData = new FormData();
+      Object.entries(senatorUpdate).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          if (typeof value === "object" && !(value instanceof File)) {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, value);
           }
-        });
-
-        await dispatch(updateSenator({ id, formData })).unwrap();
-      }
-
-      // Update terms
-      const termPromises = senatorTermData.map((term, index) => {
-        const transformedVotesScore = term.votesScore
-          .map((vote) => ({
-            ...vote,
-            voteId: vote.voteId === "" ? null : vote.voteId,
-          }))
-          .filter((vote) => vote.voteId !== null); // Optional: remove null entries
-        const transformedTrackedActivity = term.activitiesScore
-          .map((activity) => ({
-            ...activity,
-            activityId: activity.activityId === "" ? null : activity.activityId,
-          }))
-          .filter((activity) => activity.activityId !== null);
-
-        // Get changes specific to this term
-        const termChanges = allChanges.filter((f) =>
-          f.startsWith(`term${index}_`)
-        );
-
-        // Get the selected term to extract congress data
-        const selectedTerm = terms.find((t) => t._id === term.termId);
-
-        // Extract congress array from the term
-        const congressArray = selectedTerm?.congresses || [];
-
-        // Extract years if available
-        const years = selectedTerm?.years || null;
-
-        const termUpdate = {
-          ...term,
-          votesScore: transformedVotesScore,
-          activitiesScore: transformedTrackedActivity,
-          isNew: false,
-          senateId: id,
-          editedFields: termChanges,
-          fieldEditors: updatedFieldEditors,
-          // Map each summary to include the corresponding congress
-          // summaries: term.summaries.map((summary, summaryIndex) => ({
-          //   ...summary,
-          //   congress: congressArray[summaryIndex] || null, // Get the congress at the same index
-          // })),
-          summary: term.summary,
-        };
-
-        return term._id
-          ? dispatch(
-              updateSenatorData({ id: term._id, data: termUpdate })
-            ).unwrap()
-          : dispatch(createSenatorData(termUpdate)).unwrap();
+        }
       });
-
-      await Promise.all(termPromises);
-
-      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-      await dispatch(getSenatorById(id)).unwrap();
-
-      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
-      setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
-      setLocalChanges([]);
-
-      setDeletedTermIds([]);
-
+ 
+      await dispatch(updateSenator({ id, formData })).unwrap();
+    }
+ 
+    // Update terms
+    const termPromises = senatorTermData.map((term, index) => {
+      const transformedVotesScore = term.votesScore
+        .map((vote) => ({
+          ...vote,
+          voteId: vote.voteId === "" ? null : vote.voteId,
+        }))
+        .filter((vote) => vote.voteId !== null); // Optional: remove null entries
+      const transformedTrackedActivity = term.activitiesScore
+        .map((activity) => ({
+          ...activity,
+          activityId: activity.activityId === "" ? null : activity.activityId,
+        }))
+        .filter((activity) => activity.activityId !== null);
+ 
+      // Get changes specific to this term
+      const termChanges = allChanges.filter((f) =>
+        f.startsWith(`term${index}_`)
+      );
+ 
+      // Get the selected term to extract congress data
+      const selectedTerm = terms.find((t) => t._id === term.termId);
+ 
+      // Extract congress array from the term
+      const congressArray = selectedTerm?.congresses || [];
+ 
+      // Extract years if available
+      const years = selectedTerm?.years || null;
+ 
+      const termUpdate = {
+        ...term,
+        votesScore: transformedVotesScore,
+        activitiesScore: transformedTrackedActivity,
+        isNew: false,
+        senateId: id,
+        editedFields: termChanges,
+        fieldEditors: updatedFieldEditors,
+        summary: term.summary
+      };
+ 
+      return term._id
+        ? dispatch(
+          updateSenatorData({ id: term._id, data: termUpdate })
+        ).unwrap()
+        : dispatch(createSenatorData(termUpdate)).unwrap();
+    });
+ 
+    await Promise.all(termPromises);
+ 
+    await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+    await dispatch(getSenatorById(id)).unwrap();
+ 
+    setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+    setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
+    setLocalChanges([]);
+ 
+    setDeletedTermIds([]);
+ 
+    // Update success message based on whether changes were made
+    if (hasActualChanges) {
       userRole === "admin"
-        ? handleSnackbarOpen("Changes published successfully!", "success")
+        ? handleSnackbarOpen("Changes Published successfully!", "success")
         : handleSnackbarOpen(
             'Status changed to "Under Review" for admin to moderate.',
             "info"
           );
-    } catch (error) {
-      console.error("Save failed:", error);
-
-      const errorMessage =
-        error?.response?.data?.message ||
-        (error.code === 11000
-          ? "Duplicate entry: This senator term already exists."
-          : "Failed to create senator data. Please try again.");
-
-      handleSnackbarOpen(errorMessage, "error");
-    } finally {
-      setLoading(false);
+    } else {
+      handleSnackbarOpen("No changes to save.", "info");
     }
-  };
+  } catch (error) {
+    console.error("Save failed:", error);
+ 
+    const errorMessage =
+      error?.response?.data?.message ||
+      (error.code === 11000
+        ? "Duplicate entry: This senator term already exists."
+        : "Failed to create senator data. Please try again.");
+ 
+    handleSnackbarOpen(errorMessage, "error");
+ 
+  } finally {
+    setLoading(false);
+  }
+}
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -1594,42 +1647,46 @@ export default function AddSenator(props) {
                           }
 
                           // Enhanced field name formatter
-                          const formatFieldName = (field) => {
-                            // Handle term array items (e.g., "term2_votesScore_0_voteId")
-                            const termArrayMatch = field.match(
-                              /^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/
-                            );
-                            if (termArrayMatch) {
-                              const [, termIdx, category, itemIdx, subField] =
-                                termArrayMatch;
-                              const termNumber = parseInt(termIdx) + 1;
-                              // const itemNumber = parseInt(itemIdx) + 1;
+                         const formatFieldName = (field) => {
+  // Handle removed terms
+  if (field.startsWith("removed_term_")) {
+    const termIndex = parseInt(field.replace("removed_term_", ""));
+    return `Term ${termIndex + 1} Removed`;
+  }
+  
+  // Handle term array items (e.g., "term2_votesScore_0_voteId")
+  const termArrayMatch = field.match(
+    /^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/
+  );
+  if (termArrayMatch) {
+    const [, termIdx, category, itemIdx, subField] = termArrayMatch;
+    const termNumber = parseInt(termIdx) + 1;
+    // const itemNumber = parseInt(itemIdx) + 1;
 
-                              if (category === "votesScore") {
-                                return `Term ${termNumber}: Scored Vote`;
-                              }
-                              if (category === "activitiesScore") {
-                                return `Term ${termNumber}: Tracked Activity`;
-                              }
-                              return `Term ${termNumber}: ${
-                                fieldLabels[category] || category
-                              } Item ${itemNumber}`;
-                            }
+    if (category === "votesScore") {
+      return `Term ${termNumber}: Scored Vote`;
+    }
+    if (category === "activitiesScore") {
+      return `Term ${termNumber}: Tracked Activity`;
+    }
+    return `Term ${termNumber}: ${
+      fieldLabels[category] || category
+    } Item ${itemNumber}`;
+  }
 
-                            // Handle regular term fields (e.g., "term2_votesScore")
-                            if (field.startsWith("term")) {
-                              const parts = field.split("_");
-                              const termNumber =
-                                parseInt(parts[0].replace("term", "")) + 1;
-                              const fieldKey = parts.slice(1).join("_");
-                              return `Term ${termNumber}: ${
-                                fieldLabels[fieldKey] || fieldKey
-                              }`;
-                            }
+  // Handle regular term fields (e.g., "term2_votesScore")
+  if (field.startsWith("term")) {
+    const parts = field.split("_");
+    const termNumber = parseInt(parts[0].replace("term", "")) + 1;
+    const fieldKey = parts.slice(1).join("_");
+    return `Term ${termNumber}: ${
+      fieldLabels[fieldKey] || fieldKey
+    }`;
+  }
 
-                            // Handle non-term fields
-                            return fieldLabels[field] || field;
-                          };
+  // Handle non-term fields
+  return fieldLabels[field] || field;
+};
 
                           return (
                             <>
@@ -2366,7 +2423,7 @@ export default function AddSenator(props) {
                         {term.activitiesScore.map((activity, activityIndex) => (
                           <Grid
                             rowSpacing={2}
-                            sx={{ width: "100%", }}
+                            sx={{ width: "100%" }}
                             key={activityIndex}
                           >
                             <Grid
@@ -2637,4 +2694,5 @@ export default function AddSenator(props) {
       </Box>
     </AppTheme>
   );
+
 }
