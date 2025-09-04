@@ -50,7 +50,7 @@ export const getHouseById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/api/v1/admin/houses/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-      
+      console.log("GetHouseById", response.data); 
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

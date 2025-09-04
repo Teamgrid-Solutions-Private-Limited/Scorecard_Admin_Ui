@@ -53,7 +53,7 @@ export const getHouseDataByHouseId = createAsyncThunk(
       const response = await axios.get(`${API_URL}/api/v1/admin/house-data/viewbyhouse/${id}`, {
         headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
       });
-
+      console.log("House Data by House ID:", response.data.terms);
       return response.data.terms;
     } catch (error) {
       
