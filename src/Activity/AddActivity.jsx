@@ -277,133 +277,126 @@ export default function AddActivity(props) {
   };
 
   // 4. In handleSubmit, only clear editedFields if status is published
- const handleSubmit = async () => {
-  setLoading(true);
-  try {
-    const formDataToSend = new FormData();
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
 
-    // Add all form fields EXCEPT status (we'll handle separately)
-    Object.keys(formData).forEach((key) => {
-      if (key === "readMore" && selectedFile) {
-        formDataToSend.append("readMore", selectedFile);
-      } else if (key !== "status") {
-        formDataToSend.append(key, formData[key]);
-      }
-    });
+      // Add all form fields EXCEPT status (we'll add it separately)
+      Object.keys(formData).forEach((key) => {
+        if (key === "readMore" && selectedFile) {
+          // If there's a selected file, append it
+          formDataToSend.append("readMore", selectedFile);
+        } else if (key !== "status") {
+          // Don't add status here
+          formDataToSend.append(key, formData[key]);
+        }
+      });
 
-    // Merge backend's editedFields with current session's changes
-    const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
-      ? selectedActivity.editedFields
-      : [];
+      // Merge backend's editedFields with current session's changes
+      const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
+        ? selectedActivity.editedFields
+        : [];
+      const mergedEditedFields = Array.from(
+        new Set([...backendEditedFields, ...editedFields])
+      );
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: localStorage.getItem("user") || "Unknown Editor",
+        editedAt: new Date(),
+      };
 
-    const hasActualChanges = editedFields.length > 0;
-
-    const mergedEditedFields = hasActualChanges
-      ? Array.from(new Set([...backendEditedFields, ...editedFields]))
-      : backendEditedFields;
-
-    const decodedToken = jwtDecode(token);
-    const currentEditor = {
-      editorId: decodedToken.userId,
-      editorName: localStorage.getItem("user") || "Unknown Editor",
-      editedAt: new Date(),
-    };
-
-    // Create updated fieldEditors map
-    const updatedFieldEditors = { ...(selectedActivity?.fieldEditors || {}) };
-    if (hasActualChanges) {
+      // Create updated fieldEditors map
+      const updatedFieldEditors = { ...(selectedActivity?.fieldEditors || {}) };
       editedFields.forEach((field) => {
         updatedFieldEditors[field] = currentEditor;
       });
-    }
 
-    // Add editedFields and fieldEditors
-    formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
-    formDataToSend.append("fieldEditors", JSON.stringify(updatedFieldEditors));
+      // Add editedFields and fieldEditors to FormData
+      formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
+      formDataToSend.append(
+        "fieldEditors",
+        JSON.stringify(updatedFieldEditors)
+      );
 
-    // Determine status
-    let finalStatus;
-    if (userRole === "admin") {
-      finalStatus = "published";
-    } else {
-      if (hasActualChanges || formData.status === "draft") {
-        finalStatus = "under review"; // allow moving draft forward
-      } else {
-        finalStatus = formData.status || "draft";
-      }
-    }
-    formDataToSend.append("status", finalStatus);
+      // Add status ONLY ONCE
+      const finalStatus = userRole === "admin" ? "published" : "under review";
+      formDataToSend.append("status", finalStatus);
 
-    if (id) {
-      await dispatch(updateActivity({ id, updatedData: formDataToSend })).unwrap();
-      await dispatch(getActivityById(id)).unwrap();
+      if (id) {
+        const hasChanges =
+          editedFields.length > 0 || // user changed form fields
+          selectedFile || // file uploaded
+          Object.keys(updatedFieldEditors).length >
+            Object.keys(selectedActivity?.fieldEditors || {}).length; // editor updates
 
-      // ✅ Only block when published & no edits
-      if (!hasActualChanges && formData.status === "published") {
-        setSnackbarMessage("No changes to save.");
-      } else if (hasActualChanges || formData.status === "draft") {
+        if (!hasChanges) {
+          setLoading(false);
+
+          setSnackbarMessage("No changes detected. Nothing to update.");
+
+          setSnackbarSeverity("info");
+
+          setOpenSnackbar(true);
+
+          return;
+        }
+
+        await dispatch(
+          updateActivity({ id, updatedData: formDataToSend })
+        ).unwrap();
+        await dispatch(getActivityById(id)).unwrap();
+
         setSnackbarMessage(
           userRole === "admin"
             ? "Changes published successfully!"
-              : 'Status changed to "Under Review" for admin to moderate.'
+            : 'Status changed to "Under Review" for admin to moderate.'
         );
-      }
+        setSnackbarSeverity("success");
 
-      setSnackbarSeverity("success");
-
-      if (userRole !== "admin") {
-        if (hasActualChanges || formData.status === "draft") {
+        if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
-          setEditedFields((prev) => prev.filter((field) => field !== "status"));
+          // setOriginalFormData({ ...formData, status: "under review" }); // Keep tracking changes
+        } else {
+          // Only clear locally if status is published
+          if (finalStatus === "published") {
+            setEditedFields([]);
+            // Update originalFormData to current form data to stop tracking changes
+            setOriginalFormData({ ...formData, status: "published" });
+          }
         }
       } else {
-        if (finalStatus === "published" && hasActualChanges) {
-          setEditedFields([]);
-          setOriginalFormData({ ...formData, status: "published" });
+        if (!formData.type || !formData.title || !formData.shortDesc) {
+          setSnackbarMessage("Please fill all fields!");
+          setSnackbarSeverity("warning");
+          setOpenSnackbar(true);
+          setLoading(false);
+          return;
         }
+
+        await dispatch(createActivity(formDataToSend)).unwrap();
+        setSnackbarMessage("Activity created successfully!");
+        setSnackbarSeverity("success");
+
+        // Reset editedFields after successful creation
+        setHasLocalChanges(false); // Reset after save
+        setEditedFields([]);
+        // Update originalFormData to current form data
+        setOriginalFormData({ ...formData, status: finalStatus });
       }
-    } else {
-      // Creating a new activity
-      if (!formData.type || !formData.title || !formData.shortDesc) {
-        setSnackbarMessage("Please fill all fields!");
-        setSnackbarSeverity("warning");
-        setOpenSnackbar(true);
-        setLoading(false);
-        return;
-      }
 
-      await dispatch(createActivity(formDataToSend)).unwrap();
-      setSnackbarMessage("Activity created successfully!");
-      setSnackbarSeverity("success");
-
-      setHasLocalChanges(false);
-      setEditedFields([]);
-      setOriginalFormData({ ...formData, status: finalStatus });
+      setOpenSnackbar(true);
+    } catch (error) {
+      console.error("Save error:", error);
+      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    } finally {
+      setLoading(false);
     }
-
-    setOpenSnackbar(true);
-  } catch (error) {
-    console.error("Save error:", error);
-
-    let errorMessage = "Operation failed";
-    if (error?.payload?.message) {
-      errorMessage = error.payload.message;
-    } else if (error?.message) {
-      errorMessage = error.message;
-    } else if (typeof error === "string") {
-      errorMessage = error;
-    } else if (error?.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    }
-
-    setSnackbarMessage(errorMessage);
-    setSnackbarSeverity("error");
-    setOpenSnackbar(true);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const handleDiscard = () => {
     if (!id) {
@@ -982,11 +975,7 @@ export default function AddActivity(props) {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Type
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Type</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1003,11 +992,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Name
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Name</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1025,10 +1010,8 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?12:2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
+                  <Grid size={isMobile ? 12 : 2}>
+                    <InputLabel className="nameLabel">
                       Activity Details
                     </InputLabel>
                   </Grid>
@@ -1071,12 +1054,8 @@ export default function AddActivity(props) {
                       }}
                     />
                   </Grid>
-                  <Grid size={isMobile?12:2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Congress
-                    </InputLabel>
+                  <Grid size={isMobile ? 12 : 2}>
+                    <InputLabel className="nameLabel">Congress</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1095,11 +1074,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Date
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Date</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1118,12 +1093,8 @@ export default function AddActivity(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?12:2}>
-                    <InputLabel
-                       className="nameLabel"
-                    >
-                      Read More
-                    </InputLabel>
+                  <Grid size={isMobile ? 12 : 2}>
+                    <InputLabel className="nameLabel">Read More</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>

@@ -667,71 +667,71 @@ export default function AddSenator(props) {
     ]);
   };
 
-// const handleRemoveTerm = (termIndex) => {
-//   setSenatorTermData((prev) => {
-//     const removed = prev[termIndex];
-    
-//     // Get current user info
-//     const decodedToken = jwtDecode(token);
-//     const currentEditor = {
-//       editorId: decodedToken.userId,
-//       editorName: localStorage.getItem("user") || "Unknown User",
-//       editedAt: new Date().toISOString() // Add ISO timestamp
-//     };
+  // const handleRemoveTerm = (termIndex) => {
+  //   setSenatorTermData((prev) => {
+  //     const removed = prev[termIndex];
 
-//     // Update field editors in form data to track removal
-//     const removalId = `removed_term_${termIndex}`;
-//     setFormData(prevForm => ({
-//       ...prevForm,
-//       fieldEditors: {
-//         ...(prevForm.fieldEditors || {}),
-//         [removalId]: currentEditor
-//       }
-//     }));
-    
-//     if (removed && removed._id) {
-//       setDeletedTermIds((ids) => [...ids, removed._id]);
-//       if (!localChanges.includes(removalId)) {
-//         setLocalChanges((prev) => [...prev, removalId]);
-//       }
-//     }
-const handleRemoveTerm = (termIndex) => {
-  setSenatorTermData((prev) => {
-    const removed = prev[termIndex];
-    
-    // Get current user info
-    const decodedToken = jwtDecode(token);
-    const currentEditor = {
-      editorId: decodedToken.userId,
-      editorName: localStorage.getItem("user") || "Unknown User",
-      editedAt: new Date().toISOString() // Add ISO timestamp
-    };
+  //     // Get current user info
+  //     const decodedToken = jwtDecode(token);
+  //     const currentEditor = {
+  //       editorId: decodedToken.userId,
+  //       editorName: localStorage.getItem("user") || "Unknown User",
+  //       editedAt: new Date().toISOString() // Add ISO timestamp
+  //     };
 
-    // Update field editors in form data to track removal
-    const removalId = `removed_term_${termIndex}`;
-    setFormData(prevForm => ({
-      ...prevForm,
-      fieldEditors: {
-        ...(prevForm.fieldEditors || {}),
-        [removalId]: currentEditor
+  //     // Update field editors in form data to track removal
+  //     const removalId = `removed_term_${termIndex}`;
+  //     setFormData(prevForm => ({
+  //       ...prevForm,
+  //       fieldEditors: {
+  //         ...(prevForm.fieldEditors || {}),
+  //         [removalId]: currentEditor
+  //       }
+  //     }));
+
+  //     if (removed && removed._id) {
+  //       setDeletedTermIds((ids) => [...ids, removed._id]);
+  //       if (!localChanges.includes(removalId)) {
+  //         setLocalChanges((prev) => [...prev, removalId]);
+  //       }
+  //     }
+  const handleRemoveTerm = (termIndex) => {
+    setSenatorTermData((prev) => {
+      const removed = prev[termIndex];
+
+      // Get current user info
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: localStorage.getItem("user") || "Unknown User",
+        editedAt: new Date().toISOString(), // Add ISO timestamp
+      };
+
+      // Update field editors in form data to track removal
+      const removalId = `removed_term_${termIndex}`;
+      setFormData((prevForm) => ({
+        ...prevForm,
+        fieldEditors: {
+          ...(prevForm.fieldEditors || {}),
+          [removalId]: currentEditor,
+        },
+      }));
+
+      if (removed && removed._id) {
+        setDeletedTermIds((ids) => [...ids, removed._id]);
+        if (!localChanges.includes(removalId)) {
+          setLocalChanges((prev) => [...prev, removalId]);
+        }
       }
-    }));
-    
-    if (removed && removed._id) {
-      setDeletedTermIds((ids) => [...ids, removed._id]);
-      if (!localChanges.includes(removalId)) {
-        setLocalChanges((prev) => [...prev, removalId]);
-      }
-    }
 
-    // Remove any tracked changes for this term
-    setLocalChanges((prevChanges) =>
-      prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
-    );
+      // Remove any tracked changes for this term
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+      );
 
-    return prev.filter((_, index) => index !== termIndex);
-  });
-};
+      return prev.filter((_, index) => index !== termIndex);
+    });
+  };
 
   // const handleRemoveTerm = (termIndex) => {
   //   setSenatorTermData((prev) =>
@@ -836,6 +836,8 @@ const handleRemoveTerm = (termIndex) => {
               return {
                 voteId: vote.voteId?._id || vote.voteId || "",
                 score: scoreValue,
+                title: vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
               };
             });
         } else if (termVotes.length > 0) {
@@ -925,6 +927,7 @@ const handleRemoveTerm = (termIndex) => {
                   activity.activityId?._id || activity.activityId || "",
                 score: activity.score || "",
                 _activityTitle: actualActivity?.title || "Unknown Activity",
+                title: actualActivity?.title || "",
               };
             });
         } else if (termActivities.length > 0) {
@@ -932,6 +935,7 @@ const handleRemoveTerm = (termIndex) => {
             activityId: activity._id,
             score: getActivityScore(activity._id),
             _activityTitle: activity.title || "Unknown Activity",
+            title: activity.title || "",
           }));
         } else {
           activitiesScore = [{ activityId: "", score: "" }];
@@ -985,99 +989,99 @@ const handleRemoveTerm = (termIndex) => {
     }
   }, [formData, originalFormData]);
 
-useEffect(() => {
-  if (!originalFormData || !formData || !originalTermData || !senatorTermData)
-    return;
-
-  const changes = [];
-
-  // Track senator-level changes
-  Object.keys(formData).forEach((key) => {
-    if (
-      key === "editedFields" ||
-      key === "fieldEditors" ||
-      key === "publishStatus"
-    )
+  useEffect(() => {
+    if (!originalFormData || !formData || !originalTermData || !senatorTermData)
       return;
-    if (compareValues(formData[key], originalFormData[key])) {
-      changes.push(key);
-    }
-  });
 
-  // Track term-level changes
-  senatorTermData.forEach((term, termIndex) => {
-    const originalTerm = originalTermData[termIndex] || {};
-    const isNewTerm = term.isNew;
+    const changes = [];
 
-    Object.keys(term).forEach((key) => {
+    // Track senator-level changes
+    Object.keys(formData).forEach((key) => {
       if (
-        [
-          "_id",
-          "senateId",
-          "editedFields",
-          "fieldEditors",
-          "isNew",
-          "publishStatus",
-        ].includes(key)
+        key === "editedFields" ||
+        key === "fieldEditors" ||
+        key === "publishStatus"
       )
         return;
+      if (compareValues(formData[key], originalFormData[key])) {
+        changes.push(key);
+      }
+    });
 
-      if (key === "summary") {
-        const currentSummary = term.summary || "";
-        const originalSummary = originalTerm.summary || "";
+    // Track term-level changes
+    senatorTermData.forEach((term, termIndex) => {
+      const originalTerm = originalTermData[termIndex] || {};
+      const isNewTerm = term.isNew;
 
-        // Track only if content is changed
-        if (currentSummary.trim() !== originalSummary.trim()) {
-          changes.push(`term${termIndex}_summary`);
-        }
-      } else if (["votesScore", "activitiesScore"].includes(key)) {
-        const current = (term[key] || []).filter((item) =>
-          Object.values(item).some((val) => val !== "" && val !== null)
-        );
-        const original = (originalTerm[key] || []).filter((item) =>
-          Object.values(item).some((val) => val !== "" && val !== null)
-        );
-        if (JSON.stringify(current) !== JSON.stringify(original)) {
-          changes.push(`term${termIndex}_${key}`);
-        }
-      } else {
-        const currentValue = term[key];
-        const originalValue = originalTerm[key];
+      Object.keys(term).forEach((key) => {
+        if (
+          [
+            "_id",
+            "senateId",
+            "editedFields",
+            "fieldEditors",
+            "isNew",
+            "publishStatus",
+          ].includes(key)
+        )
+          return;
 
-        if (isNewTerm) {
-          if (
-            currentValue !== "" &&
-            currentValue !== null &&
-            currentValue !== false
-          ) {
+        if (key === "summary") {
+          const currentSummary = term.summary || "";
+          const originalSummary = originalTerm.summary || "";
+
+          // Track only if content is changed
+          if (currentSummary.trim() !== originalSummary.trim()) {
+            changes.push(`term${termIndex}_summary`);
+          }
+        } else if (["votesScore", "activitiesScore"].includes(key)) {
+          const current = (term[key] || []).filter((item) =>
+            Object.values(item).some((val) => val !== "" && val !== null)
+          );
+          const original = (originalTerm[key] || []).filter((item) =>
+            Object.values(item).some((val) => val !== "" && val !== null)
+          );
+          if (JSON.stringify(current) !== JSON.stringify(original)) {
             changes.push(`term${termIndex}_${key}`);
           }
         } else {
-          if ((currentValue || "") !== (originalValue || "")) {
-            changes.push(`term${termIndex}_${key}`);
+          const currentValue = term[key];
+          const originalValue = originalTerm[key];
+
+          if (isNewTerm) {
+            if (
+              currentValue !== "" &&
+              currentValue !== null &&
+              currentValue !== false
+            ) {
+              changes.push(`term${termIndex}_${key}`);
+            }
+          } else {
+            if ((currentValue || "") !== (originalValue || "")) {
+              changes.push(`term${termIndex}_${key}`);
+            }
           }
         }
+      });
+    });
+
+    // Track removed terms by comparing originalTermData with current senatorTermData
+    originalTermData.forEach((originalTerm, originalIndex) => {
+      // Check if this original term still exists in current data
+      const stillExists = senatorTermData.some(
+        (currentTerm, currentIndex) =>
+          (currentTerm._id && currentTerm._id === originalTerm._id) ||
+          currentIndex === originalIndex
+      );
+
+      if (!stillExists && originalTerm._id) {
+        changes.push(`removed_term_${originalIndex}`);
       }
     });
-  });
 
-  // Track removed terms by comparing originalTermData with current senatorTermData
-  originalTermData.forEach((originalTerm, originalIndex) => {
-    // Check if this original term still exists in current data
-    const stillExists = senatorTermData.some(
-      (currentTerm, currentIndex) => 
-        (currentTerm._id && currentTerm._id === originalTerm._id) || 
-        currentIndex === originalIndex
-    );
-    
-    if (!stillExists && originalTerm._id) {
-      changes.push(`removed_term_${originalIndex}`);
-    }
-  });
-
-  // Use only local diffs for editedFields so reverting removes from list
-  setEditedFields(changes);
-}, [formData, originalFormData, senatorTermData, originalTermData]);
+    // Use only local diffs for editedFields so reverting removes from list
+    setEditedFields(changes);
+  }, [formData, originalFormData, senatorTermData, originalTermData]);
 
   useEffect(() => {
     termPreFill();
@@ -1186,211 +1190,395 @@ useEffect(() => {
       return newData;
     });
   };
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-const handleSave = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-
-  try {
-    // Prevent duplicate termId selections before any API calls
-    const termIdCounts = senatorTermData
-      .map((t) => t.termId)
-      .filter(Boolean)
-      .reduce((acc, id) => {
-        acc[id] = (acc[id] || 0) + 1;
-        return acc;
-      }, {});
-
-    const hasDuplicateTerms = Object.values(termIdCounts).some(
-      (count) => count > 1
-    );
-    if (hasDuplicateTerms) {
-      setLoading(false);
-      handleSnackbarOpen(
-        "Duplicate term selected. Each term can only be added once.",
-        "error"
-      );
-      return;
-    }
-
-    const currentTerms = senatorTermData.filter((term) => term.currentTerm);
-    if (currentTerms.length > 1) {
-      setLoading(false);
-      handleSnackbarOpen(
-        "Only one term can be marked as current term.",
-        "error"
-      );
-      return;
-    }
-
-    const decodedToken = jwtDecode(token);
-    const currentEditor = {
-      editorId: decodedToken.userId,
-      editorName: localStorage.getItem("user") || "Unknown User",
-      editedAt: new Date(),
+    // Helper: sanitize keys for MongoDB
+    const sanitizeKey = (str) => {
+      return str
+        .replace(/[^a-zA-Z0-9_]/g, "_") // replace invalid chars
+        .replace(/_+/g, "_") // collapse multiple underscores
+        .replace(/^_+|_+$/g, ""); // remove leading/trailing underscores
     };
 
-    if (deletedTermIds.length > 0) {
-      await Promise.all(
-        deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
-      );
-      setDeletedTermIds([]);
-    }
+    try {
+      // 1️⃣ Prevent duplicate termId selections
+      const termIdCounts = senatorTermData
+        .map((t) => t.termId)
+        .filter(Boolean)
+        .reduce((acc, id) => {
+          acc[id] = (acc[id] || 0) + 1;
+          return acc;
+        }, {});
 
-    // Transform localChanges to track individual vote/activity edits
-    const detailedChanges = localChanges.map((change) => {
-      const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
-      if (voteMatch) {
-        const [, termIdx, voteIdx] = voteMatch;
-        return `term${termIdx}_votesScore_${voteIdx}`;
+      if (Object.values(termIdCounts).some((count) => count > 1)) {
+        setLoading(false);
+        handleSnackbarOpen(
+          "Duplicate term selected. Each term can only be added once.",
+          "error"
+        );
+        return;
       }
 
-      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
-      if (activityMatch) {
-        const [, termIdx, activityIdx] = activityMatch;
-        return `term${termIdx}_activitiesScore_${activityIdx}`;
+      // 2️⃣ Only one current term allowed
+      const currentTerms = senatorTermData.filter((term) => term.currentTerm);
+      if (currentTerms.length > 1) {
+        setLoading(false);
+        handleSnackbarOpen(
+          "Only one term can be marked as current term.",
+          "error"
+        );
+        return;
       }
 
-      return change;
-    });
+      const hasLocalChanges =
+        localChanges.length > 0 ||
+        deletedTermIds.length > 0 ||
+        (formData?.fieldEditors &&
+          Object.keys(formData.fieldEditors).length > 0);
 
-    const allChanges = [
-      ...new Set([
-        ...(Array.isArray(formData.editedFields)
-          ? formData.editedFields
-          : []),
-        ...detailedChanges,
-      ]),
-    ];
+      // 🚨 Prevent saving if no local changes of any kind
+      if (!hasLocalChanges) {
+        setLoading(false);
+        handleSnackbarOpen("No changes detected. Nothing to update.", "info");
+        return;
+      }
+      // 3️⃣ Current editor info
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: localStorage.getItem("user") || "Unknown User",
+        editedAt: new Date(),
+      };
 
-    // Update field editors with current changes
-    const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-    localChanges.forEach((field) => {
-      if (field in formData) {
-        if (compareValues(formData[field], originalFormData?.[field] || "")) {
-          updatedFieldEditors[field] = currentEditor;
+      // 4️⃣ Delete removed terms
+      if (deletedTermIds.length > 0) {
+        await Promise.all(
+          deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
+        );
+        setDeletedTermIds([]);
+      }
+
+      // 5️⃣ Prepare existing editedFields
+      const existingEditedFields = Array.isArray(formData.editedFields)
+        ? formData.editedFields
+        : [];
+      const existingFieldsMap = new Map();
+      existingEditedFields.forEach((field) => {
+        let fieldKey;
+        if (
+          Array.isArray(field.field) &&
+          field.field[0] === "votesScore" &&
+          field.name
+        ) {
+          fieldKey = `votesScore_${sanitizeKey(field.name)}`;
+        } else if (
+          Array.isArray(field.field) &&
+          field.field[0] === "activitiesScore" &&
+          field.name
+        ) {
+          fieldKey = `activitiesScore_${sanitizeKey(field.name)}`;
+        } else {
+          fieldKey = Array.isArray(field.field) ? field.field[0] : field;
         }
-      } else if (field.startsWith("term")) {
-        updatedFieldEditors[field] = currentEditor;
-      }
-    });
+        existingFieldsMap.set(fieldKey, { ...field });
+      });
 
-    const hasActualChanges = allChanges.length > 0 || localChanges.length > 0;
+      // 6️⃣ Process changes (votes + activities + term-level)
+      const processedChanges = [];
 
-    let publishStatus = formData.publishStatus || "draft";
+      const hasVoteChanged = (termIndex, voteIndex, vote) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalVote = originalTerm.votesScore?.[voteIndex] || {};
+        return (
+          vote.voteId !== originalVote.voteId ||
+          vote.score !== originalVote.score
+        );
+      };
 
-    if (userRole === "admin") {
-      publishStatus = "published";
-    } else {
-      if (hasActualChanges || formData.publishStatus === "draft") {
-        // ✅ Allow moving draft forward even without changes
-        publishStatus = "under review";
-      } else {
-        publishStatus = formData.publishStatus;
-      }
-    }
+      const hasActivityChanged = (termIndex, activityIndex, activity) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalActivity =
+          originalTerm.activitiesScore?.[activityIndex] || {};
+        return (
+          activity.activityId !== originalActivity.activityId ||
+          activity.score !== originalActivity.score
+        );
+      };
 
-    const senatorUpdate = {
-      ...formData,
-      editedFields: allChanges,
-      fieldEditors: updatedFieldEditors,
-      publishStatus,
-    };
-
-    // Clear only if admin publishing + changes exist
-    if (senatorUpdate.publishStatus === "published" && hasActualChanges) {
-      senatorUpdate.editedFields = [];
-      senatorUpdate.fieldEditors = {};
-    }
-
-    if (id) {
-      const formDataObj = new FormData();
-      Object.entries(senatorUpdate).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          if (typeof value === "object" && !(value instanceof File)) {
-            formDataObj.append(key, JSON.stringify(value));
-          } else {
-            formDataObj.append(key, value);
+      senatorTermData.forEach((term, termIndex) => {
+        // Votes
+        term.votesScore.forEach((vote, voteIndex) => {
+          if (vote.voteId && vote.voteId.toString().trim() !== "") {
+            if (hasVoteChanged(termIndex, voteIndex, vote)) {
+              const voteItem = votes.find((v) => v._id === vote.voteId);
+              if (voteItem) {
+                const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Scored Vote ${
+                    voteIndex + 1
+                  }`,
+                  field: ["votesScore"],
+                  name: voteItem.title,
+                  termIndex,
+                  voteIndex,
+                });
+              }
+            }
           }
+        });
+
+        // Activities
+        term.activitiesScore.forEach((activity, activityIndex) => {
+          if (
+            activity.activityId &&
+            activity.activityId.toString().trim() !== ""
+          ) {
+            if (hasActivityChanged(termIndex, activityIndex, activity)) {
+              const activityItem = activities.find(
+                (a) => a._id === activity.activityId
+              );
+              if (activityItem) {
+                const uniqueId = `activitiesScore_${sanitizeKey(
+                  activityItem.title
+                )}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Tracked Activity ${
+                    activityIndex + 1
+                  }`,
+                  field: ["activitiesScore"],
+                  name: activityItem.title,
+                  termIndex,
+                  activityIndex,
+                });
+              }
+            }
+          }
+        });
+      });
+
+      // 7️⃣ Process localChanges (non votes/activities)
+      localChanges.forEach((change) => {
+        if (
+          !change.includes("votesScore_") &&
+          !change.includes("activitiesScore_") &&
+          !change.startsWith("term")
+        ) {
+          processedChanges.push({
+            uniqueId: change,
+            displayName: getFieldDisplayName(change),
+            field: [change],
+            name: getFieldDisplayName(change),
+          });
         }
       });
 
-      await dispatch(updateSenator({ id, formData: formDataObj })).unwrap();
-    }
+      // 8️⃣ Merge with existing fields
+      processedChanges.forEach((change) => {
+        const existingField = existingFieldsMap.get(change.uniqueId);
+        if (!existingField || existingField.name !== change.name) {
+          existingFieldsMap.set(change.uniqueId, {
+            field: change.field,
+            name: change.name,
+            updatedAt: new Date().toISOString(),
+            fromQuorum: existingField?.fromQuorum || false,
+            _id: existingField?._id,
+          });
+        } else {
+          existingFieldsMap.set(change.uniqueId, {
+            ...existingField,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      });
 
-    // Update terms
-    const termPromises = senatorTermData.map((term, index) => {
-      const transformedVotesScore = term.votesScore
-        .map((vote) => ({
-          ...vote,
-          voteId: vote.voteId === "" ? null : vote.voteId,
-        }))
-        .filter((vote) => vote.voteId !== null);
+      const allChanges = Array.from(existingFieldsMap.values());
 
-      const transformedTrackedActivity = term.activitiesScore
-        .map((activity) => ({
-          ...activity,
-          activityId: activity.activityId === "" ? null : activity.activityId,
-        }))
-        .filter((activity) => activity.activityId !== null);
+      // 9️⃣ Update fieldEditors safely
+      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+      const changedFieldsInThisSession = new Set();
 
-      const termChanges = allChanges.filter((f) =>
-        f.startsWith(`term${index}_`)
-      );
+      localChanges.forEach((change) => {
+        let editorKey;
 
-      const termUpdate = {
-        ...term,
-        votesScore: transformedVotesScore,
-        activitiesScore: transformedTrackedActivity,
-        isNew: false,
-        senateId: id,
-        editedFields: termChanges,
+        // Votes
+        const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
+        if (voteMatch) {
+          const [, termIndex, voteIndex] = voteMatch;
+          const term = senatorTermData[parseInt(termIndex)];
+          const vote = term?.votesScore?.[parseInt(voteIndex)];
+          if (vote && vote.voteId) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem && voteItem.title) {
+              editorKey = `votesScore_${sanitizeKey(voteItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+            }
+          }
+          return;
+        }
+
+        // Activities
+        const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
+        if (activityMatch) {
+          const [, termIndex, activityIndex] = activityMatch;
+          const term = senatorTermData[parseInt(termIndex)];
+          const activity = term?.activitiesScore?.[parseInt(activityIndex)];
+          if (activity && activity.activityId) {
+            const activityItem = activities.find(
+              (a) => a._id === activity.activityId
+            );
+            if (activityItem && activityItem.title) {
+              editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+            }
+          }
+          return;
+        }
+
+        // Simple fields
+        editorKey = change;
+        updatedFieldEditors[editorKey] = currentEditor;
+        changedFieldsInThisSession.add(editorKey);
+      });
+
+      processedChanges.forEach((change) => {
+        if (!changedFieldsInThisSession.has(change.uniqueId)) {
+          updatedFieldEditors[change.uniqueId] =
+            updatedFieldEditors[change.uniqueId] || currentEditor;
+        }
+      });
+
+      // 🔟 Publish status logic (merged)
+      const hasActualChanges = allChanges.length > 0 || localChanges.length > 0;
+      let publishStatus = formData.publishStatus || "draft";
+
+      if (userRole === "admin") {
+        publishStatus = "published";
+      } else {
+        publishStatus =
+          hasActualChanges || formData.publishStatus === "draft"
+            ? "under review"
+            : formData.publishStatus;
+      }
+
+      // 11️⃣ Prepare senator update
+      const senatorUpdate = {
+        ...formData,
+        editedFields: allChanges,
         fieldEditors: updatedFieldEditors,
-        summary: term.summary,
+        publishStatus,
       };
 
-      return term._id
-        ? dispatch(updateSenatorData({ id: term._id, data: termUpdate })).unwrap()
-        : dispatch(createSenatorData(termUpdate)).unwrap();
-    });
+      if (senatorUpdate.publishStatus === "published" && hasActualChanges) {
+        senatorUpdate.editedFields = [];
+        senatorUpdate.fieldEditors = {};
+      }
 
-    await Promise.all(termPromises);
+      // 12️⃣ Update senator
+      if (id) {
+        const formDataToSend = new FormData();
+        Object.entries(senatorUpdate).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (typeof value === "object" && !(value instanceof File)) {
+              formDataToSend.append(key, JSON.stringify(value));
+            } else {
+              formDataToSend.append(key, value);
+            }
+          }
+        });
+        await dispatch(
+          updateSenator({ id, formData: formDataToSend })
+        ).unwrap();
+      }
 
-    await dispatch(getSenatorDataBySenetorId(id)).unwrap();
-    await dispatch(getSenatorById(id)).unwrap();
+      // 13️⃣ Update terms
+      const termPromises = senatorTermData.map((term, index) => {
+        const cleanVotesScore = term.votesScore
+          .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
+          .map((vote) => ({
+            voteId: vote.voteId.toString(),
+            score: vote.score,
+            title: vote.title || "",
+          }));
 
-    setOriginalFormData(JSON.parse(JSON.stringify(formData)));
-    setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
-    setLocalChanges([]);
-    setDeletedTermIds([]);
+        const cleanActivitiesScore = term.activitiesScore
+          .filter(
+            (activity) =>
+              activity.activityId &&
+              activity.activityId.toString().trim() !== ""
+          )
+          .map((activity) => ({
+            activityId: activity.activityId.toString(),
+            score: activity.score,
+          }));
 
-    // ✅ Updated snackbar logic
-    if (!hasActualChanges && formData.publishStatus === "published") {
-      handleSnackbarOpen("No changes to save.", "info");
-    } else if (userRole === "admin") {
-      handleSnackbarOpen("Changes Published successfully!", "success");
+        const termSpecificChanges = allChanges.filter((f) => {
+          const fieldName =
+            typeof f === "string"
+              ? f
+              : Array.isArray(f.field)
+              ? f.field[0]
+              : f.field;
+          return fieldName.startsWith(`term${index}_`);
+        });
+
+        const termUpdate = {
+          ...term,
+          votesScore: cleanVotesScore,
+          activitiesScore: cleanActivitiesScore,
+          isNew: false,
+          senateId: id,
+          editedFields: termSpecificChanges,
+          fieldEditors: updatedFieldEditors,
+          summary: term.summary,
+        };
+
+        return term._id
+          ? dispatch(
+              updateSenatorData({ id: term._id, data: termUpdate })
+            ).unwrap()
+          : dispatch(createSenatorData(termUpdate)).unwrap();
+      });
+
+      await Promise.all(termPromises);
+
+      // 14️⃣ Reload data
+      await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+      await dispatch(getSenatorById(id)).unwrap();
+
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
+      setLocalChanges([]);
+      setDeletedTermIds([]);
+
+      // Snackbar messages
+      if (!hasActualChanges && formData.publishStatus === "published") {
+        handleSnackbarOpen("No changes to save.", "info");
+      } else if (userRole === "admin") {
+        handleSnackbarOpen("Changes published successfully!", "success");
+      } else {
+        handleSnackbarOpen(
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
+      }
+    } catch (error) {
+      console.error("Save failed:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        (error.code === 11000
+          ? "Duplicate entry: This senator term already exists."
+          : "Failed to create senator data. Please try again.");
+      handleSnackbarOpen(errorMessage, "error");
+    } finally {
+      setLoading(false);
     }
-     else {
-      handleSnackbarOpen(
-        'Status changed to "Under Review" for admin to moderate.',
-        "info"
-      );
-    }
-  } catch (error) {
-    console.error("Save failed:", error);
-
-    const errorMessage =
-      error?.response?.data?.message ||
-      (error.code === 11000
-        ? "Duplicate entry: This senator term already exists."
-        : "Failed to create senator data. Please try again.");
-
-    handleSnackbarOpen(errorMessage, "error");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -1648,48 +1836,256 @@ const handleSave = async (e) => {
                             );
                           }
 
-                          // Enhanced field name formatter
-                         const formatFieldName = (field) => {
-  // Handle removed terms
-  if (field.startsWith("removed_term_")) {
-    const termIndex = parseInt(field.replace("removed_term_", ""));
-    return `Term ${termIndex + 1} Removed`;
-  }
-  
-  // Handle term array items (e.g., "term2_votesScore_0_voteId")
-  const termArrayMatch = field.match(
-    /^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/
-  );
-  if (termArrayMatch) {
-    const [, termIdx, category, itemIdx, subField] = termArrayMatch;
-    const termNumber = parseInt(termIdx) + 1;
-    // const itemNumber = parseInt(itemIdx) + 1;
+                          const formatFieldName = (
+                            field,
+                            index,
+                            senatorTermData = []
+                          ) => {
+                            console.log("Formatting field:", senatorTermData);
+                            // Handle object format (editedFields entry from backend)
+                            if (typeof field === "object" && field !== null) {
+                              // Handle votesScore fields with bill title in name
+                              if (
+                                Array.isArray(field.field) &&
+                                field.field[0] === "votesScore" &&
+                                field.name
+                              ) {
+                                const billTitle = field.name;
 
-    if (category === "votesScore") {
-      return `Term ${termNumber}: Scored Vote`;
-    }
-    if (category === "activitiesScore") {
-      return `Term ${termNumber}: Tracked Activity`;
-    }
-    return `Term ${termNumber}: ${
-      fieldLabels[category] || category
-    } Item ${itemNumber}`;
-  }
+                                // Search through all terms to find the matching vote by title
+                                for (
+                                  let termIndex = 0;
+                                  termIndex < senatorTermData.length;
+                                  termIndex++
+                                ) {
+                                  const term = senatorTermData[termIndex];
+                                  const votesScore = term?.votesScore || [];
 
-  // Handle regular term fields (e.g., "term2_votesScore")
-  if (field.startsWith("term")) {
-    const parts = field.split("_");
-    const termNumber = parseInt(parts[0].replace("term", "")) + 1;
-    const fieldKey = parts.slice(1).join("_");
-    return `Term ${termNumber}: ${
-      fieldLabels[fieldKey] || fieldKey
-    }`;
-  }
+                                  for (
+                                    let voteIndex = 0;
+                                    voteIndex < votesScore.length;
+                                    voteIndex++
+                                  ) {
+                                    const vote = votesScore[voteIndex];
 
-  // Handle non-term fields
-  return fieldLabels[field] || field;
-};
+                                    if (vote) {
+                                      // Case 1: vote has title directly
+                                      if (
+                                        vote.title &&
+                                        vote.title === billTitle
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Scored Vote ${voteIndex + 1}`;
+                                      }
 
+                                      // Case 2: voteId is object with title
+                                      if (
+                                        typeof vote.voteId === "object" &&
+                                        vote.voteId.title === billTitle
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Scored Vote ${voteIndex + 1}`;
+                                      }
+
+                                      // Case 3: voteId is string, match with field._id
+                                      if (
+                                        typeof vote.voteId === "string" &&
+                                        vote.voteId === field._id
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Scored Vote ${voteIndex + 1}`;
+                                      }
+                                    }
+                                  }
+                                }
+
+                                // fallback if nothing matched
+                                return null;
+                              }
+
+                              // Handle activitiesScore fields
+                              if (
+                                Array.isArray(field.field) &&
+                                field.field[0] === "activitiesScore" &&
+                                field.name
+                              ) {
+                                const activityTitle = field.name;
+
+                                for (
+                                  let termIndex = 0;
+                                  termIndex < senatorTermData.length;
+                                  termIndex++
+                                ) {
+                                  const term = senatorTermData[termIndex];
+                                  const activitiesScore =
+                                    term?.activitiesScore || [];
+
+                                  for (
+                                    let activityIndex = 0;
+                                    activityIndex < activitiesScore.length;
+                                    activityIndex++
+                                  ) {
+                                    const activity =
+                                      activitiesScore[activityIndex];
+                                    if (activity) {
+                                      if (
+                                        activity.title &&
+                                        activity.title === activityTitle
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Tracked Activity ${
+                                          activityIndex + 1
+                                        }`;
+                                      }
+                                      if (
+                                        typeof activity.activityId ===
+                                          "object" &&
+                                        activity.activityId.title ===
+                                          activityTitle
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Tracked Activity ${
+                                          activityIndex + 1
+                                        }`;
+                                      }
+                                      if (
+                                        typeof activity.activityId ===
+                                          "string" &&
+                                        activity.activityId === field._id
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Tracked Activity ${
+                                          activityIndex + 1
+                                        }`;
+                                      }
+                                    }
+                                  }
+                                }
+                                return null;
+                              }
+
+                              // Handle regular term fields (term0_fieldName format)
+                              const fieldId = Array.isArray(field.field)
+                                ? field.field[0]
+                                : field.field;
+
+                              if (fieldId && fieldId.startsWith("term")) {
+                                const termMatch =
+                                  fieldId.match(/^term(\d+)_(.+)$/);
+                                if (termMatch) {
+                                  const [, termIndex, actualField] = termMatch;
+                                  const termNumber = parseInt(termIndex) + 1;
+
+                                  // Map field names to display names
+                                  const fieldDisplayMap = {
+                                    currentTerm: "Current Term",
+                                    summary: "Term Summary",
+                                    rating: "SBA Rating",
+                                    termId: "Term",
+                                    votesScore: "Scored Vote",
+                                    activitiesScore: "Tracked Activity",
+                                  };
+
+                                  const displayName =
+                                    fieldDisplayMap[actualField] || actualField;
+                                  return `Term ${termNumber}: ${displayName}`;
+                                }
+                              }
+
+                              // Handle simple fields
+                              const simpleFieldMap = {
+                                status: "Status",
+                                name: "Senator Name", // Changed from "Representative Name" to "Senator Name"
+                                state: "State", // Added state field for Senators
+                                party: "Party",
+                                photo: "Photo",
+                                votesScore: "Scored Vote",
+                                activitiesScore: "Tracked Activity",
+                              };
+
+                              return (
+                                field.name ||
+                                simpleFieldMap[fieldId] ||
+                                fieldId ||
+                                "Unknown Field"
+                              );
+                            }
+
+                            // Handle string field format (legacy keys like "term0_votesScore_0_score")
+                            if (typeof field === "string") {
+                              const termArrayMatch = field.match(
+                                /^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/
+                              );
+
+                              if (termArrayMatch) {
+                                const [, termIdx, category, itemIdx] =
+                                  termArrayMatch;
+                                const termNumber = parseInt(termIdx) + 1;
+
+                                if (category === "votesScore") {
+                                  const voteNumber = parseInt(itemIdx) + 1;
+                                  return `Term ${termNumber}: Scored Vote ${voteNumber}`;
+                                }
+                                if (category === "activitiesScore") {
+                                  const activityNumber = parseInt(itemIdx) + 1;
+                                  return `Term ${termNumber}: Tracked Activity ${activityNumber}`;
+                                }
+                                return `Term ${termNumber}: ${category}`;
+                              }
+
+                              // Handle term fields like "term0_currentTerm", "term0_summary", etc.
+                              if (field.startsWith("term")) {
+                                const termMatch =
+                                  field.match(/^term(\d+)_(.+)$/);
+                                if (termMatch) {
+                                  const [, termIndex, actualField] = termMatch;
+                                  const termNumber = parseInt(termIndex) + 1;
+
+                                  const fieldDisplayMap = {
+                                    currentTerm: "Current Term",
+                                    summary: "Term Summary",
+                                    rating: "SBA Rating",
+                                    termId: "Term",
+                                    votesScore: "Scored Vote",
+                                    activitiesScore: "Tracked Activity",
+                                  };
+
+                                  const displayName =
+                                    fieldDisplayMap[actualField] || actualField;
+                                  return `Term ${termNumber}: ${displayName}`;
+                                }
+
+                                // Fallback for any other term field
+                                const parts = field.split("_");
+                                const termNumber =
+                                  parseInt(parts[0].replace("term", "")) + 1;
+                                const fieldKey = parts.slice(1).join("_");
+                                return `Term ${termNumber}: ${fieldKey}`;
+                              }
+
+                              // Handle simple fields
+                              const simpleFieldMap = {
+                                status: "Status",
+                                name: "Senator Name", // Changed from "Representative Name" to "Senator Name"
+                                state: "State", // Added state field for Senators
+                                district: "District", // Keep district for compatibility, though Senators don't have districts
+                                party: "Party",
+                                photo: "Photo",
+                                votesScore: "Scored Vote",
+                                activitiesScore: "Tracked Activity",
+                              };
+
+                              return simpleFieldMap[field] || field;
+                            }
+
+                            return `Field ${index + 1}`;
+                          };
                           return (
                             <>
                               {/* Backend pending changes */}
@@ -1711,9 +2107,57 @@ const handleSave = async (e) => {
                                     Saved Changes
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
-                                    {backendChanges.map((field) => {
+                                    {backendChanges.map((field, index) => {
+                                      const fieldLabel = formatFieldName(
+                                        field,
+                                        index,
+                                        senatorTermData
+                                      );
+                                      if (!fieldLabel) return null; // ⬅ skip rendering if no label
+
+                                      const sanitizeKey = (str) => {
+                                        return str
+                                          .replace(/[^a-zA-Z0-9_]/g, "_") // replace invalid chars
+                                          .replace(/_+/g, "_") // collapse multiple underscores
+                                          .replace(/^_+|_+$/g, ""); // remove leading/trailing underscores
+                                      };
+
+                                      // Helper function to generate the correct editor key
+                                      const getEditorKey = (field) => {
+                                        if (
+                                          typeof field === "object" &&
+                                          field !== null
+                                        ) {
+                                          if (
+                                            Array.isArray(field.field) &&
+                                            field.field[0] === "votesScore" &&
+                                            field.name
+                                          ) {
+                                            return `votesScore_${sanitizeKey(
+                                              field.name
+                                            )}`;
+                                          }
+                                          if (
+                                            Array.isArray(field.field) &&
+                                            field.field[0] ===
+                                              "activitiesScore" &&
+                                            field.name
+                                          ) {
+                                            return `activitiesScore_${sanitizeKey(
+                                              field.name
+                                            )}`;
+                                          }
+                                          if (Array.isArray(field.field)) {
+                                            return field.field[0]; // For simple fields like ["status"]
+                                          }
+                                          return field.field; // For other fields
+                                        }
+                                        return field; // For string fields
+                                      };
+
+                                      const editorKey = getEditorKey(field);
                                       const editorInfo =
-                                        formData?.fieldEditors?.[field];
+                                        formData?.fieldEditors?.[editorKey];
                                       const editor =
                                         editorInfo?.editorName ||
                                         "Unknown Editor";
@@ -1727,10 +2171,14 @@ const handleSave = async (e) => {
                                             minute: "2-digit",
                                           })
                                         : "unknown time";
+                                      const fromQuorum =
+                                        field.fromQuorum || false;
 
                                       return (
                                         <ListItem
-                                          key={`backend-${field}`}
+                                          key={`backend-${
+                                            field.field || field
+                                          }-${index}`}
                                           sx={{ py: 0.5, px: 1 }}
                                         >
                                           <ListItemText
@@ -1755,7 +2203,7 @@ const handleSave = async (e) => {
                                                   variant="body2"
                                                   fontWeight="500"
                                                 >
-                                                  {formatFieldName(field)}
+                                                  {fieldLabel}
                                                 </Typography>
                                               </Box>
                                             }
@@ -1764,8 +2212,9 @@ const handleSave = async (e) => {
                                                 variant="caption"
                                                 color="text.secondary"
                                               >
-                                                Updated by {editor} on{" "}
-                                                {editTime}
+                                                {fromQuorum
+                                                  ? `Fetched from Quorum by ${editor} on ${editTime}`
+                                                  : `Updated by ${editor} on ${editTime}`}
                                               </Typography>
                                             }
                                             sx={{ my: 0 }}
@@ -1797,46 +2246,49 @@ const handleSave = async (e) => {
                                       : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
-                                    {localChanges.map((field) => (
-                                      <ListItem
-                                        key={`local-${field}`}
-                                        sx={{ py: 0, px: 1 }}
-                                      >
-                                        <ListItemText
-                                          primary={
-                                            <Box
-                                              sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: 1,
-                                              }}
-                                            >
+                                    {localChanges.map((field, index) => {
+                                      const fieldLabel = formatFieldName(
+                                        field,
+                                        index,
+                                        senatorTermData
+                                      );
+                                      if (!fieldLabel) return null; // ⬅ skip rendering if no label
+
+                                      return (
+                                        <ListItem
+                                          key={`local-${field}-${index}`}
+                                          sx={{ py: 0, px: 1 }}
+                                        >
+                                          <ListItemText
+                                            primary={
                                               <Box
                                                 sx={{
-                                                  width: 8,
-                                                  height: 8,
-                                                  borderRadius: "50%",
-                                                  backgroundColor:
-                                                    statusData.iconColor,
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  gap: 1,
                                                 }}
-                                              />
-                                              <Typography
-                                                variant="body2"
-                                                fontWeight="500"
                                               >
-                                                {formatFieldName(field)}
-                                              </Typography>
-                                            </Box>
-                                          }
-                                          // secondary={
-                                          //   <Typography variant="caption" color="text.secondary">
-                                          //     Edited just now
-                                          //   </Typography>
-                                          // }
-                                          // sx={{ my: 0 }}
-                                        />
-                                      </ListItem>
-                                    ))}
+                                                <Box
+                                                  sx={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: "50%",
+                                                    backgroundColor:
+                                                      statusData.iconColor,
+                                                  }}
+                                                />
+                                                <Typography
+                                                  variant="body2"
+                                                  fontWeight="500"
+                                                >
+                                                  {fieldLabel}
+                                                </Typography>
+                                              </Box>
+                                            }
+                                          />
+                                        </ListItem>
+                                      );
+                                    })}
                                   </List>
                                 </Box>
                               )}
@@ -2190,7 +2642,7 @@ const handleSave = async (e) => {
                             "code",
                             "help",
                             "wordcount",
-                          ],       
+                          ],
                           toolbar:
                             "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
                           content_style:
@@ -2696,5 +3148,4 @@ const handleSave = async (e) => {
       </Box>
     </AppTheme>
   );
-
 }
