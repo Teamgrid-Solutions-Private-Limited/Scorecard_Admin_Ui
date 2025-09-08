@@ -38,6 +38,8 @@ import MuiAlert from "@mui/material/Alert";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
+import { jwtDecode } from "jwt-decode";
+ 
 
 export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,6 +50,9 @@ export default function SearchBill(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  console.log("token", token);
+  const user = localStorage.getItem("user");
+ 
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -161,8 +166,10 @@ export default function SearchBill(props) {
   return;
  
 }
+      const editorInfo = getEditorInfo();
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [bill],
+        editorInfo: editorInfo 
       });
 
       // alert("Bill saved successfully");
@@ -177,6 +184,26 @@ export default function SearchBill(props) {
       console.error("Error saving bill:", error);
     } finally {
       setLoading(false);
+    }
+  };
+  const getEditorInfo = () => {
+    try {
+      if (!token) return null;
+     
+      const decodedToken = jwtDecode(token);
+      console.log("Decoded Token:", decodedToken);  
+      return {
+        editorId: decodedToken.userId || decodedToken.id || "unknown",
+        editorName: user || decodedToken.name || decodedToken.username || "Unknown Editor",
+        editedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return {
+        editorId: "unknown",
+        editorName: "Unknown Editor",
+        editedAt: new Date().toISOString()
+      };
     }
   };
 
@@ -219,16 +246,16 @@ export default function SearchBill(props) {
         </MuiAlert>
       </Snackbar>
 
-      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ", height: "100vh" }}>
+      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ",  minHeight: "100vh", }}>
         <SideMenu />
         <Box
           component="main"
           sx={(theme) => ({
             flexGrow: 1,
-            minHeight: "80vh",
+            // minHeight: "80vh",
             display: "flex",
             flexDirection: "column",
-            backgroundColor: "#f6f6f6ff",
+            // backgroundColor: "#f6f6f6ff",
           })}
         >
           <FixedHeader />
@@ -243,7 +270,7 @@ export default function SearchBill(props) {
               flex: 1,
             }}
           >
-            <Paper elevation={2} sx={{ width: "100%", bgcolor: "#fff" }}>
+            <Paper elevation={2} sx={{ width: "100%",bgcolor: "#fff" }}>
               <Box sx={{ padding: 0, pb: 5 }}>
                 <Typography
                   fontSize={"1rem"}

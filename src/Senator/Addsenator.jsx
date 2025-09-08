@@ -667,6 +667,34 @@ export default function AddSenator(props) {
     ]);
   };
 
+// const handleRemoveTerm = (termIndex) => {
+//   setSenatorTermData((prev) => {
+//     const removed = prev[termIndex];
+    
+//     // Get current user info
+//     const decodedToken = jwtDecode(token);
+//     const currentEditor = {
+//       editorId: decodedToken.userId,
+//       editorName: localStorage.getItem("user") || "Unknown User",
+//       editedAt: new Date().toISOString() // Add ISO timestamp
+//     };
+
+//     // Update field editors in form data to track removal
+//     const removalId = `removed_term_${termIndex}`;
+//     setFormData(prevForm => ({
+//       ...prevForm,
+//       fieldEditors: {
+//         ...(prevForm.fieldEditors || {}),
+//         [removalId]: currentEditor
+//       }
+//     }));
+    
+//     if (removed && removed._id) {
+//       setDeletedTermIds((ids) => [...ids, removed._id]);
+//       if (!localChanges.includes(removalId)) {
+//         setLocalChanges((prev) => [...prev, removalId]);
+//       }
+//     }
 const handleRemoveTerm = (termIndex) => {
   setSenatorTermData((prev) => {
     const removed = prev[termIndex];
