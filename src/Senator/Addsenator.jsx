@@ -1159,41 +1159,41 @@ useEffect(() => {
     });
   };
 
- const handleSave = async (e) => {
+const handleSave = async (e) => {
   e.preventDefault();
   setLoading(true);
- 
+
   try {
+    // Prevent duplicate termId selections before any API calls
+    const termIdCounts = senatorTermData
+      .map((t) => t.termId)
+      .filter(Boolean)
+      .reduce((acc, id) => {
+        acc[id] = (acc[id] || 0) + 1;
+        return acc;
+      }, {});
 
-     // Prevent duplicate termId selections before any API calls
-      const termIdCounts = senatorTermData
-        .map((t) => t.termId)
-        .filter(Boolean)
-        .reduce((acc, id) => {
-          acc[id] = (acc[id] || 0) + 1;
-          return acc;
-        }, {});
-
-      const hasDuplicateTerms = Object.values(termIdCounts).some(
-        (count) => count > 1
+    const hasDuplicateTerms = Object.values(termIdCounts).some(
+      (count) => count > 1
+    );
+    if (hasDuplicateTerms) {
+      setLoading(false);
+      handleSnackbarOpen(
+        "Duplicate term selected. Each term can only be added once.",
+        "error"
       );
-      if (hasDuplicateTerms) {
-        setLoading(false);
-        handleSnackbarOpen(
-          "Duplicate term selected. Each term can only be added once.",
-          "error"
-        );
-        return;
-      }
-      const currentTerms = senatorTermData.filter((term) => term.currentTerm);
-      if (currentTerms.length > 1) {
-        setLoading(false);
-        handleSnackbarOpen(
-          "Only one term can be marked as current term.",
-          "error"
-        );
-        return;
-      }
+      return;
+    }
+
+    const currentTerms = senatorTermData.filter((term) => term.currentTerm);
+    if (currentTerms.length > 1) {
+      setLoading(false);
+      handleSnackbarOpen(
+        "Only one term can be marked as current term.",
+        "error"
+      );
+      return;
+    }
 
     const decodedToken = jwtDecode(token);
     const currentEditor = {
@@ -1201,35 +1201,31 @@ useEffect(() => {
       editorName: localStorage.getItem("user") || "Unknown User",
       editedAt: new Date(),
     };
- 
+
     if (deletedTermIds.length > 0) {
       await Promise.all(
         deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
       );
-      setDeletedTermIds([]); // clear after delete
+      setDeletedTermIds([]);
     }
- 
+
     // Transform localChanges to track individual vote/activity edits
     const detailedChanges = localChanges.map((change) => {
-      // Handle votesScore changes (e.g. "term1_votesScore_0_voteId")
       const voteMatch = change.match(/^term(\d+)_votesScore_(\d+)_(.+)$/);
       if (voteMatch) {
         const [, termIdx, voteIdx] = voteMatch;
         return `term${termIdx}_votesScore_${voteIdx}`;
       }
- 
-      // Handle activitiesScore changes
-      const activityMatch = change.match(
-        /^term(\d+)_activitiesScore_(\d+)_(.+)$/
-      );
+
+      const activityMatch = change.match(/^term(\d+)_activitiesScore_(\d+)_(.+)$/);
       if (activityMatch) {
         const [, termIdx, activityIdx] = activityMatch;
         return `term${termIdx}_activitiesScore_${activityIdx}`;
       }
- 
+
       return change;
     });
- 
+
     const allChanges = [
       ...new Set([
         ...(Array.isArray(formData.editedFields)
@@ -1238,73 +1234,62 @@ useEffect(() => {
         ...detailedChanges,
       ]),
     ];
- 
+
     // Update field editors with current changes
     const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
     localChanges.forEach((field) => {
-      // For senator-level fields
       if (field in formData) {
         if (compareValues(formData[field], originalFormData?.[field] || "")) {
           updatedFieldEditors[field] = currentEditor;
         }
-      }
-      // For term-level fields
-      else if (field.startsWith("term")) {
+      } else if (field.startsWith("term")) {
         updatedFieldEditors[field] = currentEditor;
       }
     });
- 
-    // FIX: Only change status if there are actual changes
+
     const hasActualChanges = allChanges.length > 0 || localChanges.length > 0;
-   
-    // Prepare senator update
+
     let publishStatus = formData.publishStatus || "draft";
- 
+
     if (userRole === "admin") {
-      // Admin always publishes, but only clear editedFields if there were actual changes
       publishStatus = "published";
     } else {
-      // For editors, only change to "under review" if there are actual changes
-      if (hasActualChanges) {
+      if (hasActualChanges || formData.publishStatus === "draft") {
+        // ✅ Allow moving draft forward even without changes
         publishStatus = "under review";
-      }
-      // If no changes, keep the current status
-      else {
+      } else {
         publishStatus = formData.publishStatus;
       }
     }
- 
-    // Prepare senator update
+
     const senatorUpdate = {
       ...formData,
       editedFields: allChanges,
       fieldEditors: updatedFieldEditors,
-      publishStatus: publishStatus, // Use the calculated status
+      publishStatus,
     };
- 
-    // Clear editedFields only if publishing AND there were actual changes
+
+    // Clear only if admin publishing + changes exist
     if (senatorUpdate.publishStatus === "published" && hasActualChanges) {
       senatorUpdate.editedFields = [];
       senatorUpdate.fieldEditors = {};
     }
- 
-    // Rest of your handleSave function remains the same...
-    // Update senator
+
     if (id) {
-      const formData = new FormData();
+      const formDataObj = new FormData();
       Object.entries(senatorUpdate).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
           if (typeof value === "object" && !(value instanceof File)) {
-            formData.append(key, JSON.stringify(value));
+            formDataObj.append(key, JSON.stringify(value));
           } else {
-            formData.append(key, value);
+            formDataObj.append(key, value);
           }
         }
       });
- 
-      await dispatch(updateSenator({ id, formData })).unwrap();
+
+      await dispatch(updateSenator({ id, formData: formDataObj })).unwrap();
     }
- 
+
     // Update terms
     const termPromises = senatorTermData.map((term, index) => {
       const transformedVotesScore = term.votesScore
@@ -1312,28 +1297,19 @@ useEffect(() => {
           ...vote,
           voteId: vote.voteId === "" ? null : vote.voteId,
         }))
-        .filter((vote) => vote.voteId !== null); // Optional: remove null entries
+        .filter((vote) => vote.voteId !== null);
+
       const transformedTrackedActivity = term.activitiesScore
         .map((activity) => ({
           ...activity,
           activityId: activity.activityId === "" ? null : activity.activityId,
         }))
         .filter((activity) => activity.activityId !== null);
- 
-      // Get changes specific to this term
+
       const termChanges = allChanges.filter((f) =>
         f.startsWith(`term${index}_`)
       );
- 
-      // Get the selected term to extract congress data
-      const selectedTerm = terms.find((t) => t._id === term.termId);
- 
-      // Extract congress array from the term
-      const congressArray = selectedTerm?.congresses || [];
- 
-      // Extract years if available
-      const years = selectedTerm?.years || null;
- 
+
       const termUpdate = {
         ...term,
         votesScore: transformedVotesScore,
@@ -1342,53 +1318,51 @@ useEffect(() => {
         senateId: id,
         editedFields: termChanges,
         fieldEditors: updatedFieldEditors,
-        summary: term.summary
+        summary: term.summary,
       };
- 
+
       return term._id
-        ? dispatch(
-          updateSenatorData({ id: term._id, data: termUpdate })
-        ).unwrap()
+        ? dispatch(updateSenatorData({ id: term._id, data: termUpdate })).unwrap()
         : dispatch(createSenatorData(termUpdate)).unwrap();
     });
- 
+
     await Promise.all(termPromises);
- 
+
     await dispatch(getSenatorDataBySenetorId(id)).unwrap();
     await dispatch(getSenatorById(id)).unwrap();
- 
+
     setOriginalFormData(JSON.parse(JSON.stringify(formData)));
     setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
     setLocalChanges([]);
- 
     setDeletedTermIds([]);
- 
-    // Update success message based on whether changes were made
-    if (hasActualChanges) {
-      userRole === "admin"
-        ? handleSnackbarOpen("Changes Published successfully!", "success")
-        : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
-    } else {
+
+    // ✅ Updated snackbar logic
+    if (!hasActualChanges && formData.publishStatus === "published") {
       handleSnackbarOpen("No changes to save.", "info");
+    } else if (userRole === "admin") {
+      handleSnackbarOpen("Changes Published successfully!", "success");
+    }
+     else {
+      handleSnackbarOpen(
+        'Status changed to "Under Review" for admin to moderate.',
+        "info"
+      );
     }
   } catch (error) {
     console.error("Save failed:", error);
- 
+
     const errorMessage =
       error?.response?.data?.message ||
       (error.code === 11000
         ? "Duplicate entry: This senator term already exists."
         : "Failed to create senator data. Please try again.");
- 
+
     handleSnackbarOpen(errorMessage, "error");
- 
   } finally {
     setLoading(false);
   }
-}
+};
+
 
   const handleSnackbarOpen = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -2188,7 +2162,7 @@ useEffect(() => {
                             "code",
                             "help",
                             "wordcount",
-                          ],
+                          ],       
                           toolbar:
                             "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
                           content_style:
