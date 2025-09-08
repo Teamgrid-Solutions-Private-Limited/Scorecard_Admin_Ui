@@ -78,19 +78,19 @@ export default function ManageUser(props) {
   try {
     const decoded = jwtDecode(token);
     if (decoded.role !== "admin") {
-      navigate("/"); // Redirect non-admin users
+      navigate("/"); 
     }
   } catch (err) {
     navigate("/login");
   }
 }, []);
 
-  // Fetch users on component mount
+
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
 
-  // Handle API errors
+
   useEffect(() => {
     if (error) {
       if (error === "Access denied: Admins only") {
@@ -148,7 +148,7 @@ export default function ManageUser(props) {
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
       setEditUser(null);
-      dispatch(getAllUsers()); // Refresh the user list
+      dispatch(getAllUsers()); 
     } catch (error) {
       setSnackbarMessage(error.message || "Failed to update user");
       setSnackbarSeverity("error");
@@ -169,7 +169,7 @@ export default function ManageUser(props) {
       setSnackbarMessage("User deleted successfully");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
-      dispatch(getAllUsers()); // Refresh the user list
+      dispatch(getAllUsers()); 
     } catch (error) {
       setSnackbarMessage(error.message || "Failed to delete user");
       setSnackbarSeverity("error");
@@ -177,7 +177,7 @@ export default function ManageUser(props) {
     }
   };
 
-  // const handleDeleteUser = async (userId) => {
+ 
   //   try {
   //     await dispatch(deleteUser(userId)).unwrap();
   //     setSnackbarMessage("User deleted successfully");
@@ -215,18 +215,8 @@ export default function ManageUser(props) {
               justifyContent="flex-end"
               alignItems="center"
               mb={2}
-              // sx={{ bgcolor: "#fff",
-              //   borderTop: "1px solid ",
-              //   borderLeft: "1px solid ",
-              //   borderRight: "1px solid ",
-              //   borderTopLeftRadius: 8,
-              //   borderTopRightRadius: 8,
-              //   borderColor: "divider",
-              //   py: 3, px:2}}
             >
-              {/* <Typography fontSize={'1rem'} fontWeight={500}  >
-                Manage Users
-              </Typography> */}
+             
               <Button
                 startIcon={<PersonAddAltRoundedIcon />}
                 onClick={handleAddUserOpen}
@@ -396,24 +386,11 @@ export default function ManageUser(props) {
                 sx: { borderRadius: 3, padding: 2, minWidth: 350 },
               }}
             >
-              <DialogTitle
-                sx={{
-                  fontSize: "1.4rem",
-                  fontWeight: "bold",
-                  textAlign: "center",
-                  color: "error.main",
-                }}
-              >
+              <DialogTitle className="dialogBox">
                 Confirm Deletion
               </DialogTitle>
               <DialogContent>
-                <DialogContentText
-                  sx={{
-                    textAlign: "center",
-                    fontSize: "1rem",
-                    color: "text.secondary",
-                  }}
-                >
+                <DialogContentText className="dialogTitle">
                   Are you sure you want to delete{" "}
                   <strong>{selectedUser?.fullName}</strong>?
                 </DialogContentText>

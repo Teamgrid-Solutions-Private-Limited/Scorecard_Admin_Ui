@@ -171,6 +171,8 @@ export default function SearchBill(props) {
         bills: [bill],
         editorInfo: editorInfo 
       });
+      console.log("bill", bill);
+      console.log("response", response.data);
 
       // alert("Bill saved successfully");
 
@@ -191,14 +193,14 @@ export default function SearchBill(props) {
       if (!token) return null;
      
       const decodedToken = jwtDecode(token);
-      console.log("Decoded Token:", decodedToken);  
+     
       return {
         editorId: decodedToken.userId || decodedToken.id || "unknown",
         editorName: user || decodedToken.name || decodedToken.username || "Unknown Editor",
         editedAt: new Date().toISOString()
       };
     } catch (error) {
-      console.error("Error decoding token:", error);
+      
       return {
         editorId: "unknown",
         editorName: "Unknown Editor",
