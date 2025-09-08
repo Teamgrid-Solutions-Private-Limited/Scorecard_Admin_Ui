@@ -222,46 +222,46 @@ export default function AddBill(props) {
     });
   };
 
-const [editorsInitialized, setEditorsInitialized] = useState({
-  shortDesc: false,
-  longDesc: false
-});
- const handleEditorChange = (content, fieldName) => {
-  // Skip initial empty content (first render)
-  if (!editorsInitialized[fieldName]) {
-    setEditorsInitialized(prev => ({
-      ...prev,
-      [fieldName]: true
-    }));
-    return;
-  }
-
-  // Check if content actually changed from current state
-  if (content === formData[fieldName]) {
-    return;
-  }
-
-  setFormData((prev) => {
-    const newData = { ...prev, [fieldName]: content };
-
-    if (originalFormData) {
-      const changes = Object.keys(newData).filter((key) => {
-        const newValue = newData[key];
-        const oldValue = originalFormData[key];
-        
-        // Special handling for string comparison
-        if (typeof newValue === 'string' && typeof oldValue === 'string') {
-          return newValue.trim() !== oldValue.trim();
-        }
-        return newValue !== oldValue;
-      });
-      
-      setEditedFields(changes);
+  const [editorsInitialized, setEditorsInitialized] = useState({
+    shortDesc: false,
+    longDesc: false,
+  });
+  const handleEditorChange = (content, fieldName) => {
+    // Skip initial empty content (first render)
+    if (!editorsInitialized[fieldName]) {
+      setEditorsInitialized((prev) => ({
+        ...prev,
+        [fieldName]: true,
+      }));
+      return;
     }
 
-    return newData;
-  });
-};
+    // Check if content actually changed from current state
+    if (content === formData[fieldName]) {
+      return;
+    }
+
+    setFormData((prev) => {
+      const newData = { ...prev, [fieldName]: content };
+
+      if (originalFormData) {
+        const changes = Object.keys(newData).filter((key) => {
+          const newValue = newData[key];
+          const oldValue = originalFormData[key];
+
+          // Special handling for string comparison
+          if (typeof newValue === "string" && typeof oldValue === "string") {
+            return newValue.trim() !== oldValue.trim();
+          }
+          return newValue !== oldValue;
+        });
+
+        setEditedFields(changes);
+      }
+
+      return newData;
+    });
+  };
 
   const handleFileUpload = (event) => {
     if (!hasLocalChanges) {
@@ -296,12 +296,12 @@ const [editorsInitialized, setEditorsInitialized] = useState({
       setOpenSnackbar(true);
       return;
     }
- 
+
     setLoading(true);
     try {
       // Create FormData for file upload
       const formDataToSend = new FormData();
- 
+
       // Add all form fields EXCEPT status (we'll add it separately)
       Object.keys(formData).forEach((key) => {
         if (key === "readMore" && selectedFile) {
@@ -312,87 +312,83 @@ const [editorsInitialized, setEditorsInitialized] = useState({
           formDataToSend.append(key, formData[key]);
         }
       });
- 
+
       // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedVote?.editedFields)
         ? selectedVote.editedFields
         : [];
- 
+
       const filteredEditedFields = editedFields.filter(
         (field) => field !== "status"
       );
-     
-      // Check if there are any actual changes (excluding status field)
-      const hasActualChanges = filteredEditedFields.length > 0;
-     
-      const mergedEditedFields = hasActualChanges
-        ? Array.from(new Set([...backendEditedFields, ...filteredEditedFields]))
-        : backendEditedFields; // Keep only backend changes if no new changes
- 
+      const mergedEditedFields = Array.from(
+        new Set([...backendEditedFields, ...filteredEditedFields])
+      );
+
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
         editorName: localStorage.getItem("user") || "Unknown Editor",
         editedAt: new Date(),
       };
- 
-      // Create updated fieldEditors map only if there are changes
+
+      // Create updated fieldEditors map
       const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
-      if (hasActualChanges) {
-        filteredEditedFields.forEach((field) => {
-          updatedFieldEditors[field] = currentEditor;
-        });
-      }
- 
+      filteredEditedFields.forEach((field) => {
+        updatedFieldEditors[field] = currentEditor;
+      });
+
       // Add editedFields and fieldEditors to FormData
       formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
       formDataToSend.append(
         "fieldEditors",
         JSON.stringify(updatedFieldEditors)
       );
- 
-      // Determine the final status - only change if there are actual changes
-      let finalStatus;
-      if (userRole === "admin") {
-        finalStatus = "published";
-      } else {
-        // For editors, only change to "under review" if there are actual changes
-        // Otherwise, maintain the current status
-        finalStatus = hasActualChanges ? "under review" : (formData.status || "draft");
-      }
-     
+
+      // Add status ONLY ONCE
+      const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
- 
+
       if (id) {
+        const hasChanges =
+          filteredEditedFields.length > 0 || // user changed form fields
+          selectedFile || // file uploaded
+          Object.keys(updatedFieldEditors).length >
+            Object.keys(selectedVote?.fieldEditors || {}).length; // editor updates
+
+        if (!hasChanges) {
+          setLoading(false);
+
+          setSnackbarMessage("No changes detected. Nothing to update.");
+
+          setSnackbarSeverity("info");
+
+          setOpenSnackbar(true);
+
+          return;
+        }
+
         await dispatch(
           updateVote({ id, updatedData: formDataToSend })
         ).unwrap();
         // After admin publishes, reload vote to get cleared editedFields
         await dispatch(getVoteById(id)).unwrap();
-         setSelectedFile(null);
- 
-        // Update success message based on whether changes were made
-        if (hasActualChanges) {
-          setSnackbarMessage(
-            userRole === "admin"
-              ? "Changes published successfully!"
-              : 'Status changed to "Under Review" for admin to moderate.'
-          );
-        } else {
-          setSnackbarMessage("No changes to save.");
-        }
+
+        setSnackbarMessage(
+          userRole === "admin"
+            ? "Changes published successfully!"
+            : 'Status changed to "Under Review" for admin to moderate.'
+        );
         setSnackbarSeverity("success");
- 
+
         if (userRole !== "admin") {
-          // Only update status locally if there were actual changes
-          if (hasActualChanges) {
-            setFormData((prev) => ({ ...prev, status: "under review" }));
-            // Remove status from editedFields after update
-            setEditedFields((prev) => prev.filter((field) => field !== "status"));
-          }
+          setFormData((prev) => ({ ...prev, status: "under review" }));
+          // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
+          // Remove status from editedFields after update
+          setEditedFields((prev) => prev.filter((field) => field !== "status"));
         } else {
-          // Only clear locally if status is published and there were changes
-          if (finalStatus === "published" && hasActualChanges) {
+          // Only clear locally if status is published
+          if (finalStatus === "published") {
             setEditedFields([]);
           }
         }
@@ -409,7 +405,7 @@ const [editorsInitialized, setEditorsInitialized] = useState({
           setLoading(false);
           return;
         }
- 
+
         await dispatch(createVote(formDataToSend)).unwrap();
         setSnackbarMessage(
           userRole === "admin"
@@ -418,14 +414,14 @@ const [editorsInitialized, setEditorsInitialized] = useState({
         );
         setSnackbarSeverity("success");
       }
- 
+
       setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
- 
+
       // Better error handling
       let errorMessage = "Operation failed";
- 
+
       if (error?.payload?.message) {
         errorMessage = error.payload.message;
       } else if (error?.message) {
@@ -439,7 +435,7 @@ const [editorsInitialized, setEditorsInitialized] = useState({
       } else if (error?.response?.status === 500) {
         errorMessage = "Server Error: Please try again later";
       }
- 
+
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -560,19 +556,19 @@ const [editorsInitialized, setEditorsInitialized] = useState({
     formData,
   ]);
   // Reset editor initialization when form data is loaded
-useEffect(() => {
-  if (formData.shortDesc && formData.longDesc) {
-    setEditorsInitialized({
-      shortDesc: true,
-      longDesc: true
-    });
-  }
-}, [formData.shortDesc, formData.longDesc]);
+  useEffect(() => {
+    if (formData.shortDesc && formData.longDesc) {
+      setEditorsInitialized({
+        shortDesc: true,
+        longDesc: true,
+      });
+    }
+  }, [formData.shortDesc, formData.longDesc]);
 
   return (
     <AppTheme>
       {loading && (
-         <Box className="circularLoader">
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
