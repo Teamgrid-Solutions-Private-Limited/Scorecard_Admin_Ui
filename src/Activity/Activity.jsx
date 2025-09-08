@@ -460,25 +460,12 @@ export default function Activity(props) {
           sx: { borderRadius: 3, padding: 2, minWidth: 350 },
         }}
       >
-        <DialogTitle
-          sx={{
-            fontSize: "1.4rem",
-            fontWeight: "bold",
-            textAlign: "center",
-            color: "error.main",
-          }}
-        >
+        <DialogTitle className="dialogBox">
           Confirm Deletion
         </DialogTitle>
 
         <DialogContent>
-          <DialogContentText
-            sx={{
-              textAlign: "center",
-              fontSize: "1rem",
-              color: "text.secondary",
-            }}
-          >
+          <DialogContentText className="dialogTitle">
             Are you sure you want to delete?
             {/* {selectedVote?.activity && (
               <> <strong>{selectedVote.activity}</strong>?</>
@@ -495,14 +482,10 @@ export default function Activity(props) {
             <Button
               onClick={() => setOpenDeleteDialog(false)}
               variant="outlined"
+              color="secondary"
               sx={{
                 borderRadius: 2,
                 paddingX: 3,
-                color: "#4a90e2 !important",
-                borderColor: "#4a90e2 !important",
-                "&:hover": {
-                  backgroundColor: "rgba(74, 144, 226, 0.1)",
-                },
               }}
             >
               Cancel

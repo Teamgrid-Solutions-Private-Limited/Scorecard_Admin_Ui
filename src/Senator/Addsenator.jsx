@@ -209,6 +209,7 @@ export default function AddSenator(props) {
       rating: "",
       votesScore: [{ voteId: "", score: "" }], // Start with empty, will be populated when term is selected
       activitiesScore: [{ activityId: "", score: "" }],
+      pastVotesScore: [{ voteId: "", score: "" }],
       currentTerm: false,
       termId: null,
     },
@@ -618,6 +619,71 @@ export default function AddSenator(props) {
     });
   };
 
+  const handleAddPastVote = (termIndex) => {
+  setSenatorTermData((prev) =>
+    prev.map((term, index) =>
+      index === termIndex
+        ? {
+            ...term,
+            pastVotesScore: [...(term.pastVotesScore || []), { voteId: "", score: "" }],
+          }
+        : term
+    )
+  );
+};
+
+const handleRemovePastVote = (termIndex, voteIndex) => {
+  setSenatorTermData((prev) => {
+    const updatedTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
+            ...term,
+            pastVotesScore: term.pastVotesScore.filter((_, i) => i !== voteIndex),
+          }
+        : term
+    );
+
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter(
+        (change) =>
+          !change.startsWith(`term${termIndex}_pastVotesScore_${voteIndex + 1}`)
+      )
+    );
+
+    return updatedTerms;
+  });
+};
+
+const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
+  const voteChangeId = `term${termIndex}_pastVotesScore_${voteIndex + 1}`;
+
+  setSenatorTermData((prev) => {
+    const newTerms = prev.map((term, index) =>
+      index === termIndex
+        ? {
+            ...term,
+            pastVotesScore: term.pastVotesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
+        : term
+    );
+
+    const originalTerm = originalTermData[termIndex] || {};
+    const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
+    const isActualChange = compareValues(value, originalVote[field]);
+
+    if (isActualChange && !localChanges.includes(voteChangeId)) {
+      setLocalChanges((prev) => [...prev, voteChangeId]);
+    } else if (!isActualChange && localChanges.includes(voteChangeId)) {
+      setLocalChanges((prev) => prev.filter((f) => f !== voteChangeId));
+    }
+
+    return newTerms;
+  });
+};
+
+
   const contentRefs = useRef([]);
   const handleEditorChange = useCallback((content, termIndex) => {
     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
@@ -920,6 +986,13 @@ const handleRemoveTerm = (termIndex) => {
           isNew: false,
           votesScore,
           activitiesScore,
+          pastVotesScore: term.pastVotesScore?.length
+  ? term.pastVotesScore.map((vote) => ({
+      voteId: vote.voteId?._id || vote.voteId || "",
+      score: vote.score || "",
+    }))
+  : [{ voteId: "", score: "" }],
+
         };
       });
       setSenatorTermData(termsData);
@@ -1319,6 +1392,14 @@ useEffect(() => {
           activityId: activity.activityId === "" ? null : activity.activityId,
         }))
         .filter((activity) => activity.activityId !== null);
+
+        const transformedPastVotesScore = term.pastVotesScore
+  .map((vote) => ({
+    ...vote,
+    voteId: vote.voteId === "" ? null : vote.voteId,
+  }))
+  .filter((vote) => vote.voteId !== null);
+
  
       // Get changes specific to this term
       const termChanges = allChanges.filter((f) =>
@@ -1337,6 +1418,7 @@ useEffect(() => {
       const termUpdate = {
         ...term,
         votesScore: transformedVotesScore,
+        pastVotesScore: transformedPastVotesScore,
         activitiesScore: transformedTrackedActivity,
         isNew: false,
         senateId: id,
@@ -2629,6 +2711,135 @@ useEffect(() => {
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
+                    {/* Past Term Votes (only for last term) */}
+{term.termId && termIndex === senatorTermData.length - 1 && (
+  <>
+    {term.pastVotesScore.map((vote, voteIndex) => (
+      <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
+        <Grid
+          size={12}
+          display="flex"
+          alignItems="center"
+          columnGap={"15px"}
+        >
+          <Grid size={isMobile ? 12 : 2}>
+            <InputLabel className="label">
+              Important Past Vote {voteIndex + 1}
+            </InputLabel>
+          </Grid>
+          <Grid size={isMobile ? 12 : 7.5}>
+            <FormControl fullWidth>
+              <Select
+                value={vote.voteId || ""}
+                onChange={(event) =>
+                  handlePastVoteChange(
+                    termIndex,
+                    voteIndex,
+                    "voteId",
+                    event.target.value
+                  )
+                }
+                sx={{
+                  background: "#fff",
+                  width: "100%",
+                }}
+                renderValue={(selected) => {
+                  const selectedVote = votes.find((v) => v._id === selected);
+                  return (
+                    <Typography
+                      sx={{
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {selectedVote?.title || "Select a Bill"}
+                    </Typography>
+                  );
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 300,
+                      width: 400,
+                      "& .MuiMenuItem-root": {
+                        minHeight: "48px",
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Select a Bill
+                </MenuItem>
+                {allVotes.length > 0 ? (
+                  allVotes
+                    // .filter((voteItem) => voteItem.type === "senate_bill")
+                    .map((voteItem) => (
+                      <MenuItem key={voteItem._id} value={voteItem._id} sx={{ py: 1.5 }}>
+                        <Typography
+                          sx={{
+                            whiteSpace: "normal",
+                            overflowWrap: "break-word",
+                          }}
+                        >
+                          {voteItem.title}
+                        </Typography>
+                      </MenuItem>
+                    ))
+                ) : (
+                  <MenuItem value="" disabled>
+                    No past votes available
+                  </MenuItem>
+                )}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid size={isMobile ? 12 : 1.6}>
+            <FormControl fullWidth>
+              <Select
+                value={vote?.score || ""}
+                onChange={(event) =>
+                  handlePastVoteChange(
+                    termIndex,
+                    voteIndex,
+                    "score",
+                    event.target.value
+                  )
+                }
+                sx={{ background: "#fff" }}
+              >
+                <MenuItem value="yea">Yea</MenuItem>
+                <MenuItem value="nay">Nay</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid size={1}>
+            <DeleteForeverIcon
+              onClick={() => handleRemovePastVote(termIndex, voteIndex)}
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+    ))}
+
+    {/* Add Past Vote Button */}
+    <Grid size={1}></Grid>
+    <Grid size={10} sx={{ textAlign: "right" }}>
+      <Button
+        variant="outlined"
+        className="addVoteActivity-btn"
+        startIcon={<AddIcon />}
+        onClick={() => handleAddPastVote(termIndex)}
+      >
+        Add Past Vote
+      </Button>
+    </Grid>
+    <Grid size={1}></Grid>
+  </>
+)}
+
                   </Grid>
                 </Box>
               </Paper>
