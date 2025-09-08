@@ -421,25 +421,12 @@ export default function Bills(props) {
           sx: { borderRadius: 3, padding: 2, minWidth: 350 },
         }}
       >
-        <DialogTitle
-          sx={{
-            fontSize: "1.4rem",
-            fontWeight: "bold",
-            textAlign: "center",
-            color: "error.main",
-          }}
-        >
+        <DialogTitle className="dialogBox">
           Confirm Deletion
         </DialogTitle>
 
         <DialogContent>
-          <DialogContentText
-            sx={{
-              textAlign: "center",
-              fontSize: "1rem",
-              color: "text.secondary",
-            }}
-          >
+          <DialogContentText className="dialogTitle">
             Are you sure you want to delete?
             {/* {selectedVote?.bill && (
               <> <strong>{selectedVote.bill}</strong>?</>

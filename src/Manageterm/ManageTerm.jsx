@@ -377,26 +377,14 @@ const handleConfirmDelete = async () => {
 >
   <DialogTitle
     id="confirm-dialog"
-    sx={{
-      fontSize: "1.4rem",
-      fontWeight: "bold",
-      textAlign: "center",
-      color: "error.main",
-    }}
-  >
+    className="dialogBox">
     Confirm Deletion
   </DialogTitle>
 
   <DialogContent>
-    <DialogContentText
-      sx={{
-        textAlign: "center",
-        fontSize: "1rem",
-        color: "text.secondary",
-      }}
-    >
+    <DialogContentText className="dialogTitle" >
       Are you sure you want to delete this term? <br />
-      <strong>This action cannot be undone.</strong>
+     
     </DialogContentText>
   </DialogContent>
 

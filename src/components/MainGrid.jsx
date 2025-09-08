@@ -26,7 +26,11 @@ export default function MainGrid({
       : "All Representatives";
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{
+      width: "100%",
+      maxWidth: "100%",
+      overflowX: "auto",
+    }}>
       <Grid container spacing={2} columns={12}>
         <Grid item xs={12} lg={12}>
           <CustomizedDataGrid
