@@ -132,7 +132,7 @@ export default function AddBill(props) {
     if (selectedVote) {
       const termId = selectedVote.termId || "";
       const newFormData = {
-          type: selectedVote.type.includes("senate")
+        type: selectedVote.type.includes("senate")
           ? "senate_bill"
           : selectedVote.type.includes("house")
           ? "house_bill"
@@ -222,17 +222,40 @@ export default function AddBill(props) {
     });
   };
 
+  const [editorsInitialized, setEditorsInitialized] = useState({
+    shortDesc: false,
+    longDesc: false,
+  });
   const handleEditorChange = (content, fieldName) => {
-    if (!hasLocalChanges) {
-      setHasLocalChanges(true);
+    // Skip initial empty content (first render)
+    if (!editorsInitialized[fieldName]) {
+      setEditorsInitialized((prev) => ({
+        ...prev,
+        [fieldName]: true,
+      }));
+      return;
     }
+
+    // Check if content actually changed from current state
+    if (content === formData[fieldName]) {
+      return;
+    }
+
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: content };
 
       if (originalFormData) {
-        const changes = Object.keys(newData).filter((key) =>
-          compareValues(newData[key], originalFormData[key])
-        );
+        const changes = Object.keys(newData).filter((key) => {
+          const newValue = newData[key];
+          const oldValue = originalFormData[key];
+
+          // Special handling for string comparison
+          if (typeof newValue === "string" && typeof oldValue === "string") {
+            return newValue.trim() !== oldValue.trim();
+          }
+          return newValue !== oldValue;
+        });
+
         setEditedFields(changes);
       }
 
@@ -266,7 +289,7 @@ export default function AddBill(props) {
     }
   };
 
-  const handleSubmit = async () => {
+    const handleSubmit = async () => {
     if (!formData.termId) {
       setSnackbarMessage("Term is required!");
       setSnackbarSeverity("error");
@@ -326,66 +349,72 @@ export default function AddBill(props) {
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
 
-      if (id) {
-         const hasChanges =
-    filteredEditedFields.length > 0 || // user changed form fields
-    selectedFile || // file uploaded
-    (Object.keys(updatedFieldEditors).length >
-      Object.keys(selectedVote?.fieldEditors || {}).length); // editor updates
-
-  if (!hasChanges) {
-    setLoading(false);
-    setSnackbarMessage("No changes detected. Nothing to update.");
-    setSnackbarSeverity("info");
-    setOpenSnackbar(true);
-    return;
-  }
-        await dispatch(
-          updateVote({ id, updatedData: formDataToSend })
-        ).unwrap();
-        // After admin publishes, reload vote to get cleared editedFields
-        await dispatch(getVoteById(id)).unwrap();
-
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
-        );
-        setSnackbarSeverity("success");
-
-        if (userRole !== "admin") {
-          setFormData((prev) => ({ ...prev, status: "under review" }));
-          // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
-          // Remove status from editedFields after update
-          setEditedFields((prev) => prev.filter((field) => field !== "status"));
-        } else {
-          // Only clear locally if status is published
-          if (finalStatus === "published") {
-            setEditedFields([]);
-          }
-        }
-      } else {
-        if (
-          !formData.type ||
-          !formData.title ||
-          !formData.shortDesc ||
-          !formData.readMore
-        ) {
-          setSnackbarMessage("Please fill all required fields!");
-          setSnackbarSeverity("warning");
-          setOpenSnackbar(true);
-          setLoading(false);
-          return;
-        }
-
-        await dispatch(createVote(formDataToSend)).unwrap();
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Bill created and published!"
-            : "Bill created successfully!"
-        );
-        setSnackbarSeverity("success");
+    if (id) {
+      let hasChanges = true;
+      if (userRole === "editor") {
+        hasChanges =
+          filteredEditedFields.length > 0 ||
+          selectedFile ||
+          Object.keys(updatedFieldEditors).length >
+            Object.keys(selectedVote?.fieldEditors || {}).length;
       }
+
+      if (!hasChanges) {
+        setLoading(false);
+
+        setSnackbarMessage("No changes detected. Nothing to update.");
+
+        setSnackbarSeverity("info");
+
+        setOpenSnackbar(true);
+
+        return;
+      }
+
+      await dispatch(updateVote({ id, updatedData: formDataToSend })).unwrap();
+      // After admin publishes, reload vote to get cleared editedFields
+      await dispatch(getVoteById(id)).unwrap();
+
+      setSnackbarMessage(
+        userRole === "admin"
+          ? "Changes published successfully!"
+          : 'Status changed to "Under Review" for admin to moderate.'
+      );
+      setSnackbarSeverity("success");
+
+      if (userRole !== "admin") {
+        setFormData((prev) => ({ ...prev, status: "under review" }));
+        // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
+        // Remove status from editedFields after update
+        setEditedFields((prev) => prev.filter((field) => field !== "status"));
+      } else {
+        // Only clear locally if status is published
+        if (finalStatus === "published") {
+          setEditedFields([]);
+        }
+      }
+    } else {
+      if (
+        !formData.type ||
+        !formData.title ||
+        !formData.shortDesc ||
+        !formData.readMore
+      ) {
+        setSnackbarMessage("Please fill all required fields!");
+        setSnackbarSeverity("warning");
+        setOpenSnackbar(true);
+        setLoading(false);
+        return;
+      }
+
+      await dispatch(createVote(formDataToSend)).unwrap();
+      setSnackbarMessage(
+        userRole === "admin"
+          ? "Bill created and published!"
+          : "Bill created successfully!"
+      );
+      setSnackbarSeverity("success");
+    }
 
       setOpenSnackbar(true);
     } catch (error) {
@@ -415,6 +444,7 @@ export default function AddBill(props) {
       setLoading(false);
     }
   };
+ 
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -486,19 +516,19 @@ export default function AddBill(props) {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-           published: {
-                  backgroundColor: "rgba(255, 193, 7, 0.12)",
-                  borderColor: "#FFC107",
-                  iconColor: "#FFA000",
-                 icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-                  title: "Unsaved Changes",
-                  description:
-                    editedFields.length > 0
-                      ? `${editedFields.length} pending changes`
-                      : "Published and live",
-                  titleColor: "#5D4037",
-                  descColor: "#795548",
-                },
+      published: {
+        backgroundColor: "rgba(255, 193, 7, 0.12)",
+        borderColor: "#FFC107",
+        iconColor: "#FFA000",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Unsaved Changes",
+        description:
+          editedFields.length > 0
+            ? `${editedFields.length} pending changes`
+            : "Published and live",
+        titleColor: "#5D4037",
+        descColor: "#795548",
+      },
     };
 
     return configs[currentStatus];
@@ -526,24 +556,20 @@ export default function AddBill(props) {
     originalFormData,
     formData,
   ]);
+  // Reset editor initialization when form data is loaded
+  useEffect(() => {
+    if (formData.shortDesc && formData.longDesc) {
+      setEditorsInitialized({
+        shortDesc: true,
+        longDesc: true,
+      });
+    }
+  }, [formData.shortDesc, formData.longDesc]);
 
   return (
     <AppTheme>
       {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
@@ -557,34 +583,39 @@ export default function AddBill(props) {
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
           sx={{
-                  width: "100%",
-                  border: "none",
-                  boxShadow:"none",
-                  bgcolor:
-                    snackbarMessage === "Changes published successfully!"
-                      ? "#daf4f0"
-                      : undefined,
-                  "& .MuiAlert-icon": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-message": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-
-                  },
-                }}
+            width: "100%",
+            border: "none",
+            boxShadow: "none",
+            bgcolor:
+              snackbarMessage === "Changes published successfully!"
+                ? "#daf4f0"
+                : undefined,
+            "& .MuiAlert-icon": {
+              color:
+                snackbarMessage === "Changes published successfully!"
+                  ? "#099885"
+                  : undefined,
+            },
+            "& .MuiAlert-message": {
+              color:
+                snackbarMessage === "Changes published successfully!"
+                  ? "#099885"
+                  : undefined,
+            },
+            "& .MuiAlert-action": {
+              display: "flex",
+              alignItems: "center",
+              paddingTop: 0,
+              paddingBottom: 0,
+            },
+          }}
           elevation={6}
           variant="filled"
         >
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-      <Box sx={{ display: "flex",bgcolor:'#f6f6f6ff', }}>
+      <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -596,7 +627,7 @@ export default function AddBill(props) {
           })}
         >
           <FixedHeader />
-          <MobileHeader/>
+          <MobileHeader />
           <Stack
             spacing={2}
             sx={{
@@ -618,48 +649,17 @@ export default function AddBill(props) {
               <Button
                 variant="outlined"
                 onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#E24042 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#C91E37 !important",
-                  },
-                }}
+                className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
               <Button
                 variant="outlined"
                 onClick={handleSubmit}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
+                className="publishBtn"
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
-              {/* <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#4a90e2 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#357ABD !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button> */}
             </Stack>
             {userRole &&
               statusData &&
@@ -683,14 +683,15 @@ export default function AddBill(props) {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${formData.status === "draft"
-                          ? "66, 165, 245"
-                          : formData.status === "under review"
+                        backgroundColor: `rgba(${
+                          formData.status === "draft"
+                            ? "66, 165, 245"
+                            : formData.status === "under review"
                             ? "230, 81, 0"
                             : formData.status === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                          }, 0.2)`,
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
@@ -876,7 +877,9 @@ export default function AddBill(props) {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    {formData.status === "published" ? "" : "Unsaved Changes"}
+                                    {formData.status === "published"
+                                      ? ""
+                                      : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -931,9 +934,7 @@ export default function AddBill(props) {
                 </Box>
               )}
 
-            
-
-            <Paper sx={{ width: "100%", marginBottom: "50px" ,bgcolor:'#fff', borderRadius:0.8,border:'1px solid',borderColor:'divider'}}>
+            <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -998,7 +999,7 @@ export default function AddBill(props) {
                 </DialogActions>
               </Dialog>
               <Box sx={{ padding: 0 }}>
-                <Typography fontSize={'1rem'} fontWeight={500}  sx={{ borderBottom:'1px solid', borderColor:'divider',p:1.5,px:3 }}>
+                <Typography className="customTypography">
                   Bill's Information
                 </Typography>
                 <Grid
@@ -1010,18 +1011,7 @@ export default function AddBill(props) {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Type
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Type</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1031,25 +1021,14 @@ export default function AddBill(props) {
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
-                         <MenuItem value="senate_bill">Senate</MenuItem>
+                        <MenuItem value="senate_bill">Senate</MenuItem>
                         <MenuItem value="house_bill">House</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Title
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Title</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1068,14 +1047,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel className="nameLabel">
                       Short Description
                     </InputLabel>
                   </Grid>
@@ -1123,14 +1095,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel className="nameLabel">
                       Long Description
                     </InputLabel>
                   </Grid>
@@ -1176,18 +1141,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Date
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Date</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1207,18 +1161,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 6 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Congress
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Congress</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 6 : 10}>
                     <FormControl fullWidth>
@@ -1237,18 +1180,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "end",
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Term
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Term</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1282,44 +1214,12 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Roll Call
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Roll Call</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <TextField
-                        sx={{
-                          fontFamily: "'Be Vietnam Pro', sans-serif",
-                          height: 38,
-                          "& .MuiOutlinedInput-root": {
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
-                            fontSize: "13px",
-                            height: 38,
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            alignItems: "center",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#D3D3D3 !important",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#CC9A3A !important",
-                              borderWidth: "1px",
-                            },
-                          },
-                        }}
+                        className="customTextField"
                         fullWidth
                         variant="outlined"
                         name="rollCall"
@@ -1345,47 +1245,13 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                      }}
-                    >
-                      Read More
-                    </InputLabel>
+                    <InputLabel className="nameLabel">Read More</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <TextField
-                          sx={{
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
-                            height: 38,
-                            flex: 1,
-                            "& .MuiOutlinedInput-root": {
-                              fontFamily: "'Be Vietnam Pro', sans-serif",
-                              fontSize: "13px",
-                              height: 38,
-                              padding: "4px 8px",
-                              borderRadius: "6px",
-                              alignItems: "center",
-                              "& .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#D3D3D3 !important",
-                              },
-                              "&:hover .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#D3D3D3 !important",
-                              },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                {
-                                  borderColor: "#CC9A3A !important",
-                                  borderWidth: "1px",
-                                },
-                            },
-                          }}
+                          className="customTextField"
                           fullWidth
                           variant="outlined"
                           name="readMore"
@@ -1419,17 +1285,7 @@ export default function AddBill(props) {
                           variant="outlined"
                           component="label"
                           startIcon={<CloudUploadIcon />}
-                          sx={{
-                            height: 38,
-                            minWidth: "auto",
-                            px: 2,
-                            borderColor: "#CC9A3A",
-                            color: "#CC9A3A",
-                            "&:hover": {
-                              borderColor: "#B8860B",
-                              backgroundColor: "rgba(204, 154, 58, 0.04)",
-                            },
-                          }}
+                          className="upload-btn"
                         >
                           Upload
                           <input
@@ -1455,20 +1311,7 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        width: "100%",
-                        fontFamily: "'Be Vietnam Pro', sans-serif",
-                        fontSize: "13px",
-                      }}
-                    >
-                      SBA Position
-                    </InputLabel>
+                    <InputLabel className="nameLabel">SBA Position</InputLabel>
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 10}>
@@ -1519,7 +1362,7 @@ export default function AddBill(props) {
               </Box>
             </Paper>
           </Stack>
-<Box sx={{ mb: "40px" ,mx:"15px" }}>
+          <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
           </Box>
         </Box>

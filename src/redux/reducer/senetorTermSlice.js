@@ -1,96 +1,106 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { API_URL } from '../API';
- 
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+import { API_URL } from "../API";
+
 // Async thunks
 export const createSenatorData = createAsyncThunk(
-  'senatorData/createSenatorData',
+  "senatorData/createSenatorData",
   async (data, { rejectWithValue }) => {
-   
-    
     try {
-      const response = await axios.post(`${API_URL}/api/v1/admin/senator-data/`, data);
-     
+      const response = await axios.post(
+        `${API_URL}/api/v1/admin/senator-data/`,
+        data
+      );
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
- 
+
 export const getAllSenatorData = createAsyncThunk(
-  'senatorData/getAllSenatorData',
+  "senatorData/getAllSenatorData",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/senator-data/`,{
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
-      });
+      const response = await axios.get(
+        `${API_URL}/api/v1/admin/senator-data/`,
+        {
+          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
- 
+
 export const getSenatorDataById = createAsyncThunk(
-  'senatorData/getSenatorDataById',
+  "senatorData/getSenatorDataById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/senator-data/viewID/${id}`, {
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
-      });
+      const response = await axios.get(
+        `${API_URL}/api/v1/admin/senator-data/viewID/${id}`,
+        {
+          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
- 
+
 export const getSenatorDataBySenetorId = createAsyncThunk(
-  'senatorData/getSenatorDataBySenetorId',
+  "senatorData/getSenatorDataBySenetorId",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/senator-data/viewbysenator/${id}`, {
-        headers: { 'x-protected-key': 'MySuperSecretApiKey123' },
-      });
-      console.log("senator",response.data.info);
+      const response = await axios.get(
+        `${API_URL}/api/v1/admin/senator-data/viewbysenator/${id}`,
+        {
+          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        }
+      );
       return response.data.info;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
- 
+
 export const updateSenatorData = createAsyncThunk(
-  'senatorData/updateSenatorData',
+  "senatorData/updateSenatorData",
   async ({ id, data }, { rejectWithValue }) => {
-   
-    
     try {
-      const response = await axios.put(`${API_URL}/api/v1/admin/senator-data/${id}`, data);
-      
-      
+      const response = await axios.put(
+        `${API_URL}/api/v1/admin/senator-data/${id}`,
+        data
+      );
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
- 
+
 export const deleteSenatorData = createAsyncThunk(
-  'senatorData/deleteSenatorData',
+  "senatorData/deleteSenatorData",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${API_URL}/api/v1/admin/senator-data/${id}`);
-     
+      const response = await axios.delete(
+        `${API_URL}/api/v1/admin/senator-data/${id}`
+      );
+
       return response.data;
- 
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
- 
+
 // Initial state
 const initialState = {
   senatorData: [],
@@ -98,10 +108,10 @@ const initialState = {
   loading: false,
   error: null,
 };
- 
+
 // Slice
 const senatorDataSlice = createSlice({
-  name: 'senatorData',
+  name: "senatorData",
   initialState,
   reducers: {
     clearSenatorDataState: (state) => {
@@ -150,7 +160,7 @@ const senatorDataSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
- 
+
       .addCase(getSenatorDataBySenetorId.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -189,6 +199,6 @@ const senatorDataSlice = createSlice({
       });
   },
 });
- 
+
 export default senatorDataSlice.reducer;
-export const { clearSenatorDataState } = senatorDataSlice.actions; 
+export const { clearSenatorDataState } = senatorDataSlice.actions;

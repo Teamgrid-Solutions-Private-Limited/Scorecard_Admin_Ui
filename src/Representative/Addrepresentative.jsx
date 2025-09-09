@@ -45,7 +45,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Autocomplete
+  Autocomplete,
 } from "@mui/material";
 
 import {
@@ -126,8 +126,9 @@ export default function Addrepresentative(props) {
     // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
     }
     return fieldLabels[field] || field;
   };
@@ -195,35 +196,35 @@ export default function Addrepresentative(props) {
   const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${name}`;
-
+ 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) => {
         if (index !== termIndex) return term;
-
+ 
         // If term is changing, check if we have existing data for this term
         if (name === "termId" && value !== term.termId) {
           const newTermId = value;
           const selectedTerm = terms.find(t => t._id === newTermId);
           const termCongresses = selectedTerm?.congresses || [];
-
+ 
           // Convert congress numbers to strings for comparison
           const termCongressStrings = termCongresses.map(c => c.toString());
-
+ 
           // Check if we have existing data for this term in houseData
           const existingTermData = houseData?.currentHouse?.find(
             ht => ht.termId &&
               (ht.termId._id === newTermId || ht.termId === newTermId ||
                 (typeof ht.termId === 'object' && ht.termId.name === selectedTerm?.name))
           );
-
+ 
           console.log("Existing term data:", existingTermData);
-
+ 
           let votesScore = [];
           let activitiesScore = [];
           let summary = ""; // Initialize as empty
           let rating = ""; // Initialize as empty
           let currentTerm = false; // Initialize as false
-
+ 
           // If we have existing data for this term, use it
           if (existingTermData) {
             // Map votes from existing data
@@ -231,13 +232,13 @@ export default function Addrepresentative(props) {
               voteId: vote.voteId?._id || vote.voteId || "",
               score: vote.score || ""
             })) || [];
-
+ 
             // Map activities from existing data
             activitiesScore = existingTermData.activitiesScore?.map(activity => ({
               activityId: activity.activityId?._id || activity.activityId || "",
               score: activity.score || ""
             })) || [];
-
+ 
             // Only use existing values if they exist
             summary = existingTermData.summary || "";
             rating = existingTermData.rating || "";
@@ -246,39 +247,39 @@ export default function Addrepresentative(props) {
             // Filter votes to keep only those that belong to the new term's congresses
             votesScore = term.votesScore.filter(vote => {
               if (!vote.voteId || vote.voteId === "") return true; // keep placeholder
-
+ 
               const voteItem = votes.find(v => v._id === vote.voteId);
               if (!voteItem) return false;
-
+ 
               return termCongressStrings.includes(voteItem.congress);
             });
-
+ 
             // Filter activities to keep only those that belong to the new term's congresses
             activitiesScore = term.activitiesScore.filter(activity => {
               if (!activity.activityId || activity.activityId === "") return true; // keep placeholder
-
+ 
               const activityItem = houseActivities.find(a => a._id === activity.activityId);
               if (!activityItem) return false;
-
+ 
               return termCongressStrings.includes(activityItem.congress);
             });
-
+ 
             // Set all fields to empty/false for new terms without existing data
             summary = "";
             rating = "";
             currentTerm = false;
           }
-
+ 
           // If no votes remain after filtering, add an empty vote
           const finalVotesScore = votesScore.length > 0
             ? votesScore
             : [{ voteId: "", score: "" }];
-
+ 
           // If no activities remain after filtering, add an empty activity
           const finalActivitiesScore = activitiesScore.length > 0
             ? activitiesScore
             : [{ activityId: "", score: "" }];
-
+ 
           return {
             ...term,
             [name]: value,
@@ -289,20 +290,20 @@ export default function Addrepresentative(props) {
             currentTerm // Will be false if no existing data
           };
         }
-
+ 
         return { ...term, [name]: value };
       });
-
+ 
       // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
-
+ 
       if (isActualChange && !localChanges.includes(fieldName)) {
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
         setLocalChanges((prev) => prev.filter(f => f !== fieldName));
       }
-
+ 
       return newTerms;
     });
   };
@@ -320,11 +321,9 @@ export default function Addrepresentative(props) {
   //   );
   // };
 
-
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
     const fieldName = `term${termIndex}_${name}`;
-
 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) =>
@@ -338,13 +337,12 @@ export default function Addrepresentative(props) {
       if (isActualChange && !localChanges.includes(fieldName)) {
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
 
       return newTerms;
     });
   };
-
 
   // const handleSwitchChange = (e, termIndex) => {
   //   const { name, checked } = e.target;
@@ -368,9 +366,9 @@ export default function Addrepresentative(props) {
   //     // Compare with original data
   //     const originalTerm = originalTermData[termIndex] || {};
   //     const isActualChange = compareValues(
-  //       name === "currentTerm" && checked 
+  //       name === "currentTerm" && checked
   //         ? true // For currentTerm, we need to check if this specific term should be current
-  //         : checked, 
+  //         : checked,
   //       originalTerm[name]
   //     );
 
@@ -388,9 +386,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: [...term.votesScore, { voteId: "", score: "" }],
-          }
+              ...term,
+              votesScore: [...term.votesScore, { voteId: "", score: "" }],
+            }
           : term
       )
     );
@@ -414,9 +412,9 @@ export default function Addrepresentative(props) {
       const updatedTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-          }
+              ...term,
+              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+            }
           : term
       );
 
@@ -463,16 +461,15 @@ export default function Addrepresentative(props) {
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
 
-
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
+              ...term,
+              votesScore: term.votesScore.map((vote, i) =>
+                i === voteIndex ? { ...vote, [field]: value } : vote
+              ),
+            }
           : term
       );
 
@@ -484,7 +481,7 @@ export default function Addrepresentative(props) {
       if (isActualChange && !localChanges.includes(voteChangeId)) {
         setLocalChanges((prev) => [...prev, voteChangeId]);
       } else if (!isActualChange && localChanges.includes(voteChangeId)) {
-        setLocalChanges((prev) => prev.filter(f => f !== voteChangeId));
+        setLocalChanges((prev) => prev.filter((f) => f !== voteChangeId));
       }
 
       return newTerms;
@@ -496,12 +493,12 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: "", score: "" },
-            ],
-          }
+              ...term,
+              activitiesScore: [
+                ...term.activitiesScore,
+                { activityId: "", score: "" },
+              ],
+            }
           : term
       )
     );
@@ -513,9 +510,11 @@ export default function Addrepresentative(props) {
       const updatedTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-            ...term,
-            activitiesScore: term.activitiesScore.filter((_, i) => i !== activityIndex),
-          }
+              ...term,
+              activitiesScore: term.activitiesScore.filter(
+                (_, i) => i !== activityIndex
+              ),
+            }
           : term
       );
 
@@ -523,7 +522,9 @@ export default function Addrepresentative(props) {
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
-            !change.startsWith(`term${termIndex}_TrackedActivity_${activityIndex + 1}`)
+            !change.startsWith(
+              `term${termIndex}_TrackedActivity_${activityIndex + 1}`
+            )
         )
       );
 
@@ -561,8 +562,9 @@ export default function Addrepresentative(props) {
   // };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
-
+    const activityChangeId = `term${termIndex}_TrackedActivity_${
+      activityIndex + 1
+    }`;
 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, idx) => {
@@ -577,14 +579,15 @@ export default function Addrepresentative(props) {
 
       // Compare with original data if available
       const originalTerm = originalTermData[termIndex] || {};
-      const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
+      const originalActivity =
+        originalTerm.activitiesScore?.[activityIndex] || {};
       const isActualChange = compareValues(value, originalActivity[field]);
 
       setLocalChanges((prevChanges) => {
         if (isActualChange && !prevChanges.includes(activityChangeId)) {
           return [...prevChanges, activityChangeId];
         } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
-          return prevChanges.filter(f => f !== activityChangeId);
+          return prevChanges.filter((f) => f !== activityChangeId);
         }
         return prevChanges;
       });
@@ -646,9 +649,7 @@ export default function Addrepresentative(props) {
 
       // Remove any tracked changes for this term
       setLocalChanges((prevChanges) =>
-        prevChanges.filter(
-          change => !change.startsWith(`term${termIndex}_`)
-        )
+        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
       );
 
       return prev.filter((_, index) => index !== termIndex);
@@ -670,7 +671,7 @@ export default function Addrepresentative(props) {
     if (newVal == null || oldVal == null) return newVal !== oldVal;
 
     // Handle booleans and other primitives directly
-    if (typeof newVal !== 'object') return newVal !== oldVal;
+    if (typeof newVal !== "object") return newVal !== oldVal;
 
     // Handle arrays and objects
     return JSON.stringify(newVal) !== JSON.stringify(oldVal);
@@ -681,7 +682,11 @@ export default function Addrepresentative(props) {
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => {
           // Case 1: term.termId is an object with name property
-          if (term.termId && typeof term.termId === "object" && term.termId.name) {
+          if (
+            term.termId &&
+            typeof term.termId === "object" &&
+            term.termId.name
+          ) {
             return t.name === term.termId.name;
           }
           // Case 2: term.termId is a string (the term name)
@@ -689,7 +694,10 @@ export default function Addrepresentative(props) {
             return t.name === term.termId;
           }
           // Case 3: term.termId is an ObjectId - find by ID
-          else if (term.termId && mongoose.Types.ObjectId.isValid(term.termId)) {
+          else if (
+            term.termId &&
+            mongoose.Types.ObjectId.isValid(term.termId)
+          ) {
             return t._id.toString() === term.termId.toString();
           }
           // Case 4: No valid termId found
@@ -699,25 +707,25 @@ export default function Addrepresentative(props) {
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
             ? term.votesScore.map((vote) => {
-              let scoreValue = "";
-              const dbScore = vote.score?.toLowerCase();
-              if (dbScore?.includes("yea")) {
-                scoreValue = "yea";
-              } else if (dbScore?.includes("nay")) {
-                scoreValue = "nay";
-              } else if (dbScore?.includes("other")) {
-                scoreValue = "other";
-              } else {
-                scoreValue = vote.score || "";
-              }
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase();
+                if (dbScore?.includes("yea")) {
+                  scoreValue = "yea";
+                } else if (dbScore?.includes("nay")) {
+                  scoreValue = "nay";
+                } else if (dbScore?.includes("other")) {
+                  scoreValue = "other";
+                } else {
+                  scoreValue = vote.score || "";
+                }
 
-              return {
-                voteId: vote.voteId?._id || vote.voteId || "",
-                score: scoreValue,
-                title: vote.voteId?.title || vote.title || "",
-                _id: vote._id || undefined, // Preserve existing _id if present
-              };
-            })
+                return {
+                  voteId: vote.voteId?._id || vote.voteId || "",
+                  score: scoreValue,
+                  title: vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
+                };
+              })
             : [{ voteId: "", score: "" }]; // Changed from empty string to null
 
         // If all voteId are null or array is empty, add a blank row
@@ -738,37 +746,16 @@ export default function Addrepresentative(props) {
           fieldEditors: term.fieldEditors || {},
           isNew: false, // Mark as not new
           votesScore,
-          // :
-          //   term.votesScore?.length > 0
-          //     ? term.votesScore.map((vote) => {
-          //       let scoreValue = "";
-          //       const dbScore = vote.score?.toLowerCase();
-
-          //       if (dbScore?.includes("yea_votes")) {
-          //         scoreValue = "Yes";
-          //       } else if (dbScore?.includes("nay_votes")) {
-          //         scoreValue = "No";
-          //       } else if (dbScore?.includes("other_votes")) {
-          //         scoreValue = "Neutral";
-          //       } else {
-          //         scoreValue = vote.score || "";
-          //       }
-
-          //       return {
-          //         voteId: vote.voteId?._id || vote.voteId || null,
-          //         score: scoreValue,
-          //       };
-          //     })
-          //     : [{ voteId: "", score: "" }],
+         
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || null,
-                score: activity.score || "",
-                title: activity.activityId?.title || activity.title || "",
-                _id: activity._id || undefined, // Preserve existing _id if present
-              }))
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                  title: activity.activityId?.title || activity.title || "",
+                _id: activity._id || undefined, 
+                }))
               : [{ activityId: "", score: "" }],
         };
       });
@@ -958,19 +945,18 @@ export default function Addrepresentative(props) {
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-
-    setFormData(prev => {
+    setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
       // Compare with original data
       if (originalFormData) {
         const isActualChange = compareValues(value, originalFormData[name]);
 
-        setLocalChanges(prevChanges => {
+        setLocalChanges((prevChanges) => {
           if (isActualChange && !prevChanges.includes(name)) {
             return [...prevChanges, name];
           } else if (!isActualChange && prevChanges.includes(name)) {
-            return prevChanges.filter(field => field !== name);
+            return prevChanges.filter((field) => field !== name);
           }
           return prevChanges;
         });
@@ -984,7 +970,6 @@ export default function Addrepresentative(props) {
     const file = event.target.files[0];
     const fieldName = "Photo"; // The field name you want to track
 
-
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
     }
@@ -995,16 +980,16 @@ export default function Addrepresentative(props) {
   e.preventDefault();
   setLoading(true);
 
-  // Helper: sanitize keys for MongoDB
-  const sanitizeKey = (str) => {
-    return str
-      .replace(/[^a-zA-Z0-9_]/g, "_") // replace invalid chars
-      .replace(/_+/g, "_")            // collapse multiple underscores
-      .replace(/^_+|_+$/g, "");       // remove leading/trailing underscores
-  };
+    // Helper: sanitize keys for MongoDB
+    const sanitizeKey = (str) => {
+      return str
+        .replace(/[^a-zA-Z0-9_]/g, "_") // replace invalid chars
+        .replace(/_+/g, "_") // collapse multiple underscores
+        .replace(/^_+|_+$/g, ""); // remove leading/trailing underscores
+    };
 
-  try {
- // 1️⃣ Prevent duplicate termId selections
+    try {
+      // 1️⃣ Prevent duplicate termId selections
       const termIdCounts = houseTermData
         .map((t) => t.termId)
         .filter(Boolean)
@@ -1020,7 +1005,7 @@ export default function Addrepresentative(props) {
         );
         return;
       }
-
+ 
       // 2️⃣ Only one current term
       const currentTerms = houseTermData.filter((term) => term.currentTerm);
       if (currentTerms.length > 1) {
@@ -1031,334 +1016,398 @@ export default function Addrepresentative(props) {
         );
         return;
       }
-    // 3️⃣ Current editor info
-    const decodedToken = jwtDecode(token);
-    const currentEditor = {
-      editorId: decodedToken.userId,
-      editorName: localStorage.getItem("user") || "Unknown Editor",
-      editedAt: new Date(),
-    };
 
-    // 4️⃣ Delete removed terms
-    if (deletedTermIds.length > 0) {
-      await Promise.all(
-        deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
-      );
-      setDeletedTermIds([]);
+      const hasLocalChanges =
+        localChanges.length > 0 ||
+        deletedTermIds.length > 0 ||
+        (formData?.fieldEditors &&
+          Object.keys(formData.fieldEditors).length > 0);
+
+      // 🚨 Prevent saving if no local changes of any kind
+    if (userRole === "editor" && !hasLocalChanges) {
+      setLoading(false);
+      handleSnackbarOpen("No changes detected. Nothing to update.", "info");
+      return;
     }
+      // 3️⃣ Current editor info
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: localStorage.getItem("user") || "Unknown Editor",
+        editedAt: new Date(),
+      };
 
-    // 5️⃣ Prepare existing editedFields
-    const existingEditedFields = Array.isArray(formData.editedFields)
-      ? formData.editedFields
-      : [];
-    const existingFieldsMap = new Map();
-    existingEditedFields.forEach((field) => {
-      let fieldKey;
-      if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
-        fieldKey = `votesScore_${sanitizeKey(field.name)}`;
-      } else if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
-        fieldKey = `activitiesScore_${sanitizeKey(field.name)}`;
-      } else {
-        fieldKey = Array.isArray(field.field) ? field.field[0] : field;
+      // 4️⃣ Delete removed terms
+      if (deletedTermIds.length > 0) {
+        await Promise.all(
+          deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
+        );
+        setDeletedTermIds([]);
       }
-      existingFieldsMap.set(fieldKey, { ...field });
-    });
 
-    // 6️⃣ Process current votes & activities
-    const processedChanges = [];
-// Helper function to check if a vote has changed
-    const hasVoteChanged = (termIndex, voteIndex, vote) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-      
-      // Check if voteId or score has changed
-      return vote.voteId !== originalVote.voteId || vote.score !== originalVote.score;
-    };
-
-    // Helper function to check if an activity has changed
-    const hasActivityChanged = (termIndex, activityIndex, activity) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
-      
-      // Check if activityId or score has changed
-      return activity.activityId !== originalActivity.activityId || activity.score !== originalActivity.score;
-    };
-
-    houseTermData.forEach((term, termIndex) => {
-      // votesScore - only process changed votes
-      term.votesScore.forEach((vote, voteIndex) => {
-        if (vote.voteId && vote.voteId.toString().trim() !== "") {
-          // Only add if this vote has actually changed
-          if (hasVoteChanged(termIndex, voteIndex, vote)) {
-            const voteItem = votes.find((v) => v._id === vote.voteId);
-            if (voteItem) {
-              const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`,
-                field: ["votesScore"],
-                name: voteItem.title,
-                termIndex,
-                voteIndex,
-              });
-            }
-          }
+      // 5️⃣ Prepare existing editedFields
+      const existingEditedFields = Array.isArray(formData.editedFields)
+        ? formData.editedFields
+        : [];
+      const existingFieldsMap = new Map();
+      existingEditedFields.forEach((field) => {
+        let fieldKey;
+        if (
+          Array.isArray(field.field) &&
+          field.field[0] === "votesScore" &&
+          field.name
+        ) {
+          fieldKey = `votesScore_${sanitizeKey(field.name)}`;
+        } else if (
+          Array.isArray(field.field) &&
+          field.field[0] === "activitiesScore" &&
+          field.name
+        ) {
+          fieldKey = `activitiesScore_${sanitizeKey(field.name)}`;
+        } else {
+          fieldKey = Array.isArray(field.field) ? field.field[0] : field;
         }
+        existingFieldsMap.set(fieldKey, { ...field });
       });
 
-      // activitiesScore - only process changed activities
-      term.activitiesScore.forEach((activity, activityIndex) => {
-        if (activity.activityId && activity.activityId.toString().trim() !== "") {
-          // Only add if this activity has actually changed
-          if (hasActivityChanged(termIndex, activityIndex, activity)) {
-            const activityItem = houseActivities.find((a) => a._id === activity.activityId);
-            if (activityItem) {
-              const uniqueId = `activitiesScore_${sanitizeKey(activityItem.title)}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`,
-                field: ["activitiesScore"],
-                name: activityItem.title,
-                termIndex,
-                activityIndex,
-              });
+      // 6️⃣ Process current votes & activities
+      const processedChanges = [];
+      // Helper function to check if a vote has changed
+      const hasVoteChanged = (termIndex, voteIndex, vote) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalVote = originalTerm.votesScore?.[voteIndex] || {};
+
+        // Check if voteId or score has changed
+        return (
+          vote.voteId !== originalVote.voteId ||
+          vote.score !== originalVote.score
+        );
+      };
+
+      // Helper function to check if an activity has changed
+      const hasActivityChanged = (termIndex, activityIndex, activity) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalActivity =
+          originalTerm.activitiesScore?.[activityIndex] || {};
+
+        // Check if activityId or score has changed
+        return (
+          activity.activityId !== originalActivity.activityId ||
+          activity.score !== originalActivity.score
+        );
+      };
+
+      houseTermData.forEach((term, termIndex) => {
+        // votesScore - only process changed votes
+        term.votesScore.forEach((vote, voteIndex) => {
+          if (vote.voteId && vote.voteId.toString().trim() !== "") {
+            // Only add if this vote has actually changed
+            if (hasVoteChanged(termIndex, voteIndex, vote)) {
+              const voteItem = votes.find((v) => v._id === vote.voteId);
+              if (voteItem) {
+                const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Scored Vote ${
+                    voteIndex + 1
+                  }`,
+                  field: ["votesScore"],
+                  name: voteItem.title,
+                  termIndex,
+                  voteIndex,
+                });
+              }
             }
           }
-        }
-      });
-    });
-    
-    // 7️⃣ Process other local changes
-    localChanges.forEach((change) => {
-      if (!change.includes("votesScore_") && !change.includes("activitiesScore_") && !change.startsWith("term")) {
-        processedChanges.push({
-          uniqueId: change,
-          displayName: getFieldDisplayName(change),
-          field: [change],
-          name: getFieldDisplayName(change),
         });
-      }
-    });
 
-    // helper for deep equality check
-    const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-
-    // helper: check if a value is meaningful (not empty/default)
-    const hasNonDefaultValue = (field, value) => {
-      if (value === null || value === undefined) return false;
-      if (typeof value === "string" && value.trim() === "") return false;
-      if (field === "currentTerm" && value === false) return false;
-      return true;
-    };
-
-    // 8️⃣ Process term-level changes
-    houseTermData.forEach((term, termIndex) => {
-      const originalTerm = originalTermData?.[termIndex] || {};
-      const termFields = ["summary", "rating", "currentTerm", "termId"];
-
-      termFields.forEach((field) => {
-        const newValue = term[field];
-        const oldValue = originalTerm[field];
-
-        // only log change if:
-        // - value is actually different (deep compare), AND
-        // - new value is non-default
-        if (!isEqual(newValue, oldValue) && hasNonDefaultValue(field, newValue)) {
-          const fieldName = `term${termIndex}_${field}`;
+        // activitiesScore - only process changed activities
+        term.activitiesScore.forEach((activity, activityIndex) => {
+          if (
+            activity.activityId &&
+            activity.activityId.toString().trim() !== ""
+          ) {
+            // Only add if this activity has actually changed
+            if (hasActivityChanged(termIndex, activityIndex, activity)) {
+              const activityItem = houseActivities.find(
+                (a) => a._id === activity.activityId
+              );
+              if (activityItem) {
+                const uniqueId = `activitiesScore_${sanitizeKey(
+                  activityItem.title
+                )}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Tracked Activity ${
+                    activityIndex + 1
+                  }`,
+                  field: ["activitiesScore"],
+                  name: activityItem.title,
+                  termIndex,
+                  activityIndex,
+                });
+              }
+            }
+          }
+        });
+      });
+      // 7️⃣ Process other local changes
+      localChanges.forEach((change) => {
+        if (
+          !change.includes("votesScore_") &&
+          !change.includes("activitiesScore_") &&
+          !change.startsWith("term")
+        ) {
           processedChanges.push({
-            uniqueId: fieldName,
-            displayName: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
-            field: [fieldName],
-            name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
+            uniqueId: change,
+            displayName: getFieldDisplayName(change),
+            field: [change],
+            name: getFieldDisplayName(change),
           });
         }
       });
-    });
 
-    // 9️⃣ Merge with existing fields
-    processedChanges.forEach((change) => {
-      const existingField = existingFieldsMap.get(change.uniqueId);
-      if (!existingField || existingField.name !== change.name) {
-        existingFieldsMap.set(change.uniqueId, {
-          field: change.field,
-          name: change.name,
-          updatedAt: new Date().toISOString(),
-          fromQuorum: existingField?.fromQuorum || false,
-          _id: existingField?._id,
-        });
-      } else {
-        existingFieldsMap.set(change.uniqueId, {
-          ...existingField,
-          updatedAt: new Date().toISOString(),
-        });
-      }
-    });
+      // helper for deep equality check
+      const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-    const allChanges = Array.from(existingFieldsMap.values());
-// 10️⃣ Update fieldEditors safely
-const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+      // helper: check if a value is meaningful (not empty/default)
+      const hasNonDefaultValue = (field, value) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string" && value.trim() === "") return false;
+        if (field === "currentTerm" && value === false) return false;
+        return true;
+      };
 
-// Track which fields were actually changed in this session
-const changedFieldsInThisSession = new Set();
+      // 8️⃣ Process term-level changes
+      houseTermData.forEach((term, termIndex) => {
+        const originalTerm = originalTermData?.[termIndex] || {};
+        const termFields = ["summary", "rating", "currentTerm", "termId"];
 
-// 1️⃣ Process localChanges to update only changed votes/activities/terms
-localChanges.forEach((change) => {
-  let editorKey;
+        termFields.forEach((field) => {
+          const newValue = term[field];
+          const oldValue = originalTerm[field];
 
-  // Handle votes: termX_ScoredVote_Y
-  const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
-  if (voteMatch) {
-    const [, termIndex, voteIndex] = voteMatch;
-    const term = houseTermData[parseInt(termIndex)];
-    const vote = term?.votesScore?.[parseInt(voteIndex)];
-    if (vote && vote.voteId) {
-      const voteItem = votes.find((v) => v._id === vote.voteId);
-      if (voteItem && voteItem.title) {
-        editorKey = `votesScore_${sanitizeKey(voteItem.title)}`;
-        updatedFieldEditors[editorKey] = currentEditor;
-        changedFieldsInThisSession.add(editorKey);
-
-        console.log("✅ Updated vote editor:", editorKey, currentEditor);
-      }
-    }
-    return; // skip further processing
-  }
-
-  // Handle activities: termX_TrackedActivity_Y
-  const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
-  if (activityMatch) {
-    const [, termIndex, activityIndex] = activityMatch;
-    const term = houseTermData[parseInt(termIndex)];
-    const activity = term?.activitiesScore?.[parseInt(activityIndex)];
-    if (activity && activity.activityId) {
-      const activityItem = houseActivities.find((a) => a._id === activity.activityId);
-      if (activityItem && activityItem.title) {
-        editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
-        updatedFieldEditors[editorKey] = currentEditor;
-        changedFieldsInThisSession.add(editorKey);
-
-        console.log("✅ Updated activity editor:", editorKey, currentEditor);
-      }
-    }
-    return; // skip further processing
-  }
-
-  // Term-level or simple fields
-  editorKey = change;
-  updatedFieldEditors[editorKey] = currentEditor;
-  changedFieldsInThisSession.add(editorKey);
-
-  console.log("✅ Updated term/simple editor:", editorKey, currentEditor);
-});
-
-// 2️⃣ Optional: update processedChanges for other fields (non-votes/activities)
-processedChanges.forEach((change) => {
-  if (!changedFieldsInThisSession.has(change.uniqueId)) {
-    // preserve existing editor if any
-    updatedFieldEditors[change.uniqueId] = updatedFieldEditors[change.uniqueId] || currentEditor;
-  }
-});
-
-// ✅ Finally, updatedFieldEditors now contains only updated votes/activities
-
-
-    // 11️⃣ Prepare representative update
-    const representativeUpdate = {
-      ...formData,
-      editedFields: allChanges,
-      fieldEditors: updatedFieldEditors, // Use the updated field editors
-      publishStatus: userRole === "admin" ? "published" : "under review",
-    };
-
-    // Clear if publishing
-    if (representativeUpdate.publishStatus === "published") {
-      representativeUpdate.editedFields = [];
-      representativeUpdate.fieldEditors = {};
-    }
-
-    // 12️⃣ Update representative
-    if (id) {
-      const formDataToSend = new FormData();
-      Object.entries(representativeUpdate).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          if (typeof value === "object" && !(value instanceof File)) {
-            formDataToSend.append(key, JSON.stringify(value));
-          } else {
-            formDataToSend.append(key, value);
+          // only log change if:
+          // - value is actually different (deep compare), AND
+          // - new value is non-default
+          if (
+            !isEqual(newValue, oldValue) &&
+            hasNonDefaultValue(field, newValue)
+          ) {
+            const fieldName = `term${termIndex}_${field}`;
+            processedChanges.push({
+              uniqueId: fieldName,
+              displayName: `Term ${termIndex + 1}: ${
+                fieldLabels[field] || field
+              }`,
+              field: [fieldName],
+              name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
+            });
           }
+        });
+      });
+
+      // 9️⃣ Merge with existing fields
+      processedChanges.forEach((change) => {
+        const existingField = existingFieldsMap.get(change.uniqueId);
+        if (!existingField || existingField.name !== change.name) {
+          existingFieldsMap.set(change.uniqueId, {
+            field: change.field,
+            name: change.name,
+            updatedAt: new Date().toISOString(),
+            fromQuorum: existingField?.fromQuorum || false,
+            _id: existingField?._id,
+          });
+        } else {
+          existingFieldsMap.set(change.uniqueId, {
+            ...existingField,
+            updatedAt: new Date().toISOString(),
+          });
         }
       });
-      await dispatch(updateHouse({ id, formData: formDataToSend })).unwrap();
-    }
 
-    // 13️⃣ Update terms
-    const termPromises = houseTermData.map((term, index) => {
-      const cleanVotesScore = term.votesScore
-        .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
-        .map((vote) => ({
-          voteId: vote.voteId.toString(),
-          score: vote.score,
-          title: vote.title || "",
-        }));
-      const cleanActivitiesScore = term.activitiesScore
-        .filter((activity) => activity.activityId && activity.activityId.toString().trim() !== "")
-        .map((activity) => ({
-          activityId: activity.activityId.toString(),
-          score: activity.score,
-        }));
-      const termSpecificChanges = allChanges.filter((f) => {
-        const fieldName = typeof f === "string" ? f : Array.isArray(f.field) ? f.field[0] : f.field;
-        return fieldName.startsWith(`term${index}_`);
+      const allChanges = Array.from(existingFieldsMap.values());
+      // 10️⃣ Update fieldEditors safely
+      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+
+      // Track which fields were actually changed in this session
+      const changedFieldsInThisSession = new Set();
+
+      // 1️⃣ Process localChanges to update only changed votes/activities/terms
+      localChanges.forEach((change) => {
+        let editorKey;
+
+        // Handle votes: termX_ScoredVote_Y
+        const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
+        if (voteMatch) {
+          const [, termIndex, voteIndex] = voteMatch;
+          const term = houseTermData[parseInt(termIndex)];
+          const vote = term?.votesScore?.[parseInt(voteIndex)];
+          if (vote && vote.voteId) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem && voteItem.title) {
+              editorKey = `votesScore_${sanitizeKey(voteItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+
+              console.log("✅ Updated vote editor:", editorKey, currentEditor);
+            }
+          }
+          return; // skip further processing
+        }
+
+        // Handle activities: termX_TrackedActivity_Y
+        const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
+        if (activityMatch) {
+          const [, termIndex, activityIndex] = activityMatch;
+          const term = houseTermData[parseInt(termIndex)];
+          const activity = term?.activitiesScore?.[parseInt(activityIndex)];
+          if (activity && activity.activityId) {
+            const activityItem = houseActivities.find(
+              (a) => a._id === activity.activityId
+            );
+            if (activityItem && activityItem.title) {
+              editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+
+              console.log(
+                "✅ Updated activity editor:",
+                editorKey,
+                currentEditor
+              );
+            }
+          }
+          return; // skip further processing
+        }
+
+        // Term-level or simple fields
+        editorKey = change;
+        updatedFieldEditors[editorKey] = currentEditor;
+        changedFieldsInThisSession.add(editorKey);
+
+        console.log("✅ Updated term/simple editor:", editorKey, currentEditor);
       });
-      const termUpdate = {
-        ...term,
-        votesScore: cleanVotesScore,
-        activitiesScore: cleanActivitiesScore,
-        isNew: false,
-        houseId: id,
-        editedFields: termSpecificChanges,
+
+      // 2️⃣ Optional: update processedChanges for other fields (non-votes/activities)
+      processedChanges.forEach((change) => {
+        if (!changedFieldsInThisSession.has(change.uniqueId)) {
+          // preserve existing editor if any
+          updatedFieldEditors[change.uniqueId] =
+            updatedFieldEditors[change.uniqueId] || currentEditor;
+        }
+      });
+
+      // ✅ Finally, updatedFieldEditors now contains only updated votes/activities
+
+      // 11️⃣ Prepare representative update
+      const representativeUpdate = {
+        ...formData,
+        editedFields: allChanges,
         fieldEditors: updatedFieldEditors, // Use the updated field editors
+        publishStatus: userRole === "admin" ? "published" : "under review",
       };
-      return term._id
-        ? dispatch(updateHouseData({ id: term._id, data: termUpdate })).unwrap()
-        : dispatch(createHouseData(termUpdate)).unwrap();
-    });
+
+      // Clear if publishing
+      if (representativeUpdate.publishStatus === "published") {
+        representativeUpdate.editedFields = [];
+        representativeUpdate.fieldEditors = {};
+      }
+
+      // 12️⃣ Update representative
+      if (id) {
+        const formDataToSend = new FormData();
+        Object.entries(representativeUpdate).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (typeof value === "object" && !(value instanceof File)) {
+              formDataToSend.append(key, JSON.stringify(value));
+            } else {
+              formDataToSend.append(key, value);
+            }
+          }
+        });
+        await dispatch(updateHouse({ id, formData: formDataToSend })).unwrap();
+      }
+
+      // 13️⃣ Update terms
+      const termPromises = houseTermData.map((term, index) => {
+        const cleanVotesScore = term.votesScore
+          .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
+          .map((vote) => ({
+            voteId: vote.voteId.toString(),
+            score: vote.score,
+            title: vote.title || "",
+          }));
+        const cleanActivitiesScore = term.activitiesScore
+          .filter(
+            (activity) =>
+              activity.activityId &&
+              activity.activityId.toString().trim() !== ""
+          )
+          .map((activity) => ({
+            activityId: activity.activityId.toString(),
+            score: activity.score,
+          }));
+        const termSpecificChanges = allChanges.filter((f) => {
+          const fieldName =
+            typeof f === "string"
+              ? f
+              : Array.isArray(f.field)
+              ? f.field[0]
+              : f.field;
+          return fieldName.startsWith(`term${index}_`);
+        });
+        const termUpdate = {
+          ...term,
+          votesScore: cleanVotesScore,
+          activitiesScore: cleanActivitiesScore,
+          isNew: false,
+          houseId: id,
+          editedFields: termSpecificChanges,
+          fieldEditors: updatedFieldEditors, // Use the updated field editors
+        };
+        return term._id
+          ? dispatch(
+              updateHouseData({ id: term._id, data: termUpdate })
+            ).unwrap()
+          : dispatch(createHouseData(termUpdate)).unwrap();
+      });
 
     await Promise.all(termPromises);
 
-    // 14️⃣ Reload data
-    await dispatch(getHouseDataByHouseId(id)).unwrap();
-    await dispatch(getHouseById(id)).unwrap();
+      // 14️⃣ Reload data
+      await dispatch(getHouseDataByHouseId(id)).unwrap();
+      await dispatch(getHouseById(id)).unwrap();
 
-    setOriginalFormData(JSON.parse(JSON.stringify(formData)));
-    setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
-    setLocalChanges([]);
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
+      setLocalChanges([]);
 
-    userRole === "admin"
-      ? handleSnackbarOpen("Changes Published successfully!", "success")
-      : handleSnackbarOpen(
-        'Status changed to "Under Review" for admin to moderate.',
-        "info"
-      );
-  } catch (error) {
-    console.error("Save failed:", error);
-    handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
-  } finally {
-    setLoading(false);
-  }
-};
-
+      userRole === "admin"
+        ? handleSnackbarOpen("Changes Published successfully!", "success")
+        : handleSnackbarOpen(
+            'Status changed to "Under Review" for admin to moderate.',
+            "info"
+          );
+    } catch (error) {
+      console.error("Save failed:", error);
+      handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
   // Helper function to get filtered votes based on selected term
   const getFilteredVotes = (termIndex) => {
     const term = houseTermData[termIndex];
     if (!term || !term.termId) return votes || [];
 
-    const selectedTerm = terms.find(t => t._id === term.termId);
+    const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return votes || [];
 
-    return (votes || []).filter(vote =>
-      vote.type === "house_bill" &&
-      selectedTerm.congresses.includes(Number(vote.congress))
+    return (votes || []).filter(
+      (vote) =>
+        vote.type === "house_bill" &&
+        selectedTerm.congresses.includes(Number(vote.congress))
     );
   };
   // Helper function to get filtered activities based on selected term
@@ -1366,10 +1415,10 @@ processedChanges.forEach((change) => {
     const term = houseTermData[termIndex];
     if (!term || !term.termId) return houseActivities || [];
 
-    const selectedTerm = terms.find(t => t._id === term.termId);
+    const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return houseActivities || [];
 
-    return (houseActivities || []).filter(activity =>
+    return (houseActivities || []).filter((activity) =>
       selectedTerm.congresses.includes(Number(activity.congress))
     );
   };
@@ -1409,10 +1458,8 @@ processedChanges.forEach((change) => {
   //   setFormData((prev) => ({ ...prev, status }));
   // };
 
-
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
-
 
     setFormData((prev) => {
       const newData = { ...prev, status };
@@ -1427,7 +1474,7 @@ processedChanges.forEach((change) => {
         if (isActualChange && !prevChanges.includes(fieldName)) {
           return [...prevChanges, fieldName];
         } else if (!isActualChange && prevChanges.includes(fieldName)) {
-          return prevChanges.filter(field => field !== fieldName);
+          return prevChanges.filter((field) => field !== fieldName);
         }
         return prevChanges;
       });
@@ -1501,7 +1548,6 @@ processedChanges.forEach((change) => {
     currentStatus
   );
 
-
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -1521,15 +1567,19 @@ processedChanges.forEach((change) => {
       navigate(0);
       await dispatch(getHouseById(id));
       await dispatch(getHouseDataByHouseId(id));
-      setSnackbarMessage(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`);
+      setSnackbarMessage(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      );
       setSnackbarSeverity("success");
-      setComponentKey(prev => prev + 1);
+      setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
         error?.message ||
-        (typeof error === "string" ? error : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+        (typeof error === "string"
+          ? error
+          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -1538,28 +1588,14 @@ processedChanges.forEach((change) => {
     }
   };
 
-
   return (
     <AppTheme key={componentKey}>
       {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex", bgcolor: '#f6f6f6ff', }}>
+      <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -1581,7 +1617,7 @@ processedChanges.forEach((change) => {
               mx: 3,
               // pb: 5,
               mt: { xs: 8, md: 2.8 },
-              gap: 1
+              gap: 1,
             }}
           >
             <Stack
@@ -1596,30 +1632,14 @@ processedChanges.forEach((change) => {
               <Button
                 variant="outlined"
                 onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#E24042 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#C91E37 !important",
-                  },
-                }}
+                className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
+                className="publishBtn"
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
@@ -1627,7 +1647,8 @@ processedChanges.forEach((change) => {
             {userRole &&
               formData.publishStatus &&
               statusData &&
-              (formData.publishStatus !== "published" || localChanges.length > 0) && (
+              (formData.publishStatus !== "published" ||
+                localChanges.length > 0) && (
                 <Box
                   sx={{
                     width: "97%",
@@ -1647,14 +1668,15 @@ processedChanges.forEach((change) => {
                       sx={{
                         p: 1,
                         borderRadius: "50%",
-                        backgroundColor: `rgba(${formData.publishStatus === "draft"
-                          ? "66, 165, 245"
-                          : formData.publishStatus === "under review"
+                        backgroundColor: `rgba(${
+                          formData.publishStatus === "draft"
+                            ? "66, 165, 245"
+                            : formData.publishStatus === "under review"
                             ? "230, 81, 0"
                             : formData.publishStatus === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                          }, 0.2)`,
+                            ? "76, 175, 80"
+                            : "244, 67, 54"
+                        }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
                         flexShrink: 0,
@@ -1728,39 +1750,70 @@ processedChanges.forEach((change) => {
                             );
                           }
 
-
-                          const formatFieldName = (field, index, houseTermData = []) => {
+                          // Field name formatter function
+                          const formatFieldName = (
+                            field,
+                            index,
+                            houseTermData = []
+                          ) => {
                             // console.log("Formatting field:", field);
                             // console.log("House Term Data:", houseTermData);
 
                             // Handle object format (editedFields entry from backend)
                             if (typeof field === "object" && field !== null) {
                               // Handle votesScore fields with bill title in name
-                              if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
+                              if (
+                                Array.isArray(field.field) &&
+                                field.field[0] === "votesScore" &&
+                                field.name
+                              ) {
                                 const billTitle = field.name;
 
                                 // Search through all terms to find the matching vote by title
-                                for (let termIndex = 0; termIndex < houseTermData.length; termIndex++) {
+                                for (
+                                  let termIndex = 0;
+                                  termIndex < houseTermData.length;
+                                  termIndex++
+                                ) {
                                   const term = houseTermData[termIndex];
                                   const votesScore = term?.votesScore || [];
 
-                                  for (let voteIndex = 0; voteIndex < votesScore.length; voteIndex++) {
+                                  for (
+                                    let voteIndex = 0;
+                                    voteIndex < votesScore.length;
+                                    voteIndex++
+                                  ) {
                                     const vote = votesScore[voteIndex];
 
                                     if (vote) {
                                       // Case 1: vote has title directly (your latest data)
-                                      if (vote.title && vote.title === billTitle) {
-                                        return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
+                                      if (
+                                        vote.title &&
+                                        vote.title === billTitle
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Scored Vote ${voteIndex + 1}`;
                                       }
 
                                       // Case 2: voteId is object with title
-                                      if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
-                                        return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
+                                      if (
+                                        typeof vote.voteId === "object" &&
+                                        vote.voteId.title === billTitle
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Scored Vote ${voteIndex + 1}`;
                                       }
 
                                       // Case 3: voteId is string, match with field._id
-                                      if (typeof vote.voteId === "string" && vote.voteId === field._id) {
-                                        return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
+                                      if (
+                                        typeof vote.voteId === "string" &&
+                                        vote.voteId === field._id
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Scored Vote ${voteIndex + 1}`;
                                       }
                                     }
                                   }
@@ -1768,38 +1821,78 @@ processedChanges.forEach((change) => {
 
                                 // fallback if nothing matched
                                 return null;
-
                               }
- // Handle activitiesScore fields
-    if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
-      const activityTitle = field.name;
+                              // Handle activitiesScore fields
+                              if (
+                                Array.isArray(field.field) &&
+                                field.field[0] === "activitiesScore" &&
+                                field.name
+                              ) {
+                                const activityTitle = field.name;
 
-      for (let termIndex = 0; termIndex < houseTermData.length; termIndex++) {
-        const term = houseTermData[termIndex];
-        const activitiesScore = term?.activitiesScore || [];
+                                for (
+                                  let termIndex = 0;
+                                  termIndex < houseTermData.length;
+                                  termIndex++
+                                ) {
+                                  const term = houseTermData[termIndex];
+                                  const activitiesScore =
+                                    term?.activitiesScore || [];
 
-        for (let activityIndex = 0; activityIndex < activitiesScore.length; activityIndex++) {
-          const activity = activitiesScore[activityIndex];
-          if (activity) {
-            if (activity.title && activity.title === activityTitle) {
-              return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
-            }
-            if (typeof activity.activityId === "object" && activity.activityId.title === activityTitle) {
-              return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
-            }
-            if (typeof activity.activityId === "string" && activity.activityId === field._id) {
-              return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
-            }
-          }
-        }
-      }
-      return null;
-    }
+                                  for (
+                                    let activityIndex = 0;
+                                    activityIndex < activitiesScore.length;
+                                    activityIndex++
+                                  ) {
+                                    const activity =
+                                      activitiesScore[activityIndex];
+                                    if (activity) {
+                                      if (
+                                        activity.title &&
+                                        activity.title === activityTitle
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Tracked Activity ${
+                                          activityIndex + 1
+                                        }`;
+                                      }
+                                      if (
+                                        typeof activity.activityId ===
+                                          "object" &&
+                                        activity.activityId.title ===
+                                          activityTitle
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Tracked Activity ${
+                                          activityIndex + 1
+                                        }`;
+                                      }
+                                      if (
+                                        typeof activity.activityId ===
+                                          "string" &&
+                                        activity.activityId === field._id
+                                      ) {
+                                        return `Term ${
+                                          termIndex + 1
+                                        }: Tracked Activity ${
+                                          activityIndex + 1
+                                        }`;
+                                      }
+                                    }
+                                  }
+                                }
+                                return null;
+                              }
                               // Handle regular term fields (term0_fieldName format)
-                              const fieldId = Array.isArray(field.field) ? field.field[0] : field.field;
+                              const fieldId = Array.isArray(field.field)
+                                ? field.field[0]
+                                : field.field;
 
                               if (fieldId && fieldId.startsWith("term")) {
-                                const termMatch = fieldId.match(/^term(\d+)_(.+)$/);
+                                const termMatch =
+                                  fieldId.match(/^term(\d+)_(.+)$/);
                                 if (termMatch) {
                                   const [, termIndex, actualField] = termMatch;
                                   const termNumber = parseInt(termIndex) + 1;
@@ -1811,10 +1904,11 @@ processedChanges.forEach((change) => {
                                     rating: "SBA Rating",
                                     termId: "Term",
                                     votesScore: "Scored Vote",
-                                    activitiesScore: "Tracked Activity"
+                                    activitiesScore: "Tracked Activity",
                                   };
 
-                                  const displayName = fieldDisplayMap[actualField] || actualField;
+                                  const displayName =
+                                    fieldDisplayMap[actualField] || actualField;
                                   return `Term ${termNumber}: ${displayName}`;
                                 }
                               }
@@ -1827,18 +1921,26 @@ processedChanges.forEach((change) => {
                                 party: "Party",
                                 photo: "Photo",
                                 votesScore: "Scored Vote", // Fallback for votesScore without name
-                                activitiesScore: "Tracked Activity" // Fallback for activitiesScore without name
+                                activitiesScore: "Tracked Activity", // Fallback for activitiesScore without name
                               };
 
-                              return field.name || simpleFieldMap[fieldId] || fieldId || "Unknown Field";
+                              return (
+                                field.name ||
+                                simpleFieldMap[fieldId] ||
+                                fieldId ||
+                                "Unknown Field"
+                              );
                             }
 
                             // Handle string field format (legacy keys like "term0_votesScore_0_score")
                             if (typeof field === "string") {
-                              const termArrayMatch = field.match(/^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/);
+                              const termArrayMatch = field.match(
+                                /^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/
+                              );
 
                               if (termArrayMatch) {
-                                const [, termIdx, category, itemIdx] = termArrayMatch;
+                                const [, termIdx, category, itemIdx] =
+                                  termArrayMatch;
                                 const termNumber = parseInt(termIdx) + 1;
 
                                 if (category === "votesScore") {
@@ -1854,7 +1956,8 @@ processedChanges.forEach((change) => {
 
                               // Handle term fields like "term0_currentTerm", "term0_summary", etc.
                               if (field.startsWith("term")) {
-                                const termMatch = field.match(/^term(\d+)_(.+)$/);
+                                const termMatch =
+                                  field.match(/^term(\d+)_(.+)$/);
                                 if (termMatch) {
                                   const [, termIndex, actualField] = termMatch;
                                   const termNumber = parseInt(termIndex) + 1;
@@ -1865,16 +1968,18 @@ processedChanges.forEach((change) => {
                                     rating: "SBA Rating",
                                     termId: "Term",
                                     votesScore: "Scored Vote",
-                                    activitiesScore: "Tracked Activity"
+                                    activitiesScore: "Tracked Activity",
                                   };
 
-                                  const displayName = fieldDisplayMap[actualField] || actualField;
+                                  const displayName =
+                                    fieldDisplayMap[actualField] || actualField;
                                   return `Term ${termNumber}: ${displayName}`;
                                 }
 
                                 // Fallback for any other term field
                                 const parts = field.split("_");
-                                const termNumber = parseInt(parts[0].replace("term", "")) + 1;
+                                const termNumber =
+                                  parseInt(parts[0].replace("term", "")) + 1;
                                 const fieldKey = parts.slice(1).join("_");
                                 return `Term ${termNumber}: ${fieldKey}`;
                               }
@@ -1887,7 +1992,7 @@ processedChanges.forEach((change) => {
                                 party: "Party",
                                 photo: "Photo",
                                 votesScore: "Scored Vote",
-                                activitiesScore: "Tracked Activity"
+                                activitiesScore: "Tracked Activity",
                               };
 
                               return simpleFieldMap[field] || field;
@@ -1895,10 +2000,11 @@ processedChanges.forEach((change) => {
 
                             return `Field ${index + 1}`;
                           };
+
                           return (
                             <>
                               {/* Backend pending changes */}
-                              {backendChanges.length > 0 && (
+                             {backendChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "#fff",
@@ -1917,22 +2023,42 @@ processedChanges.forEach((change) => {
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {backendChanges.map((field, index) => {
-                                      const fieldLabel = formatFieldName(field, index, houseTermData);
+                                      const fieldLabel = formatFieldName(
+                                        field,
+                                        index,
+                                        houseTermData
+                                      );
                                       if (!fieldLabel) return null; // ⬅ skip rendering if no label
                                       const sanitizeKey = (str) => {
                                         return str
                                           .replace(/[^a-zA-Z0-9_]/g, "_") // replace invalid chars
-                                          .replace(/_+/g, "_")            // collapse multiple underscores
-                                          .replace(/^_+|_+$/g, "");       // remove leading/trailing underscores
+                                          .replace(/_+/g, "_") // collapse multiple underscores
+                                          .replace(/^_+|_+$/g, ""); // remove leading/trailing underscores
                                       };
                                       // Helper function to generate the correct editor key
                                       const getEditorKey = (field) => {
-                                        if (typeof field === "object" && field !== null) {
-                                          if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
-                                            return `votesScore_${sanitizeKey(field.name)}`;
+                                        if (
+                                          typeof field === "object" &&
+                                          field !== null
+                                        ) {
+                                          if (
+                                            Array.isArray(field.field) &&
+                                            field.field[0] === "votesScore" &&
+                                            field.name
+                                          ) {
+                                            return `votesScore_${sanitizeKey(
+                                              field.name
+                                            )}`;
                                           }
-                                          if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
-                                            return `activitiesScore_${sanitizeKey(field.name)}`;
+                                          if (
+                                            Array.isArray(field.field) &&
+                                            field.field[0] ===
+                                              "activitiesScore" &&
+                                            field.name
+                                          ) {
+                                            return `activitiesScore_${sanitizeKey(
+                                              field.name
+                                            )}`;
                                           }
                                           if (Array.isArray(field.field)) {
                                             return field.field[0]; // For simple fields like ["status"]
@@ -1943,8 +2069,11 @@ processedChanges.forEach((change) => {
                                       };
 
                                       const editorKey = getEditorKey(field);
-                                      const editorInfo = formData?.fieldEditors?.[editorKey];
-                                      const editor = editorInfo?.editorName || "Unknown Editor";
+                                      const editorInfo =
+                                        formData?.fieldEditors?.[editorKey];
+                                      const editor =
+                                        editorInfo?.editorName ||
+                                        "Unknown Editor";
                                       const editTime = editorInfo?.editedAt
                                         ? new Date(editorInfo.editedAt).toLocaleString([], {
                                           month: "short",
@@ -1953,26 +2082,55 @@ processedChanges.forEach((change) => {
                                           minute: "2-digit",
                                         })
                                         : "unknown time";
-                                      const fromQuorum = field.fromQuorum || false;
+                                      const fromQuorum =
+                                        field.fromQuorum || false;
                                       // console.log("Field fromQuorum:", field, fromQuorum);
 
                                       return (
-                                        <ListItem key={`backend-${field.field || field}-${index}`} sx={{ py: 0.5, px: 1 }}>
+                                        <ListItem
+                                          key={`backend-${
+                                            field.field || field
+                                          }-${index}`}
+                                          sx={{ py: 0.5, px: 1 }}
+                                        >
                                           <ListItemText
                                             primary={
-                                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: statusData.iconColor }} />
-                                                <Typography variant="body2" fontWeight="500">
-                                                  {formatFieldName(field, index, houseTermData)}
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  gap: 1,
+                                                }}
+                                              >
+                                                <Box
+                                                  sx={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: "50%",
+                                                    backgroundColor:
+                                                      statusData.iconColor,
+                                                  }}
+                                                />
+                                                <Typography
+                                                  variant="body2"
+                                                  fontWeight="500"
+                                                >
+                                                  {formatFieldName(
+                                                    field,
+                                                    index,
+                                                    houseTermData
+                                                  )}
                                                 </Typography>
                                               </Box>
                                             }
                                             secondary={
-                                              <Typography variant="caption" color="text.secondary">
+                                              <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                              >
                                                 {fromQuorum
                                                   ? `Fetched from Quorum by ${editor} on ${editTime}`
-                                                  : `Updated by ${editor} on ${editTime}`
-                                                }
+                                                  : `Updated by ${editor} on ${editTime}`}
                                               </Typography>
                                             }
                                             sx={{ my: 0 }}
@@ -1983,7 +2141,7 @@ processedChanges.forEach((change) => {
                                   </List>
                                 </Box>
                               )}
-
+ 
                               {/* Local unsaved changes - now matches senator style */}
                               {localChanges.length > 0 && (
                                 <Box
@@ -2029,7 +2187,11 @@ processedChanges.forEach((change) => {
                                                 variant="body2"
                                                 fontWeight="500"
                                               >
-                                                {formatFieldName(field, index, houseTermData)}
+                                                {formatFieldName(
+                                                  field,
+                                                  index,
+                                                  houseTermData
+                                                )}
                                               </Typography>
                                             </Box>
                                           }
@@ -2056,12 +2218,9 @@ processedChanges.forEach((change) => {
                   </Box>
                 </Box>
               )}
+ 
 
-
-
-
-
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: '1px solid', borderColor: 'divider', }} >
+            <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -2127,7 +2286,7 @@ processedChanges.forEach((change) => {
               </Dialog>
 
               <Box sx={{ p: 0 }}>
-                <Typography fontSize={'1rem'} fontWeight={500} sx={{ borderBottom: '1px solid', borderColor: 'divider', p: 1.5, px: 3 }}>
+                <Typography className="customTypography">
                   Representative's Information
                 </Typography>
                 <Grid
@@ -2139,18 +2298,7 @@ processedChanges.forEach((change) => {
                   px={9}
                 >
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        whiteSpace: "normal", // allow wrapping
-                        overflowWrap: "break-word", // break long words
-                        width: "100%", // take full width of grid cell
-                      }}
-                    >
+                    <InputLabel className="nameLabel">
                       Representative's Name
                     </InputLabel>
                   </Grid>
@@ -2168,94 +2316,36 @@ processedChanges.forEach((change) => {
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 1}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Status
-                    </InputLabel>
+                    <InputLabel className="label">Status</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
-                      sx={{
-                        "& .MuiButton-outlined": {
-                          height: "36px",
-                          borderColor: "#4CAF50",
-                          color: "#4CAF50",
-                          "&:hover": {
-                            backgroundColor: "rgba(76, 175, 80, 0.04)",
-                            borderColor: "#4CAF50",
-                          },
-                        },
-                      }}
+                      className="customButtonGroup"
                     >
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Active")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Active"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Active"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Active"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                        className={`statusBtn ${
+                          formData.status === "Active" ? "active" : ""
+                        }`}
                       >
                         Active
                       </Button>
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Former")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Former"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Former"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Former"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                        className={`statusBtn ${
+                          formData.status === "Former" ? "active" : ""
+                        }`}
                       >
                         Former
                       </Button>
                     </ButtonGroup>
                   </Grid>
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      District
-                    </InputLabel>
+                    <InputLabel className="label">District</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <TextField
@@ -2269,17 +2359,11 @@ processedChanges.forEach((change) => {
                       variant="outlined"
                     />
                   </Grid>
-                  <Grid size={isMobile ? 12 : 1} sx={{ alignContent: "center" }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Party
-                    </InputLabel>
+                  <Grid
+                    size={isMobile ? 12 : 1}
+                    sx={{ alignContent: "center" }}
+                  >
+                    <InputLabel className="label">Party</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 4}>
                     <FormControl fullWidth>
@@ -2297,18 +2381,7 @@ processedChanges.forEach((change) => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                        whiteSpace: "normal", // allow wrapping
-                        overflowWrap: "break-word", // break long words
-                        width: "100%",
-                      }}
-                    >
+                    <InputLabel className="label">
                       Representative's Photo
                     </InputLabel>
                   </Grid>
@@ -2338,15 +2411,7 @@ processedChanges.forEach((change) => {
                       <Button
                         component="label"
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="uploadBtn"
                         startIcon={<CloudUploadIcon />}
                       >
                         Upload files
@@ -2362,35 +2427,12 @@ processedChanges.forEach((change) => {
               </Box>
             </Paper>
 
-
             {/* Render each term in houseTermData */}
             {houseTermData.map((term, termIndex) => (
-              <Paper
-                key={termIndex}
-
-                sx={{
-                  width: "100%",
-                  marginBottom: "50px",
-                  position: "relative",
-                  bgcolor: "#fff",
-                  borderRadius: 0.8,
-                  border: '1px solid',
-                  borderColor: 'divider'
-
-                }}
-              >
+              <Paper key={termIndex} className="termData-paper">
                 <Box sx={{ padding: 0 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      // marginBottom: 3,
-                      borderBottom: '1px solid', borderColor: 'divider',
-                      p: 1.5, px: 3
-                    }}
-                  >
-                    <Typography fontSize={'1rem'} fontWeight={500} >
+                  <Box className="termData-header">
+                    <Typography fontSize={"1rem"} fontWeight={500}>
                       Representative's Term Information {termIndex + 1}
                     </Typography>
                     {termIndex > 0 && (
@@ -2412,17 +2454,7 @@ processedChanges.forEach((change) => {
                     py={3}
                   >
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term
-                      </InputLabel>
+                      <InputLabel className="label">Term</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 12 : 2.2}>
                       <FormControl fullWidth>
@@ -2440,14 +2472,29 @@ processedChanges.forEach((change) => {
                           </MenuItem>
                           {terms && terms.length > 0 ? (
                             terms
-                              .filter((t) => t.startYear && t.endYear && (t.endYear - t.startYear === 1) &&
-                                t.startYear % 2 === 1 && // must be odd
-                                t.endYear % 2 === 0 && // must be even
-                                t.startYear >= 2015 && // no terms before 1789
-                                t.endYear >= 2015)     // must be even
-                              .filter((t) => Array.isArray(t.congresses) && t.congresses.length > 0)
+                              .filter(
+                                (t) =>
+                                  t.startYear &&
+                                  t.endYear &&
+                                  t.endYear - t.startYear === 1 &&
+                                  t.startYear % 2 === 1 && // must be odd
+                                  t.endYear % 2 === 0 && // must be even
+                                  t.startYear >= 2015 && // no terms before 1789
+                                  t.endYear >= 2015
+                              ) // must be even
+                              .filter(
+                                (t) =>
+                                  Array.isArray(t.congresses) &&
+                                  t.congresses.length > 0
+                              )
                               // Hide terms already selected in other term sections
-                              .filter((t) => !houseTermData.some((ht, idx) => idx !== termIndex && ht.termId === t._id))
+                              .filter(
+                                (t) =>
+                                  !houseTermData.some(
+                                    (ht, idx) =>
+                                      idx !== termIndex && ht.termId === t._id
+                                  )
+                              )
                               .sort((a, b) => a.congresses[0] - b.congresses[0])
                               .map((t) => (
                                 <MenuItem key={t._id} value={t._id}>
@@ -2462,51 +2509,12 @@ processedChanges.forEach((change) => {
                         </Select>
                       </FormControl>
                     </Grid>
-                    {/* <Grid size={isMobile ? 12 : 2.2}>
-  <FormControl fullWidth>
-    <Autocomplete
-      options={
-        terms
-          ? terms.filter(
-              (t) => Array.isArray(t.congresses) && t.congresses.length === 1
-            )
-          : []
-      }
-      getOptionLabel={(t) =>
-        t.congresses && t.congresses.length === 1
-          ? `${ordinal(t.congresses[0])} Congress`
-          : ""
-      }
-      value={
-        terms.find((t) => t._id === term.termId) || null
-      }
-      onChange={(event, newValue) =>
-        handleTermChange(
-          { target: { name: "termId", value: newValue?._id || "" } },
-          termIndex
-        )
-      }
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          // label="Select an option"
-          sx={{ background: "#fff" }}
-        />
-      )}
-    />
-  </FormControl>
-</Grid> */}
-                    <Grid size={isMobile ? 6 : 2.1} sx={{ alignContent: "center" }}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Current Term
-                      </InputLabel>
+
+                    <Grid
+                      size={isMobile ? 6 : 2.1}
+                      sx={{ alignContent: "center" }}
+                    >
+                      <InputLabel className="label">Current Term</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 6 : 0}>
                       <Switch
@@ -2519,17 +2527,7 @@ processedChanges.forEach((change) => {
                     </Grid>
 
                     <Grid size={isMobile ? 6 : 2.39}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        SBA Rating
-                      </InputLabel>
+                      <InputLabel className="label">SBA Rating</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 6 : 2.2}>
                       <FormControl fullWidth>
@@ -2555,16 +2553,7 @@ processedChanges.forEach((change) => {
                     </Grid>
 
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term Summary
-                      </InputLabel>
+                      <InputLabel className="label">Term Summary</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 12 : 9.05}>
                       <Editor
@@ -2573,25 +2562,32 @@ processedChanges.forEach((change) => {
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term.summary}
                         onEditorChange={(content) => {
-                          setHouseTermData(prev =>
+                          setHouseTermData((prev) =>
                             prev.map((t, idx) =>
                               idx === termIndex ? { ...t, summary: content } : t
                             )
                           );
                           // Optionally update localChanges here too
                           const fieldName = `term${termIndex}_summary`;
-                          const originalTerm = originalTermData[termIndex] || {};
-                          const isActualChange = compareValues(content, originalTerm.summary || "");
-                          setLocalChanges(prev => {
+                          const originalTerm =
+                            originalTermData[termIndex] || {};
+                          const isActualChange = compareValues(
+                            content,
+                            originalTerm.summary || ""
+                          );
+                          setLocalChanges((prev) => {
                             if (isActualChange && !prev.includes(fieldName)) {
                               return [...prev, fieldName];
-                            } else if (!isActualChange && prev.includes(fieldName)) {
-                              return prev.filter(f => f !== fieldName);
+                            } else if (
+                              !isActualChange &&
+                              prev.includes(fieldName)
+                            ) {
+                              return prev.filter((f) => f !== fieldName);
                             }
                             return prev;
                           });
                         }}
-                        onBlur={() => { }}
+                        onBlur={() => {}}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -2640,15 +2636,7 @@ processedChanges.forEach((change) => {
                             columnGap={"15px"}
                           >
                             <Grid size={isMobile ? 12 : 2}>
-                              <InputLabel
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "end",
-                                  fontWeight: 500,
-                                  my: 0,
-                                }}
-                              >
+                              <InputLabel className="label">
                                 Scored Vote
                               </InputLabel>
                             </Grid>
@@ -2669,10 +2657,10 @@ processedChanges.forEach((change) => {
                                     width: "100%",
                                   }}
                                   renderValue={(selected) => {
-                                    const selectedVote = getFilteredVotes(termIndex).find(
-                                      (v) => v._id === selected
-                                    );
-                                    // console.log(selectedVote);
+                                    const selectedVote = getFilteredVotes(
+                                      termIndex
+                                    ).find((v) => v._id === selected);
+
                                     return (
                                       <Typography
                                         sx={{
@@ -2681,7 +2669,8 @@ processedChanges.forEach((change) => {
                                           textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {selectedVote?.title
+                                        {
+                                          selectedVote?.title
                                           // || "Select a Bill"
                                         }
                                       </Typography>
@@ -2703,28 +2692,31 @@ processedChanges.forEach((change) => {
                                     Select a Bill
                                   </MenuItem>
                                   {getFilteredVotes(termIndex).length > 0 ? (
-                                    getFilteredVotes(termIndex).map((voteItem) => (
-                                      <MenuItem
-                                        key={voteItem._id}
-                                        value={voteItem._id}
-                                        sx={{ py: 1.5 }}
-                                      >
-                                        <Typography
-                                          sx={{
-                                            whiteSpace: "normal",
-                                            overflowWrap: "break-word",
-                                          }}
+                                    getFilteredVotes(termIndex).map(
+                                      (voteItem) => (
+                                        <MenuItem
+                                          key={voteItem._id}
+                                          value={voteItem._id}
+                                          sx={{ py: 1.5 }}
                                         >
-                                          {voteItem.title}
-                                        </Typography>
-                                      </MenuItem>
-                                    ))
+                                          <Typography
+                                            sx={{
+                                              whiteSpace: "normal",
+                                              overflowWrap: "break-word",
+                                            }}
+                                          >
+                                            {voteItem.title}
+                                          </Typography>
+                                        </MenuItem>
+                                      )
+                                    )
                                   ) : (
                                     <MenuItem value="" disabled>
-                                      {term.termId ? "No bills available for this congress" : "Select a term first"}
+                                      {term.termId
+                                        ? "No bills available for this congress"
+                                        : "Select a term first"}
                                     </MenuItem>
                                   )}
-
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -2766,15 +2758,7 @@ processedChanges.forEach((change) => {
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddVote(termIndex)}
                       >
@@ -2784,7 +2768,7 @@ processedChanges.forEach((change) => {
                     <Grid size={1}></Grid>
 
                     {/* Activities Repeater Start */}
-                    {term.activitiesScore.map((activity, activityIndex) => (
+                    {term.activitiesScore.map((activity, activityIndex) =>
                       activity.activityId != null ? (
                         <Grid
                           rowSpacing={2}
@@ -2798,15 +2782,7 @@ processedChanges.forEach((change) => {
                             columnGap={"15px"}
                           >
                             <Grid size={isMobile ? 12 : 2}>
-                              <InputLabel
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: isMobile ? "flex-start" : "flex-end",
-                                  fontWeight: 500,
-                                  my: 0,
-                                }}
-                              >
+                              <InputLabel className="label">
                                 Tracked Activity
                               </InputLabel>
                             </Grid>
@@ -2827,9 +2803,10 @@ processedChanges.forEach((change) => {
                                     width: "100%",
                                   }}
                                   renderValue={(selected) => {
-                                    const selectedActivity = getFilteredActivities(termIndex).find(
-                                      (a) => a._id === selected
-                                    );
+                                    const selectedActivity =
+                                      getFilteredActivities(termIndex).find(
+                                        (a) => a._id === selected
+                                      );
                                     return (
                                       <Typography
                                         sx={{
@@ -2838,7 +2815,8 @@ processedChanges.forEach((change) => {
                                           textOverflow: "ellipsis",
                                         }}
                                       >
-                                        {selectedActivity?.title
+                                        {
+                                          selectedActivity?.title
                                           //  ||"Select an Activity"
                                         }
                                       </Typography>
@@ -2859,26 +2837,31 @@ processedChanges.forEach((change) => {
                                   <MenuItem value="" disabled>
                                     Select an Activity
                                   </MenuItem>
-                                  {getFilteredActivities(termIndex).length > 0 ? (
-                                    getFilteredActivities(termIndex).map((activityItem) => (
-                                      <MenuItem
-                                        key={activityItem._id}
-                                        value={activityItem._id}
-                                        sx={{ py: 1.5 }}
-                                      >
-                                        <Typography
-                                          sx={{
-                                            whiteSpace: "normal",
-                                            overflowWrap: "break-word",
-                                          }}
+                                  {getFilteredActivities(termIndex).length >
+                                  0 ? (
+                                    getFilteredActivities(termIndex).map(
+                                      (activityItem) => (
+                                        <MenuItem
+                                          key={activityItem._id}
+                                          value={activityItem._id}
+                                          sx={{ py: 1.5 }}
                                         >
-                                          {activityItem.title}
-                                        </Typography>
-                                      </MenuItem>
-                                    ))
+                                          <Typography
+                                            sx={{
+                                              whiteSpace: "normal",
+                                              overflowWrap: "break-word",
+                                            }}
+                                          >
+                                            {activityItem.title}
+                                          </Typography>
+                                        </MenuItem>
+                                      )
+                                    )
                                   ) : (
                                     <MenuItem value="" disabled>
-                                      {term.termId ? "No activities available for this congress" : "Select a term first"}
+                                      {term.termId
+                                        ? "No activities available for this congress"
+                                        : "Select a term first"}
                                     </MenuItem>
                                   )}
                                 </Select>
@@ -2915,22 +2898,14 @@ processedChanges.forEach((change) => {
                           </Grid>
                         </Grid>
                       ) : null
-                    ))}
+                    )}
                     {/* Activities Repeater Ends */}
 
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
@@ -2948,16 +2923,7 @@ processedChanges.forEach((change) => {
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{
-                alignSelf: "flex-start",
-                backgroundColor: "#173A5E !important",
-                color: "white !important",
-                padding: "0.5rem 1rem",
-                marginLeft: "0.5rem",
-                "&:hover": {
-                  backgroundColor: "#1E4C80 !important",
-                },
-              }}
+              className="addTerm-btn"
             >
               Add Another Term
             </Button>
@@ -2988,7 +2954,12 @@ processedChanges.forEach((change) => {
                       snackbarMessage === "Changes Published successfully!"
                         ? "#099885"
                         : undefined,
-
+                  },
+                  "& .MuiAlert-action": {
+                    display: "flex",
+                    alignItems: "center",
+                    paddingTop: 0,
+                    paddingBottom: 0,
                   },
                 }}
                 elevation={6}

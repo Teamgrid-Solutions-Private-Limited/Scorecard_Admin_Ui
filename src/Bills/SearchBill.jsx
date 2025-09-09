@@ -15,6 +15,7 @@ import {
   clearVoteState,
   updateVote,
   createVote,
+  getAllVotes,
 } from "../redux/reducer/voteSlice"; // Import clearVoteState
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { useState } from "react";
@@ -38,42 +39,24 @@ import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
+ 
+
 export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false); // Track if search was attempted
   const [draftBills, setDraftBills] = useState([]);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   console.log("token", token);
-  const user = localStorage.getItem("user"); // Get user info from localStorage
+  const user = localStorage.getItem("user");
+ 
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-// Function to get editor info from JWT token
-  const getEditorInfo = () => {
-    try {
-      if (!token) return null;
-      
-      const decodedToken = jwtDecode(token);
-      console.log("Decoded Token:", decodedToken);  
-      return {
-        editorId: decodedToken.userId || decodedToken.id || "unknown",
-        editorName: user || decodedToken.name || decodedToken.username || "Unknown Editor",
-        editedAt: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error("Error decoding token:", error);
-      return {
-        editorId: "unknown",
-        editorName: "Unknown Editor",
-        editedAt: new Date().toISOString()
-      };
-    }
-  };
-  console.log("Editor Info:", getEditorInfo());
-
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -99,7 +82,7 @@ export default function SearchBill(props) {
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
         setLoading(false);
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
@@ -113,23 +96,28 @@ export default function SearchBill(props) {
         },
         {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       // setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
 
       setSearchResults(
-        (Array.isArray(response.data?.data) ? response.data.data : []).filter((item) => {
-          const date = new Date(item.date);
-          return date instanceof Date && !isNaN(date) && date.getFullYear() >= 2015;
-        })
+        (Array.isArray(response.data?.data) ? response.data.data : []).filter(
+          (item) => {
+            const date = new Date(item.date);
+            return (
+              date instanceof Date && !isNaN(date) && date.getFullYear() >= 2015
+            );
+          }
+        )
       );
-
     } catch (error) {
       console.error("Error searching bills:", error);
-      setSnackbarMessage(error.response?.data?.message || "Failed to search bills");
+      setSnackbarMessage(
+        error.response?.data?.message || "Failed to search bills"
+      );
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
       setSearchResults([]);
@@ -166,12 +154,25 @@ export default function SearchBill(props) {
   const handleAddBill = async (bill) => {
     setLoading(true);
     try {
-        const editorInfo = getEditorInfo(); // Get editor info from JWT
+      const allVotes = await dispatch(getAllVotes()).unwrap();
+      const isDuplicate = allVotes.some(vote => 
+      String(vote.quorumId) === String(bill.quorumId)
+);
+  if (isDuplicate) {
+  setSnackbarMessage("Bill already exists");
+  setSnackbarSeverity("info");
+  setSnackbarOpen(true);
+  setLoading(false);
+  return;
+ 
+}
+      const editorInfo = getEditorInfo();
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [bill],
-          editorInfo: editorInfo // Pass editor info to backend
+        editorInfo: editorInfo 
       });
-
+      console.log("bill", bill);
+      console.log("response", response.data);
 
       // alert("Bill saved successfully");
 
@@ -187,6 +188,26 @@ export default function SearchBill(props) {
       setLoading(false);
     }
   };
+  const getEditorInfo = () => {
+    try {
+      if (!token) return null;
+     
+      const decodedToken = jwtDecode(token);
+     
+      return {
+        editorId: decodedToken.userId || decodedToken.id || "unknown",
+        editorName: user || decodedToken.name || decodedToken.username || "Unknown Editor",
+        editedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      
+      return {
+        editorId: "unknown",
+        editorName: "Unknown Editor",
+        editedAt: new Date().toISOString()
+      };
+    }
+  };
 
   const label = { inputProps: { "aria-label": "Color switch demo" } };
 
@@ -195,16 +216,16 @@ export default function SearchBill(props) {
       {loading && (
         <Box
           sx={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: ' rgba(255, 255, 255,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999
+            width: "100%",
+            height: "100%",
+            backgroundColor: " rgba(255, 255, 255,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
           }}
         >
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
@@ -227,26 +248,42 @@ export default function SearchBill(props) {
         </MuiAlert>
       </Snackbar>
 
-      <Box sx={{ display: "flex", bgcolor: '#f6f6f6ff ', height: '100vh' }}>
+      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ",  minHeight: "100vh", }}>
         <SideMenu />
         <Box
           component="main"
           sx={(theme) => ({
             flexGrow: 1,
-            minHeight: '80vh',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: "#f6f6f6ff",
+            // minHeight: "80vh",
+            display: "flex",
+            flexDirection: "column",
+            // backgroundColor: "#f6f6f6ff",
           })}
         >
           <FixedHeader />
           <MobileHeader />
-          <Stack spacing={2} sx={{ alignItems: "center", mx: 3, pb: 0, mt: { xs: 8, md: 4 }, flex: 1 }}>
-
-
-            <Paper elevation={2} sx={{ width: "100%", bgcolor: '#fff' }}>
+          <Stack
+            spacing={2}
+            sx={{
+              alignItems: "center",
+              mx: 3,
+              pb: 0,
+              mt: { xs: 8, md: 4 },
+              flex: 1,
+            }}
+          >
+            <Paper elevation={2} sx={{ width: "100%",bgcolor: "#fff" }}>
               <Box sx={{ padding: 0, pb: 5 }}>
-                <Typography fontSize={'1rem'} fontWeight={500} sx={{ borderBottom: '1px solid', borderColor: 'divider', p: 1.5, px: 3 }}>
+                <Typography
+                  fontSize={"1rem"}
+                  fontWeight={500}
+                  sx={{
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                    p: 1.5,
+                    px: 3,
+                  }}
+                >
                   Search For Bills In Quorum
                 </Typography>
                 <Grid
@@ -256,7 +293,6 @@ export default function SearchBill(props) {
                   alignItems="center"
                   justifyContent="center"
                   pt={3}
-
                 >
                   <Grid
                     item
@@ -268,7 +304,7 @@ export default function SearchBill(props) {
                       flexDirection: { xs: "column", md: "row" },
                       gap: { xs: 2, md: 3 },
                       width: "100%",
-                      mt: 5
+                      mt: 5,
                       // marginLeft: { xs: "0px", lg: "20px" },
                     }}
                   >
@@ -288,7 +324,9 @@ export default function SearchBill(props) {
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSearch();
+                      }}
                       fullWidth
                       sx={{
                         maxWidth: { xs: "100%", md: "800px" },
@@ -339,13 +377,13 @@ export default function SearchBill(props) {
                     {/* <CircularProgress /> */}
                   </Box>
                 ) : (
-                  Array.isArray(searchResults) && searchResults.length > 0 && (
+                  Array.isArray(searchResults) &&
+                  searchResults.length > 0 && (
                     <TableContainer
                       component={Paper}
-                      sx={{ border: "1px solid #ddd", backgroundColor: '#fff', }}
+                      sx={{ border: "1px solid #ddd", backgroundColor: "#fff" }}
                     >
-                      <Table size="large" >
-
+                      <Table size="large">
                         <TableHead>
                           <TableRow sx={{}}>
                             <TableCell
@@ -368,11 +406,15 @@ export default function SearchBill(props) {
                           </TableRow>
                         </TableHead>
 
-
                         <TableBody>
                           {searchResults.map((bill) => (
                             <TableRow key={bill.id}>
-                              <TableCell sx={{ borderBottom: "1px solid #ddd", fontSize: "13px" }}>
+                              <TableCell
+                                sx={{
+                                  borderBottom: "1px solid #ddd",
+                                  fontSize: "13px",
+                                }}
+                              >
                                 {bill.title}
                               </TableCell>
                               <TableCell
@@ -405,13 +447,16 @@ export default function SearchBill(props) {
                   )
                 )}
                 {/* Show 'No results found' message if search was attempted, not loading, and no results */}
-                {searchAttempted && !loading && Array.isArray(searchResults) && searchResults.length === 0 && (
-                  <Box sx={{ width: '100%', textAlign: 'center', mt: 4 }}>
-                    <Typography variant="body1" color="text.secondary">
-                      No bills found for your search.
-                    </Typography>
-                  </Box>
-                )}
+                {searchAttempted &&
+                  !loading &&
+                  Array.isArray(searchResults) &&
+                  searchResults.length === 0 && (
+                    <Box sx={{ width: "100%", textAlign: "center", mt: 4 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        No bills found for your search.
+                      </Typography>
+                    </Box>
+                  )}
               </Box>
             </Paper>
           </Stack>

@@ -30,7 +30,10 @@ import {
   DialogContentText,
   DialogActions,
   MenuItem,
-  Badge, IconButton, Paper, ClickAwayListener
+  Badge,
+  IconButton,
+  Paper,
+  ClickAwayListener,
 } from "@mui/material";
 import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
@@ -65,9 +68,7 @@ export default function Bills(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
- 
-
-   // Filter state
+  // Filter state
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
   const statusOptions = ["published", "draft", "under review"];
@@ -114,10 +115,12 @@ export default function Bills(props) {
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
- const filteredVotes = votes.filter((vote) => {
+  const filteredVotes = votes.filter((vote) => {
     // Status filter
-    return statusFilter.length === 0 || 
-      (vote.status && statusFilter.includes(vote.status));
+    return (
+      statusFilter.length === 0 ||
+      (vote.status && statusFilter.includes(vote.status))
+    );
   });
 
   const billsData = filteredVotes.map((vote, index) => ({
@@ -134,17 +137,15 @@ export default function Bills(props) {
     status: vote.status || "draft", // <== ADD THI
   }));
 
-  
-
-   // Filter handlers
+  // Filter handlers
   const toggleFilter = () => {
     setFilterOpen(!filterOpen);
   };
 
   const handleStatusFilter = (status) => {
-    setStatusFilter(prev =>
+    setStatusFilter((prev) =>
       prev.includes(status)
-        ? prev.filter(s => s !== status)
+        ? prev.filter((s) => s !== status)
         : [...prev, status]
     );
   };
@@ -154,7 +155,6 @@ export default function Bills(props) {
   };
 
   const activeFilterCount = statusFilter.length;
-
 
   const handleEdit = (row) => {
     navigate(`edit-bill/${row._id}`);
@@ -207,88 +207,34 @@ export default function Bills(props) {
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       {(loading || fetching) && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: { xs: "block", md: "flex" } , bgcolor:'#f6f6f6ff',}}>
-        <SideMenu sx={{ display: { xs: "none", md: "block" } }} />
-        <Box
-          sx={{
-            flexGrow: 1,
-            // overflow: "auto",
-            width: { xs: "100%", md: "80%" },
-            filter: fetching ? "blur(1px)" : "none",
-            pointerEvents: fetching ? "none" : "auto",
-           
-          }}
-        >
-          <FixedHeader sx={{ display: { xs: "none", md: "block" } }} />
-          <MobileHeader/>
-          <Stack
-            spacing={2}
-            sx={{ alignItems: "center", mx: 3, pb: 5, mt: { xs: 8, md: 4 } }}
-          >
-            {/* <Typography
-              variant="h4"
-              align="center"
-              sx={{ paddingTop: "50px", paddingBottom: "70px", color: "text.secondary", mb: 6 }}
-            >
-              SBA Scorecard Management System
-            </Typography> */}
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                justifyContent: "space-between",
-                 alignItems: { xs: "stretch", sm: "center" },
-                mt: { xs: 2, md: 4 },
-                gap: 2,
-                // bgcolor: "#fff",
-                // borderTop: "1px solid ",
-                // borderLeft: "1px solid ",
-                // borderRight: "1px solid ",
-                // borderTopLeftRadius: 8,
-                // borderTopRightRadius: 8,
-                // borderColor: "divider",
-                // py: 3,
-              }}
-            >
-              {/* <Typography component="h2" variant="h6" >
-                All Bills
-              </Typography> */}
-
+      <Box className="container">
+        <SideMenu />
+        <Box className={`contentBox ${fetching ? "fetching" : "notFetching"}`}>
+          <FixedHeader />
+          <MobileHeader />
+          <Stack spacing={2} className="stackBox">
+            <Box className="actionsBox">
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={2}
                 alignItems="center"
                 sx={{ ml: "auto", width: { xs: "100%", sm: "auto" } }}
               >
-                <Box sx={{ position: "relative", display: "inline-block",width: { xs: "100%", sm: "auto" } }}>
+                <Box
+                  sx={{
+                    position: "relative",
+                    display: "inline-block",
+                    width: { xs: "100%", sm: "auto" },
+                  }}
+                >
                   <Badge
                     badgeContent={activeFilterCount}
                     color="primary"
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        top: 6, 
-                        right: 6, 
-                        bgcolor:'#E24042'
-                      },
-                    }}
+                    className="filter-badge"
                   >
                     <Button
                       variant="outlined"
@@ -297,16 +243,7 @@ export default function Bills(props) {
                         filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />
                       }
                       onClick={toggleFilter}
-                      sx={{
-                        padding: { xs: "0.25rem 0.5rem", sm: "0.5rem 1rem" },
-                        minWidth: { xs: "100%", sm: "120px" },
-                        borderColor: filterOpen ? "primary.main" : "divider",
-                        color:  "#fff",
-                        backgroundColor:  "#497BB2",
-                        "&:hover": {
-                          backgroundColor: "#3B6799",
-                        },
-                      }}
+                      className="filter-button"
                     >
                       Filters
                     </Button>
@@ -314,36 +251,13 @@ export default function Bills(props) {
 
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
-                      <Paper
-                        sx={{
-                          position: "absolute",
-                          // right: 0,
-                          left:0,
-                          top: "100%",
-                          mt: 0.5,
-                          width: 180,
-                          zIndex: 1,
-                          boxShadow: 3,
-                          borderRadius: 1,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            p: 0.5,
-                            
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        >
+                      <Paper className="billFilter-paper">
+                        <Box className="filter-header">
                           <Box
                             display="flex"
                             justifyContent="flex-end"
                             alignItems="center"
                           >
-                            {/* <Typography variant="subtitle1" >
-                              Status
-                            </Typography> */}
                             <IconButton size="small" onClick={toggleFilter}>
                               <CloseIcon fontSize="small" />
                             </IconButton>
@@ -351,21 +265,12 @@ export default function Bills(props) {
                         </Box>
 
                         {/* Status Filter */}
-                        <Box sx={{ maxHeight: 200, overflow: "auto", bgcolor: '#fff' }}>
+                        <Box className="filter-scroll">
                           {statusOptions.map((status) => (
                             <Box
                               key={status}
                               onClick={() => handleStatusFilter(status)}
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                p: 1,
-                                borderRadius: 1,
-                                cursor: "pointer",
-                                "&:hover": {
-                                  bgcolor: "action.hover",
-                                },
-                              }}
+                              className="filter-option"
                             >
                               {statusFilter.includes(status) ? (
                                 <CheckIcon color="primary" fontSize="small" />
@@ -373,25 +278,25 @@ export default function Bills(props) {
                                 <Box sx={{ width: 24, height: 24 }} />
                               )}
                               <Typography variant="body2" sx={{ ml: 1 }}>
-                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                                {status.charAt(0).toUpperCase() +
+                                  status.slice(1)}
                               </Typography>
                             </Box>
                           ))}
                         </Box>
 
                         {/* Clear All Button */}
-                        <Box
-                          sx={{
-                            // p: 2,
-                            // borderTop: "1px solid",
-                            // borderColor: "divider",
-                          }}
-                        >
+                        <Box>
                           <Button
                             fullWidth
-                            // variant="outlined"
-                            // color="secondary"
-                             sx={{borderRadius:0, bgcolor:'#fff',borderTop:'1px solid' , borderColor:'divider',justifyContent:'flex-start',pl:5}}
+                            sx={{
+                              borderRadius: 0,
+                              bgcolor: "#fff",
+                              borderTop: "1px solid",
+                              borderColor: "divider",
+                              justifyContent: "flex-start",
+                              pl: 5,
+                            }}
                             onClick={clearAllFilters}
                             disabled={!statusFilter.length}
                           >
@@ -404,18 +309,10 @@ export default function Bills(props) {
                 </Box>
               </Stack>
 
-              <Stack direction="row" spacing={2} alignItems="center" >
+              <Stack direction="row" spacing={2} alignItems="center">
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
-                  sx={{
-                    backgroundColor: isBulkEditMode ? "#CC9A3A" : "#173A5E",
-                    color: "white !important",
-                    padding: "0.5rem 1rem",
-                    marginLeft: "0.5rem",
-                    "&:hover": {
-                      backgroundColor: isBulkEditMode ? "#B38935" : "#1E4C80",
-                    },
-                  }}
+                  className={`bulkEditBtn ${isBulkEditMode ? "active" : ""}`}
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
@@ -423,37 +320,16 @@ export default function Bills(props) {
                 {userRole === "admin" && (
                   <Button
                     onClick={() => navigate("/search-bills")}
-                    sx={{
-                      backgroundColor: "#173A5E !important",
-                      color: "white !important",
-                      padding: "0.5rem 1rem",
-                      marginLeft: "0.5rem",
-                      "&:hover": {
-                        backgroundColor: "#1E4C80 !important",
-                      },
-                    }}
+                    className="addBillsBtn"
                   >
                     Add Bills
                   </Button>
                 )}
-
-              
               </Stack>
             </Box>
 
             {isBulkEditMode && (
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  p: 2,
-                  backgroundColor: "action.hover",
-                  borderRadius: 1,
-                  mb: 2,
-                }}
-              >
+              <Box className="bulkEditContainer">
                 <Typography variant="subtitle1">
                   {selectedBills.length} bill(s) selected
                 </Typography>
@@ -475,11 +351,7 @@ export default function Bills(props) {
                     // variant="contained"
                     disabled={!selectedBills.length || !bulkSbaPosition}
                     onClick={handleBulkUpdate}
-                    sx={{
-                      backgroundColor: "#173A5E",
-                      color:' #fff !important',
-                      "&:hover": { backgroundColor: "#1E4C80" },
-                    }}
+                    className="applyBtn"
                   >
                     Apply
                   </Button>
@@ -494,32 +366,14 @@ export default function Bills(props) {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               onToggleStatus={handleToggleStatus}
-              isSelectable={isBulkEditMode} // Pass this prop to enable selection
+              isSelectable={isBulkEditMode}
               onSelectionChange={setSelectedBills}
               selectedItems={selectedBills}
             />
           </Stack>
         </Box>
       </Box>
-      {/* {fetching && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            // backgroundColor: "rgba(255, 255, 255, 0.5)", // Light transparent overlay
-            zIndex: 10, // Keep above blurred background
-          }}
-        >
-          <CircularProgress variant="determinate" value={progress} />
-        </Box>
-      )} */}
-      {/* Snackbar for success/error messages */}
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
@@ -531,23 +385,30 @@ export default function Bills(props) {
           severity={snackbarSeverity}
           sx={{
             border: "none",
-            boxShadow:"none",
+            boxShadow: "none",
             width: "100%",
             bgcolor:
               snackbarMessage === "This bill has been successfully deleted."
                 ? "#fde8e4"
                 : undefined,
             "& .MuiAlert-icon": {
-              color: snackbarMessage === "This bill has been successfully deleted."
-                ? "#cc563d"
-                : undefined
+              color:
+                snackbarMessage === "This bill has been successfully deleted."
+                  ? "#cc563d"
+                  : undefined,
             },
             "& .MuiAlert-message": {
-                color:
-                  snackbarMessage === `This bill has been successfully deleted.`
-                    ? "#cc563d"
-                    : undefined,
-              },
+              color:
+                snackbarMessage === `This bill has been successfully deleted.`
+                  ? "#cc563d"
+                  : undefined,
+            },
+            "& .MuiAlert-action": {
+              display: "flex",
+              alignItems: "center",
+              paddingTop: 0,
+              paddingBottom: 0,
+            },
           }}
         >
           {snackbarMessage}
@@ -560,25 +421,12 @@ export default function Bills(props) {
           sx: { borderRadius: 3, padding: 2, minWidth: 350 },
         }}
       >
-        <DialogTitle
-          sx={{
-            fontSize: "1.4rem",
-            fontWeight: "bold",
-            textAlign: "center",
-            color: "error.main",
-          }}
-        >
+        <DialogTitle className="dialogBox">
           Confirm Deletion
         </DialogTitle>
 
         <DialogContent>
-          <DialogContentText
-            sx={{
-              textAlign: "center",
-              fontSize: "1rem",
-              color: "text.secondary",
-            }}
-          >
+          <DialogContentText className="dialogTitle">
             Are you sure you want to delete?
             {/* {selectedVote?.bill && (
               <> <strong>{selectedVote.bill}</strong>?</>
