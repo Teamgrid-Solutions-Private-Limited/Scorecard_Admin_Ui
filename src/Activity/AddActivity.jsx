@@ -325,67 +325,70 @@ export default function AddActivity(props) {
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
 
-      if (id) {
-        const hasChanges =
-          editedFields.length > 0 || // user changed form fields
-          selectedFile || // file uploaded
-          Object.keys(updatedFieldEditors).length >
-            Object.keys(selectedActivity?.fieldEditors || {}).length; // editor updates
+     if (id) {
+       let hasChanges = true;
+       if (userRole === "editor") {
+         hasChanges =
+           editedFields.length > 0 ||
+           selectedFile ||
+           Object.keys(updatedFieldEditors).length >
+             Object.keys(selectedActivity?.fieldEditors || {}).length;
+       } // editor updates
 
-        if (!hasChanges) {
-          setLoading(false);
+       if (!hasChanges) {
+         setLoading(false);
 
-          setSnackbarMessage("No changes detected. Nothing to update.");
+         setSnackbarMessage("No changes detected. Nothing to update.");
 
-          setSnackbarSeverity("info");
+         setSnackbarSeverity("info");
 
-          setOpenSnackbar(true);
+         setOpenSnackbar(true);
 
-          return;
-        }
+         return;
+       }
 
-        await dispatch(
-          updateActivity({ id, updatedData: formDataToSend })
-        ).unwrap();
-        await dispatch(getActivityById(id)).unwrap();
+       await dispatch(
+         updateActivity({ id, updatedData: formDataToSend })
+       ).unwrap();
+       await dispatch(getActivityById(id)).unwrap();
 
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
-        );
-        setSnackbarSeverity("success");
+       setSnackbarMessage(
+         userRole === "admin"
+           ? "Changes published successfully!"
+           : 'Status changed to "Under Review" for admin to moderate.'
+       );
+       setSnackbarSeverity("success");
 
-        if (userRole !== "admin") {
-          setFormData((prev) => ({ ...prev, status: "under review" }));
-          // setOriginalFormData({ ...formData, status: "under review" }); // Keep tracking changes
-        } else {
-          // Only clear locally if status is published
-          if (finalStatus === "published") {
-            setEditedFields([]);
-            // Update originalFormData to current form data to stop tracking changes
-            setOriginalFormData({ ...formData, status: "published" });
-          }
-        }
-      } else {
-        if (!formData.type || !formData.title || !formData.shortDesc) {
-          setSnackbarMessage("Please fill all fields!");
-          setSnackbarSeverity("warning");
-          setOpenSnackbar(true);
-          setLoading(false);
-          return;
-        }
+       if (userRole !== "admin") {
+         setFormData((prev) => ({ ...prev, status: "under review" }));
+         // setOriginalFormData({ ...formData, status: "under review" }); // Keep tracking changes
+       } else {
+         // Only clear locally if status is published
+         if (finalStatus === "published") {
+           setEditedFields([]);
+           // Update originalFormData to current form data to stop tracking changes
+           setOriginalFormData({ ...formData, status: "published" });
+         }
+       }
+     } else {
+       if (!formData.type || !formData.title || !formData.shortDesc) {
+         setSnackbarMessage("Please fill all fields!");
+         setSnackbarSeverity("warning");
+         setOpenSnackbar(true);
+         setLoading(false);
+         return;
+       }
 
-        await dispatch(createActivity(formDataToSend)).unwrap();
-        setSnackbarMessage("Activity created successfully!");
-        setSnackbarSeverity("success");
+       await dispatch(createActivity(formDataToSend)).unwrap();
+       setSnackbarMessage("Activity created successfully!");
+       setSnackbarSeverity("success");
 
-        // Reset editedFields after successful creation
-        setHasLocalChanges(false); // Reset after save
-        setEditedFields([]);
-        // Update originalFormData to current form data
-        setOriginalFormData({ ...formData, status: finalStatus });
-      }
+       // Reset editedFields after successful creation
+       setHasLocalChanges(false); // Reset after save
+       setEditedFields([]);
+       // Update originalFormData to current form data
+       setOriginalFormData({ ...formData, status: finalStatus });
+     }
 
       setOpenSnackbar(true);
     } catch (error) {
