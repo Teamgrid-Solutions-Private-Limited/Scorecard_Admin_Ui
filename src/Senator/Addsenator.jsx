@@ -1313,7 +1313,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
           Object.keys(formData.fieldEditors).length > 0);
  
       // 🚨 Prevent saving if no local changes of any kind
-      if (!hasLocalChanges) {
+      if (userRole === "editor" && !hasLocalChanges) {
         setLoading(false);
         handleSnackbarOpen("No changes detected. Nothing to update.", "info");
         return;

@@ -326,11 +326,14 @@ export default function AddActivity(props) {
       formDataToSend.append("status", finalStatus);
 
       if (id) {
-        const hasChanges =
-          editedFields.length > 0 || // user changed form fields
-          selectedFile || // file uploaded
-          Object.keys(updatedFieldEditors).length >
-            Object.keys(selectedActivity?.fieldEditors || {}).length; // editor updates
+        let hasChanges = true;
+        if (userRole === "editor") {
+          hasChanges =
+            editedFields.length > 0 ||
+            selectedFile ||
+            Object.keys(updatedFieldEditors).length >
+              Object.keys(selectedActivity?.fieldEditors || {}).length;
+        }
 
         if (!hasChanges) {
           setLoading(false);
