@@ -27,7 +27,7 @@ export const getAllActivity = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/v1/activities/`,
+        `${API_URL}/api/v1/admin/activities/`,
         {
           headers: { "x-protected-key": "MySuperSecretApiKey123" },
         }

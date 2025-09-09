@@ -327,6 +327,19 @@ export default function AddBill(props) {
       formDataToSend.append("status", finalStatus);
 
       if (id) {
+         const hasChanges =
+    filteredEditedFields.length > 0 || // user changed form fields
+    selectedFile || // file uploaded
+    (Object.keys(updatedFieldEditors).length >
+      Object.keys(selectedVote?.fieldEditors || {}).length); // editor updates
+
+  if (!hasChanges) {
+    setLoading(false);
+    setSnackbarMessage("No changes detected. Nothing to update.");
+    setSnackbarSeverity("info");
+    setOpenSnackbar(true);
+    return;
+  }
         await dispatch(
           updateVote({ id, updatedData: formDataToSend })
         ).unwrap();

@@ -1066,45 +1066,68 @@ export default function Addrepresentative(props) {
 
     // 6️⃣ Process current votes & activities
     const processedChanges = [];
+// Helper function to check if a vote has changed
+    const hasVoteChanged = (termIndex, voteIndex, vote) => {
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalVote = originalTerm.votesScore?.[voteIndex] || {};
+      
+      // Check if voteId or score has changed
+      return vote.voteId !== originalVote.voteId || vote.score !== originalVote.score;
+    };
+
+    // Helper function to check if an activity has changed
+    const hasActivityChanged = (termIndex, activityIndex, activity) => {
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
+      
+      // Check if activityId or score has changed
+      return activity.activityId !== originalActivity.activityId || activity.score !== originalActivity.score;
+    };
 
     houseTermData.forEach((term, termIndex) => {
-      // votesScore
+      // votesScore - only process changed votes
       term.votesScore.forEach((vote, voteIndex) => {
         if (vote.voteId && vote.voteId.toString().trim() !== "") {
-          const voteItem = votes.find((v) => v._id === vote.voteId);
-          if (voteItem) {
-            const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
-            processedChanges.push({
-              uniqueId,
-              displayName: `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`,
-              field: ["votesScore"],
-              name: voteItem.title,
-              termIndex,
-              voteIndex,
-            });
+          // Only add if this vote has actually changed
+          if (hasVoteChanged(termIndex, voteIndex, vote)) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem) {
+              const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
+              processedChanges.push({
+                uniqueId,
+                displayName: `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`,
+                field: ["votesScore"],
+                name: voteItem.title,
+                termIndex,
+                voteIndex,
+              });
+            }
           }
         }
       });
 
-      // activitiesScore
+      // activitiesScore - only process changed activities
       term.activitiesScore.forEach((activity, activityIndex) => {
         if (activity.activityId && activity.activityId.toString().trim() !== "") {
-          const activityItem = houseActivities.find((a) => a._id === activity.activityId);
-          if (activityItem) {
-            const uniqueId = `activitiesScore_${sanitizeKey(activityItem.title)}`;
-            processedChanges.push({
-              uniqueId,
-              displayName: `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`,
-              field: ["activitiesScore"],
-              name: activityItem.title,
-              termIndex,
-              activityIndex,
-            });
+          // Only add if this activity has actually changed
+          if (hasActivityChanged(termIndex, activityIndex, activity)) {
+            const activityItem = houseActivities.find((a) => a._id === activity.activityId);
+            if (activityItem) {
+              const uniqueId = `activitiesScore_${sanitizeKey(activityItem.title)}`;
+              processedChanges.push({
+                uniqueId,
+                displayName: `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`,
+                field: ["activitiesScore"],
+                name: activityItem.title,
+                termIndex,
+                activityIndex,
+              });
+            }
           }
         }
       });
     });
-
+    
     // 7️⃣ Process other local changes
     localChanges.forEach((change) => {
       if (!change.includes("votesScore_") && !change.includes("activitiesScore_") && !change.startsWith("term")) {
