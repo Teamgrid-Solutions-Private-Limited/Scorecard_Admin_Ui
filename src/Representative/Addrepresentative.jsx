@@ -141,7 +141,9 @@ export default function Addrepresentative(props) {
     status: "Active",
     publishStatus: "",
   });
-
+  // console.log("house Data:", houseData);
+  const housedataByid = houseData?.currentHouse
+  // console.log("housedataByid:", housedataByid);
   const [houseTermData, setHouseTermData] = useState([
     {
       houseId: id,
@@ -501,6 +503,7 @@ export default function Addrepresentative(props) {
       )
     );
   };
+
 
   const handleRemoveActivity = (termIndex, activityIndex) => {
     setHouseTermData((prev) => {
@@ -973,9 +976,9 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handleSave = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
     // Helper: sanitize keys for MongoDB
     const sanitizeKey = (str) => {
@@ -1370,7 +1373,7 @@ export default function Addrepresentative(props) {
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
-      await Promise.all(termPromises);
+    await Promise.all(termPromises);
 
       // 14️⃣ Reload data
       await dispatch(getHouseDataByHouseId(id)).unwrap();
