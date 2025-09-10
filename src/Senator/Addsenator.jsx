@@ -901,6 +901,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         rating: "",
         votesScore: [{ voteId: "", score: "" }], // Start with empty, will be populated when term is selected
         activitiesScore: [{ activityId: "", score: "" }],
+        pastVotesScore: [{ voteId: "", score: "" }],
         currentTerm: false,
         termId: null,
         editedFields: [], // Initialize empty
@@ -1702,6 +1703,14 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
         return activity.activityId !== originalActivity.activityId || activity.score !== originalActivity.score;
       };
+       const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
+      return (
+        vote.voteId !== originalVote.voteId ||
+        vote.score !== originalVote.score
+      );
+    };
 
       senatorTermData.forEach((term, termIndex) => {
         // votesScore - only process changed votes
@@ -1743,7 +1752,27 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
             }
           }
         });
+       term.pastVotesScore.forEach((vote, voteIndex) => {
+        if (vote.voteId && vote.voteId.toString().trim() !== "") {
+          if (hasPastVoteChanged(termIndex, voteIndex, vote)) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem) {
+              const uniqueId = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
+              processedChanges.push({
+                uniqueId,
+                displayName: `Term ${termIndex + 1}: Important Past Vote ${
+                  voteIndex + 1
+                }`,
+                field: ["pastVotesScore"],
+                name: voteItem.title,
+                termIndex,
+                voteIndex,
+              });
+            }
+          }
+        }
       });
+    });
 
       // 7️⃣ Process other local changes
       localChanges.forEach((change) => {
@@ -1852,6 +1881,22 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
           return;
         }
 
+        const pastVoteMatch = change.match(/^term(\d+)_pastVotesScore_(\d+)$/);
+      if (pastVoteMatch) {
+        const [, termIndex, voteIndex] = pastVoteMatch;
+        const term = senatorTermData[parseInt(termIndex)];
+        const vote = term?.pastVotesScore?.[parseInt(voteIndex)];
+        if (vote && vote.voteId) {
+          const voteItem = votes.find((v) => v._id === vote.voteId);
+          if (voteItem && voteItem.title) {
+            editorKey = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
+            updatedFieldEditors[editorKey] = currentEditor;
+            changedFieldsInThisSession.add(editorKey);
+          }
+        }
+        return;
+      }
+
         // Term-level or simple fields
         editorKey = change;
         updatedFieldEditors[editorKey] = currentEditor;
@@ -1910,6 +1955,16 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
             activityId: activity.activityId.toString(),
             score: activity.score,
           }));
+          const cleanPastVotesScore = term.pastVotesScore
+  ? term.pastVotesScore
+      .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
+      .map((vote) => ({
+        voteId: vote.voteId.toString(),
+        score: vote.score,
+        title: vote.title || "",
+      }))
+  : [];
+
 
         const termSpecificChanges = allChanges.filter((f) => {
           const fieldName = typeof f === "string" ? f : Array.isArray(f.field) ? f.field[0] : f.field;
@@ -1919,6 +1974,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         const termUpdate = {
           ...term,
           votesScore: cleanVotesScore,
+          pastVotesScore: cleanPastVotesScore,
           activitiesScore: cleanActivitiesScore,
           isNew: false,
           senateId: id,
@@ -2342,6 +2398,37 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                   }
                                   return null;
                                 }
+                                 if (
+    Array.isArray(field.field) &&
+    field.field[0] === "pastVotesScore" &&
+    field.name
+  ) {
+    const billTitle = field.name;
+
+    for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
+      const term = senatorTermData[termIndex];
+      const pastVotesScore = term?.pastVotesScore || [];
+
+      for (let voteIndex = 0; voteIndex < pastVotesScore.length; voteIndex++) {
+        const vote = pastVotesScore[voteIndex];
+
+        if (vote) {
+          if (vote.title && vote.title === billTitle) {
+            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+          }
+
+          if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
+            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+          }
+
+          if (typeof vote.voteId === "string" && vote.voteId === field._id) {
+            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+          }
+        }
+      }
+    }
+    return null;
+  }
 
                                 // Handle regular term fields (term0_fieldName format)
                                 const fieldId = Array.isArray(field.field) ? field.field[0] : field.field;
@@ -2359,7 +2446,8 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                       rating: "SBA Rating",
                                       termId: "Term",
                                       votesScore: "Scored Vote",
-                                      activitiesScore: "Tracked Activity"
+                                      activitiesScore: "Tracked Activity",
+                                      pastVotesScore: "Important Past Vote",
                                     };
 
                                     const displayName = fieldDisplayMap[actualField] || actualField;
@@ -2383,7 +2471,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
 
                               // Handle string field format (legacy keys like "term0_votesScore_0_score")
                               if (typeof field === "string") {
-                                const termArrayMatch = field.match(/^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/);
+                                const termArrayMatch = field.match(/^term(\d+)_(votesScore|activitiesScore|pastVotesScore)_(\d+)_(.+)$/);
 
                                 if (termArrayMatch) {
                                   const [, termIdx, category, itemIdx] = termArrayMatch;
@@ -2396,6 +2484,10 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                   if (category === "activitiesScore") {
                                     const activityNumber = parseInt(itemIdx) + 1;
                                     return `Term ${termNumber}: Tracked Activity ${activityNumber}`;
+                                  }
+                                   if (category === "pastVotesScore") {
+                                    const voteNumber = parseInt(itemIdx) + 1;
+                                    return `Term ${termNumber}: Important Past Vote ${voteNumber}`;
                                   }
                                   return `Term ${termNumber}: ${category}`;
                                 }
@@ -2485,6 +2577,13 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                             if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
                                               return `activitiesScore_${sanitizeKey(field.name)}`;
                                             }
+                                            if (
+                                                Array.isArray(field.field) &&
+                                                field.field[0] === "pastVotesScore" &&
+                                                field.name
+                                              ) {
+                                                return `pastVotesScore_${sanitizeKey(field.name)}`;
+                                              }
                                             if (Array.isArray(field.field)) {
                                               return field.field[0]; // For simple fields like ["status"]
                                             }
@@ -3787,9 +3886,8 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                     </Grid>
                     <Grid size={1}></Grid>
                     {/* Past Term Votes (only for last term) */}
-{term.termId && termIndex === senatorTermData.length - 1 && (
-  <>
-    {term.pastVotesScore.map((vote, voteIndex) => (
+
+    {(term.pastVotesScore || []).map((vote, voteIndex) => (
       <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
         <Grid
           size={12}
@@ -3912,8 +4010,8 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
       </Button>
     </Grid>
     <Grid size={1}></Grid>
-  </>
-)}
+  
+
 
                   </Grid>
                 </Box>
