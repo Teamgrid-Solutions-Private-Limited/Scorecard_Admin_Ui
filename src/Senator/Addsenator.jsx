@@ -95,8 +95,95 @@ export default function AddSenator(props) {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
   const navigate = useNavigate();
   const allVotes = useSelector((state) => state.vote.votes);
+    const [selectionError, setSelectionError] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
+  const validateVoteInTermRange = (voteId, termId) => {
+    if (!voteId || !termId)
+      return { isValid: false, message: "Invalid selection" };
+ 
+    const vote = allVotes.find((v) => v._id === voteId);
+    const term = terms.find((t) => t._id === termId);
+ 
+    if (!vote) return { isValid: false, message: "Vote not found" };
+    if (!term) return { isValid: false, message: "Term not found" };
+ 
+    const voteDate = new Date(vote.date);
+    const termStart = new Date(`${term.startYear}-01-01`);
+    const termEnd = new Date(`${term.endYear}-12-31`);
+ 
+    const isDateInRange = voteDate >= termStart && voteDate <= termEnd;
+    const isCongressInTerm = term.congresses.includes(Number(vote.congress));
+ 
+    if (!isDateInRange) {
+      return {
+        isValid: false,
+        message: `Selected vote is outside the term range (${
+          term.startYear
+        }-${term.endYear})`,
+      };
+    }
+ 
+    if (!isCongressInTerm) {
+      return {
+        isValid: false,
+        message: `This vote (Congress ${
+          vote.congress
+        }) is not part of the selected term's congresses (${term.congresses.join(
+          ", "
+        )})`,
+      };
+    }
+ 
+    return { isValid: true, message: "" };
+  };
+ 
+  const validateActivityInTermRange = (activityId, termId) => {
+    if (!activityId || !termId)
+      return { isValid: false, message: "Invalid selection" };
+ 
+    const activity = allActivities.find((a) => a._id === activityId);
+    const term = terms.find((t) => t._id === termId);
+ 
+    if (!activity) return { isValid: false, message: "Activity not found" };
+    if (!term) return { isValid: false, message: "Term not found" };
+ 
+    const activityDate = new Date(activity.date);
+    const termStart = new Date(`${term.startYear}-01-01`);
+    const termEnd = new Date(`${term.endYear}-12-31`);
+ 
+    const isDateInRange = activityDate >= termStart && activityDate <= termEnd;
+    const isCongressInTerm = term.congresses.includes(
+      Number(activity.congress || 0)
+    );
+ 
+    if (!isDateInRange) {
+      return {
+        isValid: false,
+        message: `Selected activity is outside the term range (${
+          term.startYear
+        }-${term.endYear})`,
+      };
+    }
+ 
+    if (!isCongressInTerm) {
+      return {
+        isValid: false,
+        message: `This activity (Congress ${
+          activity.congress
+        }) is not part of the selected term's congresses (${term.congresses.join(
+          ", "
+        )})`,
+      };
+    }
+ 
+    return { isValid: true, message: "" };
+  };
+
   const allActivities = useSelector((state) => state.activity.activities);
-  console.log("senetarData", senatorData);
+ 
   const startYear = senatorData?.currentSenator?.[0]?.termId?.startYear;
 
   const termStart = new Date(
@@ -119,7 +206,7 @@ export default function AddSenator(props) {
   
   const senatorr = senatorData?.currentSenator?.[0];
   const senatorVotes = senatorr?.votesScore || [];
-  console.log("senator", senator);
+
   const participatedVotes = allVotes.filter((vote) => {
     const voteDate = new Date(vote.date);
 
@@ -600,6 +687,19 @@ export default function AddSenator(props) {
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
+    if (field === "voteId" && value) {
+      const termId = senatorTermData[termIndex].termId;
+      const validation = validateVoteInTermRange(value, termId);
+ 
+      if (!validation.isValid) {
+        setSelectionError({
+          show: true,
+          message: validation.message,
+          type: "vote",
+        });
+        return;
+      }
+    }
 
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, index) =>
@@ -673,6 +773,19 @@ export default function AddSenator(props) {
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
       }`;
+       if (field === "activityId" && value) {
+      const termId = senatorTermData[termIndex].termId;
+      const validation = validateActivityInTermRange(value, termId);
+ 
+      if (!validation.isValid) {
+        setSelectionError({
+          show: true,
+          message: validation.message,
+          type: "activity",
+        });
+        return;
+      }
+    }
 
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, idx) => {
@@ -819,18 +932,19 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
     ]);
   };
 
-  const handleRemoveTerm = (termIndex) => {
+   const handleRemoveTerm = (termIndex) => {
     setSenatorTermData((prev) => {
       const removed = prev[termIndex];
+     const removalId = `Term_${termIndex+1} Removed`;
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
+        if (!localChanges.includes(removalId)) {
+          setLocalChanges((prev) => [...prev, removalId]);
+        }
       }
-
-   
       setLocalChanges((prevChanges) =>
         prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
       );
-
       return prev.filter((_, index) => index !== termIndex);
     });
   };
@@ -1523,7 +1637,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
       const hasNonDefaultValue = (field, value) => {
         if (value === null || value === undefined) return false;
         if (typeof value === "string" && value.trim() === "") return false;
-        if (field === "currentTerm" && value === false) return false;
+       
         return true;
       };
 
@@ -2058,7 +2172,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                             }
 
                             const formatFieldName = (field, index, senatorTermData = [],) => {
-                              console.log("Formatting field:", senatorTermData);
+                             
                            
                               if (typeof field === "object" && field !== null) {
                                
@@ -3126,7 +3240,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                     </MenuItem>
                                     {allVotes.length > 0 ? (
                                       allVotes
-                                        .filter(voteItem => voteItem.type === "senate_bill") // Filter by type "senate_bill"
+                                        .filter(voteItem => voteItem.type === "senate_bill") 
                                         .map((voteItem) => {
                                           
                                           const senatorVote = senatorVotes.find(
@@ -3739,42 +3853,48 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
             </Button>
 
             <Snackbar
-              open={openSnackbar}
-              autoHideDuration={6000}
-              onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MuiAlert
-                onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                sx={{
-                  width: "100%",
-                  border: "none",
-                  boxShadow: "none",
-                  bgcolor:
-                    snackbarMessage === "Changes published successfully!"
-                      ? "#daf4f0"
-                      : undefined,
-                  "& .MuiAlert-icon": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-message": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-
-                  },
-                }}
-                elevation={6}
-                variant="filled"
-              >
-                {snackbarMessage}
-              </MuiAlert>
-            </Snackbar>
+  open={openSnackbar || selectionError.show}
+  autoHideDuration={6000}
+  onClose={() => {
+    handleSnackbarClose();
+    setSelectionError({ show: false, message: "", type: "" });
+  }}
+  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+>
+  <MuiAlert
+    onClose={() => {
+      handleSnackbarClose();
+      setSelectionError({ show: false, message: "", type: "" });
+    }}
+    severity={selectionError.show ? "error" : snackbarSeverity}
+    sx={{
+      width: "100%",
+      border: "none",
+      boxShadow: "none",
+      bgcolor:
+        snackbarMessage === "Changes published successfully!"
+          ? "#daf4f0"
+          : undefined,
+      "& .MuiAlert-icon": {
+        color:
+          snackbarMessage === "Changes published successfully!"
+            ? "#099885"
+            : undefined,
+      },
+      "& .MuiAlert-message": {
+        color:
+          snackbarMessage === "Changes published successfully!"
+            ? "#099885"
+            : undefined,
+      },
+    }}
+    elevation={6}
+    variant="filled"
+  >
+    {selectionError.show ? selectionError.message : snackbarMessage}
+  </MuiAlert>
+</Snackbar>
+            
 
           </Stack>
           <Box sx={{ mb: "40px", mx: "15px" }}>
