@@ -1628,6 +1628,8 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
       }
 
         
+
+        
         editorKey = change;
         updatedFieldEditors[editorKey] = currentEditor;
         changedFieldsInThisSession.add(editorKey);
