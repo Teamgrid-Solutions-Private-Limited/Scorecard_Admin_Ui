@@ -349,66 +349,72 @@ export default function AddBill(props) {
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
 
-     if (id) {
-  let hasChanges = true;
-  if (userRole === "editor") {
-    hasChanges =
-      filteredEditedFields.length > 0 ||
-      selectedFile ||
-      Object.keys(updatedFieldEditors).length >
-        Object.keys(selectedVote?.fieldEditors || {}).length;
-  }
-
-  if (!hasChanges) {
-    setLoading(false);
-
-    setSnackbarMessage("No changes detected. Nothing to update.");
-    setSnackbarSeverity("info");
-    setOpenSnackbar(true);
-    return;
-  }
-
-  await dispatch(updateVote({ id, updatedData: formDataToSend })).unwrap();
-  await dispatch(getVoteById(id)).unwrap();
-
-  setSnackbarMessage(
-    userRole === "admin"
-      ? "Changes published successfully!"
-      : 'Status changed to "Under Review" for admin to moderate.'
-  );
-  setSnackbarSeverity("success");
-
-  if (userRole !== "admin") {
-    setFormData((prev) => ({ ...prev, status: "under review" }));
-    setEditedFields((prev) => prev.filter((field) => field !== "status"));
-  } else {
-    if (finalStatus === "published") {
-      setEditedFields([]);
-    }
-  }
-}
- else {
-        if (
-          !formData.type ||
-          !formData.title ||
-          !formData.shortDesc ||
-          !formData.readMore
-        ) {
-          setSnackbarMessage("Please fill all required fields!");
-          setSnackbarSeverity("warning");
-          setOpenSnackbar(true);
-          setLoading(false);
-          return;
-        }
-
-        await dispatch(createVote(formDataToSend)).unwrap();
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Bill created and published!"
-            : "Bill created successfully!"
-        );
-        setSnackbarSeverity("success");
+    if (id) {
+      let hasChanges = true;
+      if (userRole === "editor") {
+        hasChanges =
+          filteredEditedFields.length > 0 ||
+          selectedFile ||
+          Object.keys(updatedFieldEditors).length >
+            Object.keys(selectedVote?.fieldEditors || {}).length;
       }
+
+      if (!hasChanges) {
+        setLoading(false);
+
+        setSnackbarMessage("No changes detected. Nothing to update.");
+
+        setSnackbarSeverity("info");
+
+        setOpenSnackbar(true);
+
+        return;
+      }
+
+      await dispatch(updateVote({ id, updatedData: formDataToSend })).unwrap();
+      // After admin publishes, reload vote to get cleared editedFields
+      await dispatch(getVoteById(id)).unwrap();
+
+      setSnackbarMessage(
+        userRole === "admin"
+          ? "Changes published successfully!"
+          : 'Status changed to "Under Review" for admin to moderate.'
+      );
+      setSnackbarSeverity("success");
+
+      if (userRole !== "admin") {
+        setFormData((prev) => ({ ...prev, status: "under review" }));
+        // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
+        // Remove status from editedFields after update
+        setEditedFields((prev) => prev.filter((field) => field !== "status"));
+      } else {
+        // Only clear locally if status is published
+        if (finalStatus === "published") {
+          setEditedFields([]);
+        }
+      }
+    } else {
+      if (
+        !formData.type ||
+        !formData.title ||
+        !formData.shortDesc ||
+        !formData.readMore
+      ) {
+        setSnackbarMessage("Please fill all required fields!");
+        setSnackbarSeverity("warning");
+        setOpenSnackbar(true);
+        setLoading(false);
+        return;
+      }
+
+      await dispatch(createVote(formDataToSend)).unwrap();
+      setSnackbarMessage(
+        userRole === "admin"
+          ? "Bill created and published!"
+          : "Bill created successfully!"
+      );
+      setSnackbarSeverity("success");
+    }
 
       setOpenSnackbar(true);
     } catch (error) {

@@ -6,10 +6,6 @@ const Footer = () => {
   <Box
       sx={{
         mx: "20px",
-        // ml: { xs: "20px", md: "260px" },
-        // backgroundColor: "#fff",
-                // backgroundColor: "#ab4141ff",
- 
         padding: "0px",
         textAlign: "center",
         marginTop: "40px",
@@ -28,7 +24,7 @@ const Footer = () => {
           variant="body2"
           sx={{
             fontFamily: "'Be Vietnam Pro', sans-serif",
-            fontSize: "13px",
+            fontSize: {xs: "11px", sm: "13px"},
             color: "#7d7f87",
           }}
         >
@@ -39,7 +35,7 @@ const Footer = () => {
           sx={{
             display: "flex",
             gap: "5px",
-            fontSize: "13px",
+             fontSize: {xs: "11px", sm: "13px"},
             fontFamily: "'Be Vietnam Pro', sans-serif",
             color: "#7d7f87",
             mt: 1,

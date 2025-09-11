@@ -25,10 +25,11 @@ const MobileHeader = () => {
         position="sticky"
         elevation={0}
         sx={{
+          pr: 1,
           display: { xs: "flex", md: "none" },
           backgroundColor: "#fff",
           color: "#363837",
-          borderBottom: "4px solid rgba(0,0,0,0.05)",
+          // borderBottom: "4px solid rgba(0,0,0,0.05)",
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>

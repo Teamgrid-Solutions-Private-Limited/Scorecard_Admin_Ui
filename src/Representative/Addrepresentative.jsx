@@ -141,7 +141,9 @@ export default function Addrepresentative(props) {
     status: "Active",
     publishStatus: "",
   });
-
+  // console.log("house Data:", houseData);
+  const housedataByid = houseData?.currentHouse
+  // console.log("housedataByid:", housedataByid);
   const [houseTermData, setHouseTermData] = useState([
     {
       houseId: id,
@@ -513,6 +515,7 @@ export default function Addrepresentative(props) {
       )
     );
   };
+
 
   const handleRemoveActivity = (termIndex, activityIndex) => {
     setHouseTermData((prev) => {
@@ -985,9 +988,9 @@ export default function Addrepresentative(props) {
     setFormData((prev) => ({ ...prev, photo: file }));
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handleSave = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
     // Helper: sanitize keys for MongoDB
     const sanitizeKey = (str) => {
@@ -1033,11 +1036,11 @@ export default function Addrepresentative(props) {
           Object.keys(formData.fieldEditors).length > 0);
 
       // 🚨 Prevent saving if no local changes of any kind
-      if (userRole === "editor" && !hasLocalChanges) {
-        setLoading(false);
-        handleSnackbarOpen("No changes detected. Nothing to update.", "info");
-        return;
-      }
+    if (userRole === "editor" && !hasLocalChanges) {
+      setLoading(false);
+      handleSnackbarOpen("No changes detected. Nothing to update.", "info");
+      return;
+    }
       // 3️⃣ Current editor info
       const decodedToken = jwtDecode(token);
       const currentEditor = {
@@ -1382,7 +1385,7 @@ export default function Addrepresentative(props) {
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
-      await Promise.all(termPromises);
+    await Promise.all(termPromises);
 
       // 14️⃣ Reload data
       await dispatch(getHouseDataByHouseId(id)).unwrap();
@@ -2951,6 +2954,8 @@ export default function Addrepresentative(props) {
                 severity={snackbarSeverity}
                 sx={{
                   width: "100%",
+                  border: "none",
+                  boxShadow: "none",
                   bgcolor:
                     snackbarMessage === "Changes Published successfully!"
                       ? "#daf4f0"
