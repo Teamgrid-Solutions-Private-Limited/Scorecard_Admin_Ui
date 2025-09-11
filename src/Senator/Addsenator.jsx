@@ -71,7 +71,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
-import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; 
+import { deleteSenatorData } from "../redux/reducer/senetorTermSlice";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
@@ -92,7 +92,7 @@ export default function AddSenator(props) {
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const allVotes = useSelector((state) => state.vote.votes);
   const allActivities = useSelector((state) => state.activity.activities);
@@ -116,14 +116,14 @@ export default function AddSenator(props) {
     );
   });
 
-  
+
   const senatorr = senatorData?.currentSenator?.[0];
   const senatorVotes = senatorr?.votesScore || [];
   console.log("senator", senator);
   const participatedVotes = allVotes.filter((vote) => {
     const voteDate = new Date(vote.date);
 
-   
+
     const inTerm =
       voteDate >= termStart &&
       voteDate <= termEnd &&
@@ -131,7 +131,7 @@ export default function AddSenator(props) {
 
     if (!inTerm) return false;
 
-    
+
     return senatorVotes.some((v) => {
       if (!v?.score || v.score.trim() === "") return false;
 
@@ -159,11 +159,11 @@ export default function AddSenator(props) {
 
   const senatorActivities = senatorr?.activitiesScore || [];
 
-  // Participated activities (only those with non-empty score)
+
   const participatedActivities = allActivities.filter((activity) => {
     const activityDate = new Date(activity.date);
 
-    //  Condition 1: Must be inside the senator's term range
+
     const inTerm =
       activityDate >= termStart &&
       activityDate <= termEnd &&
@@ -171,7 +171,7 @@ export default function AddSenator(props) {
 
     if (!inTerm) return false;
 
-    //  Condition 2: Must have a non-empty score
+
     return senatorActivities.some((a) => {
       if (!a?.score || a.score.trim() === "") return false;
 
@@ -189,8 +189,6 @@ export default function AddSenator(props) {
   });
 
 
-
- 
   const fieldLabels = {
     // Senator fields
     name: "Senator Name",
@@ -278,6 +276,7 @@ export default function AddSenator(props) {
       rating: "",
       votesScore: [{ voteId: "", score: "" }], // Start with empty, will be populated when term is selected
       activitiesScore: [{ activityId: "", score: "" }],
+      pastVotesScore: [{ voteId: "", score: "" }],
       currentTerm: false,
       termId: null,
     },
@@ -297,14 +296,14 @@ export default function AddSenator(props) {
           const selectedTerm = terms?.find((t) => t._id === value);
 
           if (selectedTerm) {
-            
+
             const newTermStart = new Date(`${selectedTerm.startYear}-01-01`);
             const newTermEnd = new Date(`${selectedTerm.endYear}-12-31`);
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
 
-             
+
               const inTerm =
                 voteDate >= newTermStart &&
                 voteDate <= newTermEnd &&
@@ -312,7 +311,7 @@ export default function AddSenator(props) {
 
               if (!inTerm) return false;
 
-        
+
               return senatorVotes.some((v) => {
                 if (!v?.score || v.score.trim() === "") return false;
 
@@ -329,12 +328,12 @@ export default function AddSenator(props) {
               });
             });
 
-           
+
             const existingVoteScores = term.votesScore || [];
 
             // Create new votesScore array with senator's actual scores
             updatedTerm.votesScore = newFilteredVotes.map((vote) => {
-            
+
               const senatorVote = senatorVotes.find((v) => {
                 const vId =
                   typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
@@ -347,7 +346,7 @@ export default function AddSenator(props) {
                 );
               });
 
-            
+
               let scoreValue = "";
               if (senatorVote?.score) {
                 const voteScore = senatorVote.score.toLowerCase();
@@ -388,7 +387,7 @@ export default function AddSenator(props) {
 
               if (!inTerm) return false;
 
-              
+
               return senatorActivities.some((a) => {
                 if (!a?.score || a.score.trim() === "") return false;
 
@@ -399,7 +398,7 @@ export default function AddSenator(props) {
               });
             });
 
-          
+
             updatedTerm.activitiesScore = newParticipatedActivities.map((activity) => {
               const senAct = senatorActivities.find((a) => {
                 const aId =
@@ -423,40 +422,40 @@ export default function AddSenator(props) {
               };
             });
 
-          
+
             if (updatedTerm.activitiesScore.length === 0) {
               updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
             }
-             const newPastVotes = allVotes.filter((vote) => {
-   
-      return vote.isImportantPastVote === true; 
-    });
+            const newPastVotes = allVotes.filter((vote) => {
 
-    updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
-      const senatorPastVote = senatorVotes.find((v) => {
-        const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-        return vId === vote._id;
-      });
+              return vote.isImportantPastVote === true;
+            });
 
-      return {
-        voteId: vote._id,
-        score: senatorPastVote?.score || "",
-        title: vote.title,
-      };
-    });
+            updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
+              const senatorPastVote = senatorVotes.find((v) => {
+                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                return vId === vote._id;
+              });
 
-    if (updatedTerm.pastVotesScore.length === 0) {
-      updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
-    }
-            
+              return {
+                voteId: vote._id,
+                score: senatorPastVote?.score || "",
+                title: vote.title,
+              };
+            });
+
+            if (updatedTerm.pastVotesScore.length === 0) {
+              updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
+            }
+
           }
         }
 
         return updatedTerm;
       });
-      
 
-    
+
+
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
@@ -504,7 +503,7 @@ export default function AddSenator(props) {
         return { ...term, summary: content };
       });
 
-    
+
       const originalTerm = originalTermData[termIndex] || {};
       const originalSummary = originalTerm.summary || "";
       const isActualChange = compareValues(content, originalSummary);
@@ -533,7 +532,7 @@ export default function AddSenator(props) {
     );
   };
 
- 
+
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -552,7 +551,7 @@ export default function AddSenator(props) {
       await dispatch(discardSenatorChanges(id)).unwrap();
       navigate(0);
 
-     
+
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenetorId(id));
       setSnackbarMessage(
@@ -586,7 +585,7 @@ export default function AddSenator(props) {
           : term
       );
 
-     
+
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -597,7 +596,7 @@ export default function AddSenator(props) {
       return updatedTerms;
     });
   };
-  
+
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
@@ -614,7 +613,7 @@ export default function AddSenator(props) {
           : term
       );
 
-  
+
       const originalTerm = originalTermData[termIndex] || {};
       const originalVote = originalTerm.votesScore?.[voteIndex] || {};
       const isActualChange = compareValues(value, originalVote[field]);
@@ -645,7 +644,7 @@ export default function AddSenator(props) {
     );
   };
 
- 
+
   const handleRemoveActivity = (termIndex, activityIndex) => {
     setSenatorTermData((prev) => {
       const updatedTerms = prev.map((term, index) =>
@@ -659,7 +658,7 @@ export default function AddSenator(props) {
           : term
       );
 
-    
+
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -686,7 +685,7 @@ export default function AddSenator(props) {
         return { ...term, activitiesScore: newActivities };
       });
 
-      
+
       const originalTerm = originalTermData[termIndex] || {};
       const originalActivity =
         originalTerm.activitiesScore?.[activityIndex] || {};
@@ -705,16 +704,81 @@ export default function AddSenator(props) {
     });
   };
 
+  const handleAddPastVote = (termIndex) => {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
+            ...term,
+            pastVotesScore: [...(term.pastVotesScore || []), { voteId: "", score: "" }],
+          }
+          : term
+      )
+    );
+  };
+
+  const handleRemovePastVote = (termIndex, voteIndex) => {
+    setSenatorTermData((prev) => {
+      const updatedTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
+            ...term,
+            pastVotesScore: term.pastVotesScore.filter((_, i) => i !== voteIndex),
+          }
+          : term
+      );
+
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter(
+          (change) =>
+            !change.startsWith(`term${termIndex}_pastVotesScore_${voteIndex + 1}`)
+        )
+      );
+
+      return updatedTerms;
+    });
+  };
+
+  const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
+    const voteChangeId = `term${termIndex}_pastVotesScore_${voteIndex + 1}`;
+
+    setSenatorTermData((prev) => {
+      const newTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
+            ...term,
+            pastVotesScore: term.pastVotesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
+          : term
+      );
+
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
+      const isActualChange = compareValues(value, originalVote[field]);
+
+      if (isActualChange && !localChanges.includes(voteChangeId)) {
+        setLocalChanges((prev) => [...prev, voteChangeId]);
+      } else if (!isActualChange && localChanges.includes(voteChangeId)) {
+        setLocalChanges((prev) => prev.filter((f) => f !== voteChangeId));
+      }
+
+      return newTerms;
+    });
+  };
+
+
   const contentRefs = useRef([]);
   const handleEditorChange = useCallback((content, termIndex) => {
     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
 
-    
+
     setLocalChanges((prev) => {
       return prev.includes(fieldName) ? prev : [...prev, fieldName];
     });
 
-    
+
     if (!contentRefs.current[termIndex]) {
       contentRefs.current[termIndex] = {};
     }
@@ -734,7 +798,7 @@ export default function AddSenator(props) {
     );
   }, []);
 
-  
+
   const handleAddTerm = () => {
     setSenatorTermData((prev) => [
       ...prev,
@@ -762,7 +826,7 @@ export default function AddSenator(props) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
       }
 
-   
+
       setLocalChanges((prevChanges) =>
         prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
       );
@@ -974,44 +1038,44 @@ export default function AddSenator(props) {
           activitiesScore = [{ activityId: "", score: "" }];
         }
 
-         let pastVotesScore;
-      if (
-        Array.isArray(term.pastVotesScore) &&
-        term.pastVotesScore.length > 0 &&
-        term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
-      ) {
-        pastVotesScore = term.pastVotesScore
-          .filter((vote) => {
-            const voteId = vote.voteId?._id || vote.voteId;
-            return voteId && voteId.toString().trim() !== "";
-          })
-          .map((vote) => {
-            let scoreValue = "";
-            const dbScore = vote.score?.toLowerCase();
-            if (dbScore?.includes("yea")) {
-              scoreValue = "yea";
-            } else if (dbScore?.includes("nay")) {
-              scoreValue = "nay";
-            } else if (dbScore?.includes("other")) {
-              scoreValue = "other";
-            } else {
-              scoreValue = vote.score || "";
-            }
+        let pastVotesScore;
+        if (
+          Array.isArray(term.pastVotesScore) &&
+          term.pastVotesScore.length > 0 &&
+          term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
+        ) {
+          pastVotesScore = term.pastVotesScore
+            .filter((vote) => {
+              const voteId = vote.voteId?._id || vote.voteId;
+              return voteId && voteId.toString().trim() !== "";
+            })
+            .map((vote) => {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
 
-            
-            const voteData = allVotes.find((v) => v._id === (vote.voteId?._id || vote.voteId));
-            
-            return {
-              voteId: vote.voteId?._id || vote.voteId || "",
-              score: scoreValue,
-              title: voteData?.title || vote.voteId?.title || vote.title || "",
-              _id: vote._id || undefined,
-            };
-          });
-      } else {
-       
-        pastVotesScore = [{ voteId: "", score: "" }];
-      }
+
+              const voteData = allVotes.find((v) => v._id === (vote.voteId?._id || vote.voteId));
+
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+                title: voteData?.title || vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
+              };
+            });
+        } else {
+
+          pastVotesScore = [{ voteId: "", score: "" }];
+        }
 
         return {
           _id: term._id,
@@ -1069,7 +1133,7 @@ export default function AddSenator(props) {
 
     const changes = [];
 
-    
+
     Object.keys(formData).forEach((key) => {
       if (
         key === "editedFields" ||
@@ -1082,7 +1146,7 @@ export default function AddSenator(props) {
       }
     });
 
-   
+
     senatorTermData.forEach((term, termIndex) => {
       const originalTerm = originalTermData[termIndex] || {};
       const isNewTerm = term.isNew;
@@ -1104,11 +1168,11 @@ export default function AddSenator(props) {
           const currentSummary = term.summary || "";
           const originalSummary = originalTerm.summary || "";
 
-          
+
           if (currentSummary.trim() !== originalSummary.trim()) {
             changes.push(`term${termIndex}_summary`);
           }
-        } else if (["votesScore", "activitiesScore"].includes(key)) {
+        } else if (["votesScore", "activitiesScore", "pastVotesScore"].includes(key)) {
           const current = (term[key] || []).filter((item) =>
             Object.values(item).some((val) => val !== "" && val !== null)
           );
@@ -1139,14 +1203,14 @@ export default function AddSenator(props) {
       });
     });
 
-    
+
     const backendEditedFields = Array.isArray(formData.editedFields)
       ? formData.editedFields
       : [];
     const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
 
     setEditedFields(mergedChanges);
-   
+
     setEditedFields(changes);
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
@@ -1225,7 +1289,7 @@ export default function AddSenator(props) {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    const fieldName = "Photo"; 
+    const fieldName = "Photo";
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -1233,7 +1297,7 @@ export default function AddSenator(props) {
 
     setFormData((prev) => ({ ...prev, photo: file }));
   };
- 
+
 
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
@@ -1244,7 +1308,7 @@ export default function AddSenator(props) {
         ? status !== originalFormData.status
         : true;
 
-     
+
       setLocalChanges((prevChanges) => {
         if (isActualChange && !prevChanges.includes(fieldName)) {
           return [...prevChanges, fieldName];
@@ -1258,7 +1322,7 @@ export default function AddSenator(props) {
     });
   };
 
-  
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -1266,13 +1330,13 @@ export default function AddSenator(props) {
     // Helper: sanitize keys for MongoDB
     const sanitizeKey = (str) => {
       return str
-        .replace(/[^a-zA-Z0-9_]/g, "_") 
-        .replace(/_+/g, "_")           
-        .replace(/^_+|_+$/g, "");      
+        .replace(/[^a-zA-Z0-9_]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
     };
 
     try {
-     
+
       const hasSelectedTerms = senatorTermData.some(term =>
         term.termId && term.termId.toString().trim() !== ""
       );
@@ -1297,7 +1361,7 @@ export default function AddSenator(props) {
         return;
       }
 
-  
+
       const currentTerms = senatorTermData.filter((term) => term.currentTerm);
       if (currentTerms.length > 1) {
         setLoading(false);
@@ -1309,13 +1373,13 @@ export default function AddSenator(props) {
         deletedTermIds.length > 0 ||
         (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
 
-        if (userRole === "editor" && !hasLocalChanges) {
+      if (userRole === "editor" && !hasLocalChanges) {
         setLoading(false);
         handleSnackbarOpen("No changes detected. Nothing to update.", "info");
         return;
       }
 
-    
+
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -1323,7 +1387,7 @@ export default function AddSenator(props) {
         editedAt: new Date(),
       };
 
-     
+
       if (deletedTermIds.length > 0) {
         await Promise.all(
           deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
@@ -1332,7 +1396,7 @@ export default function AddSenator(props) {
       }
 
 
-      
+
       const existingEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
         : [];
@@ -1347,36 +1411,36 @@ export default function AddSenator(props) {
         else if (Array.isArray(field.field) && field.field[0] === "pastVotesScore" && field.name) {
           fieldKey = `pastVotesScore_${sanitizeKey(field.name)}`;
         }
-         else {
+        else {
           fieldKey = Array.isArray(field.field) ? field.field[0] : field;
         }
         existingFieldsMap.set(fieldKey, { ...field });
       });
 
-     
+
       const processedChanges = [];
 
-    
+
       const hasVoteChanged = (termIndex, voteIndex, vote) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalVote = originalTerm.votesScore?.[voteIndex] || {};
         return vote.voteId !== originalVote.voteId || vote.score !== originalVote.score;
       };
 
-     
+
       const hasActivityChanged = (termIndex, activityIndex, activity) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
         return activity.activityId !== originalActivity.activityId || activity.score !== originalActivity.score;
       };
-       const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
-      return (
-        vote.voteId !== originalVote.voteId ||
-        vote.score !== originalVote.score
-      );
-    };
+      const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
+        return (
+          vote.voteId !== originalVote.voteId ||
+          vote.score !== originalVote.score
+        );
+      };
 
       senatorTermData.forEach((term, termIndex) => {
         // votesScore - only process changed votes
@@ -1399,7 +1463,7 @@ export default function AddSenator(props) {
           }
         });
 
-       
+
         term.activitiesScore.forEach((activity, activityIndex) => {
           if (activity.activityId && activity.activityId.toString().trim() !== "") {
             if (hasActivityChanged(termIndex, activityIndex, activity)) {
@@ -1418,31 +1482,30 @@ export default function AddSenator(props) {
             }
           }
         });
-       term.pastVotesScore.forEach((vote, voteIndex) => {
-        if (vote.voteId && vote.voteId.toString().trim() !== "") {
-          if (hasPastVoteChanged(termIndex, voteIndex, vote)) {
-            const voteItem = votes.find((v) => v._id === vote.voteId);
-            if (voteItem) {
-              const uniqueId = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Important Past Vote ${
-                  voteIndex + 1
-                }`,
-                field: ["pastVotesScore"],
-                name: voteItem.title,
-                termIndex,
-                voteIndex,
-              });
+        term.pastVotesScore.forEach((vote, voteIndex) => {
+          if (vote.voteId && vote.voteId.toString().trim() !== "") {
+            if (hasPastVoteChanged(termIndex, voteIndex, vote)) {
+              const voteItem = votes.find((v) => v._id === vote.voteId);
+              if (voteItem) {
+                const uniqueId = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1
+                    }`,
+                  field: ["pastVotesScore"],
+                  name: voteItem.title,
+                  termIndex,
+                  voteIndex,
+                });
+              }
             }
           }
-        }
+        });
       });
-    });
 
-   
+
       localChanges.forEach((change) => {
-        if (!change.includes("votesScore_")&& !change.includes("pastVotesScore_") && !change.includes("activitiesScore_") && !change.startsWith("term")) {
+        if (!change.includes("votesScore_") && !change.includes("pastVotesScore_") && !change.includes("activitiesScore_") && !change.startsWith("term")) {
           processedChanges.push({
             uniqueId: change,
             displayName: getFieldDisplayName(change),
@@ -1452,10 +1515,10 @@ export default function AddSenator(props) {
         }
       });
 
-      
+
       const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-     
+
       const hasNonDefaultValue = (field, value) => {
         if (value === null || value === undefined) return false;
         if (typeof value === "string" && value.trim() === "") return false;
@@ -1463,7 +1526,7 @@ export default function AddSenator(props) {
         return true;
       };
 
-     
+
       senatorTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
         const termFields = ["summary", "rating", "currentTerm", "termId"];
@@ -1505,15 +1568,15 @@ export default function AddSenator(props) {
 
       const allChanges = Array.from(existingFieldsMap.values());
 
-    
+
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
       const changedFieldsInThisSession = new Set();
 
-     
+
       localChanges.forEach((change) => {
         let editorKey;
 
-   
+
         const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
         if (voteMatch) {
           const [, termIndex, voteIndex] = voteMatch;
@@ -1530,7 +1593,7 @@ export default function AddSenator(props) {
           return;
         }
 
-  
+
         const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
         if (activityMatch) {
           const [, termIndex, activityIndex] = activityMatch;
@@ -1548,37 +1611,37 @@ export default function AddSenator(props) {
         }
 
         const pastVoteMatch = change.match(/^term(\d+)_pastVotesScore_(\d+)$/);
-      if (pastVoteMatch) {
-        const [, termIndex, voteIndex] = pastVoteMatch;
-        const term = senatorTermData[parseInt(termIndex)];
-        const vote = term?.pastVotesScore?.[parseInt(voteIndex)];
-        if (vote && vote.voteId) {
-          const voteItem = votes.find((v) => v._id === vote.voteId);
-          if (voteItem && voteItem.title) {
-            editorKey = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
-            updatedFieldEditors[editorKey] = currentEditor;
-            changedFieldsInThisSession.add(editorKey);
+        if (pastVoteMatch) {
+          const [, termIndex, voteIndex] = pastVoteMatch;
+          const term = senatorTermData[parseInt(termIndex)];
+          const vote = term?.pastVotesScore?.[parseInt(voteIndex)];
+          if (vote && vote.voteId) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem && voteItem.title) {
+              editorKey = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+            }
           }
+          return;
         }
-        return;
-      }
 
-        
 
-        
+
+
         editorKey = change;
         updatedFieldEditors[editorKey] = currentEditor;
         changedFieldsInThisSession.add(editorKey);
       });
 
-  
+
       processedChanges.forEach((change) => {
         if (!changedFieldsInThisSession.has(change.uniqueId)) {
           updatedFieldEditors[change.uniqueId] = updatedFieldEditors[change.uniqueId] || currentEditor;
         }
       });
 
-    
+
       const senatorUpdate = {
         ...formData,
         editedFields: allChanges,
@@ -1586,7 +1649,7 @@ export default function AddSenator(props) {
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
 
-  
+
       if (senatorUpdate.publishStatus === "published") {
         senatorUpdate.editedFields = [];
         senatorUpdate.fieldEditors = {};
@@ -1623,15 +1686,15 @@ export default function AddSenator(props) {
             activityId: activity.activityId.toString(),
             score: activity.score,
           }));
-          const cleanPastVotesScore = term.pastVotesScore
-  ? term.pastVotesScore
-      .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
-      .map((vote) => ({
-        voteId: vote.voteId.toString(),
-        score: vote.score,
-        title: vote.title || "",
-      }))
-  : [];
+        const cleanPastVotesScore = term.pastVotesScore
+          ? term.pastVotesScore
+            .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
+            .map((vote) => ({
+              voteId: vote.voteId.toString(),
+              score: vote.score,
+              title: vote.title || "",
+            }))
+          : [];
 
 
         const termSpecificChanges = allChanges.filter((f) => {
@@ -1642,6 +1705,7 @@ export default function AddSenator(props) {
         const termUpdate = {
           ...term,
           votesScore: cleanVotesScore,
+          pastVotesScore: cleanPastVotesScore,
           activitiesScore: cleanActivitiesScore,
           isNew: false,
           senateId: id,
@@ -1785,7 +1849,7 @@ export default function AddSenator(props) {
     return voteExists ? voteId : "";
   };
 
-  
+
 
   return (
     <AppTheme key={componentKey}>
@@ -1884,7 +1948,7 @@ export default function AddSenator(props) {
                 formData.publishStatus &&
                 (formData.publishStatus !== "published" || localChanges.length > 0) &&
                 statusData &&
-            
+
                 !(formData.publishStatus === "under review" && !hasSelectedTerms()) &&
                 (hasSelectedTerms() ||
                   (Array.isArray(formData?.editedFields) && formData.editedFields.length > 0) ||
@@ -1994,13 +2058,13 @@ export default function AddSenator(props) {
 
                             const formatFieldName = (field, index, senatorTermData = [],) => {
                               console.log("Formatting field:", senatorTermData);
-                           
+
                               if (typeof field === "object" && field !== null) {
-                               
+
                                 if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
                                   const billTitle = field.name;
 
-                              
+
                                   for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
                                     const term = senatorTermData[termIndex];
                                     const votesScore = term?.votesScore || [];
@@ -2009,17 +2073,17 @@ export default function AddSenator(props) {
                                       const vote = votesScore[voteIndex];
 
                                       if (vote) {
-                                      
+
                                         if (vote.title && vote.title === billTitle) {
                                           return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
                                         }
 
-                                        
+
                                         if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
                                           return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
                                         }
 
-                                      
+
                                         if (typeof vote.voteId === "string" && vote.voteId === field._id) {
                                           return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
                                         }
@@ -2027,11 +2091,11 @@ export default function AddSenator(props) {
                                     }
                                   }
 
-                                
+
                                   return null
                                 }
 
-                              
+
                                 if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
                                   const activityTitle = field.name;
 
@@ -2056,39 +2120,39 @@ export default function AddSenator(props) {
                                   }
                                   return null;
                                 }
-                                 if (
-    Array.isArray(field.field) &&
-    field.field[0] === "pastVotesScore" &&
-    field.name
-  ) {
-    const billTitle = field.name;
+                                if (
+                                  Array.isArray(field.field) &&
+                                  field.field[0] === "pastVotesScore" &&
+                                  field.name
+                                ) {
+                                  const billTitle = field.name;
 
-    for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
-      const term = senatorTermData[termIndex];
-      const pastVotesScore = term?.pastVotesScore || [];
+                                  for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
+                                    const term = senatorTermData[termIndex];
+                                    const pastVotesScore = term?.pastVotesScore || [];
 
-      for (let voteIndex = 0; voteIndex < pastVotesScore.length; voteIndex++) {
-        const vote = pastVotesScore[voteIndex];
+                                    for (let voteIndex = 0; voteIndex < pastVotesScore.length; voteIndex++) {
+                                      const vote = pastVotesScore[voteIndex];
 
-        if (vote) {
-          if (vote.title && vote.title === billTitle) {
-            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-          }
+                                      if (vote) {
+                                        if (vote.title && vote.title === billTitle) {
+                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+                                        }
 
-          if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
-            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-          }
+                                        if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
+                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+                                        }
 
-          if (typeof vote.voteId === "string" && vote.voteId === field._id) {
-            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-          }
-        }
-      }
-    }
-    return null;
-  }
+                                        if (typeof vote.voteId === "string" && vote.voteId === field._id) {
+                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+                                        }
+                                      }
+                                    }
+                                  }
+                                  return null;
+                                }
 
-                             
+
                                 const fieldId = Array.isArray(field.field) ? field.field[0] : field.field;
 
                                 if (fieldId && fieldId.startsWith("term")) {
@@ -2097,7 +2161,7 @@ export default function AddSenator(props) {
                                     const [, termIndex, actualField] = termMatch;
                                     const termNumber = parseInt(termIndex) + 1;
 
-                                 
+
                                     const fieldDisplayMap = {
                                       currentTerm: "Current Term",
                                       summary: "Term Summary",
@@ -2143,7 +2207,7 @@ export default function AddSenator(props) {
                                     const activityNumber = parseInt(itemIdx) + 1;
                                     return `Term ${termNumber}: Tracked Activity ${activityNumber}`;
                                   }
-                                   if (category === "pastVotesScore") {
+                                  if (category === "pastVotesScore") {
                                     const voteNumber = parseInt(itemIdx) + 1;
                                     return `Term ${termNumber}: Important Past Vote ${voteNumber}`;
                                   }
@@ -2217,16 +2281,16 @@ export default function AddSenator(props) {
                                     <List dense sx={{ py: 0 }}>
                                       {backendChanges.map((field, index) => {
                                         const fieldLabel = formatFieldName(field, index, senatorTermData);
-                                        if (!fieldLabel) return null; 
+                                        if (!fieldLabel) return null;
 
                                         const sanitizeKey = (str) => {
                                           return str
-                                            .replace(/[^a-zA-Z0-9_]/g, "_") 
-                                            .replace(/_+/g, "_")           
-                                            .replace(/^_+|_+$/g, "");     
+                                            .replace(/[^a-zA-Z0-9_]/g, "_")
+                                            .replace(/_+/g, "_")
+                                            .replace(/^_+|_+$/g, "");
                                         };
 
-                                       
+
                                         const getEditorKey = (field) => {
                                           if (typeof field === "object" && field !== null) {
                                             if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
@@ -2236,18 +2300,18 @@ export default function AddSenator(props) {
                                               return `activitiesScore_${sanitizeKey(field.name)}`;
                                             }
                                             if (
-                                                Array.isArray(field.field) &&
-                                                field.field[0] === "pastVotesScore" &&
-                                                field.name
-                                              ) {
-                                                return `pastVotesScore_${sanitizeKey(field.name)}`;
-                                              }
-                                            if (Array.isArray(field.field)) {
-                                              return field.field[0]; 
+                                              Array.isArray(field.field) &&
+                                              field.field[0] === "pastVotesScore" &&
+                                              field.name
+                                            ) {
+                                              return `pastVotesScore_${sanitizeKey(field.name)}`;
                                             }
-                                            return field.field; 
+                                            if (Array.isArray(field.field)) {
+                                              return field.field[0];
+                                            }
+                                            return field.field;
                                           }
-                                          return field; 
+                                          return field;
                                         };
 
                                         const editorKey = getEditorKey(field);
@@ -2316,7 +2380,7 @@ export default function AddSenator(props) {
                                     <List dense sx={{ py: 0 }}>
                                       {localChanges.map((field, index) => {
                                         const fieldLabel = formatFieldName(field, index, senatorTermData);
-                                        if (!fieldLabel) return null; 
+                                        if (!fieldLabel) return null;
 
                                         return (
                                           <ListItem
@@ -2440,9 +2504,9 @@ export default function AddSenator(props) {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
-          
+
                   py={3}
-            
+
                 >
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
@@ -2687,7 +2751,7 @@ export default function AddSenator(props) {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-             
+
                       borderBottom: '1px solid', borderColor: 'divider',
                       p: 1.5, px: 3
                     }}
@@ -2839,7 +2903,7 @@ export default function AddSenator(props) {
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term?.summary || ""}
-                        onEditorChange={(content) => handleSummaryChange(termIndex, content)} 
+                        onEditorChange={(content) => handleSummaryChange(termIndex, content)}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -3063,7 +3127,7 @@ export default function AddSenator(props) {
                                       allVotes
                                         .filter(voteItem => voteItem.type === "senate_bill") // Filter by type "senate_bill"
                                         .map((voteItem) => {
-                                          
+
                                           const senatorVote = senatorVotes.find(
                                             (v) => {
                                               const vId =
@@ -3078,7 +3142,7 @@ export default function AddSenator(props) {
                                             }
                                           );
 
-                                         
+
 
                                           const score =
                                             senatorVote?.score || "";
@@ -3149,7 +3213,7 @@ export default function AddSenator(props) {
                         ))}
                       </>
                     ) : (
-                 
+
                       <Grid rowSpacing={2} sx={{ width: "100%" }}>
                         <Grid
                           size={12}
@@ -3204,7 +3268,7 @@ export default function AddSenator(props) {
                         </Grid>
                       </Grid>
                     )}
-                 
+
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
@@ -3225,7 +3289,7 @@ export default function AddSenator(props) {
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
-                    
+
                     {term.termId ? (
                       <>
                         {term.activitiesScore.map((activity, activityIndex) => (
@@ -3308,7 +3372,7 @@ export default function AddSenator(props) {
                                       allActivities
                                         .filter(activityItem => activityItem.type === "senate")
                                         .map((activityItem) => {
-                                      
+
                                           const hasScore = senatorActivities.some(
                                             (a) => {
                                               const aId =
@@ -3389,7 +3453,7 @@ export default function AddSenator(props) {
                         ))}
                       </>
                     ) : (
-                     
+
                       <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
                         <Grid
                           size={12}
@@ -3465,120 +3529,120 @@ export default function AddSenator(props) {
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
-  {term.termId ? (
-                      <>                  
-    {(term.pastVotesScore || []).map((vote, voteIndex) => (
-      <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
-        <Grid
-          size={12}
-          display="flex"
-          alignItems="center"
-          columnGap={"15px"}
-        >
-          <Grid size={isMobile ? 12 : 2}>
-            <InputLabel className="label">
-              Important Past Vote {voteIndex + 1}
-            </InputLabel>
-          </Grid>
-          <Grid size={isMobile ? 12 : 7.5}>
-            <FormControl fullWidth>
-              <Select
-                value={vote.voteId || ""}
-                onChange={(event) =>
-                  handlePastVoteChange(
-                    termIndex,
-                    voteIndex,
-                    "voteId",
-                    event.target.value
-                  )
-                }
-                sx={{
-                  background: "#fff",
-                  width: "100%",
-                }}
-                renderValue={(selected) => {
-                  const selectedVote = votes.find((v) => v._id === selected);
-                  return (
-                    <Typography
-                      sx={{
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {selectedVote?.title || "Select a Bill"}
-                    </Typography>
-                  );
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      maxHeight: 300,
-                      width: 400,
-                      "& .MuiMenuItem-root": {
-                        minHeight: "48px",
-                      },
-                    },
-                  },
-                }}
-              >
-                <MenuItem value="" disabled>
-                  Select a Bill
-                </MenuItem>
-                {allVotes.length > 0 ? (
-                  allVotes
-                 
-                    .map((voteItem) => (
-                      <MenuItem key={voteItem._id} value={voteItem._id} sx={{ py: 1.5 }}>
-                        <Typography
-                          sx={{
-                            whiteSpace: "normal",
-                            overflowWrap: "break-word",
-                          }}
-                        >
-                          {voteItem.title}
-                        </Typography>
-                      </MenuItem>
-                    ))
-                ) : (
-                  <MenuItem value="" disabled>
-                    No past votes available
-                  </MenuItem>
-                )}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={isMobile ? 12 : 1.6}>
-            <FormControl fullWidth>
-              <Select
-                value={vote?.score || ""}
-                onChange={(event) =>
-                  handlePastVoteChange(
-                    termIndex,
-                    voteIndex,
-                    "score",
-                    event.target.value
-                  )
-                }
-                sx={{ background: "#fff" }}
-              >
-                <MenuItem value="yea">Yea</MenuItem>
-                <MenuItem value="nay">Nay</MenuItem>
-                <MenuItem value="other">Other</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={1}>
-            <DeleteForeverIcon
-              onClick={() => handleRemovePastVote(termIndex, voteIndex)}
-            />
-          </Grid>
-        </Grid>
-      </Grid>
-    ))}
-    </>
-  ):(
-    <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
+                    {term.termId ? (
+                      <>
+                        {(term.pastVotesScore || []).map((vote, voteIndex) => (
+                          <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
+                            <Grid
+                              size={12}
+                              display="flex"
+                              alignItems="center"
+                              columnGap={"15px"}
+                            >
+                              <Grid size={isMobile ? 12 : 2}>
+                                <InputLabel className="label">
+                                  Important Past Vote {voteIndex + 1}
+                                </InputLabel>
+                              </Grid>
+                              <Grid size={isMobile ? 12 : 7.5}>
+                                <FormControl fullWidth>
+                                  <Select
+                                    value={vote.voteId || ""}
+                                    onChange={(event) =>
+                                      handlePastVoteChange(
+                                        termIndex,
+                                        voteIndex,
+                                        "voteId",
+                                        event.target.value
+                                      )
+                                    }
+                                    sx={{
+                                      background: "#fff",
+                                      width: "100%",
+                                    }}
+                                    renderValue={(selected) => {
+                                      const selectedVote = votes.find((v) => v._id === selected);
+                                      return (
+                                        <Typography
+                                          sx={{
+                                            overflow: "hidden",
+                                            whiteSpace: "nowrap",
+                                            textOverflow: "ellipsis",
+                                          }}
+                                        >
+                                          {selectedVote?.title || "Select a Bill"}
+                                        </Typography>
+                                      );
+                                    }}
+                                    MenuProps={{
+                                      PaperProps: {
+                                        sx: {
+                                          maxHeight: 300,
+                                          width: 400,
+                                          "& .MuiMenuItem-root": {
+                                            minHeight: "48px",
+                                          },
+                                        },
+                                      },
+                                    }}
+                                  >
+                                    <MenuItem value="" disabled>
+                                      Select a Bill
+                                    </MenuItem>
+                                    {allVotes.length > 0 ? (
+                                      allVotes
+
+                                        .map((voteItem) => (
+                                          <MenuItem key={voteItem._id} value={voteItem._id} sx={{ py: 1.5 }}>
+                                            <Typography
+                                              sx={{
+                                                whiteSpace: "normal",
+                                                overflowWrap: "break-word",
+                                              }}
+                                            >
+                                              {voteItem.title}
+                                            </Typography>
+                                          </MenuItem>
+                                        ))
+                                    ) : (
+                                      <MenuItem value="" disabled>
+                                        No past votes available
+                                      </MenuItem>
+                                    )}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid size={isMobile ? 12 : 1.6}>
+                                <FormControl fullWidth>
+                                  <Select
+                                    value={vote?.score || ""}
+                                    onChange={(event) =>
+                                      handlePastVoteChange(
+                                        termIndex,
+                                        voteIndex,
+                                        "score",
+                                        event.target.value
+                                      )
+                                    }
+                                    sx={{ background: "#fff" }}
+                                  >
+                                    <MenuItem value="yea">Yea</MenuItem>
+                                    <MenuItem value="nay">Nay</MenuItem>
+                                    <MenuItem value="other">Other</MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid size={1}>
+                                <DeleteForeverIcon
+                                  onClick={() => handleRemovePastVote(termIndex, voteIndex)}
+                                />
+                              </Grid>
+                            </Grid>
+                          </Grid>
+                        ))}
+                      </>
+                    ) : (
+                      <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
                         <Grid
                           size={12}
                           display="flex"
@@ -3631,22 +3695,22 @@ export default function AddSenator(props) {
                           </Grid>
                         </Grid>
                       </Grid>
-  )}{" "}
+                    )}{" "}
 
-    {/* Add Past Vote Button */}
-    <Grid size={1}></Grid>
-    <Grid size={10} sx={{ textAlign: "right" }}>
-      <Button
-        variant="outlined"
-        className="addVoteActivity-btn"
-        startIcon={<AddIcon />}
-        onClick={() => handleAddPastVote(termIndex)}
-      >
-        Add Past Vote
-      </Button>
-    </Grid>
-    <Grid size={1}></Grid>
-  
+                    {/* Add Past Vote Button */}
+                    <Grid size={1}></Grid>
+                    <Grid size={10} sx={{ textAlign: "right" }}>
+                      <Button
+                        variant="outlined"
+                        className="addVoteActivity-btn"
+                        startIcon={<AddIcon />}
+                        onClick={() => handleAddPastVote(termIndex)}
+                      >
+                        Add Past Vote
+                      </Button>
+                    </Grid>
+                    <Grid size={1}></Grid>
+
 
 
                   </Grid>
