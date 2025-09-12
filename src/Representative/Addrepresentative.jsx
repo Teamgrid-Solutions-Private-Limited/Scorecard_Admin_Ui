@@ -2930,6 +2930,8 @@ export default function Addrepresentative(props) {
                 severity={snackbarSeverity}
                 sx={{
                   width: "100%",
+                  border: "none",
+                  boxShadow: "none",
                   bgcolor:
                     snackbarMessage === "Changes Published successfully!"
                       ? "#daf4f0"
