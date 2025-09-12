@@ -35,12 +35,9 @@ node_modules
 # Environment Variables
 .env
 .env.local
-.env.development
 .env.test.local
-.env.production
 .env.development
 .env.production
-
 # Misc
 .DS_Store
 *.pem
