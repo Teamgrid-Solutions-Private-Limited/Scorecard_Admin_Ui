@@ -34,6 +34,7 @@ import {
   IconButton,
   Paper,
   ClickAwayListener,
+  InputAdornment,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -50,6 +51,7 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function Activity(props) {
   const dispatch = useDispatch();
@@ -74,6 +76,8 @@ export default function Activity(props) {
   const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); // Store selected activity IDs
   const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
   const [bulkTrackActivity, setBulkTrackActivity] = useState(""); // Store bulk track activity value
+
+  
   useEffect(() => {
     dispatch(getAllActivity());
   }, [dispatch]);
@@ -82,15 +86,19 @@ export default function Activity(props) {
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
-  const filteredActivities = activities.filter((activity) => {
+ const filteredActivities = activities.filter((activity) => {
     // Status filter
     const statusMatch =
       statusFilter.length === 0 ||
       (activity.status && statusFilter.includes(activity.status));
-
-    return statusMatch;
+ 
+    const searchMatch =
+      !searchQuery ||
+      (activity.title &&
+        activity.title.toLowerCase().includes(searchQuery.toLowerCase()));
+     
+    return statusMatch && searchMatch;
   });
-
   const activitiesData = filteredActivities.map((activity, index) => ({
     _id: activity._id || index,
     date: formatDate(activity.date),
@@ -252,13 +260,29 @@ export default function Activity(props) {
           <FixedHeader />
           <MobileHeader/>
           <Stack spacing={2} className="stackBox" >
+
             <Box className="actionsBox" >
-              <Stack
+             <Stack
                 direction={{ xs: "column", sm: "row" }}
-                spacing={2}
+                spacing={1}
                 alignItems="center"
                 sx={{ ml: "auto", width: { xs: "100%", sm: "auto" } }}
               >
+                <TextField
+                size="small"
+                variant="outlined"
+                placeholder="Search Activities"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <SearchIcon className="search-icon" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                className="custom-search"
+                />
                 <Box
                   sx={{
                     position: "relative",
@@ -283,7 +307,7 @@ export default function Activity(props) {
                       Filters
                     </Button>
                   </Badge>
-
+ 
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
                       <Paper className="billFilter-paper">
@@ -298,7 +322,7 @@ export default function Activity(props) {
                             </IconButton>
                           </Box>
                         </Box>
-
+ 
                         {/* Status Filter */}
                          <Box className="filter-scroll">
                           {statusOptions.map((status) => (
@@ -319,7 +343,7 @@ export default function Activity(props) {
                             </Box>
                           ))}
                         </Box>
-
+ 
                         {/* Clear All Button */}
                         <Box>
                           <Button
@@ -342,9 +366,6 @@ export default function Activity(props) {
                     </ClickAwayListener>
                   )}
                 </Box>
-              </Stack>
-
-              <Stack direction="row" spacing={2} alignItems="center">
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
                   className={`bulkEditBtn ${isBulkEditMode ? "active" : ""}`}

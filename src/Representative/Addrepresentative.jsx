@@ -196,6 +196,7 @@ export default function Addrepresentative(props) {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${name}`;
 
+
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) => {
         if (index !== termIndex) return term;
@@ -203,7 +204,7 @@ export default function Addrepresentative(props) {
         // If term is changing, check if we have existing data for this term
         if (name === "termId" && value !== term.termId) {
           const newTermId = value;
-          const selectedTerm = terms.find(t => t._id === newTermId);
+          const selectedTerm = terms.find((t) => t._id === newTermId);
           const termCongresses = selectedTerm?.congresses || [];
 
           // Convert congress numbers to strings for comparison
@@ -211,9 +212,12 @@ export default function Addrepresentative(props) {
 
           // Check if we have existing data for this term in houseData
           const existingTermData = houseData?.currentHouse?.find(
-            ht => ht.termId &&
-              (ht.termId._id === newTermId || ht.termId === newTermId ||
-                (typeof ht.termId === 'object' && ht.termId.name === selectedTerm?.name))
+            (ht) =>
+              ht.termId &&
+              (ht.termId._id === newTermId ||
+                ht.termId === newTermId ||
+                (typeof ht.termId === "object" &&
+                  ht.termId.name === selectedTerm?.name))
           );
 
           console.log("Existing term data:", existingTermData);
@@ -241,10 +245,13 @@ export default function Addrepresentative(props) {
             // Only use existing values if they exist
             summary = existingTermData.summary || "";
             rating = existingTermData.rating || "";
-            currentTerm = existingTermData.currentTerm !== undefined ? existingTermData.currentTerm : false;
+            currentTerm =
+              existingTermData.currentTerm !== undefined
+                ? existingTermData.currentTerm
+                : false;
           } else {
             // Filter votes to keep only those that belong to the new term's congresses
-            votesScore = term.votesScore.filter(vote => {
+            votesScore = term.votesScore.filter((vote) => {
               if (!vote.voteId || vote.voteId === "") return true; // keep placeholder
 
               const voteItem = votes.find(v => v._id === vote.voteId);
@@ -285,8 +292,8 @@ export default function Addrepresentative(props) {
             votesScore: finalVotesScore,
             activitiesScore: finalActivitiesScore,
             summary, // Will be empty if no existing data
-            rating,  // Will be empty if no existing data
-            currentTerm // Will be false if no existing data
+            rating, // Will be empty if no existing data
+            currentTerm, // Will be false if no existing data
           };
         }
 
@@ -300,7 +307,7 @@ export default function Addrepresentative(props) {
       if (isActualChange && !localChanges.includes(fieldName)) {
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
-        setLocalChanges((prev) => prev.filter(f => f !== fieldName));
+        setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
 
       return newTerms;
@@ -2069,12 +2076,14 @@ export default function Addrepresentative(props) {
                                         editorInfo?.editorName ||
                                         "Unknown Editor";
                                       const editTime = editorInfo?.editedAt
-                                        ? new Date(editorInfo.editedAt).toLocaleString([], {
-                                          month: "short",
-                                          day: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
+                                        ? new Date(
+                                            editorInfo.editedAt
+                                          ).toLocaleString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
                                         : "unknown time";
                                       const fromQuorum =
                                         field.fromQuorum || false;
@@ -2150,7 +2159,9 @@ export default function Addrepresentative(props) {
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
-                                    {formData.publishStatus === "published" ? "" : "Unsaved Changes"}
+                                    {formData.publishStatus === "published"
+                                      ? ""
+                                      : "Unsaved Changes"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field, index) => (
@@ -2188,15 +2199,15 @@ export default function Addrepresentative(props) {
                                               </Typography>
                                             </Box>
                                           }
-                                        // secondary={
-                                        //   <Typography
-                                        //     variant="caption"
-                                        //     color="text.secondary"
-                                        //   >
-                                        //     Edited just now
-                                        //   </Typography>
-                                        // }
-                                        // sx={{ my: 0 }}
+                                          // secondary={
+                                          //   <Typography
+                                          //     variant="caption"
+                                          //     color="text.secondary"
+                                          //   >
+                                          //     Edited just now
+                                          //   </Typography>
+                                          // }
+                                          // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
