@@ -71,7 +71,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
-import { deleteSenatorData } from "../redux/reducer/senetorTermSlice"; 
+import { deleteSenatorData } from "../redux/reducer/senetorTermSlice";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
@@ -92,10 +92,10 @@ export default function AddSenator(props) {
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const allVotes = useSelector((state) => state.vote.votes);
-    const [selectionError, setSelectionError] = useState({
+  const [selectionError, setSelectionError] = useState({
     show: false,
     message: "",
     type: "",
@@ -103,87 +103,83 @@ export default function AddSenator(props) {
   const validateVoteInTermRange = (voteId, termId) => {
     if (!voteId || !termId)
       return { isValid: false, message: "Invalid selection" };
- 
+
     const vote = allVotes.find((v) => v._id === voteId);
     const term = terms.find((t) => t._id === termId);
- 
+
     if (!vote) return { isValid: false, message: "Vote not found" };
     if (!term) return { isValid: false, message: "Term not found" };
- 
+
     const voteDate = new Date(vote.date);
     const termStart = new Date(`${term.startYear}-01-01`);
     const termEnd = new Date(`${term.endYear}-12-31`);
- 
+
     const isDateInRange = voteDate >= termStart && voteDate <= termEnd;
     const isCongressInTerm = term.congresses.includes(Number(vote.congress));
- 
+
     if (!isDateInRange) {
       return {
         isValid: false,
-        message: `Selected vote is outside the term range (${
-          term.startYear
-        }-${term.endYear})`,
+        message: `Selected vote is outside the term range (${term.startYear
+          }-${term.endYear})`,
       };
     }
- 
+
     if (!isCongressInTerm) {
       return {
         isValid: false,
-        message: `This vote (Congress ${
-          vote.congress
-        }) is not part of the selected term's congresses (${term.congresses.join(
-          ", "
-        )})`,
+        message: `This vote (Congress ${vote.congress
+          }) is not part of the selected term's congresses (${term.congresses.join(
+            ", "
+          )})`,
       };
     }
- 
+
     return { isValid: true, message: "" };
   };
- 
+
   const validateActivityInTermRange = (activityId, termId) => {
     if (!activityId || !termId)
       return { isValid: false, message: "Invalid selection" };
- 
+
     const activity = allActivities.find((a) => a._id === activityId);
     const term = terms.find((t) => t._id === termId);
- 
+
     if (!activity) return { isValid: false, message: "Activity not found" };
     if (!term) return { isValid: false, message: "Term not found" };
- 
+
     const activityDate = new Date(activity.date);
     const termStart = new Date(`${term.startYear}-01-01`);
     const termEnd = new Date(`${term.endYear}-12-31`);
- 
+
     const isDateInRange = activityDate >= termStart && activityDate <= termEnd;
     const isCongressInTerm = term.congresses.includes(
       Number(activity.congress || 0)
     );
- 
+
     if (!isDateInRange) {
       return {
         isValid: false,
-        message: `Selected activity is outside the term range (${
-          term.startYear
-        }-${term.endYear})`,
+        message: `Selected activity is outside the term range (${term.startYear
+          }-${term.endYear})`,
       };
     }
- 
+
     if (!isCongressInTerm) {
       return {
         isValid: false,
-        message: `This activity (Congress ${
-          activity.congress
-        }) is not part of the selected term's congresses (${term.congresses.join(
-          ", "
-        )})`,
+        message: `This activity (Congress ${activity.congress
+          }) is not part of the selected term's congresses (${term.congresses.join(
+            ", "
+          )})`,
       };
     }
- 
+
     return { isValid: true, message: "" };
   };
 
   const allActivities = useSelector((state) => state.activity.activities);
- 
+
   const startYear = senatorData?.currentSenator?.[0]?.termId?.startYear;
 
   const termStart = new Date(
@@ -203,14 +199,14 @@ export default function AddSenator(props) {
     );
   });
 
-  
+
   const senatorr = senatorData?.currentSenator?.[0];
   const senatorVotes = senatorr?.votesScore || [];
 
   const participatedVotes = allVotes.filter((vote) => {
     const voteDate = new Date(vote.date);
 
-   
+
     const inTerm =
       voteDate >= termStart &&
       voteDate <= termEnd &&
@@ -218,7 +214,7 @@ export default function AddSenator(props) {
 
     if (!inTerm) return false;
 
-    
+
     return senatorVotes.some((v) => {
       if (!v?.score || v.score.trim() === "") return false;
 
@@ -258,7 +254,7 @@ export default function AddSenator(props) {
 
     if (!inTerm) return false;
 
-    
+
     return senatorActivities.some((a) => {
       if (!a?.score || a.score.trim() === "") return false;
 
@@ -275,7 +271,7 @@ export default function AddSenator(props) {
     });
   });
 
- 
+
   const fieldLabels = {
     // Senator fields
     name: "Senator Name",
@@ -383,14 +379,14 @@ export default function AddSenator(props) {
           const selectedTerm = terms?.find((t) => t._id === value);
 
           if (selectedTerm) {
-            
+
             const newTermStart = new Date(`${selectedTerm.startYear}-01-01`);
             const newTermEnd = new Date(`${selectedTerm.endYear}-12-31`);
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
 
-             
+
               const inTerm =
                 voteDate >= newTermStart &&
                 voteDate <= newTermEnd &&
@@ -398,7 +394,7 @@ export default function AddSenator(props) {
 
               if (!inTerm) return false;
 
-        
+
               return senatorVotes.some((v) => {
                 if (!v?.score || v.score.trim() === "") return false;
 
@@ -415,12 +411,12 @@ export default function AddSenator(props) {
               });
             });
 
-           
+
             const existingVoteScores = term.votesScore || [];
 
             // Create new votesScore array with senator's actual scores
             updatedTerm.votesScore = newFilteredVotes.map((vote) => {
-            
+
               const senatorVote = senatorVotes.find((v) => {
                 const vId =
                   typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
@@ -433,7 +429,7 @@ export default function AddSenator(props) {
                 );
               });
 
-            
+
               let scoreValue = "";
               if (senatorVote?.score) {
                 const voteScore = senatorVote.score.toLowerCase();
@@ -474,7 +470,7 @@ export default function AddSenator(props) {
 
               if (!inTerm) return false;
 
-              
+
               return senatorActivities.some((a) => {
                 if (!a?.score || a.score.trim() === "") return false;
 
@@ -485,7 +481,7 @@ export default function AddSenator(props) {
               });
             });
 
-          
+
             updatedTerm.activitiesScore = newParticipatedActivities.map((activity) => {
               const senAct = senatorActivities.find((a) => {
                 const aId =
@@ -509,40 +505,40 @@ export default function AddSenator(props) {
               };
             });
 
-          
+
             if (updatedTerm.activitiesScore.length === 0) {
               updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
             }
-             const newPastVotes = allVotes.filter((vote) => {
-   
-      return vote.isImportantPastVote === true; 
-    });
+            const newPastVotes = allVotes.filter((vote) => {
 
-    updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
-      const senatorPastVote = senatorVotes.find((v) => {
-        const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-        return vId === vote._id;
-      });
+              return vote.isImportantPastVote === true;
+            });
 
-      return {
-        voteId: vote._id,
-        score: senatorPastVote?.score || "",
-        title: vote.title,
-      };
-    });
+            updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
+              const senatorPastVote = senatorVotes.find((v) => {
+                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                return vId === vote._id;
+              });
 
-    if (updatedTerm.pastVotesScore.length === 0) {
-      updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
-    }
-            
+              return {
+                voteId: vote._id,
+                score: senatorPastVote?.score || "",
+                title: vote.title,
+              };
+            });
+
+            if (updatedTerm.pastVotesScore.length === 0) {
+              updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
+            }
+
           }
         }
 
         return updatedTerm;
       });
-      
 
-    
+
+
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
@@ -590,7 +586,7 @@ export default function AddSenator(props) {
         return { ...term, summary: content };
       });
 
-    
+
       const originalTerm = originalTermData[termIndex] || {};
       const originalSummary = originalTerm.summary || "";
       const isActualChange = compareValues(content, originalSummary);
@@ -619,7 +615,7 @@ export default function AddSenator(props) {
     );
   };
 
- 
+
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -638,7 +634,7 @@ export default function AddSenator(props) {
       await dispatch(discardSenatorChanges(id)).unwrap();
       navigate(0);
 
-     
+
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenetorId(id));
       setSnackbarMessage(
@@ -672,7 +668,7 @@ export default function AddSenator(props) {
           : term
       );
 
-     
+
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -683,14 +679,14 @@ export default function AddSenator(props) {
       return updatedTerms;
     });
   };
-  
+
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
     if (field === "voteId" && value) {
       const termId = senatorTermData[termIndex].termId;
       const validation = validateVoteInTermRange(value, termId);
- 
+
       if (!validation.isValid) {
         setSelectionError({
           show: true,
@@ -713,7 +709,7 @@ export default function AddSenator(props) {
           : term
       );
 
-  
+
       const originalTerm = originalTermData[termIndex] || {};
       const originalVote = originalTerm.votesScore?.[voteIndex] || {};
       const isActualChange = compareValues(value, originalVote[field]);
@@ -744,7 +740,7 @@ export default function AddSenator(props) {
     );
   };
 
- 
+
   const handleRemoveActivity = (termIndex, activityIndex) => {
     setSenatorTermData((prev) => {
       const updatedTerms = prev.map((term, index) =>
@@ -758,7 +754,7 @@ export default function AddSenator(props) {
           : term
       );
 
-    
+
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -773,10 +769,10 @@ export default function AddSenator(props) {
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
       }`;
-       if (field === "activityId" && value) {
+    if (field === "activityId" && value) {
       const termId = senatorTermData[termIndex].termId;
       const validation = validateActivityInTermRange(value, termId);
- 
+
       if (!validation.isValid) {
         setSelectionError({
           show: true,
@@ -798,7 +794,7 @@ export default function AddSenator(props) {
         return { ...term, activitiesScore: newActivities };
       });
 
-      
+
       const originalTerm = originalTermData[termIndex] || {};
       const originalActivity =
         originalTerm.activitiesScore?.[activityIndex] || {};
@@ -818,80 +814,80 @@ export default function AddSenator(props) {
   };
 
   const handleAddPastVote = (termIndex) => {
-  setSenatorTermData((prev) =>
-    prev.map((term, index) =>
-      index === termIndex
-        ? {
+    setSenatorTermData((prev) =>
+      prev.map((term, index) =>
+        index === termIndex
+          ? {
             ...term,
             pastVotesScore: [...(term.pastVotesScore || []), { voteId: "", score: "" }],
           }
-        : term
-    )
-  );
-};
+          : term
+      )
+    );
+  };
 
-const handleRemovePastVote = (termIndex, voteIndex) => {
-  setSenatorTermData((prev) => {
-    const updatedTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
+  const handleRemovePastVote = (termIndex, voteIndex) => {
+    setSenatorTermData((prev) => {
+      const updatedTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
             ...term,
             pastVotesScore: term.pastVotesScore.filter((_, i) => i !== voteIndex),
           }
-        : term
-    );
+          : term
+      );
 
-    setLocalChanges((prevChanges) =>
-      prevChanges.filter(
-        (change) =>
-          !change.startsWith(`term${termIndex}_pastVotesScore_${voteIndex + 1}`)
-      )
-    );
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter(
+          (change) =>
+            !change.startsWith(`term${termIndex}_pastVotesScore_${voteIndex + 1}`)
+        )
+      );
 
-    return updatedTerms;
-  });
-};
+      return updatedTerms;
+    });
+  };
 
-const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
-  const voteChangeId = `term${termIndex}_pastVotesScore_${voteIndex + 1}`;
+  const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
+    const voteChangeId = `term${termIndex}_pastVotesScore_${voteIndex + 1}`;
 
-  setSenatorTermData((prev) => {
-    const newTerms = prev.map((term, index) =>
-      index === termIndex
-        ? {
+    setSenatorTermData((prev) => {
+      const newTerms = prev.map((term, index) =>
+        index === termIndex
+          ? {
             ...term,
             pastVotesScore: term.pastVotesScore.map((vote, i) =>
               i === voteIndex ? { ...vote, [field]: value } : vote
             ),
           }
-        : term
-    );
+          : term
+      );
 
-    const originalTerm = originalTermData[termIndex] || {};
-    const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
-    const isActualChange = compareValues(value, originalVote[field]);
+      const originalTerm = originalTermData[termIndex] || {};
+      const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
+      const isActualChange = compareValues(value, originalVote[field]);
 
-    if (isActualChange && !localChanges.includes(voteChangeId)) {
-      setLocalChanges((prev) => [...prev, voteChangeId]);
-    } else if (!isActualChange && localChanges.includes(voteChangeId)) {
-      setLocalChanges((prev) => prev.filter((f) => f !== voteChangeId));
-    }
+      if (isActualChange && !localChanges.includes(voteChangeId)) {
+        setLocalChanges((prev) => [...prev, voteChangeId]);
+      } else if (!isActualChange && localChanges.includes(voteChangeId)) {
+        setLocalChanges((prev) => prev.filter((f) => f !== voteChangeId));
+      }
 
-    return newTerms;
-  });
-};
+      return newTerms;
+    });
+  };
 
 
   const contentRefs = useRef([]);
   const handleEditorChange = useCallback((content, termIndex) => {
     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
 
-    
+
     setLocalChanges((prev) => {
       return prev.includes(fieldName) ? prev : [...prev, fieldName];
     });
 
-    
+
     if (!contentRefs.current[termIndex]) {
       contentRefs.current[termIndex] = {};
     }
@@ -911,7 +907,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
     );
   }, []);
 
-  
+
   const handleAddTerm = () => {
     setSenatorTermData((prev) => [
       ...prev,
@@ -932,10 +928,10 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
     ]);
   };
 
-   const handleRemoveTerm = (termIndex) => {
+  const handleRemoveTerm = (termIndex) => {
     setSenatorTermData((prev) => {
       const removed = prev[termIndex];
-     const removalId = `Term_${termIndex+1} Removed`;
+      const removalId = `Term_${termIndex + 1} Removed`;
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
         if (!localChanges.includes(removalId)) {
@@ -1051,6 +1047,32 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                 _id: vote._id || undefined,
               };
             });
+
+          // Extra merge step goes here
+          const extraVotes = allVotes
+            .filter((vote) => {
+              const voteDate = new Date(vote.date);
+              const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+              const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+
+              const inRange =
+                voteDate >= termStart &&
+                voteDate <= termEnd &&
+                matchedTerm.congresses.includes(Number(vote.congress));
+
+              const alreadyIncluded = votesScore.some((v) => v.voteId === vote._id);
+
+              //  only include if in range, not already added, AND senator has a score
+              const hasScore = !!getVoteScore(vote._id);
+
+              return inRange && !alreadyIncluded && hasScore;
+            })
+            .map((vote) => ({
+              voteId: vote._id,
+              score: getVoteScore(vote._id),
+              title: vote.title || "",
+            }));
+          votesScore = [...votesScore, ...extraVotes];
         } else if (termVotes.length > 0) {
           votesScore = termVotes.map((vote) => ({
             voteId: vote._id,
@@ -1059,6 +1081,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         } else {
           votesScore = [{ voteId: "", score: "" }];
         }
+
         const getActivityScore = (activityId) => {
           const senAct = senatorActivities.find((a) => {
             const aId =
@@ -1107,12 +1130,9 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         ) {
           activitiesScore = term.activitiesScore
             .filter((activity) => {
-              const activityId =
-                activity.activityId?._id || activity.activityId;
+              const activityId = activity.activityId?._id || activity.activityId;
               if (!activityId) return false;
-              const activityData = allActivities.find(
-                (a) => a._id === activityId
-              );
+              const activityData = allActivities.find((a) => a._id === activityId);
               if (!activityData || !matchedTerm) return false;
 
               const activityDate = new Date(activityData.date);
@@ -1122,25 +1142,51 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
               return (
                 activityDate >= termStart &&
                 activityDate <= termEnd &&
-                matchedTerm.congresses.includes(
-                  Number(activityData.congress || 0)
-                )
+                matchedTerm.congresses.includes(Number(activityData.congress || 0))
               );
             })
             .map((activity) => {
               const actualActivity = allActivities.find(
-                (a) =>
-                  a._id === (activity.activityId?._id || activity.activityId)
+                (a) => a._id === (activity.activityId?._id || activity.activityId)
               );
 
               return {
-                activityId:
-                  activity.activityId?._id || activity.activityId || "",
+                activityId: activity.activityId?._id || activity.activityId || "",
                 score: activity.score || "",
                 _activityTitle: actualActivity?.title || "Unknown Activity",
                 title: actualActivity?.title || "",
               };
             });
+
+          //  Extra merge step for missing but matching activities with score
+          const extraActivities = allActivities
+            .filter((activity) => {
+              const activityDate = new Date(activity.date);
+              const termStart = new Date(`${matchedTerm.startYear}-01-01`);
+              const termEnd = new Date(`${matchedTerm.endYear}-12-31`);
+
+              const inRange =
+                activityDate >= termStart &&
+                activityDate <= termEnd &&
+                matchedTerm.congresses.includes(Number(activity.congress || 0));
+
+              const alreadyIncluded = activitiesScore.some(
+                (a) => a.activityId === activity._id
+              );
+
+              //  only include if in range, not already added, AND senator has a score
+              const hasScore = !!getActivityScore(activity._id);
+
+              return inRange && !alreadyIncluded && hasScore;
+            })
+            .map((activity) => ({
+              activityId: activity._id,
+              score: getActivityScore(activity._id),
+              _activityTitle: activity.title || "Unknown Activity",
+              title: activity.title || "",
+            }));
+
+          activitiesScore = [...activitiesScore, ...extraActivities];
         } else if (termActivities.length > 0) {
           activitiesScore = termActivities.map((activity) => ({
             activityId: activity._id,
@@ -1152,44 +1198,44 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
           activitiesScore = [{ activityId: "", score: "" }];
         }
 
-         let pastVotesScore;
-      if (
-        Array.isArray(term.pastVotesScore) &&
-        term.pastVotesScore.length > 0 &&
-        term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
-      ) {
-        pastVotesScore = term.pastVotesScore
-          .filter((vote) => {
-            const voteId = vote.voteId?._id || vote.voteId;
-            return voteId && voteId.toString().trim() !== "";
-          })
-          .map((vote) => {
-            let scoreValue = "";
-            const dbScore = vote.score?.toLowerCase();
-            if (dbScore?.includes("yea")) {
-              scoreValue = "yea";
-            } else if (dbScore?.includes("nay")) {
-              scoreValue = "nay";
-            } else if (dbScore?.includes("other")) {
-              scoreValue = "other";
-            } else {
-              scoreValue = vote.score || "";
-            }
+        let pastVotesScore;
+        if (
+          Array.isArray(term.pastVotesScore) &&
+          term.pastVotesScore.length > 0 &&
+          term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
+        ) {
+          pastVotesScore = term.pastVotesScore
+            .filter((vote) => {
+              const voteId = vote.voteId?._id || vote.voteId;
+              return voteId && voteId.toString().trim() !== "";
+            })
+            .map((vote) => {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
 
-            
-            const voteData = allVotes.find((v) => v._id === (vote.voteId?._id || vote.voteId));
-            
-            return {
-              voteId: vote.voteId?._id || vote.voteId || "",
-              score: scoreValue,
-              title: voteData?.title || vote.voteId?.title || vote.title || "",
-              _id: vote._id || undefined,
-            };
-          });
-      } else {
-       
-        pastVotesScore = [{ voteId: "", score: "" }];
-      }
+
+              const voteData = allVotes.find((v) => v._id === (vote.voteId?._id || vote.voteId));
+
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+                title: voteData?.title || vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
+              };
+            });
+        } else {
+
+          pastVotesScore = [{ voteId: "", score: "" }];
+        }
 
         return {
           _id: term._id,
@@ -1247,7 +1293,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
 
     const changes = [];
 
-    
+
     Object.keys(formData).forEach((key) => {
       if (
         key === "editedFields" ||
@@ -1260,7 +1306,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
       }
     });
 
-   
+
     senatorTermData.forEach((term, termIndex) => {
       const originalTerm = originalTermData[termIndex] || {};
       const isNewTerm = term.isNew;
@@ -1282,11 +1328,11 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
           const currentSummary = term.summary || "";
           const originalSummary = originalTerm.summary || "";
 
-          
+
           if (currentSummary.trim() !== originalSummary.trim()) {
             changes.push(`term${termIndex}_summary`);
           }
-        } else if (["votesScore", "activitiesScore","pastVotesScore"].includes(key)) {
+        } else if (["votesScore", "activitiesScore", "pastVotesScore"].includes(key)) {
           const current = (term[key] || []).filter((item) =>
             Object.values(item).some((val) => val !== "" && val !== null)
           );
@@ -1317,14 +1363,14 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
       });
     });
 
-    
+
     const backendEditedFields = Array.isArray(formData.editedFields)
       ? formData.editedFields
       : [];
     const mergedChanges = [...new Set([...backendEditedFields, ...changes])];
 
     setEditedFields(mergedChanges);
-   
+
     setEditedFields(changes);
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
@@ -1403,7 +1449,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    const fieldName = "Photo"; 
+    const fieldName = "Photo";
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -1411,7 +1457,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
 
     setFormData((prev) => ({ ...prev, photo: file }));
   };
- 
+
 
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
@@ -1422,7 +1468,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         ? status !== originalFormData.status
         : true;
 
-     
+
       setLocalChanges((prevChanges) => {
         if (isActualChange && !prevChanges.includes(fieldName)) {
           return [...prevChanges, fieldName];
@@ -1436,7 +1482,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
     });
   };
 
-  
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -1444,13 +1490,13 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
     // Helper: sanitize keys for MongoDB
     const sanitizeKey = (str) => {
       return str
-        .replace(/[^a-zA-Z0-9_]/g, "_") 
-        .replace(/_+/g, "_")           
-        .replace(/^_+|_+$/g, "");      
+        .replace(/[^a-zA-Z0-9_]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
     };
 
     try {
-     
+
       const hasSelectedTerms = senatorTermData.some(term =>
         term.termId && term.termId.toString().trim() !== ""
       );
@@ -1475,7 +1521,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         return;
       }
 
-  
+
       const currentTerms = senatorTermData.filter((term) => term.currentTerm);
       if (currentTerms.length > 1) {
         setLoading(false);
@@ -1487,13 +1533,13 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         deletedTermIds.length > 0 ||
         (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
 
-        if (userRole === "editor" && !hasLocalChanges) {
+      if (userRole === "editor" && !hasLocalChanges) {
         setLoading(false);
         handleSnackbarOpen("No changes detected. Nothing to update.", "info");
         return;
       }
 
-    
+
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -1501,7 +1547,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         editedAt: new Date(),
       };
 
-     
+
       if (deletedTermIds.length > 0) {
         await Promise.all(
           deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
@@ -1510,7 +1556,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
       }
 
 
-      
+
       const existingEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
         : [];
@@ -1525,36 +1571,36 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         else if (Array.isArray(field.field) && field.field[0] === "pastVotesScore" && field.name) {
           fieldKey = `pastVotesScore_${sanitizeKey(field.name)}`;
         }
-         else {
+        else {
           fieldKey = Array.isArray(field.field) ? field.field[0] : field;
         }
         existingFieldsMap.set(fieldKey, { ...field });
       });
 
-     
+
       const processedChanges = [];
 
-    
+
       const hasVoteChanged = (termIndex, voteIndex, vote) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalVote = originalTerm.votesScore?.[voteIndex] || {};
         return vote.voteId !== originalVote.voteId || vote.score !== originalVote.score;
       };
 
-     
+
       const hasActivityChanged = (termIndex, activityIndex, activity) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
         return activity.activityId !== originalActivity.activityId || activity.score !== originalActivity.score;
       };
-       const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
-      return (
-        vote.voteId !== originalVote.voteId ||
-        vote.score !== originalVote.score
-      );
-    };
+      const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
+        return (
+          vote.voteId !== originalVote.voteId ||
+          vote.score !== originalVote.score
+        );
+      };
 
       senatorTermData.forEach((term, termIndex) => {
         // votesScore - only process changed votes
@@ -1577,7 +1623,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
           }
         });
 
-       
+
         term.activitiesScore.forEach((activity, activityIndex) => {
           if (activity.activityId && activity.activityId.toString().trim() !== "") {
             if (hasActivityChanged(termIndex, activityIndex, activity)) {
@@ -1596,31 +1642,30 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
             }
           }
         });
-       term.pastVotesScore.forEach((vote, voteIndex) => {
-        if (vote.voteId && vote.voteId.toString().trim() !== "") {
-          if (hasPastVoteChanged(termIndex, voteIndex, vote)) {
-            const voteItem = votes.find((v) => v._id === vote.voteId);
-            if (voteItem) {
-              const uniqueId = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Important Past Vote ${
-                  voteIndex + 1
-                }`,
-                field: ["pastVotesScore"],
-                name: voteItem.title,
-                termIndex,
-                voteIndex,
-              });
+        term.pastVotesScore.forEach((vote, voteIndex) => {
+          if (vote.voteId && vote.voteId.toString().trim() !== "") {
+            if (hasPastVoteChanged(termIndex, voteIndex, vote)) {
+              const voteItem = votes.find((v) => v._id === vote.voteId);
+              if (voteItem) {
+                const uniqueId = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1
+                    }`,
+                  field: ["pastVotesScore"],
+                  name: voteItem.title,
+                  termIndex,
+                  voteIndex,
+                });
+              }
             }
           }
-        }
+        });
       });
-    });
 
-   
+
       localChanges.forEach((change) => {
-        if (!change.includes("votesScore_")&& !change.includes("pastVotesScore_") && !change.includes("activitiesScore_") && !change.startsWith("term")) {
+        if (!change.includes("votesScore_") && !change.includes("pastVotesScore_") && !change.includes("activitiesScore_") && !change.startsWith("term")) {
           processedChanges.push({
             uniqueId: change,
             displayName: getFieldDisplayName(change),
@@ -1630,18 +1675,18 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         }
       });
 
-      
+
       const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-     
+
       const hasNonDefaultValue = (field, value) => {
         if (value === null || value === undefined) return false;
         if (typeof value === "string" && value.trim() === "") return false;
-       
+
         return true;
       };
 
-     
+
       senatorTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
         const termFields = ["summary", "rating", "currentTerm", "termId"];
@@ -1683,15 +1728,15 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
 
       const allChanges = Array.from(existingFieldsMap.values());
 
-    
+
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
       const changedFieldsInThisSession = new Set();
 
-     
+
       localChanges.forEach((change) => {
         let editorKey;
 
-   
+
         const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
         if (voteMatch) {
           const [, termIndex, voteIndex] = voteMatch;
@@ -1708,7 +1753,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
           return;
         }
 
-  
+
         const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
         if (activityMatch) {
           const [, termIndex, activityIndex] = activityMatch;
@@ -1726,37 +1771,37 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         }
 
         const pastVoteMatch = change.match(/^term(\d+)_pastVotesScore_(\d+)$/);
-      if (pastVoteMatch) {
-        const [, termIndex, voteIndex] = pastVoteMatch;
-        const term = senatorTermData[parseInt(termIndex)];
-        const vote = term?.pastVotesScore?.[parseInt(voteIndex)];
-        if (vote && vote.voteId) {
-          const voteItem = votes.find((v) => v._id === vote.voteId);
-          if (voteItem && voteItem.title) {
-            editorKey = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
-            updatedFieldEditors[editorKey] = currentEditor;
-            changedFieldsInThisSession.add(editorKey);
+        if (pastVoteMatch) {
+          const [, termIndex, voteIndex] = pastVoteMatch;
+          const term = senatorTermData[parseInt(termIndex)];
+          const vote = term?.pastVotesScore?.[parseInt(voteIndex)];
+          if (vote && vote.voteId) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem && voteItem.title) {
+              editorKey = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+            }
           }
+          return;
         }
-        return;
-      }
 
-        
 
-        
+
+
         editorKey = change;
         updatedFieldEditors[editorKey] = currentEditor;
         changedFieldsInThisSession.add(editorKey);
       });
 
-  
+
       processedChanges.forEach((change) => {
         if (!changedFieldsInThisSession.has(change.uniqueId)) {
           updatedFieldEditors[change.uniqueId] = updatedFieldEditors[change.uniqueId] || currentEditor;
         }
       });
 
-    
+
       const senatorUpdate = {
         ...formData,
         editedFields: allChanges,
@@ -1764,13 +1809,13 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
 
-  
+
       if (senatorUpdate.publishStatus === "published") {
         senatorUpdate.editedFields = [];
         senatorUpdate.fieldEditors = {};
       }
 
-      // 12️⃣ Update senator
+      //  Update senator
       if (id) {
         const formDataToSend = new FormData();
         Object.entries(senatorUpdate).forEach(([key, value]) => {
@@ -1785,7 +1830,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
         await dispatch(updateSenator({ id, formData: formDataToSend })).unwrap();
       }
 
-      // 13️⃣ Update terms
+      //  Update terms
       const termPromises = senatorTermData.map((term, index) => {
         const cleanVotesScore = term.votesScore
           .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
@@ -1801,15 +1846,15 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
             activityId: activity.activityId.toString(),
             score: activity.score,
           }));
-          const cleanPastVotesScore = term.pastVotesScore
-  ? term.pastVotesScore
-      .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
-      .map((vote) => ({
-        voteId: vote.voteId.toString(),
-        score: vote.score,
-        title: vote.title || "",
-      }))
-  : [];
+        const cleanPastVotesScore = term.pastVotesScore
+          ? term.pastVotesScore
+            .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
+            .map((vote) => ({
+              voteId: vote.voteId.toString(),
+              score: vote.score,
+              title: vote.title || "",
+            }))
+          : [];
 
 
         const termSpecificChanges = allChanges.filter((f) => {
@@ -1836,7 +1881,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
 
       await Promise.all(termPromises);
 
-      // 14️⃣ Reload data
+      // Reload data
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
       await dispatch(getSenatorById(id)).unwrap();
 
@@ -1964,7 +2009,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
     return voteExists ? voteId : "";
   };
 
-  
+
 
   return (
     <AppTheme key={componentKey}>
@@ -2063,7 +2108,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                 formData.publishStatus &&
                 (formData.publishStatus !== "published" || localChanges.length > 0) &&
                 statusData &&
-            
+
                 !(formData.publishStatus === "under review" && !hasSelectedTerms()) &&
                 (hasSelectedTerms() ||
                   (Array.isArray(formData?.editedFields) && formData.editedFields.length > 0) ||
@@ -2172,14 +2217,14 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                             }
 
                             const formatFieldName = (field, index, senatorTermData = [],) => {
-                             
-                           
+
+
                               if (typeof field === "object" && field !== null) {
-                               
+
                                 if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
                                   const billTitle = field.name;
 
-                              
+
                                   for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
                                     const term = senatorTermData[termIndex];
                                     const votesScore = term?.votesScore || [];
@@ -2188,17 +2233,17 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                       const vote = votesScore[voteIndex];
 
                                       if (vote) {
-                                      
+
                                         if (vote.title && vote.title === billTitle) {
                                           return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
                                         }
 
-                                        
+
                                         if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
                                           return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
                                         }
 
-                                      
+
                                         if (typeof vote.voteId === "string" && vote.voteId === field._id) {
                                           return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
                                         }
@@ -2206,11 +2251,11 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                     }
                                   }
 
-                                
+
                                   return null
                                 }
 
-                              
+
                                 if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
                                   const activityTitle = field.name;
 
@@ -2235,39 +2280,39 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                   }
                                   return null;
                                 }
-                                 if (
-    Array.isArray(field.field) &&
-    field.field[0] === "pastVotesScore" &&
-    field.name
-  ) {
-    const billTitle = field.name;
+                                if (
+                                  Array.isArray(field.field) &&
+                                  field.field[0] === "pastVotesScore" &&
+                                  field.name
+                                ) {
+                                  const billTitle = field.name;
 
-    for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
-      const term = senatorTermData[termIndex];
-      const pastVotesScore = term?.pastVotesScore || [];
+                                  for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
+                                    const term = senatorTermData[termIndex];
+                                    const pastVotesScore = term?.pastVotesScore || [];
 
-      for (let voteIndex = 0; voteIndex < pastVotesScore.length; voteIndex++) {
-        const vote = pastVotesScore[voteIndex];
+                                    for (let voteIndex = 0; voteIndex < pastVotesScore.length; voteIndex++) {
+                                      const vote = pastVotesScore[voteIndex];
 
-        if (vote) {
-          if (vote.title && vote.title === billTitle) {
-            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-          }
+                                      if (vote) {
+                                        if (vote.title && vote.title === billTitle) {
+                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+                                        }
 
-          if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
-            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-          }
+                                        if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
+                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+                                        }
 
-          if (typeof vote.voteId === "string" && vote.voteId === field._id) {
-            return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-          }
-        }
-      }
-    }
-    return null;
-  }
+                                        if (typeof vote.voteId === "string" && vote.voteId === field._id) {
+                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+                                        }
+                                      }
+                                    }
+                                  }
+                                  return null;
+                                }
 
-                             
+
                                 const fieldId = Array.isArray(field.field) ? field.field[0] : field.field;
 
                                 if (fieldId && fieldId.startsWith("term")) {
@@ -2276,7 +2321,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                     const [, termIndex, actualField] = termMatch;
                                     const termNumber = parseInt(termIndex) + 1;
 
-                                 
+
                                     const fieldDisplayMap = {
                                       currentTerm: "Current Term",
                                       summary: "Term Summary",
@@ -2322,7 +2367,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                     const activityNumber = parseInt(itemIdx) + 1;
                                     return `Term ${termNumber}: Tracked Activity ${activityNumber}`;
                                   }
-                                   if (category === "pastVotesScore") {
+                                  if (category === "pastVotesScore") {
                                     const voteNumber = parseInt(itemIdx) + 1;
                                     return `Term ${termNumber}: Important Past Vote ${voteNumber}`;
                                   }
@@ -2396,16 +2441,16 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                     <List dense sx={{ py: 0 }}>
                                       {backendChanges.map((field, index) => {
                                         const fieldLabel = formatFieldName(field, index, senatorTermData);
-                                        if (!fieldLabel) return null; 
+                                        if (!fieldLabel) return null;
 
                                         const sanitizeKey = (str) => {
                                           return str
-                                            .replace(/[^a-zA-Z0-9_]/g, "_") 
-                                            .replace(/_+/g, "_")           
-                                            .replace(/^_+|_+$/g, "");     
+                                            .replace(/[^a-zA-Z0-9_]/g, "_")
+                                            .replace(/_+/g, "_")
+                                            .replace(/^_+|_+$/g, "");
                                         };
 
-                                       
+
                                         const getEditorKey = (field) => {
                                           if (typeof field === "object" && field !== null) {
                                             if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
@@ -2415,18 +2460,18 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                               return `activitiesScore_${sanitizeKey(field.name)}`;
                                             }
                                             if (
-                                                Array.isArray(field.field) &&
-                                                field.field[0] === "pastVotesScore" &&
-                                                field.name
-                                              ) {
-                                                return `pastVotesScore_${sanitizeKey(field.name)}`;
-                                              }
-                                            if (Array.isArray(field.field)) {
-                                              return field.field[0]; 
+                                              Array.isArray(field.field) &&
+                                              field.field[0] === "pastVotesScore" &&
+                                              field.name
+                                            ) {
+                                              return `pastVotesScore_${sanitizeKey(field.name)}`;
                                             }
-                                            return field.field; 
+                                            if (Array.isArray(field.field)) {
+                                              return field.field[0];
+                                            }
+                                            return field.field;
                                           }
-                                          return field; 
+                                          return field;
                                         };
 
                                         const editorKey = getEditorKey(field);
@@ -2495,7 +2540,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                     <List dense sx={{ py: 0 }}>
                                       {localChanges.map((field, index) => {
                                         const fieldLabel = formatFieldName(field, index, senatorTermData);
-                                        if (!fieldLabel) return null; 
+                                        if (!fieldLabel) return null;
 
                                         return (
                                           <ListItem
@@ -2619,9 +2664,9 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                   rowSpacing={2}
                   columnSpacing={2}
                   alignItems={"center"}
-          
+
                   py={3}
-            
+
                 >
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel
@@ -2866,7 +2911,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-             
+
                       borderBottom: '1px solid', borderColor: 'divider',
                       p: 1.5, px: 3
                     }}
@@ -3018,7 +3063,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term?.summary || ""}
-                        onEditorChange={(content) => handleSummaryChange(termIndex, content)} 
+                        onEditorChange={(content) => handleSummaryChange(termIndex, content)}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -3240,9 +3285,9 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                     </MenuItem>
                                     {allVotes.length > 0 ? (
                                       allVotes
-                                        .filter(voteItem => voteItem.type === "senate_bill") 
+                                        .filter(voteItem => voteItem.type === "senate_bill")
                                         .map((voteItem) => {
-                                          
+
                                           const senatorVote = senatorVotes.find(
                                             (v) => {
                                               const vId =
@@ -3257,7 +3302,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                             }
                                           );
 
-                                         
+
 
                                           const score =
                                             senatorVote?.score || "";
@@ -3328,7 +3373,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                         ))}
                       </>
                     ) : (
-                 
+
                       <Grid rowSpacing={2} sx={{ width: "100%" }}>
                         <Grid
                           size={12}
@@ -3383,7 +3428,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                         </Grid>
                       </Grid>
                     )}
-                 
+
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
@@ -3404,7 +3449,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
-                    
+
                     {term.termId ? (
                       <>
                         {term.activitiesScore.map((activity, activityIndex) => (
@@ -3487,7 +3532,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                       allActivities
                                         .filter(activityItem => activityItem.type === "senate")
                                         .map((activityItem) => {
-                                      
+
                                           const hasScore = senatorActivities.some(
                                             (a) => {
                                               const aId =
@@ -3568,7 +3613,7 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                         ))}
                       </>
                     ) : (
-                     
+
                       <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
                         <Grid
                           size={12}
@@ -3644,120 +3689,120 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
-  {term.termId ? (
-                      <>                  
-    {(term.pastVotesScore || []).map((vote, voteIndex) => (
-      <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
-        <Grid
-          size={12}
-          display="flex"
-          alignItems="center"
-          columnGap={"15px"}
-        >
-          <Grid size={isMobile ? 12 : 2}>
-            <InputLabel className="label">
-              Important Past Vote {voteIndex + 1}
-            </InputLabel>
-          </Grid>
-          <Grid size={isMobile ? 12 : 7.5}>
-            <FormControl fullWidth>
-              <Select
-                value={vote.voteId || ""}
-                onChange={(event) =>
-                  handlePastVoteChange(
-                    termIndex,
-                    voteIndex,
-                    "voteId",
-                    event.target.value
-                  )
-                }
-                sx={{
-                  background: "#fff",
-                  width: "100%",
-                }}
-                renderValue={(selected) => {
-                  const selectedVote = votes.find((v) => v._id === selected);
-                  return (
-                    <Typography
-                      sx={{
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {selectedVote?.title || "Select a Bill"}
-                    </Typography>
-                  );
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      maxHeight: 300,
-                      width: 400,
-                      "& .MuiMenuItem-root": {
-                        minHeight: "48px",
-                      },
-                    },
-                  },
-                }}
-              >
-                <MenuItem value="" disabled>
-                  Select a Bill
-                </MenuItem>
-                {allVotes.length > 0 ? (
-                  allVotes
-                 
-                    .map((voteItem) => (
-                      <MenuItem key={voteItem._id} value={voteItem._id} sx={{ py: 1.5 }}>
-                        <Typography
-                          sx={{
-                            whiteSpace: "normal",
-                            overflowWrap: "break-word",
-                          }}
-                        >
-                          {voteItem.title}
-                        </Typography>
-                      </MenuItem>
-                    ))
-                ) : (
-                  <MenuItem value="" disabled>
-                    No past votes available
-                  </MenuItem>
-                )}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={isMobile ? 12 : 1.6}>
-            <FormControl fullWidth>
-              <Select
-                value={vote?.score || ""}
-                onChange={(event) =>
-                  handlePastVoteChange(
-                    termIndex,
-                    voteIndex,
-                    "score",
-                    event.target.value
-                  )
-                }
-                sx={{ background: "#fff" }}
-              >
-                <MenuItem value="yea">Yea</MenuItem>
-                <MenuItem value="nay">Nay</MenuItem>
-                <MenuItem value="other">Other</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={1}>
-            <DeleteForeverIcon
-              onClick={() => handleRemovePastVote(termIndex, voteIndex)}
-            />
-          </Grid>
-        </Grid>
-      </Grid>
-    ))}
-    </>
-  ):(
-    <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
+                    {term.termId ? (
+                      <>
+                        {(term.pastVotesScore || []).map((vote, voteIndex) => (
+                          <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
+                            <Grid
+                              size={12}
+                              display="flex"
+                              alignItems="center"
+                              columnGap={"15px"}
+                            >
+                              <Grid size={isMobile ? 12 : 2}>
+                                <InputLabel className="label">
+                                  Important Past Vote {voteIndex + 1}
+                                </InputLabel>
+                              </Grid>
+                              <Grid size={isMobile ? 12 : 7.5}>
+                                <FormControl fullWidth>
+                                  <Select
+                                    value={vote.voteId || ""}
+                                    onChange={(event) =>
+                                      handlePastVoteChange(
+                                        termIndex,
+                                        voteIndex,
+                                        "voteId",
+                                        event.target.value
+                                      )
+                                    }
+                                    sx={{
+                                      background: "#fff",
+                                      width: "100%",
+                                    }}
+                                    renderValue={(selected) => {
+                                      const selectedVote = votes.find((v) => v._id === selected);
+                                      return (
+                                        <Typography
+                                          sx={{
+                                            overflow: "hidden",
+                                            whiteSpace: "nowrap",
+                                            textOverflow: "ellipsis",
+                                          }}
+                                        >
+                                          {selectedVote?.title || "Select a Bill"}
+                                        </Typography>
+                                      );
+                                    }}
+                                    MenuProps={{
+                                      PaperProps: {
+                                        sx: {
+                                          maxHeight: 300,
+                                          width: 400,
+                                          "& .MuiMenuItem-root": {
+                                            minHeight: "48px",
+                                          },
+                                        },
+                                      },
+                                    }}
+                                  >
+                                    <MenuItem value="" disabled>
+                                      Select a Bill
+                                    </MenuItem>
+                                    {allVotes.length > 0 ? (
+                                      allVotes
+
+                                        .map((voteItem) => (
+                                          <MenuItem key={voteItem._id} value={voteItem._id} sx={{ py: 1.5 }}>
+                                            <Typography
+                                              sx={{
+                                                whiteSpace: "normal",
+                                                overflowWrap: "break-word",
+                                              }}
+                                            >
+                                              {voteItem.title}
+                                            </Typography>
+                                          </MenuItem>
+                                        ))
+                                    ) : (
+                                      <MenuItem value="" disabled>
+                                        No past votes available
+                                      </MenuItem>
+                                    )}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid size={isMobile ? 12 : 1.6}>
+                                <FormControl fullWidth>
+                                  <Select
+                                    value={vote?.score || ""}
+                                    onChange={(event) =>
+                                      handlePastVoteChange(
+                                        termIndex,
+                                        voteIndex,
+                                        "score",
+                                        event.target.value
+                                      )
+                                    }
+                                    sx={{ background: "#fff" }}
+                                  >
+                                    <MenuItem value="yea">Yea</MenuItem>
+                                    <MenuItem value="nay">Nay</MenuItem>
+                                    <MenuItem value="other">Other</MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid size={1}>
+                                <DeleteForeverIcon
+                                  onClick={() => handleRemovePastVote(termIndex, voteIndex)}
+                                />
+                              </Grid>
+                            </Grid>
+                          </Grid>
+                        ))}
+                      </>
+                    ) : (
+                      <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
                         <Grid
                           size={12}
                           display="flex"
@@ -3810,22 +3855,22 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                           </Grid>
                         </Grid>
                       </Grid>
-  )}{" "}
+                    )}{" "}
 
-    {/* Add Past Vote Button */}
-    <Grid size={1}></Grid>
-    <Grid size={10} sx={{ textAlign: "right" }}>
-      <Button
-        variant="outlined"
-        className="addVoteActivity-btn"
-        startIcon={<AddIcon />}
-        onClick={() => handleAddPastVote(termIndex)}
-      >
-        Add Past Vote
-      </Button>
-    </Grid>
-    <Grid size={1}></Grid>
-  
+                    {/* Add Past Vote Button */}
+                    <Grid size={1}></Grid>
+                    <Grid size={10} sx={{ textAlign: "right" }}>
+                      <Button
+                        variant="outlined"
+                        className="addVoteActivity-btn"
+                        startIcon={<AddIcon />}
+                        onClick={() => handleAddPastVote(termIndex)}
+                      >
+                        Add Past Vote
+                      </Button>
+                    </Grid>
+                    <Grid size={1}></Grid>
+
 
 
                   </Grid>
@@ -3853,54 +3898,54 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
             </Button>
 
             <Snackbar
-  open={openSnackbar || selectionError.show}
-  autoHideDuration={6000}
-  onClose={() => {
-    handleSnackbarClose();
-    setSelectionError({ show: false, message: "", type: "" });
-  }}
-  anchorOrigin={{ vertical: "top", horizontal: "right" }}
->
-  <MuiAlert
-    onClose={() => {
-      handleSnackbarClose();
-      setSelectionError({ show: false, message: "", type: "" });
-    }}
-    severity={selectionError.show ? "error" : snackbarSeverity}
-    sx={{
-      width: "100%",
-      border: "none",
-      boxShadow: "none",
-      bgcolor:
-        snackbarMessage === "Changes published successfully!"
-          ? "#daf4f0"
-          : undefined,
-      "& .MuiAlert-icon": {
-        color:
-          snackbarMessage === "Changes published successfully!"
-            ? "#099885"
-            : undefined,
-      },
-      "& .MuiAlert-message": {
-        color:
-          snackbarMessage === "Changes published successfully!"
-            ? "#099885"
-            : undefined,
-      },
-      "& .MuiAlert-action": {
+              open={openSnackbar || selectionError.show}
+              autoHideDuration={6000}
+              onClose={() => {
+                handleSnackbarClose();
+                setSelectionError({ show: false, message: "", type: "" });
+              }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <MuiAlert
+                onClose={() => {
+                  handleSnackbarClose();
+                  setSelectionError({ show: false, message: "", type: "" });
+                }}
+                severity={selectionError.show ? "error" : snackbarSeverity}
+                sx={{
+                  width: "100%",
+                  border: "none",
+                  boxShadow: "none",
+                  bgcolor:
+                    snackbarMessage === "Changes published successfully!"
+                      ? "#daf4f0"
+                      : undefined,
+                  "& .MuiAlert-icon": {
+                    color:
+                      snackbarMessage === "Changes published successfully!"
+                        ? "#099885"
+                        : undefined,
+                  },
+                  "& .MuiAlert-message": {
+                    color:
+                      snackbarMessage === "Changes published successfully!"
+                        ? "#099885"
+                        : undefined,
+                  },
+                  "& .MuiAlert-action": {
                     display: "flex",
                     alignItems: "center",
                     paddingTop: 0,
                     paddingBottom: 0,
                   },
-    }}
-    elevation={6}
-    variant="filled"
-  >
-    {selectionError.show ? selectionError.message : snackbarMessage}
-  </MuiAlert>
-</Snackbar>
-            
+                }}
+                elevation={6}
+                variant="filled"
+              >
+                {selectionError.show ? selectionError.message : snackbarMessage}
+              </MuiAlert>
+            </Snackbar>
+
 
           </Stack>
           <Box sx={{ mb: "40px", mx: "15px" }}>
