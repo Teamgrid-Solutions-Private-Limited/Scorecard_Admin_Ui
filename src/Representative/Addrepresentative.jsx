@@ -996,7 +996,7 @@ export default function Addrepresentative(props) {
         handleSnackbarOpen("Please select at least one term before saving.", "error");
         return;
       }
-      // 1️⃣ Prevent duplicate termId selections
+      //  Prevent duplicate termId selections
       const termIdCounts = houseTermData
         .map((t) => t.termId)
         .filter(Boolean)
@@ -1013,7 +1013,7 @@ export default function Addrepresentative(props) {
         return;
       }
 
-      // 2️⃣ Only one current term
+      //  Only one current term
       const currentTerms = houseTermData.filter((term) => term.currentTerm);
       if (currentTerms.length > 1) {
         setLoading(false);
@@ -1030,13 +1030,13 @@ export default function Addrepresentative(props) {
         (formData?.fieldEditors &&
           Object.keys(formData.fieldEditors).length > 0);
 
-      // 🚨 Prevent saving if no local changes of any kind
+      //  Prevent saving if no local changes of any kind
       if (userRole === "editor" && !hasLocalChanges) {
         setLoading(false);
         handleSnackbarOpen("No changes detected. Nothing to update.", "info");
         return;
       }
-      // 3️⃣ Current editor info
+      //  Current editor info
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -1044,7 +1044,7 @@ export default function Addrepresentative(props) {
         editedAt: new Date(),
       };
 
-      // 4️⃣ Delete removed terms
+      // Delete removed terms
       if (deletedTermIds.length > 0) {
         await Promise.all(
           deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
@@ -1052,7 +1052,7 @@ export default function Addrepresentative(props) {
         setDeletedTermIds([]);
       }
 
-      // 5️⃣ Prepare existing editedFields
+      // Prepare existing editedFields
       const existingEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
         : [];
@@ -1077,7 +1077,7 @@ export default function Addrepresentative(props) {
         existingFieldsMap.set(fieldKey, { ...field });
       });
 
-      // 6️⃣ Process current votes & activities
+      //  Process current votes & activities
       const processedChanges = [];
       // Helper function to check if a vote has changed
       const hasVoteChanged = (termIndex, voteIndex, vote) => {
@@ -1156,7 +1156,7 @@ export default function Addrepresentative(props) {
           }
         });
       });
-      // 7️⃣ Process other local changes
+      //  Process other local changes
       localChanges.forEach((change) => {
         if (
           !change.includes("votesScore_") &&
@@ -1183,7 +1183,7 @@ export default function Addrepresentative(props) {
         return true;
       };
 
-      // 8️⃣ Process term-level changes
+      //  Process term-level changes
       houseTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
         const termFields = ["summary", "rating", "currentTerm", "termId"];
@@ -1211,7 +1211,7 @@ export default function Addrepresentative(props) {
         });
       });
 
-      // 9️⃣ Merge with existing fields
+      //  Merge with existing fields
       processedChanges.forEach((change) => {
         const existingField = existingFieldsMap.get(change.uniqueId);
         if (!existingField || existingField.name !== change.name) {
@@ -1231,13 +1231,13 @@ export default function Addrepresentative(props) {
       });
 
       const allChanges = Array.from(existingFieldsMap.values());
-      // 10️⃣ Update fieldEditors safely
+      // Update fieldEditors safely
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
 
       // Track which fields were actually changed in this session
       const changedFieldsInThisSession = new Set();
 
-      // 1️⃣ Process localChanges to update only changed votes/activities/terms
+      //  Process localChanges to update only changed votes/activities/terms
       localChanges.forEach((change) => {
         let editorKey;
 
@@ -1254,7 +1254,7 @@ export default function Addrepresentative(props) {
               updatedFieldEditors[editorKey] = currentEditor;
               changedFieldsInThisSession.add(editorKey);
 
-              console.log("✅ Updated vote editor:", editorKey, currentEditor);
+              console.log(" Updated vote editor:", editorKey, currentEditor);
             }
           }
           return; // skip further processing
@@ -1276,7 +1276,7 @@ export default function Addrepresentative(props) {
               changedFieldsInThisSession.add(editorKey);
 
               console.log(
-                "✅ Updated activity editor:",
+                " Updated activity editor:",
                 editorKey,
                 currentEditor
               );
@@ -1290,10 +1290,10 @@ export default function Addrepresentative(props) {
         updatedFieldEditors[editorKey] = currentEditor;
         changedFieldsInThisSession.add(editorKey);
 
-        console.log("✅ Updated term/simple editor:", editorKey, currentEditor);
+        console.log(" Updated term/simple editor:", editorKey, currentEditor);
       });
 
-      // 2️⃣ Optional: update processedChanges for other fields (non-votes/activities)
+      //  Optional: update processedChanges for other fields (non-votes/activities)
       processedChanges.forEach((change) => {
         if (!changedFieldsInThisSession.has(change.uniqueId)) {
           // preserve existing editor if any
@@ -1302,9 +1302,9 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // ✅ Finally, updatedFieldEditors now contains only updated votes/activities
+      //  Finally, updatedFieldEditors now contains only updated votes/activities
 
-      // 11️⃣ Prepare representative update
+      //  Prepare representative update
       const representativeUpdate = {
         ...formData,
         editedFields: allChanges,
@@ -1318,7 +1318,7 @@ export default function Addrepresentative(props) {
         representativeUpdate.fieldEditors = {};
       }
 
-      // 12️⃣ Update representative
+      //  Update representative
       if (id) {
         const formDataToSend = new FormData();
         Object.entries(representativeUpdate).forEach(([key, value]) => {
@@ -1333,7 +1333,7 @@ export default function Addrepresentative(props) {
         await dispatch(updateHouse({ id, formData: formDataToSend })).unwrap();
       }
 
-      // 13️⃣ Update terms
+      //  Update terms
       const termPromises = houseTermData.map((term, index) => {
         const cleanVotesScore = term.votesScore
           .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
@@ -1379,7 +1379,7 @@ export default function Addrepresentative(props) {
 
       await Promise.all(termPromises);
 
-      // 14️⃣ Reload data
+      //  Reload data
       await dispatch(getHouseDataByHouseId(id)).unwrap();
       await dispatch(getHouseById(id)).unwrap();
 
@@ -1673,12 +1673,12 @@ export default function Addrepresentative(props) {
                         p: 1,
                         borderRadius: "50%",
                         backgroundColor: `rgba(${formData.publishStatus === "draft"
-                            ? "66, 165, 245"
-                            : formData.publishStatus === "under review"
-                              ? "230, 81, 0"
-                              : formData.publishStatus === "published"
-                                ? "76, 175, 80"
-                                : "244, 67, 54"
+                          ? "66, 165, 245"
+                          : formData.publishStatus === "under review"
+                            ? "230, 81, 0"
+                            : formData.publishStatus === "published"
+                              ? "76, 175, 80"
+                              : "244, 67, 54"
                           }, 0.2)`,
                         display: "grid",
                         placeItems: "center",
