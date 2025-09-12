@@ -516,28 +516,7 @@ export default function AddSenator(props) {
                 updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
               }
 
-              // Past votes (always global)
-              // const newPastVotes = allVotes.filter(
-              //   (vote) => vote.isImportantPastVote === true
-              // );
-
-              // updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
-              //   const senatorPastVote = termSpecificData.votes.find((v) => {
-              //     const vId =
-              //       typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-              //     return vId === vote._id;
-              //   });
-
-              //   return {
-              //     voteId: vote._id,
-              //     score: senatorPastVote?.score || "",
-              //     title: vote.title,
-              //   };
-              // });
-
-              // if (updatedTerm.pastVotesScore.length === 0) {
-              //   updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
-              // }
+             
 
               // Save into cache
               updatedTerm._termDataCache = {
