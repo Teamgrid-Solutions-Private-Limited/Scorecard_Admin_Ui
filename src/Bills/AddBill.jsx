@@ -289,7 +289,7 @@ export default function AddBill(props) {
     }
   };
 
-    const handleSubmit = async () => {
+  const handleSubmit = async () => {
     if (!formData.termId) {
       setSnackbarMessage("Term is required!");
       setSnackbarSeverity("error");
@@ -444,7 +444,6 @@ export default function AddBill(props) {
       setLoading(false);
     }
   };
- 
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");

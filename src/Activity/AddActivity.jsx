@@ -325,15 +325,15 @@ export default function AddActivity(props) {
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
 
-     if (id) {
-       let hasChanges = true;
-       if (userRole === "editor") {
-         hasChanges =
-           editedFields.length > 0 ||
-           selectedFile ||
-           Object.keys(updatedFieldEditors).length >
-             Object.keys(selectedActivity?.fieldEditors || {}).length;
-       } // editor updates
+      if (id) {
+        let hasChanges = true;
+        if (userRole === "editor") {
+          hasChanges =
+            editedFields.length > 0 ||
+            selectedFile ||
+            Object.keys(updatedFieldEditors).length >
+              Object.keys(selectedActivity?.fieldEditors || {}).length;
+        }
 
        if (!hasChanges) {
          setLoading(false);
