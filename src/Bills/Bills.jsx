@@ -35,6 +35,7 @@ import {
   IconButton,
   Paper,
   ClickAwayListener,
+  InputAdornment
 } from "@mui/material";
 import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
@@ -51,6 +52,7 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -230,7 +232,7 @@ export default function Bills(props) {
           <MobileHeader />
           <Stack spacing={2} className="stackBox">
             <Box className="actionsBox">
-              <Stack
+             <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
                 alignItems="center"
@@ -275,7 +277,7 @@ export default function Bills(props) {
                       Filters
                     </Button>
                   </Badge>
-
+ 
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
                       <Paper className="billFilter-paper">
@@ -290,7 +292,7 @@ export default function Bills(props) {
                             </IconButton>
                           </Box>
                         </Box>
-
+ 
                         {/* Status Filter */}
                         <Box className="filter-scroll">
                           {statusOptions.map((status) => (
@@ -311,7 +313,7 @@ export default function Bills(props) {
                             </Box>
                           ))}
                         </Box>
-
+ 
                         {/* Clear All Button */}
                         <Box>
                           <Button
@@ -340,7 +342,7 @@ export default function Bills(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
-
+ 
                 {userRole === "admin" && (
                   <Button
                     onClick={() => navigate("/search-bills")}
