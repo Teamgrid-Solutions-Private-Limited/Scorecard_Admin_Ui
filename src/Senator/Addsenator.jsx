@@ -29,7 +29,7 @@ import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../../src/Dashboard/global/common";
 import { useParams, useNavigate } from "react-router-dom";
-import { Chip } from "@mui/material";
+import { Chip, Autocomplete } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
@@ -100,6 +100,7 @@ export default function AddSenator(props) {
     message: "",
     type: "",
   });
+  const [billSearch, setBillSearch] = useState("");
   const validateVoteInTermRange = (voteId, termId) => {
     if (!voteId || !termId)
       return { isValid: false, message: "Invalid selection" };
@@ -3191,110 +3192,34 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                 </InputLabel>
                               </Grid>
                               <Grid size={isMobile ? 12 : 7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.voteId || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "voteId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      background: "#fff",
-                                      width: "100%",
-                                    }}
-                                    renderValue={(selected) => {
-                                      const selectedVote = votes.find(
-                                        (v) => v._id === selected
-                                      );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedVote?.title ||
-                                            "Select a Bill"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select a Bill
-                                    </MenuItem>
-                                    {allVotes.length > 0 ? (
-                                      allVotes
-                                        .filter(voteItem => voteItem.type === "senate_bill") 
-                                        .map((voteItem) => {
-                                          
-                                          const senatorVote = senatorVotes.find(
-                                            (v) => {
-                                              const vId =
-                                                typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-                                              return (
-                                                vId === voteItem._id ||
-                                                v.quorumId === voteItem.quorumId ||
-                                                (v.billNumber &&
-                                                  voteItem.billNumber &&
-                                                  v.billNumber === voteItem.billNumber)
-                                              );
-                                            }
-                                          );
+                                <Autocomplete
+  options={allVotes.filter(v => v.type === "senate_bill")}
+  getOptionLabel={(option) => option.title}
+  value={votes.find((v) => v._id === vote.voteId) || null}
+  onChange={(e, newValue) =>
+    handleVoteChange(termIndex, voteIndex, "voteId", newValue?._id || "")
+  }
 
-                                         
+  renderInput={(params) => (
+    <TextField {...params} placeholder="Search bills..."  size="small"       sx={{
+        "& .MuiOutlinedInput-root": {
+          height: "40px", 
+          background: "#fff",
+           cursor: "pointer",  
+      "& input": {
+        cursor: "pointer", 
+      },
+      "& fieldset": {
+          border: "none",
+      },
+        },
+      }}
+ />
+  )}
 
-                                          const score =
-                                            senatorVote?.score || "";
-                                          const scoreText = score
-                                            ? ` (${score})`
-                                            : "";
-
-                                          return (
-                                            <MenuItem
-                                              key={voteItem._id}
-                                              value={voteItem._id}
-                                              sx={{ py: 1.5 }}
-                                            >
-                                              <Typography
-                                                sx={{
-                                                  whiteSpace: "normal",
-                                                  overflowWrap: "break-word",
-                                                }}
-                                              >
-                                                {voteItem.title}
-
-                                              </Typography>
-                                            </MenuItem>
-                                          );
-                                        })
-                                    ) : (
-                                      <MenuItem value="" disabled>
-                                        {term.termId
-                                          ? "No bills available for this term"
-                                          : "Select a term first"}
-                                      </MenuItem>
-                                    )
-                                    }
-                                    {/* ) */}
-                                    {/* ()} */}
-                                  </Select>
-                                </FormControl>
+  
+ 
+/>
                               </Grid>
                               <Grid size={isMobile ? 12 : 1.6}>
                                 <FormControl fullWidth>
@@ -3352,17 +3277,27 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                             </InputLabel>
                           </Grid>
                           <Grid size={isMobile ? 12 : 7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff", width: "100%" }}
-                                disabled
-                              >
-                                <MenuItem value="">
-                                  Select a term first
-                                </MenuItem>
-                              </Select>
-                            </FormControl>
+                            <Autocomplete
+        freeSolo
+        disabled 
+        options={[]}
+        popupIcon={null} 
+        clearIcon={null}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            background: "#fff",
+            
+          }
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            placeholder="Select a term first"
+            variant="outlined"
+            fullWidth
+          />
+        )}
+      />
                           </Grid>
                           <Grid size={isMobile ? 12 : 1.6}>
                             <FormControl fullWidth>
@@ -3435,103 +3370,42 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                                 </InputLabel>
                               </Grid>
                               <Grid size={isMobile ? 12 : 7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={activity.activityId || ""}
-                                    onChange={(event) =>
-                                      handleActivityChange(
-                                        termIndex,
-                                        activityIndex,
-                                        "activityId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      background: "#fff",
-                                      width: "100%",
-                                    }}
-                                    renderValue={(selected) => {
-                                      const selectedActivity =
-                                        allActivities.find(
-                                          (a) => a._id === selected
-                                        );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedActivity?.title ||
-                                            "Select an Activity"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select an Activity
-                                    </MenuItem>
-                                    {allActivities.length > 0 ? (
-                                      allActivities
-                                        .filter(activityItem => activityItem.type === "senate")
-                                        .map((activityItem) => {
-                                      
-                                          const hasScore = senatorActivities.some(
-                                            (a) => {
-                                              const aId =
-                                                typeof a.activityId === "object"
-                                                  ? a.activityId?._id
-                                                  : a.activityId;
-                                              return (
-                                                aId === activityItem._id &&
-                                                a.score &&
-                                                a.score.trim() !== ""
-                                              );
-                                            }
-                                          );
-
-                                          const scoreText = hasScore
-                                            ? " (scored)"
-                                            : "";
-
-                                          return (
-                                            <MenuItem
-                                              key={activityItem._id}
-                                              value={activityItem._id}
-                                              sx={{ py: 1.5 }}
-                                            >
-                                              <Typography
-                                                sx={{
-                                                  whiteSpace: "normal",
-                                                  overflowWrap: "break-word",
-                                                }}
-                                              >
-                                                {activityItem.title ||
-                                                  "Untitled Activity"}
-
-                                              </Typography>
-                                            </MenuItem>
-                                          );
-                                        })
-                                    ) : (
-                                      <MenuItem value="" disabled>
-                                        No activities available
-                                      </MenuItem>
-                                    )}
-                                  </Select>
-                                </FormControl>
+                                 <Autocomplete
+              options={allActivities.filter(a => a.type === "senate")}
+              getOptionLabel={(option) => option.title || "Untitled Activity"}
+              value={
+                allActivities.find((a) => a._id === activity.activityId) ||
+                null
+              }
+              onChange={(e, newValue) =>
+                handleActivityChange(
+                  termIndex,
+                  activityIndex,
+                  "activityId",
+                  newValue?._id || ""
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search activities..."
+                  size="small"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "40px",
+                      background: "#fff",
+                      cursor: "pointer",
+                      "& input": {
+                        cursor: "pointer",
+                      },
+                      "& fieldset": { border: "none" },
+                      "&:hover fieldset": { border: "none" },
+                      "&.Mui-focused fieldset": { border: "none" },
+                    },
+                  }}
+                />
+              )}
+            />
                               </Grid>
                               <Grid size={isMobile ? 12 : 1.6}>
                                 <FormControl fullWidth>
@@ -3592,17 +3466,26 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
                             </InputLabel>
                           </Grid>
                           <Grid size={isMobile ? 12 : 7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff", width: "100%" }}
-                                disabled
-                              >
-                                <MenuItem value="">
-                                  Select a term first
-                                </MenuItem>
-                              </Select>
-                            </FormControl>
+                             <Autocomplete
+          freeSolo
+          disabled
+          options={[]}
+          popupIcon={null}
+          clearIcon={null}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              background: "#fff",
+            },
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder="Select a term first"
+              variant="outlined"
+              fullWidth
+            />
+          )}
+        />
                           </Grid>
                           <Grid size={isMobile ? 12 : 1.6}>
                             <FormControl fullWidth>
@@ -3660,72 +3543,39 @@ const handlePastVoteChange = (termIndex, voteIndex, field, value) => {
             </InputLabel>
           </Grid>
           <Grid size={isMobile ? 12 : 7.5}>
-            <FormControl fullWidth>
-              <Select
-                value={vote.voteId || ""}
-                onChange={(event) =>
-                  handlePastVoteChange(
-                    termIndex,
-                    voteIndex,
-                    "voteId",
-                    event.target.value
-                  )
-                }
-                sx={{
-                  background: "#fff",
-                  width: "100%",
-                }}
-                renderValue={(selected) => {
-                  const selectedVote = votes.find((v) => v._id === selected);
-                  return (
-                    <Typography
-                      sx={{
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {selectedVote?.title || "Select a Bill"}
-                    </Typography>
-                  );
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      maxHeight: 300,
-                      width: 400,
-                      "& .MuiMenuItem-root": {
-                        minHeight: "48px",
+           <Autocomplete
+              options={allVotes} // full list
+              getOptionLabel={(option) => option.title || ""}
+              value={allVotes.find((v) => v._id === vote.voteId) || null}
+              onChange={(e, newValue) =>
+                handlePastVoteChange(
+                  termIndex,
+                  voteIndex,
+                  "voteId",
+                  newValue?._id || ""
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search past votes..."
+                  size="small"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "40px",
+                      background: "#fff",
+                      cursor: "pointer",
+                      "& input": {
+                        cursor: "pointer",
+                      },
+                      "& fieldset": {
+                        border: "none", // remove border
                       },
                     },
-                  },
-                }}
-              >
-                <MenuItem value="" disabled>
-                  Select a Bill
-                </MenuItem>
-                {allVotes.length > 0 ? (
-                  allVotes
-                 
-                    .map((voteItem) => (
-                      <MenuItem key={voteItem._id} value={voteItem._id} sx={{ py: 1.5 }}>
-                        <Typography
-                          sx={{
-                            whiteSpace: "normal",
-                            overflowWrap: "break-word",
-                          }}
-                        >
-                          {voteItem.title}
-                        </Typography>
-                      </MenuItem>
-                    ))
-                ) : (
-                  <MenuItem value="" disabled>
-                    No past votes available
-                  </MenuItem>
-                )}
-              </Select>
-            </FormControl>
+                  }}
+                />
+              )}
+            />
           </Grid>
           <Grid size={isMobile ? 12 : 1.6}>
             <FormControl fullWidth>

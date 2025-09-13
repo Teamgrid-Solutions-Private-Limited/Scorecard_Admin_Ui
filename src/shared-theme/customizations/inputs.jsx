@@ -11,6 +11,44 @@ import { gray, brand } from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */
 export const inputsCustomizations = {
+  MuiAutocomplete: {
+    styleOverrides: {
+      paper: ({ theme }) => ({
+        marginTop: 4,
+        backgroundColor: "#fff",
+        boxShadow: theme.shadows[2], 
+        padding: "4px 0",        
+        border: `1px solid ${theme.palette.divider}`, 
+        borderRadius: (theme.vars || theme).shape.borderRadius,
+      }),
+      option: {
+        backgroundColor: "#fff",
+       padding: "8px 12px",   
+      margin: "8px 0",       
+      borderRadius: "4px", 
+        color: "#000",
+        
+        "&.Mui-focused": {
+          backgroundColor: "#f5f5f5",
+        },
+      },
+      popupIndicator: {
+        backgroundColor: "transparent !important",
+        border: "none !important",
+        "&:hover": {
+          backgroundColor: "transparent !important",
+        },
+      },
+      clearIndicator: {
+        backgroundColor: "transparent !important",
+        border: "none !important",
+        "&:hover": {
+          backgroundColor: "transparent !important",
+        },
+      },
+    },
+  },
+
   MuiButtonBase: {
     defaultProps: {
       disableTouchRipple: true,

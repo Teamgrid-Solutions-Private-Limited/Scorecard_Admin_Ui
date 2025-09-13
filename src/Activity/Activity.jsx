@@ -8,7 +8,8 @@ import {
   bulkUpdateTrackActivities,
 } from "../redux/reducer/activitySlice";
 import AppTheme from "../../src/shared-theme/AppTheme";
-import { Box, Stack, Typography, Button } from "@mui/material";
+import { Box, Stack, Typography, Button ,InputAdornment,} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import SideMenu from "../../src/components/SideMenu";
@@ -88,7 +89,12 @@ export default function Activity(props) {
       statusFilter.length === 0 ||
       (activity.status && statusFilter.includes(activity.status));
 
-    return statusMatch;
+    const searchMatch =
+      !searchQuery ||
+      (activity.title &&
+        activity.title.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+    return statusMatch && searchMatch;
   });
 
   const activitiesData = filteredActivities.map((activity, index) => ({
@@ -255,10 +261,25 @@ export default function Activity(props) {
             <Box className="actionsBox" >
               <Stack
                 direction={{ xs: "column", sm: "row" }}
-                spacing={2}
+                spacing={1}
                 alignItems="center"
                 sx={{ ml: "auto", width: { xs: "100%", sm: "auto" } }}
               >
+                <TextField
+                size="small"
+                variant="outlined"
+                placeholder="Search Activities"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <SearchIcon className="search-icon" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                className="custom-search"
+                />
                 <Box
                   sx={{
                     position: "relative",
@@ -342,9 +363,6 @@ export default function Activity(props) {
                     </ClickAwayListener>
                   )}
                 </Box>
-              </Stack>
-
-              <Stack direction="row" spacing={2} alignItems="center">
                 <Button
                   onClick={() => setIsBulkEditMode(!isBulkEditMode)}
                   className={`bulkEditBtn ${isBulkEditMode ? "active" : ""}`}
@@ -360,6 +378,7 @@ export default function Activity(props) {
                 </Button>
                 )}
               </Stack>
+
             </Box>
             {isBulkEditMode && (
               <Box className="bulkEditContainer">
