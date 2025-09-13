@@ -382,7 +382,7 @@ export default function AddSenator(props) {
         activities: termData?.activitiesScore || [],
       };
     };
-
+ 
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, index) => {
         if (index !== termIndex) return term;
@@ -393,12 +393,12 @@ export default function AddSenator(props) {
             updatedTerm._originalDataCache = {
               votesScore: term.votesScore,
               activitiesScore: term.activitiesScore,
-              // pastVotesScore: term.pastVotesScore,
+              pastVotesScore: term.pastVotesScore,
             };
-
-            const newTermStart = new Date(`${selectedTerm.startYear}-01-01`);
-            const newTermEnd = new Date(`${selectedTerm.endYear}-12-31`);
-
+ 
+            const newTermStart = new Date(`${selectedTerm.startYear}-01-03`);
+            const newTermEnd = new Date(`${selectedTerm.endYear}-01-02`);
+ 
             // Try cache first
             const cachedData = term._termDataCache?.[value];
             if (cachedData) {
@@ -408,7 +408,7 @@ export default function AddSenator(props) {
             } else {
               // Use senator’s existing term-specific data
               const termSpecificData = getTermSpecificData(value);
-
+ 
               // Filter votes for this term
               const newFilteredVotes = allVotes.filter((vote) => {
                 const voteDate = new Date(vote.date);
@@ -416,9 +416,9 @@ export default function AddSenator(props) {
                   voteDate >= newTermStart &&
                   voteDate <= newTermEnd &&
                   selectedTerm.congresses.includes(Number(vote.congress));
-
+ 
                 if (!inTerm) return false;
-
+ 
                 return termSpecificData.votes.some((v) => {
                   if (!v?.score || v.score.trim() === "") return false;
                   const vId =
@@ -444,7 +444,7 @@ export default function AddSenator(props) {
                       v.billNumber === vote.billNumber)
                   );
                 });
-
+ 
                 let scoreValue = "";
                 if (senatorVote?.score) {
                   const s = senatorVote.score.toLowerCase();
@@ -453,18 +453,18 @@ export default function AddSenator(props) {
                   else if (s.includes("other")) scoreValue = "other";
                   else scoreValue = senatorVote.score;
                 }
-
+ 
                 return {
                   voteId: vote._id,
                   score: scoreValue,
                   title: vote.title,
                 };
               });
-
+ 
               if (updatedTerm.votesScore.length === 0) {
                 updatedTerm.votesScore = [{ voteId: "", score: "" }];
               }
-
+ 
               // Filter activities for this term
               const newParticipatedActivities = allActivities.filter(
                 (activity) => {
@@ -475,9 +475,9 @@ export default function AddSenator(props) {
                     selectedTerm.congresses.includes(
                       Number(activity.congress || 0)
                     );
-
+ 
                   if (!inTerm) return false;
-
+ 
                   return termSpecificData.activities.some((a) => {
                     if (!a?.score || a.score.trim() === "") return false;
                     const aId =
@@ -488,7 +488,7 @@ export default function AddSenator(props) {
                   });
                 }
               );
-
+ 
               updatedTerm.activitiesScore = newParticipatedActivities.map(
                 (activity) => {
                   const senAct = termSpecificData.activities.find((a) => {
@@ -498,7 +498,7 @@ export default function AddSenator(props) {
                         : a.activityId;
                     return aId === activity._id;
                   });
-
+ 
                   let mappedScore = "";
                   if (senAct?.score) {
                     const s = String(senAct.score).toLowerCase();
@@ -508,7 +508,7 @@ export default function AddSenator(props) {
                     else if (s.includes("other")) mappedScore = "other";
                     else mappedScore = senAct.score;
                   }
-
+ 
                   return {
                     activityId: activity._id,
                     score: mappedScore,
@@ -516,43 +516,65 @@ export default function AddSenator(props) {
                   };
                 }
               );
-
+ 
               if (updatedTerm.activitiesScore.length === 0) {
                 updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
               }
-
-             
-
+ 
+              // Past votes (always global)
+              const newPastVotes = allVotes.filter(
+                (vote) => vote.isImportantPastVote === true
+              );
+ 
+              updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
+                const senatorPastVote = termSpecificData.votes.find((v) => {
+                  const vId =
+                    typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                  return vId === vote._id;
+                });
+ 
+                return {
+                  voteId: vote._id,
+                  score: senatorPastVote?.score || "",
+                  title: vote.title,
+                };
+              });
+ 
+              if (updatedTerm.pastVotesScore.length === 0) {
+                updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
+              }
+ 
               // Save into cache
               updatedTerm._termDataCache = {
                 ...term._termDataCache,
                 [value]: {
                   votesScore: updatedTerm.votesScore,
                   activitiesScore: updatedTerm.activitiesScore,
-                  // pastVotesScore: updatedTerm.pastVotesScore,
+                  pastVotesScore: updatedTerm.pastVotesScore,
                 },
               };
             }
           }
         }
-
+ 
         return updatedTerm;
       });
-
-
-
+ 
+ 
+ 
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
-
+ 
       if (isActualChange && !localChanges.includes(fieldName)) {
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
         setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
-
+ 
       return newTerms;
     });
   };
+ 
 
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
