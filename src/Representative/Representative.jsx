@@ -108,25 +108,96 @@ export default function Representative(props) {
     dispatch(getAllTerms());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (houses && houseData && terms) {
-      const merged = houses.map((house) => {
-        const match = houseData.find((data) => data.houseId === house._id);
-        const termId = match ? match.termId : house.termId;
+ useEffect(() => {
+  if (houses && houseData && terms) {
+    const merged = houses.map((house) => {
+      const houseRecords = houseData.filter((data) => data.houseId === house._id);
+      const currentTermData = houseRecords.find((rec) => rec.currentTerm === true);
+
+      let termId;
+      let rating = "N/A"; // Default fallback
+      let termName = "";
+      let currentTerm = false;
+
+      if (currentTermData) {
+        termId = currentTermData.termId;
+        // Use the rating even if it's empty string, only fallback to "N/A" if undefined/null
+        rating = currentTermData.rating !== undefined && currentTermData.rating !== null 
+          ? currentTermData.rating 
+          : "N/A";
+        currentTerm = true;
+
+        // If rating is empty string, try to find a fallback
+        if (currentTermData.rating === "") {
+          const fallbackRecords = houseRecords
+            .map((rec) => {
+              const termObj = terms.find((t) => t._id === rec.termId);
+              return termObj ? { ...rec, termObj } : null;
+            })
+            .filter(Boolean)
+            .sort((a, b) => {
+              const aYear = parseInt(a.termObj.endYear, 10) || 0;
+              const bYear = parseInt(b.termObj.endYear, 10) || 0;
+              return bYear - aYear;
+            });
+
+          const valid = fallbackRecords.find((rec) => rec.rating && rec.rating.trim() !== "");
+          if (valid) {
+            rating = valid.rating;
+            termId = valid.termId;
+          }
+        }
+        
         const termObj = terms.find((t) => t._id === termId);
+        termName = termObj ? termObj.name : "";
+        
+      } else {
+        // ... rest of your else logic for non-current terms
+        const validRecords = houseRecords
+          .map((rec) => {
+            const termObj = terms.find((t) => t._id === rec.termId);
+            return termObj ? { ...rec, termObj } : null;
+          })
+          .filter(Boolean)
+          .sort((a, b) => {
+            const aYear = parseInt(a.termObj.endYear, 10) || 0;
+            const bYear = parseInt(b.termObj.endYear, 10) || 0;
+            return bYear - aYear;
+          });
 
-        return {
-          ...house,
-          rating: match ? match.rating : "N/A",
-          termId: termId,
-          termName: termObj ? termObj.name : "",
-          currentTerm: match ? match.currentTerm : false, // Add currentTerm from houseData
-        };
-      });
+        if (validRecords.length > 0) {
+          const latest = validRecords.find((rec) => rec.rating && rec.rating.trim() !== "");
+          if (latest) {
+            termId = latest.termId;
+            rating = latest.rating;
+            termName = latest.termObj.name;
+          } else {
+            // Use the most recent record even if rating is empty
+            const mostRecent = validRecords[0];
+            termId = mostRecent.termId;
+            rating = mostRecent.rating || "N/A";
+            termName = mostRecent.termObj.name;
+          }
+        } else {
+          termId = house.termId;
+          const termObj = terms.find((t) => t._id === termId);
+          termName = termObj ? termObj.name : "";
+          rating = "N/A";
+        }
+      }
 
-      setMergedHouses(merged);
-    }
-  }, [houses, houseData, terms]);
+      return {
+        ...house,
+        rating,
+        termId,
+        termName,
+        currentTerm,
+      };
+    });
+
+    setMergedHouses(merged);
+  }
+}, [houses, houseData, terms]);
 
   const transformedHouses = mergedHouses.map((house) => ({
     ...house,

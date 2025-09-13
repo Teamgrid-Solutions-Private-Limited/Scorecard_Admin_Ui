@@ -85,6 +85,7 @@ export default function Senator(props) {
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
+  const [hasPastVotesFilter, setHasPastVotesFilter] = useState(false);
   const [mergedSenators, setMergedSenators] = useState([]);
   const [termFilter, setTermFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -122,24 +123,70 @@ export default function Senator(props) {
     dispatch(getAllTerms());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (senatorData && senators && terms) {
-      const merged = senators.map((senator) => {
-        const match = senatorData.find((data) => data.senateId === senator._id);
-        const termId = match ? match.termId : senator.termId;
-        const termObj = terms.find((t) => t._id === termId);
+ useEffect(() => {
+  if (senatorData && senators && terms) {
+    // Group senator data by senateId to handle multiple terms
+    const senatorDataBySenateId = {};
+    senatorData.forEach((data) => {
+      if (!senatorDataBySenateId[data.senateId]) {
+        senatorDataBySenateId[data.senateId] = [];
+      }
+      senatorDataBySenateId[data.senateId].push(data);
+    });
+
+    // Merge senators with their data
+    const merged = senators.map((senator) => {
+      const dataEntries = senatorDataBySenateId[senator._id] || [];
+      
+      // Check if any term has past votes data
+      const hasPastVotesData = dataEntries.some(
+        (data) => data.pastVotesScore && data.pastVotesScore.length > 0
+      );
+      
+      // Get all ratings from all terms
+      const allRatings = dataEntries
+        .map(data => data.rating)
+        .filter(rating => rating && rating !== "N/A");
+      
+      // Get the most recent rating for display
+      const displayRating = allRatings.length > 0 
+        ? allRatings[allRatings.length - 1] 
+        : "N/A";
+      
+      // Get all terms for this senator
+      const senatorTerms = dataEntries.map(data => {
+        const termObj = terms.find((t) => t._id === data.termId);
         return {
-          ...senator,
-          rating: match ? match.rating : "N/A",
-          termId: termId,
-          votesScore: match ? match.votesScore : [],
+          termId: data.termId,
           termName: termObj ? termObj.name : "",
-          currentTerm: match?.currentTerm ?? null, // Ensure currentTerm is included
+          currentTerm: data.currentTerm,
+          rating: data.rating,
+          votesScore: data.votesScore,
+          pastVotesScore: data.pastVotesScore
         };
       });
-      setMergedSenators(merged);
-    }
-  }, [senators, senatorData, terms]);
+      
+      // Check if any term is current
+      const hasCurrentTerm = dataEntries.some(data => data.currentTerm === true);
+      
+      return {
+        ...senator,
+        rating: displayRating,
+        // Store all data for filtering
+        allDataEntries: dataEntries,
+        allTerms: senatorTerms,
+        hasPastVotesData: hasPastVotesData,
+        hasCurrentTerm: hasCurrentTerm,
+        // For backward compatibility
+        termId: dataEntries.length > 0 ? dataEntries[0].termId : senator.termId,
+        votesScore: dataEntries.length > 0 ? dataEntries[0].votesScore : [],
+        pastVotesScore: dataEntries.length > 0 ? dataEntries[0].pastVotesScore : [],
+        currentTerm: hasCurrentTerm
+      };
+    });
+    setMergedSenators(merged);
+  }
+}, [senators, senatorData, terms]);
 
   // Build list of years from 2015 to current year
   const currentYear = new Date().getFullYear();
@@ -258,6 +305,9 @@ export default function Senator(props) {
       prev.includes(state) ? prev.filter((s) => s !== state) : [...prev, state]
     );
   };
+  const handlePastVotesFilter = () => {
+  setHasPastVotesFilter((prev) => !prev);
+};
 
   const handleRatingFilter = (rating) => {
     setRatingFilter((prev) =>
@@ -290,72 +340,75 @@ export default function Senator(props) {
     setSelectedYears([]);
     setTermFilter(null);
     setStatusFilter([]);
+    setHasPastVotesFilter(false);
     setSearchQuery("");
   };
 
   const filteredSenators = mergedSenators.filter((senator) => {
-    // Term filter logic
-    if (termFilter === "current") {
-      if (senator.currentTerm !== true) return false;
-    } else if (termFilter === "past") {
-      if (senator.currentTerm === true) return false;
-    }
-    // Year filter
-    if (selectedYears.length > 0) {
-      if (senator.termName && senator.termName.includes("-")) {
-        const [start, end] = senator.termName.split("-").map(Number);
-        const hasMatchingYear = selectedYears.some((year) => {
+  // Term filter logic - check all terms
+  if (termFilter === "current") {
+    if (!senator.hasCurrentTerm) return false;
+  } else if (termFilter === "past") {
+    if (senator.hasCurrentTerm) return false;
+  }
+  
+  // Year filter - check all terms
+  if (selectedYears.length > 0) {
+    const hasMatchingYear = senator.allTerms.some(term => {
+      if (term.termName && term.termName.includes("-")) {
+        const [start, end] = term.termName.split("-").map(Number);
+        return selectedYears.some(year => {
           const yearNum = Number(year);
           return yearNum >= start && yearNum <= end;
         });
-        if (!hasMatchingYear) return false;
-      } else {
-        return false;
       }
-    }
+      return false;
+    });
+    if (!hasMatchingYear) return false;
+  }
 
-    const nameMatch = searchQuery
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean)
-      .every((word) => senator.name.toLowerCase().includes(word));
-    const filteredSenators = senators
-      ? senators.filter((senator) => {
-          const name = senator.name?.toLowerCase() || "";
-          return searchQuery
-            .toLowerCase()
-            .split(/\s+/)
-            .filter(Boolean)
-            .every((word) => name.includes(word));
-        })
-      : [];
+  const nameMatch = searchQuery
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((word) => senator.name.toLowerCase().includes(word));
 
-    const partyMatch =
-      partyFilter.length === 0 || partyFilter.includes(senator.party);
+  const partyMatch =
+    partyFilter.length === 0 || partyFilter.includes(senator.party);
 
-    // State filter
-    const stateMatch =
-      stateFilter.length === 0 || stateFilter.includes(senator.state);
+  // State filter
+  const stateMatch =
+    stateFilter.length === 0 || stateFilter.includes(senator.state);
 
-    // Rating filter
-    const ratingMatch =
-      ratingFilter.length === 0 ||
-      (senator.rating && ratingFilter.includes(senator.rating));
+  // Rating filter - check all terms
+  const ratingMatch =
+    ratingFilter.length === 0 ||
+    senator.allTerms.some(term => 
+      term.rating && ratingFilter.includes(term.rating)
+    );
 
-    // Status filter
-    const statusMatch =
-      statusFilter.length === 0 ||
-      (senator.publishStatus && statusFilter.includes(senator.publishStatus));
+  // Status filter
+  const statusMatch =
+    statusFilter.length === 0 ||
+    (senator.publishStatus && statusFilter.includes(senator.publishStatus));
 
-    return nameMatch && partyMatch && stateMatch && ratingMatch && statusMatch;
-  });
+  // Past votes score filter - check all terms
+  const pastVotesMatch = 
+    !hasPastVotesFilter || 
+    senator.hasPastVotesData;
+
+  return nameMatch && partyMatch && stateMatch && ratingMatch && statusMatch && pastVotesMatch;
+});
+  
   const activeFilterCount =
     partyFilter.length +
     stateFilter.length +
     ratingFilter.length +
     selectedYears.length +
     (termFilter ? 1 : 0) +
-    statusFilter.length;
+    statusFilter.length +
+     (hasPastVotesFilter ? 1 : 0);
+
   const handleToggleStatusSenator = (senator) => {
     const newStatus =
       senator.publishStatus === "published" ? "draft" : "published";
@@ -823,6 +876,43 @@ export default function Senator(props) {
                           )}
                         </Box>
 
+                        <Box
+  className={`filter-section ${
+    expandedFilter === "pastVotes" ? "active" : ""
+  }`}
+>
+  <Box
+    className="filter-title"
+    onClick={() => toggleFilterSection("pastVotes")}
+  >
+    <Typography variant="body1">Past Votes</Typography>
+    {expandedFilter === "pastVotes" ? (
+      <ExpandLessIcon />
+    ) : (
+      <ExpandMoreIcon />
+    )}
+  </Box>
+  {expandedFilter === "pastVotes" && (
+    <Box sx={{ py: 1, pt: 0 }}>
+      <Box className="filter-scroll">
+        <Box
+          onClick={handlePastVotesFilter}
+          className="filter-option"
+        >
+          {hasPastVotesFilter ? (
+            <CheckIcon color="primary" fontSize="small" />
+          ) : (
+            <Box sx={{ width: 24, height: 24 }} />
+          )}
+          <Typography variant="body2" sx={{ ml: 1 }}>
+            Past Term Votes 
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  )}
+</Box>
+
                         {/* Clear All Button */}
                         <Box>
                           <Button
@@ -835,7 +925,8 @@ export default function Senator(props) {
                               !ratingFilter.length &&
                               !selectedYears.length &&
                               !termFilter &&
-                              !statusFilter.length
+                              !statusFilter.length &&
+                              !hasPastVotesFilter
                             }
                           >
                             Clear All Filters

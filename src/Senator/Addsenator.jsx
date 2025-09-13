@@ -29,7 +29,7 @@ import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../../src/Dashboard/global/common";
 import { useParams, useNavigate } from "react-router-dom";
-import { Chip } from "@mui/material";
+import { Chip, Autocomplete } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
@@ -95,91 +95,96 @@ export default function AddSenator(props) {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const allVotes = useSelector((state) => state.vote.votes);
-  const [selectionError, setSelectionError] = useState({
+    const [selectionError, setSelectionError] = useState({
     show: false,
     message: "",
     type: "",
   });
+  const [billSearch, setBillSearch] = useState("");
   const validateVoteInTermRange = (voteId, termId) => {
     if (!voteId || !termId)
       return { isValid: false, message: "Invalid selection" };
-
+ 
     const vote = allVotes.find((v) => v._id === voteId);
     const term = terms.find((t) => t._id === termId);
-
+ 
     if (!vote) return { isValid: false, message: "Vote not found" };
     if (!term) return { isValid: false, message: "Term not found" };
-
+ 
     const voteDate = new Date(vote.date);
     const termStart = new Date(`${term.startYear}-01-01`);
     const termEnd = new Date(`${term.endYear}-12-31`);
-
+ 
     const isDateInRange = voteDate >= termStart && voteDate <= termEnd;
     const isCongressInTerm = term.congresses.includes(Number(vote.congress));
-
+ 
     if (!isDateInRange) {
       return {
         isValid: false,
-        message: `Selected vote is outside the term range (${term.startYear
-          }-${term.endYear})`,
+        message: `Selected vote is outside the term range (${
+          term.startYear
+        }-${term.endYear})`,
       };
     }
-
+ 
     if (!isCongressInTerm) {
       return {
         isValid: false,
-        message: `This vote (Congress ${vote.congress
-          }) is not part of the selected term's congresses (${term.congresses.join(
-            ", "
-          )})`,
+        message: `This vote (Congress ${
+          vote.congress
+        }) is not part of the selected term's congresses (${term.congresses.join(
+          ", "
+        )})`,
       };
     }
-
+ 
     return { isValid: true, message: "" };
   };
-
+ 
   const validateActivityInTermRange = (activityId, termId) => {
     if (!activityId || !termId)
       return { isValid: false, message: "Invalid selection" };
-
+ 
     const activity = allActivities.find((a) => a._id === activityId);
     const term = terms.find((t) => t._id === termId);
-
+ 
     if (!activity) return { isValid: false, message: "Activity not found" };
     if (!term) return { isValid: false, message: "Term not found" };
-
+ 
     const activityDate = new Date(activity.date);
     const termStart = new Date(`${term.startYear}-01-01`);
     const termEnd = new Date(`${term.endYear}-12-31`);
-
+ 
     const isDateInRange = activityDate >= termStart && activityDate <= termEnd;
     const isCongressInTerm = term.congresses.includes(
       Number(activity.congress || 0)
     );
-
+ 
     if (!isDateInRange) {
       return {
         isValid: false,
-        message: `Selected activity is outside the term range (${term.startYear
-          }-${term.endYear})`,
+        message: `Selected activity is outside the term range (${
+          term.startYear
+        }-${term.endYear})`,
       };
     }
-
+ 
     if (!isCongressInTerm) {
       return {
         isValid: false,
-        message: `This activity (Congress ${activity.congress
-          }) is not part of the selected term's congresses (${term.congresses.join(
-            ", "
-          )})`,
+        message: `This activity (Congress ${
+          activity.congress
+        }) is not part of the selected term's congresses (${term.congresses.join(
+          ", "
+        )})`,
       };
     }
-
+ 
     return { isValid: true, message: "" };
   };
 
   const allActivities = useSelector((state) => state.activity.activities);
-
+ 
   const startYear = senatorData?.currentSenator?.[0]?.termId?.startYear;
 
   const termStart = new Date(
@@ -377,7 +382,7 @@ export default function AddSenator(props) {
         activities: termData?.activitiesScore || [],
       };
     };
-
+ 
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, index) => {
         if (index !== termIndex) return term;
@@ -388,12 +393,12 @@ export default function AddSenator(props) {
             updatedTerm._originalDataCache = {
               votesScore: term.votesScore,
               activitiesScore: term.activitiesScore,
-              // pastVotesScore: term.pastVotesScore,
+              pastVotesScore: term.pastVotesScore,
             };
-
-            const newTermStart = new Date(`${selectedTerm.startYear}-01-01`);
-            const newTermEnd = new Date(`${selectedTerm.endYear}-12-31`);
-
+ 
+            const newTermStart = new Date(`${selectedTerm.startYear}-01-03`);
+            const newTermEnd = new Date(`${selectedTerm.endYear}-01-02`);
+ 
             // Try cache first
             const cachedData = term._termDataCache?.[value];
             if (cachedData) {
@@ -403,7 +408,7 @@ export default function AddSenator(props) {
             } else {
               // Use senator’s existing term-specific data
               const termSpecificData = getTermSpecificData(value);
-
+ 
               // Filter votes for this term
               const newFilteredVotes = allVotes.filter((vote) => {
                 const voteDate = new Date(vote.date);
@@ -411,9 +416,9 @@ export default function AddSenator(props) {
                   voteDate >= newTermStart &&
                   voteDate <= newTermEnd &&
                   selectedTerm.congresses.includes(Number(vote.congress));
-
+ 
                 if (!inTerm) return false;
-
+ 
                 return termSpecificData.votes.some((v) => {
                   if (!v?.score || v.score.trim() === "") return false;
                   const vId =
@@ -439,7 +444,7 @@ export default function AddSenator(props) {
                       v.billNumber === vote.billNumber)
                   );
                 });
-
+ 
                 let scoreValue = "";
                 if (senatorVote?.score) {
                   const s = senatorVote.score.toLowerCase();
@@ -448,18 +453,18 @@ export default function AddSenator(props) {
                   else if (s.includes("other")) scoreValue = "other";
                   else scoreValue = senatorVote.score;
                 }
-
+ 
                 return {
                   voteId: vote._id,
                   score: scoreValue,
                   title: vote.title,
                 };
               });
-
+ 
               if (updatedTerm.votesScore.length === 0) {
                 updatedTerm.votesScore = [{ voteId: "", score: "" }];
               }
-
+ 
               // Filter activities for this term
               const newParticipatedActivities = allActivities.filter(
                 (activity) => {
@@ -470,9 +475,9 @@ export default function AddSenator(props) {
                     selectedTerm.congresses.includes(
                       Number(activity.congress || 0)
                     );
-
+ 
                   if (!inTerm) return false;
-
+ 
                   return termSpecificData.activities.some((a) => {
                     if (!a?.score || a.score.trim() === "") return false;
                     const aId =
@@ -483,7 +488,7 @@ export default function AddSenator(props) {
                   });
                 }
               );
-
+ 
               updatedTerm.activitiesScore = newParticipatedActivities.map(
                 (activity) => {
                   const senAct = termSpecificData.activities.find((a) => {
@@ -493,7 +498,7 @@ export default function AddSenator(props) {
                         : a.activityId;
                     return aId === activity._id;
                   });
-
+ 
                   let mappedScore = "";
                   if (senAct?.score) {
                     const s = String(senAct.score).toLowerCase();
@@ -503,7 +508,7 @@ export default function AddSenator(props) {
                     else if (s.includes("other")) mappedScore = "other";
                     else mappedScore = senAct.score;
                   }
-
+ 
                   return {
                     activityId: activity._id,
                     score: mappedScore,
@@ -511,64 +516,65 @@ export default function AddSenator(props) {
                   };
                 }
               );
-
+ 
               if (updatedTerm.activitiesScore.length === 0) {
                 updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
               }
-
+ 
               // Past votes (always global)
-              // const newPastVotes = allVotes.filter(
-              //   (vote) => vote.isImportantPastVote === true
-              // );
-
-              // updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
-              //   const senatorPastVote = termSpecificData.votes.find((v) => {
-              //     const vId =
-              //       typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-              //     return vId === vote._id;
-              //   });
-
-              //   return {
-              //     voteId: vote._id,
-              //     score: senatorPastVote?.score || "",
-              //     title: vote.title,
-              //   };
-              // });
-
-              // if (updatedTerm.pastVotesScore.length === 0) {
-              //   updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
-              // }
-
+              const newPastVotes = allVotes.filter(
+                (vote) => vote.isImportantPastVote === true
+              );
+ 
+              updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
+                const senatorPastVote = termSpecificData.votes.find((v) => {
+                  const vId =
+                    typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                  return vId === vote._id;
+                });
+ 
+                return {
+                  voteId: vote._id,
+                  score: senatorPastVote?.score || "",
+                  title: vote.title,
+                };
+              });
+ 
+              if (updatedTerm.pastVotesScore.length === 0) {
+                updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
+              }
+ 
               // Save into cache
               updatedTerm._termDataCache = {
                 ...term._termDataCache,
                 [value]: {
                   votesScore: updatedTerm.votesScore,
                   activitiesScore: updatedTerm.activitiesScore,
-                  // pastVotesScore: updatedTerm.pastVotesScore,
+                  pastVotesScore: updatedTerm.pastVotesScore,
                 },
               };
             }
           }
         }
-
+ 
         return updatedTerm;
       });
-
-
-
+ 
+ 
+ 
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
-
+ 
       if (isActualChange && !localChanges.includes(fieldName)) {
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
         setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
-
+ 
       return newTerms;
     });
   };
+ 
 
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
@@ -701,7 +707,7 @@ export default function AddSenator(props) {
     if (field === "voteId" && value) {
       const termId = senatorTermData[termIndex].termId;
       const validation = validateVoteInTermRange(value, termId);
-
+ 
       if (!validation.isValid) {
         setSelectionError({
           show: true,
@@ -786,10 +792,10 @@ export default function AddSenator(props) {
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
       }`;
-    if (field === "activityId" && value) {
+       if (field === "activityId" && value) {
       const termId = senatorTermData[termIndex].termId;
       const validation = validateActivityInTermRange(value, termId);
-
+ 
       if (!validation.isValid) {
         setSelectionError({
           show: true,
@@ -945,10 +951,10 @@ export default function AddSenator(props) {
     ]);
   };
 
-  const handleRemoveTerm = (termIndex) => {
+   const handleRemoveTerm = (termIndex) => {
     setSenatorTermData((prev) => {
       const removed = prev[termIndex];
-      const removalId = `Term_${termIndex + 1} Removed`;
+     const removalId = `Term_${termIndex+1} Removed`;
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
         if (!localChanges.includes(removalId)) {
@@ -1736,7 +1742,7 @@ export default function AddSenator(props) {
       const hasNonDefaultValue = (field, value) => {
         if (value === null || value === undefined) return false;
         if (typeof value === "string" && value.trim() === "") return false;
-
+       
         return true;
       };
 
@@ -2296,8 +2302,8 @@ export default function AddSenator(props) {
                             }
 
                             const formatFieldName = (field, index, senatorTermData = [],) => {
-
-
+                             
+                           
                               if (typeof field === "object" && field !== null) {
 
                                 if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
@@ -3427,112 +3433,34 @@ export default function AddSenator(props) {
                                 </InputLabel>
                               </Grid>
                               <Grid size={isMobile ? 12 : 7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.voteId || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "voteId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      background: "#fff",
-                                      width: "100%",
-                                    }}
-                                    renderValue={(selected) => {
-                                      const selectedVote = votes.find(
-                                        (v) => v._id === selected
-                                      );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedVote?.title ||
-                                            "Select a Bill"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select a Bill
-                                    </MenuItem>
-                                    {allVotes.length > 0 ? (
-                                      allVotes
-                                        .filter(voteItem => voteItem.type === "senate_bill")
-                                        .map((voteItem) => {
+                                <Autocomplete
+  options={allVotes.filter(v => v.type === "senate_bill")}
+  getOptionLabel={(option) => option.title}
+  value={votes.find((v) => v._id === vote.voteId) || null}
+  onChange={(e, newValue) =>
+    handleVoteChange(termIndex, voteIndex, "voteId", newValue?._id || "")
+  }
 
-                                          const senatorVote = senatorVotes.find(
-                                            (v) => {
-                                              const vId =
-                                                typeof v.voteId === "object"
-                                                  ? v.voteId?._id
-                                                  : v.voteId;
-                                              return (
-                                                vId === voteItem._id ||
-                                                v.quorumId ===
-                                                  voteItem.quorumId ||
-                                                (v.billNumber &&
-                                                  voteItem.billNumber &&
-                                                  v.billNumber ===
-                                                    voteItem.billNumber)
-                                              );
-                                            }
-                                          );
+  renderInput={(params) => (
+    <TextField {...params} placeholder="Search bills..."  size="small"       sx={{
+        "& .MuiOutlinedInput-root": {
+          height: "40px", 
+          background: "#fff",
+           cursor: "pointer",  
+      "& input": {
+        cursor: "pointer", 
+      },
+      "& fieldset": {
+          border: "none",
+      },
+        },
+      }}
+ />
+  )}
 
-
-
-                                          const score =
-                                            senatorVote?.score || "";
-                                          const scoreText = score
-                                            ? ` (${score})`
-                                            : "";
-
-                                          return (
-                                            <MenuItem
-                                              key={voteItem._id}
-                                              value={voteItem._id}
-                                              sx={{ py: 1.5 }}
-                                            >
-                                              <Typography
-                                                sx={{
-                                                  whiteSpace: "normal",
-                                                  overflowWrap: "break-word",
-                                                }}
-                                              >
-                                                {voteItem.title}
-                                              </Typography>
-                                            </MenuItem>
-                                          );
-                                        })
-                                    ) : (
-                                      <MenuItem value="" disabled>
-                                        {term.termId
-                                          ? "No bills available for this term"
-                                          : "Select a term first"}
-                                      </MenuItem>
-                                    )}
-                                    {/* ) */}
-                                    {/* ()} */}
-                                  </Select>
-                                </FormControl>
+  
+ 
+/>
                               </Grid>
                               <Grid size={isMobile ? 12 : 1.6}>
                                 <FormControl fullWidth>
@@ -3590,17 +3518,27 @@ export default function AddSenator(props) {
                             </InputLabel>
                           </Grid>
                           <Grid size={isMobile ? 12 : 7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff", width: "100%" }}
-                                disabled
-                              >
-                                <MenuItem value="">
-                                  Select a term first
-                                </MenuItem>
-                              </Select>
-                            </FormControl>
+                            <Autocomplete
+        freeSolo
+        disabled 
+        options={[]}
+        popupIcon={null} 
+        clearIcon={null}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            background: "#fff",
+            
+          }
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            placeholder="Select a term first"
+            variant="outlined"
+            fullWidth
+          />
+        )}
+      />
                           </Grid>
                           <Grid size={isMobile ? 12 : 1.6}>
                             <FormControl fullWidth>
@@ -3673,104 +3611,42 @@ export default function AddSenator(props) {
                                 </InputLabel>
                               </Grid>
                               <Grid size={isMobile ? 12 : 7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={activity.activityId || ""}
-                                    onChange={(event) =>
-                                      handleActivityChange(
-                                        termIndex,
-                                        activityIndex,
-                                        "activityId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      background: "#fff",
-                                      width: "100%",
-                                    }}
-                                    renderValue={(selected) => {
-                                      const selectedActivity =
-                                        allActivities.find(
-                                          (a) => a._id === selected
-                                        );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedActivity?.title ||
-                                            "Select an Activity"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select an Activity
-                                    </MenuItem>
-                                    {allActivities.length > 0 ? (
-                                      allActivities
-                                        .filter(
-                                          (activityItem) =>
-                                            activityItem.type === "senate"
-                                        )
-                                        .map((activityItem) => {
-
-                                          const hasScore = senatorActivities.some(
-                                            (a) => {
-                                              const aId =
-                                                typeof a.activityId === "object"
-                                                  ? a.activityId?._id
-                                                  : a.activityId;
-                                              return (
-                                                aId === activityItem._id &&
-                                                a.score &&
-                                                a.score.trim() !== ""
-                                              );
-                                            });
-
-                                          const scoreText = hasScore
-                                            ? " (scored)"
-                                            : "";
-
-                                          return (
-                                            <MenuItem
-                                              key={activityItem._id}
-                                              value={activityItem._id}
-                                              sx={{ py: 1.5 }}
-                                            >
-                                              <Typography
-                                                sx={{
-                                                  whiteSpace: "normal",
-                                                  overflowWrap: "break-word",
-                                                }}
-                                              >
-                                                {activityItem.title ||
-                                                  "Untitled Activity"}
-                                              </Typography>
-                                            </MenuItem>
-                                          );
-                                        })
-                                    ) : (
-                                      <MenuItem value="" disabled>
-                                        No activities available
-                                      </MenuItem>
-                                    )}
-                                  </Select>
-                                </FormControl>
+                                 <Autocomplete
+              options={allActivities.filter(a => a.type === "senate")}
+              getOptionLabel={(option) => option.title || "Untitled Activity"}
+              value={
+                allActivities.find((a) => a._id === activity.activityId) ||
+                null
+              }
+              onChange={(e, newValue) =>
+                handleActivityChange(
+                  termIndex,
+                  activityIndex,
+                  "activityId",
+                  newValue?._id || ""
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search activities..."
+                  size="small"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "40px",
+                      background: "#fff",
+                      cursor: "pointer",
+                      "& input": {
+                        cursor: "pointer",
+                      },
+                      "& fieldset": { border: "none" },
+                      "&:hover fieldset": { border: "none" },
+                      "&.Mui-focused fieldset": { border: "none" },
+                    },
+                  }}
+                />
+              )}
+            />
                               </Grid>
                               <Grid size={isMobile ? 12 : 1.6}>
                                 <FormControl fullWidth>
@@ -3831,17 +3707,26 @@ export default function AddSenator(props) {
                             </InputLabel>
                           </Grid>
                           <Grid size={isMobile ? 12 : 7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff", width: "100%" }}
-                                disabled
-                              >
-                                <MenuItem value="">
-                                  Select a term first
-                                </MenuItem>
-                              </Select>
-                            </FormControl>
+                             <Autocomplete
+          freeSolo
+          disabled
+          options={[]}
+          popupIcon={null}
+          clearIcon={null}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              background: "#fff",
+            },
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder="Select a term first"
+              variant="outlined"
+              fullWidth
+            />
+          )}
+        />
                           </Grid>
                           <Grid size={isMobile ? 12 : 1.6}>
                             <FormControl fullWidth>
@@ -3883,120 +3768,87 @@ export default function AddSenator(props) {
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
-                    {term.termId ? (
-                      <>
-                        {(term.pastVotesScore || []).map((vote, voteIndex) => (
-                          <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
-                            <Grid
-                              size={12}
-                              display="flex"
-                              alignItems="center"
-                              columnGap={"15px"}
-                            >
-                              <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel className="label">
-                                  Important Past Vote {voteIndex + 1}
-                                </InputLabel>
-                              </Grid>
-                              <Grid size={isMobile ? 12 : 7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.voteId || ""}
-                                    onChange={(event) =>
-                                      handlePastVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "voteId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      background: "#fff",
-                                      width: "100%",
-                                    }}
-                                    renderValue={(selected) => {
-                                      const selectedVote = votes.find((v) => v._id === selected);
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedVote?.title || "Select a Bill"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select a Bill
-                                    </MenuItem>
-                                    {allVotes.length > 0 ? (
-                                      allVotes
-
-                                        .map((voteItem) => (
-                                          <MenuItem key={voteItem._id} value={voteItem._id} sx={{ py: 1.5 }}>
-                                            <Typography
-                                              sx={{
-                                                whiteSpace: "normal",
-                                                overflowWrap: "break-word",
-                                              }}
-                                            >
-                                              {voteItem.title}
-                                            </Typography>
-                                          </MenuItem>
-                                        ))
-                                    ) : (
-                                      <MenuItem value="" disabled>
-                                        No past votes available
-                                      </MenuItem>
-                                    )}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote?.score || ""}
-                                    onChange={(event) =>
-                                      handlePastVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "score",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff" }}
-                                  >
-                                    <MenuItem value="yea">Yea</MenuItem>
-                                    <MenuItem value="nay">Nay</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={1}>
-                                <DeleteForeverIcon
-                                  onClick={() => handleRemovePastVote(termIndex, voteIndex)}
-                                />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        ))}
-                      </>
-                    ) : (
-                      <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
+  {term.termId ? (
+                      <>                  
+    {(term.pastVotesScore || []).map((vote, voteIndex) => (
+      <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
+        <Grid
+          size={12}
+          display="flex"
+          alignItems="center"
+          columnGap={"15px"}
+        >
+          <Grid size={isMobile ? 12 : 2}>
+            <InputLabel className="label">
+              Important Past Vote {voteIndex + 1}
+            </InputLabel>
+          </Grid>
+          <Grid size={isMobile ? 12 : 7.5}>
+           <Autocomplete
+              options={allVotes} // full list
+              getOptionLabel={(option) => option.title || ""}
+              value={allVotes.find((v) => v._id === vote.voteId) || null}
+              onChange={(e, newValue) =>
+                handlePastVoteChange(
+                  termIndex,
+                  voteIndex,
+                  "voteId",
+                  newValue?._id || ""
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search past votes..."
+                  size="small"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "40px",
+                      background: "#fff",
+                      cursor: "pointer",
+                      "& input": {
+                        cursor: "pointer",
+                      },
+                      "& fieldset": {
+                        border: "none", // remove border
+                      },
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+          <Grid size={isMobile ? 12 : 1.6}>
+            <FormControl fullWidth>
+              <Select
+                value={vote?.score || ""}
+                onChange={(event) =>
+                  handlePastVoteChange(
+                    termIndex,
+                    voteIndex,
+                    "score",
+                    event.target.value
+                  )
+                }
+                sx={{ background: "#fff" }}
+              >
+                <MenuItem value="yea">Yea</MenuItem>
+                <MenuItem value="nay">Nay</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid size={1}>
+            <DeleteForeverIcon
+              onClick={() => handleRemovePastVote(termIndex, voteIndex)}
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+    ))}
+    </>
+  ):(
+    <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
                         <Grid
                           size={12}
                           display="flex"
@@ -4092,53 +3944,54 @@ export default function AddSenator(props) {
             </Button>
 
             <Snackbar
-              open={openSnackbar || selectionError.show}
-              autoHideDuration={6000}
-              onClose={() => {
-                handleSnackbarClose();
-                setSelectionError({ show: false, message: "", type: "" });
-              }}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MuiAlert
-                onClose={() => {
-                  handleSnackbarClose();
-                  setSelectionError({ show: false, message: "", type: "" });
-                }}
-                severity={selectionError.show ? "error" : snackbarSeverity}
-                sx={{
-                  width: "100%",
-                  border: "none",
-                  boxShadow: "none",
-                  bgcolor:
-                    snackbarMessage === "Changes published successfully!"
-                      ? "#daf4f0"
-                      : undefined,
-                  "& .MuiAlert-icon": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-message": {
-                    color:
-                      snackbarMessage === "Changes published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-action": {
+  open={openSnackbar || selectionError.show}
+  autoHideDuration={6000}
+  onClose={() => {
+    handleSnackbarClose();
+    setSelectionError({ show: false, message: "", type: "" });
+  }}
+  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+>
+  <MuiAlert
+    onClose={() => {
+      handleSnackbarClose();
+      setSelectionError({ show: false, message: "", type: "" });
+    }}
+    severity={selectionError.show ? "error" : snackbarSeverity}
+    sx={{
+      width: "100%",
+      border: "none",
+      boxShadow: "none",
+      bgcolor:
+        snackbarMessage === "Changes published successfully!"
+          ? "#daf4f0"
+          : undefined,
+      "& .MuiAlert-icon": {
+        color:
+          snackbarMessage === "Changes published successfully!"
+            ? "#099885"
+            : undefined,
+      },
+      "& .MuiAlert-message": {
+        color:
+          snackbarMessage === "Changes published successfully!"
+            ? "#099885"
+            : undefined,
+      },
+      "& .MuiAlert-action": {
                     display: "flex",
                     alignItems: "center",
                     paddingTop: 0,
                     paddingBottom: 0,
                   },
-                }}
-                elevation={6}
-                variant="filled"
-              >
-                {selectionError.show ? selectionError.message : snackbarMessage}
-              </MuiAlert>
-            </Snackbar>
+    }}
+    elevation={6}
+    variant="filled"
+  >
+    {selectionError.show ? selectionError.message : snackbarMessage}
+  </MuiAlert>
+</Snackbar>
+            
 
 
           </Stack>

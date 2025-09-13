@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
 import { useTheme, useMediaQuery,Chip } from "@mui/material";
+import { getAllTerms } from "../redux/reducer/termSlice";
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
     <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
@@ -42,11 +43,13 @@ export default function CustomizedDataGrid({
   // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
+  const { terms } = useSelector((state) => state.term);
 
   
   useEffect(() => {
     dispatch(getAllSenatorData());
     dispatch(getAllHouseData());
+    dispatch(getAllTerms());
   }, [dispatch]);
 
   useEffect(() => {
@@ -61,14 +64,78 @@ export default function CustomizedDataGrid({
         });
         setMergedRows(merged);
       } else if (type === "representative" && houseData) {
-        const merged = rows.map((row) => {
-          const match = houseData.find((data) => data.houseId === row._id);
-          return {
-            ...row,
-            rating: match?.rating || "N/A",
-          };
-        });
-        setMergedRows(merged);
+       const merged = rows.map((row) => {
+        const houseRecords = houseData.filter((data) => data.houseId === row._id);
+
+        const currentTermData = houseRecords.find((rec) => rec.currentTerm === true);
+        let rating = "N/A";
+        let termId = row.termId;
+        let termName = "";
+        let currentTerm = false;
+
+        if (currentTermData) {
+          termId = currentTermData.termId;
+          rating = currentTermData.rating || "N/A";
+          currentTerm = true;
+          if (!currentTermData.rating) {
+            const fallbackRecords = houseRecords
+              .map((rec) => {
+                const termObj = terms.find((t) => t._id === rec.termId);
+                return termObj ? { ...rec, termObj } : null;
+              })
+              .filter(Boolean)
+              .sort((a, b) => {
+                const aYear = parseInt(a.termObj.endYear, 10) || 0;
+                const bYear = parseInt(b.termObj.endYear, 10) || 0;
+                return bYear - aYear;
+              });
+
+            const valid = fallbackRecords.find((rec) => rec.rating && rec.rating !== "");
+            if (valid) {
+              rating = valid.rating;
+              termId = valid.termId;
+              termName = valid.termObj.name;
+            }
+          } else {
+            const termObj = terms.find((t) => t._id === termId);
+            termName = termObj ? termObj.name : "";
+          }
+        } else {
+          const validRecords = houseRecords
+            .map((rec) => {
+              const termObj = terms.find((t) => t._id === rec.termId);
+              return termObj ? { ...rec, termObj } : null;
+            })
+            .filter(Boolean)
+            .sort((a, b) => {
+              const aYear = parseInt(a.termObj.endYear, 10) || 0;
+              const bYear = parseInt(b.termObj.endYear, 10) || 0;
+              return bYear - aYear;
+            });
+
+          if (validRecords.length > 0) {
+            const latest = validRecords.find((rec) => rec.rating && rec.rating !== "");
+            if (latest) {
+              rating = latest.rating;
+              termId = latest.termId;
+              termName = latest.termObj.name;
+            }
+          } else {
+            const termObj = terms.find((t) => t._id === row.termId);
+            termName = termObj ? termObj.name : "";
+          }
+        }
+
+        return {
+          ...row,
+          rating,
+          termId,
+          termName,
+          currentTerm,
+        };
+      });
+
+      setMergedRows(merged);
       } else {
         // For bills/activities or if data isn't loaded yet
         setMergedRows(

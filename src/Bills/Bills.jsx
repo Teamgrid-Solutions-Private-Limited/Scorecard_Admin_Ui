@@ -8,7 +8,8 @@ import {
   bulkUpdateSbaPosition,
 } from "../redux/reducer/voteSlice";
 import AppTheme from "../../src/shared-theme/AppTheme";
-import { Box, Stack, Typography, Button } from "@mui/material";
+import { Box, Stack, Typography, Button ,InputAdornment,} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import SideMenu from "../../src/components/SideMenu";
@@ -34,7 +35,6 @@ import {
   IconButton,
   Paper,
   ClickAwayListener,
-  InputAdornment
 } from "@mui/material";
 import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
@@ -51,7 +51,6 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
-import SearchIcon from "@mui/icons-material/Search";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -117,22 +116,23 @@ export default function Bills(props) {
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
- const filteredVotes = votes.filter((vote) => {
- 
+  const filteredVotes = votes.filter((vote) => {
+  
   const statusMatch =
     statusFilter.length === 0 ||
     (vote.status && statusFilter.includes(vote.status));
- 
- 
+
+  
   const searchMatch =
     !searchQuery ||
     (vote.billName &&
       vote.billName.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (vote.title &&
       vote.title.toLowerCase().includes(searchQuery.toLowerCase()));
- 
+
   return statusMatch && searchMatch;
 });
+
 
   const billsData = filteredVotes.map((vote, index) => ({
     _id: vote._id || index,
@@ -214,6 +214,7 @@ export default function Bills(props) {
   //     await dispatch(getAllVotes());
   //   }
   // };
+ 
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -349,6 +350,7 @@ export default function Bills(props) {
                   </Button>
                 )}
               </Stack>
+
             </Box>
 
             {isBulkEditMode && (

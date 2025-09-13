@@ -8,7 +8,8 @@ import {
   bulkUpdateTrackActivities,
 } from "../redux/reducer/activitySlice";
 import AppTheme from "../../src/shared-theme/AppTheme";
-import { Box, Stack, Typography, Button } from "@mui/material";
+import { Box, Stack, Typography, Button ,InputAdornment,} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import SideMenu from "../../src/components/SideMenu";
@@ -34,7 +35,6 @@ import {
   IconButton,
   Paper,
   ClickAwayListener,
-  InputAdornment,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -51,7 +51,7 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
-import SearchIcon from "@mui/icons-material/Search";
+
 
 export default function Activity(props) {
   const dispatch = useDispatch();
@@ -91,12 +91,12 @@ export default function Activity(props) {
     const statusMatch =
       statusFilter.length === 0 ||
       (activity.status && statusFilter.includes(activity.status));
- 
+
     const searchMatch =
       !searchQuery ||
       (activity.title &&
         activity.title.toLowerCase().includes(searchQuery.toLowerCase()));
-     
+      
     return statusMatch && searchMatch;
   });
   const activitiesData = filteredActivities.map((activity, index) => ({
@@ -381,6 +381,7 @@ export default function Activity(props) {
                 </Button>
                 )}
               </Stack>
+
             </Box>
             {isBulkEditMode && (
               <Box className="bulkEditContainer">
