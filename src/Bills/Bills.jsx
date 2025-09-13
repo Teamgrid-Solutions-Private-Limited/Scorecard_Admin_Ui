@@ -35,7 +35,6 @@ import {
   IconButton,
   Paper,
   ClickAwayListener,
-  InputAdornment
 } from "@mui/material";
 import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
@@ -52,7 +51,6 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
-import SearchIcon from "@mui/icons-material/Search";
 
 export default function Bills(props) {
   const dispatch = useDispatch();

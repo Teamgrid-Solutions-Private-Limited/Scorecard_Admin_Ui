@@ -35,7 +35,6 @@ import {
   IconButton,
   Paper,
   ClickAwayListener,
-  InputAdornment,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -52,7 +51,6 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
-import SearchIcon from "@mui/icons-material/Search";
 
 export default function Activity(props) {
   const dispatch = useDispatch();
