@@ -52,6 +52,7 @@ const xThemeComponents = {
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 
+
 export default function Activity(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
