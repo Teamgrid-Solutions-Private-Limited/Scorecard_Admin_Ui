@@ -2500,7 +2500,22 @@ export default function Addrepresentative(props) {
                               .sort((a, b) => a.congresses[0] - b.congresses[0])
                               .map((t) => (
                                 <MenuItem key={t._id} value={t._id}>
-                                  {`${t.congresses[0]}th Congress`}
+                                   <Box display="flex" alignItems="center" gap={0}>
+                                   <Box>
+                                      {`${t.congresses[0]}th Congress`}
+                                    </Box>
+                                    <Typography sx={{
+                                        px: 0.5,
+                                        py: 0.25,
+                                        borderRadius: "8px",
+                                        bgcolor: "#f5f5f5",
+                                        fontSize: "0.75rem",
+                                        fontWeight: 500,
+                                        color: "text.secondary",
+                                      }} variant="body2" fontWeight={500}>
+                                      {t.name}
+                                    </Typography>
+                                  </Box>
                                 </MenuItem>
                               ))
                           ) : (
@@ -2643,84 +2658,48 @@ export default function Addrepresentative(props) {
                               </InputLabel>
                             </Grid>
                             <Grid size={isMobile ? 12 : 7.5}>
-                              <FormControl fullWidth>
-                                <Select
-                                  value={vote.voteId || ""}
-                                  onChange={(event) =>
-                                    handleVoteChange(
-                                      termIndex,
-                                      voteIndex,
-                                      "voteId",
-                                      event.target.value
-                                    )
-                                  }
-                                  sx={{
-                                    background: "#fff",
-                                    width: "100%",
-                                  }}
-                                  renderValue={(selected) => {
-                                    const selectedVote = getFilteredVotes(
-                                      termIndex
-                                    ).find((v) => v._id === selected);
-
-                                    return (
-                                      <Typography
-                                        sx={{
-                                          overflow: "hidden",
-                                          whiteSpace: "nowrap",
-                                          textOverflow: "ellipsis",
-                                        }}
-                                      >
-                                        {
-                                          selectedVote?.title
-                                          // || "Select a Bill"
-                                        }
-                                      </Typography>
-                                    );
-                                  }}
-                                  MenuProps={{
-                                    PaperProps: {
-                                      sx: {
-                                        maxHeight: 300,
-                                        width: 400,
-                                        "& .MuiMenuItem-root": {
-                                          minHeight: "48px",
-                                        },
-                                      },
-                                    },
-                                  }}
-                                >
-                                  <MenuItem value="" disabled>
-                                    Select a Bill
-                                  </MenuItem>
-                                  {getFilteredVotes(termIndex).length > 0 ? (
-                                    getFilteredVotes(termIndex).map(
-                                      (voteItem) => (
-                                        <MenuItem
-                                          key={voteItem._id}
-                                          value={voteItem._id}
-                                          sx={{ py: 1.5 }}
-                                        >
-                                          <Typography
-                                            sx={{
-                                              whiteSpace: "normal",
-                                              overflowWrap: "break-word",
-                                            }}
-                                          >
-                                            {voteItem.title}
-                                          </Typography>
-                                        </MenuItem>
-                                      )
-                                    )
-                                  ) : (
-                                    <MenuItem value="" disabled>
-                                      {term.termId
-                                        ? "No bills available for this congress"
-                                        : "Select a term first"}
-                                    </MenuItem>
-                                  )}
-                                </Select>
-                              </FormControl>
+                               <Autocomplete
+            options={getFilteredVotes(termIndex)}
+            getOptionLabel={(option) => option.title || ""}
+            value={
+              getFilteredVotes(termIndex).find(
+                (v) => v._id === vote.voteId
+              ) || null
+            }
+            onChange={(e, newValue) =>
+              handleVoteChange(
+                termIndex,
+                voteIndex,
+                "voteId",
+                newValue?._id || ""
+              )
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder="Search bills..."
+                size="small"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    height: "40px",
+                    background: "#fff",
+                    cursor: "pointer",
+                    "& input": {
+                      cursor: "pointer",
+                    },
+                    "& fieldset": {
+                      border: "none", // remove border
+                    },
+                  },
+                }}
+              />
+            )}
+            noOptionsText={
+              term.termId
+                ? "No bills available for this congress"
+                : "Select a term first"
+            }
+          />
                             </Grid>
                             <Grid size={isMobile ? 12 : 1.6}>
                               <FormControl fullWidth>
@@ -2789,85 +2768,51 @@ export default function Addrepresentative(props) {
                               </InputLabel>
                             </Grid>
                             <Grid size={isMobile ? 8 : 7.5}>
-                              <FormControl fullWidth>
-                                <Select
-                                  value={activity.activityId || ""}
-                                  onChange={(event) =>
-                                    handleActivityChange(
-                                      termIndex,
-                                      activityIndex,
-                                      "activityId",
-                                      event.target.value
-                                    )
-                                  }
-                                  sx={{
-                                    background: "#fff",
-                                    width: "100%",
-                                  }}
-                                  renderValue={(selected) => {
-                                    const selectedActivity =
-                                      getFilteredActivities(termIndex).find(
-                                        (a) => a._id === selected
-                                      );
-                                    return (
-                                      <Typography
-                                        sx={{
-                                          overflow: "hidden",
-                                          whiteSpace: "nowrap",
-                                          textOverflow: "ellipsis",
-                                        }}
-                                      >
-                                        {
-                                          selectedActivity?.title
-                                          //  ||"Select an Activity"
-                                        }
-                                      </Typography>
-                                    );
-                                  }}
-                                  MenuProps={{
-                                    PaperProps: {
-                                      sx: {
-                                        maxHeight: 300,
-                                        width: 400,
-                                        "& .MuiMenuItem-root": {
-                                          minHeight: "48px",
-                                        },
-                                      },
-                                    },
-                                  }}
-                                >
-                                  <MenuItem value="" disabled>
-                                    Select an Activity
-                                  </MenuItem>
-                                  {getFilteredActivities(termIndex).length >
-                                    0 ? (
-                                    getFilteredActivities(termIndex).map(
-                                      (activityItem) => (
-                                        <MenuItem
-                                          key={activityItem._id}
-                                          value={activityItem._id}
-                                          sx={{ py: 1.5 }}
-                                        >
-                                          <Typography
-                                            sx={{
-                                              whiteSpace: "normal",
-                                              overflowWrap: "break-word",
-                                            }}
-                                          >
-                                            {activityItem.title}
-                                          </Typography>
-                                        </MenuItem>
-                                      )
-                                    )
-                                  ) : (
-                                    <MenuItem value="" disabled>
-                                      {term.termId
-                                        ? "No activities available for this congress"
-                                        : "Select a term first"}
-                                    </MenuItem>
-                                  )}
-                                </Select>
-                              </FormControl>
+                             <Autocomplete
+  value={
+    getFilteredActivities(termIndex).find(
+      (a) => a._id === activity.activityId
+    ) || null
+  }
+  onChange={(event, newValue) =>
+    handleActivityChange(
+      termIndex,
+      activityIndex,
+      "activityId",
+      newValue ? newValue._id : ""
+    )
+  }
+  options={getFilteredActivities(termIndex)}
+  getOptionLabel={(option) => option.title || ""}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      placeholder="Select an Activity"
+      size="small"
+      sx={{
+                  "& .MuiOutlinedInput-root": {
+                    height: "40px",
+                    background: "#fff",
+                    cursor: "pointer",
+                    "& input": {
+                      cursor: "pointer",
+                    },
+                    "& fieldset": {
+                      border: "none", // remove border
+                    },
+                  },
+                }}
+    />
+  )}
+  isOptionEqualToValue={(option, value) => option._id === value._id}
+  noOptionsText={
+    term.termId
+      ? "No activities available for this congress"
+      : "Select a term first"
+  }
+ 
+/>
+
                             </Grid>
                             <Grid size={isMobile ? 6 : 1.6}>
                               <FormControl fullWidth>
