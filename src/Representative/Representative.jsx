@@ -96,6 +96,22 @@ export default function Representative(props) {
   const [statusFilter, setStatusFilter] = useState([]);
   const statusOptions = ["published", "under review", "draft"];
 
+  const getOrdinalSuffix = (num) => {
+    const n = Number(num);
+    const mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+    switch (n % 10) {
+      case 1:
+        return `${n}st`;
+      case 2:
+        return `${n}nd`;
+      case 3:
+        return `${n}rd`;
+      default:
+        return `${n}th`;
+    }
+  };
+
   // Build congress options from available houseData terms
 
   useEffect(() => {
@@ -233,14 +249,30 @@ export default function Representative(props) {
     rating.toLowerCase().includes(searchTerms.rating)
   );
 
-  // Build Congress options from terms' congresses arrays
+  // Build Congress options and map each congress to a year range using only terms with a single congress value
+  const congressYearMap = (() => {
+    const map = {};
+    (terms || []).forEach((t) => {
+      const list = Array.isArray(t.congresses) ? t.congresses : [];
+      if (list.length === 1) {
+        const c = list[0];
+        if (!map[c]) {
+          map[c] = { startYear: t.startYear, endYear: t.endYear };
+        }
+      }
+    });
+    return map;
+  })();
+
   const congressOptions = [
-    ...new Set((terms || []).flatMap((t) => Array.isArray(t.congresses) ? t.congresses : [])),
+    ...new Set(Object.keys(congressYearMap).map((k) => Number(k))),
   ].sort((a, b) => a - b);
 
-  const filteredCongressOptions = congressOptions.filter((c) =>
-    String(c).toLowerCase().includes(searchTerms.congress)
-  );
+  const filteredCongressOptions = congressOptions.filter((c) => {
+    const yr = congressYearMap[c];
+    const label = yr ? `Congress ${c} (${yr.startYear}-${yr.endYear})` : `Congress ${c}`;
+    return label.toLowerCase().includes(searchTerms.congress);
+  });
 
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
@@ -838,7 +870,9 @@ export default function Representative(props) {
                                         variant="body2"
                                         sx={{ ml: 1 }}
                                       >
-                                        {`Congress ${congress}`}
+                                        {congressYearMap[congress]
+                                          ? `${getOrdinalSuffix(congress)} Congress (${congressYearMap[congress].startYear}-${congressYearMap[congress].endYear})`
+                                          : `${getOrdinalSuffix(congress)} Congress`}
                                       </Typography>
                                     </Box>
                                   ))

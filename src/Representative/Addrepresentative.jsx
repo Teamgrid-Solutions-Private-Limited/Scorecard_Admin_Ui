@@ -2500,22 +2500,7 @@ export default function Addrepresentative(props) {
                               .sort((a, b) => a.congresses[0] - b.congresses[0])
                               .map((t) => (
                                 <MenuItem key={t._id} value={t._id}>
-                                   <Box display="flex" alignItems="center" gap={0}>
-                                   <Box>
                                       {`${t.congresses[0]}th Congress`}
-                                    </Box>
-                                    <Typography sx={{
-                                        px: 0.5,
-                                        py: 0.25,
-                                        borderRadius: "8px",
-                                        bgcolor: "#f5f5f5",
-                                        fontSize: "0.75rem",
-                                        fontWeight: 500,
-                                        color: "text.secondary",
-                                      }} variant="body2" fontWeight={500}>
-                                      {t.name}
-                                    </Typography>
-                                  </Box>
                                 </MenuItem>
                               ))
                           ) : (
