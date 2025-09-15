@@ -3495,112 +3495,21 @@ export default function AddSenator(props) {
                                 </InputLabel>
                               </Grid>
                               <Grid size={isMobile ? 12 : 7.5}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote.voteId || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "voteId",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{
-                                      background: "#fff",
-                                      width: "100%",
-                                    }}
-                                    renderValue={(selected) => {
-                                      const selectedVote = votes.find(
-                                        (v) => v._id === selected
-                                      );
-                                      return (
-                                        <Typography
-                                          sx={{
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap",
-                                            textOverflow: "ellipsis",
-                                          }}
-                                        >
-                                          {selectedVote?.title ||
-                                            "Select a Bill"}
-                                        </Typography>
-                                      );
-                                    }}
-                                    MenuProps={{
-                                      PaperProps: {
-                                        sx: {
-                                          maxHeight: 300,
-                                          width: 400,
-                                          "& .MuiMenuItem-root": {
-                                            minHeight: "48px",
-                                          },
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select a Bill
-                                    </MenuItem>
-                                    {allVotes.length > 0 ? (
-                                      allVotes
-                                        .filter(voteItem => voteItem.type === "senate_bill")
-                                        .map((voteItem) => {
-
-                                          const senatorVote = senatorVotes.find(
-                                            (v) => {
-                                              const vId =
-                                                typeof v.voteId === "object"
-                                                  ? v.voteId?._id
-                                                  : v.voteId;
-                                              return (
-                                                vId === voteItem._id ||
-                                                v.quorumId ===
-                                                voteItem.quorumId ||
-                                                (v.billNumber &&
-                                                  voteItem.billNumber &&
-                                                  v.billNumber ===
-                                                  voteItem.billNumber)
-                                              );
-                                            }
-                                          );
-
-
-
-                                          const score =
-                                            senatorVote?.score || "";
-                                          const scoreText = score
-                                            ? ` (${score})`
-                                            : "";
-
-                                          return (
-                                            <MenuItem
-                                              key={voteItem._id}
-                                              value={voteItem._id}
-                                              sx={{ py: 1.5 }}
-                                            >
-                                              <Typography
-                                                sx={{
-                                                  whiteSpace: "normal",
-                                                  overflowWrap: "break-word",
-                                                }}
-                                              >
-                                                {voteItem.title}
-                                              </Typography>
-                                            </MenuItem>
-                                          );
-                                        })
-                                    ) : (
-                                      <MenuItem value="" disabled>
-                                        {term.termId
-                                          ? "No bills available for this term"
-                                          : "Select a term first"}
-                                      </MenuItem>
-                                    )}
-                                    {/* ) */}
-                                    {/* ()} */}
-                                  </Select>
-                                </FormControl>
+                                <Autocomplete
+                                  options={allVotes.filter(
+                                    v => v.type === "senate_bill" && validateVoteInTermRange(v._id, term.termId).isValid
+                                  )}
+                                  getOptionLabel={(option) => option.title}
+                                  value={
+                                    allVotes.find((v) => v._id === vote.voteId) || null
+                                  }
+                                  onChange={(e, newValue) => {
+                                    handleVoteChange(termIndex, voteIndex, "voteId", newValue?._id || "");
+                                  }}
+                                  renderInput={(params) => (
+                                    <TextField {...params} placeholder="Search bills..." size="small" />
+                                  )}
+                                />
                               </Grid>
                               <Grid size={isMobile ? 12 : 1.6}>
                                 <FormControl fullWidth>
@@ -3752,11 +3661,12 @@ export default function AddSenator(props) {
                               </Grid>
                               <Grid size={isMobile ? 12 : 7.5}>
                                 <Autocomplete
-                                  options={allActivities.filter(a => a.type === "senate")}
+                                  options={allActivities.filter(
+                                    (a) => a.type === "senate" && validateActivityInTermRange(a._id, term.termId).isValid
+                                  )}
                                   getOptionLabel={(option) => option.title || "Untitled Activity"}
                                   value={
-                                    allActivities.find((a) => a._id === activity.activityId) ||
-                                    null
+                                    allActivities.find((a) => a._id === activity.activityId) || null
                                   }
                                   onChange={(e, newValue) =>
                                     handleActivityChange(
@@ -3776,9 +3686,7 @@ export default function AddSenator(props) {
                                           height: "40px",
                                           background: "#fff",
                                           cursor: "pointer",
-                                          "& input": {
-                                            cursor: "pointer",
-                                          },
+                                          "& input": { cursor: "pointer" },
                                           "& fieldset": { border: "none" },
                                           "&:hover fieldset": { border: "none" },
                                           "&.Mui-focused fieldset": { border: "none" },
