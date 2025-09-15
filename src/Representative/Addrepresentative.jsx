@@ -1587,7 +1587,7 @@ export default function Addrepresentative(props) {
       console.error("Discard failed:", error);
       const errorMessage =
         error?.payload?.message ||
-        error?.message ||
+        error?.error ||
         (typeof error === "string"
           ? error
           : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
