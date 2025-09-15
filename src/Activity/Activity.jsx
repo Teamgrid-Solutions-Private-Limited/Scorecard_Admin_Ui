@@ -395,7 +395,7 @@ export default function Activity(props) {
                     value={bulkTrackActivity}
                     onChange={(e) => setBulkTrackActivity(e.target.value)}
                     size="small"
-                    sx={{ minWidth: 150 }}
+                    sx={{ minWidth: 160 }}
                   >
                     <MenuItem value="pending">Pending</MenuItem>
                     <MenuItem value="completed">Completed</MenuItem>

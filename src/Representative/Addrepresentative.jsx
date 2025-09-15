@@ -2732,13 +2732,14 @@ export default function Addrepresentative(props) {
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
+                    <Grid size={1}></Grid>
 
                     {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) =>
                       activity.activityId != null ? (
                         <Grid
                           rowSpacing={2}
-                          sx={{ width: "100%", mt: 2 }}
+                          sx={{ width: "100%" }}
                           key={activityIndex}
                         >
                           <Grid
