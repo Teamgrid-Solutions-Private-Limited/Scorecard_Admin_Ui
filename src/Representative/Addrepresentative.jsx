@@ -2302,7 +2302,7 @@ export default function Addrepresentative(props) {
                   px={9}
                 >
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Representative's Name
                     </InputLabel>
                   </Grid>
