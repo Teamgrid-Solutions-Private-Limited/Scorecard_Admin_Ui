@@ -1042,7 +1042,7 @@ export default function AddBill(props) {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Type</InputLabel>
+                    <InputLabel className="label">Type</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1059,7 +1059,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Title</InputLabel>
+                    <InputLabel className="label">Title</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1078,7 +1078,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Short Description
                     </InputLabel>
                   </Grid>
@@ -1126,7 +1126,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Long Description
                     </InputLabel>
                   </Grid>
@@ -1172,7 +1172,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Date</InputLabel>
+                    <InputLabel className="label">Date</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1192,7 +1192,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 6 : 2}>
-                    <InputLabel className="nameLabel">Congress</InputLabel>
+                    <InputLabel className="label">Congress</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 6 : 10}>
                     <FormControl fullWidth>
@@ -1211,7 +1211,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Term</InputLabel>
+                    <InputLabel className="label">Term</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1245,7 +1245,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">Roll Call</InputLabel>
+                    <InputLabel className="label">Roll Call</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1276,7 +1276,7 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">Read More</InputLabel>
+                    <InputLabel className="label">Read More</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1442,7 +1442,7 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">SBA Position</InputLabel>
+                    <InputLabel className="label">SBA Position</InputLabel>
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 10}>

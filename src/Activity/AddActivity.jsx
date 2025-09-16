@@ -58,7 +58,6 @@ import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
-
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...alertProps} />;
@@ -113,7 +112,7 @@ export default function AddActivity(props) {
   };
 
   const compareValues = (newVal, oldVal, fieldName) => {
-    if (fieldName === "status") return false;
+    if (fieldName === 'status') return false;
     if (typeof newVal === "string" && typeof oldVal === "string") {
       return newVal.trim() !== oldVal.trim();
     }
@@ -167,21 +166,18 @@ export default function AddActivity(props) {
   }, [selectedActivity]);
 
   // 3. When formData changes, update editedFields (track all changes)
-  useEffect(() => {
-    if (originalFormData && formData) {
-      const changes = [];
-      Object.keys(formData).forEach((key) => {
-        // Use the compareValues function with field name
-        if (
-          key !== "status" &&
-          compareValues(formData[key], originalFormData[key], key)
-        ) {
-          changes.push(key);
-        }
-      });
-      setEditedFields(changes);
-    }
-  }, [formData, originalFormData]);
+useEffect(() => {
+  if (originalFormData && formData) {
+    const changes = [];
+    Object.keys(formData).forEach((key) => {
+      // Use the compareValues function with field name
+      if (key !== 'status' && compareValues(formData[key], originalFormData[key], key)) {
+        changes.push(key);
+      }
+    });
+    setEditedFields(changes);
+  }
+}, [formData, originalFormData]);
 
   useEffect(() => {
     if (id) {
@@ -1024,7 +1020,7 @@ export default function AddActivity(props) {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Type</InputLabel>
+                    <InputLabel className="label">Type</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1041,7 +1037,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Name</InputLabel>
+                    <InputLabel className="label">Name</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1060,7 +1056,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Activity Details
                     </InputLabel>
                   </Grid>
@@ -1104,7 +1100,7 @@ export default function AddActivity(props) {
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">Congress</InputLabel>
+                    <InputLabel className="label">Congress</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1123,7 +1119,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Date</InputLabel>
+                    <InputLabel className="label">Date</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1143,7 +1139,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">Read More</InputLabel>
+                    <InputLabel className="label">Read More</InputLabel>
                   </Grid>
                    <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1304,7 +1300,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Tracked Activities
                     </InputLabel>
                   </Grid>
