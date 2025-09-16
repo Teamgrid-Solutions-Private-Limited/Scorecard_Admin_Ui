@@ -1154,6 +1154,206 @@ export default function AddSenator(props) {
             }
           }
         });
+        // NEW: Collect all votes that don't belong to any term
+        let orphanVotes = [];
+
+        // Check original term votes that don't belong to this term
+        if (Array.isArray(term.votesScore) && term.votesScore.length > 0) {
+          term.votesScore.forEach((vote) => {
+            const voteId = vote.voteId?._id || vote.voteId;
+            if (!voteId) return;
+
+            const voteData = allVotes.find((v) => v._id === voteId);
+            if (!voteData) return;
+
+            // Check if this vote doesn't belong to ANY term
+            const belongsToAnyTerm = senatorData.currentSenator.some(otherTerm => {
+              const otherMatchedTerm = terms?.find((t) => t.name === otherTerm.termId?.name);
+              if (!otherMatchedTerm) return false;
+
+              return doesVoteBelongToTerm(voteData, otherMatchedTerm);
+            });
+
+            if (!belongsToAnyTerm) {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) scoreValue = "yea";
+              else if (dbScore?.includes("nay")) scoreValue = "nay";
+              else if (dbScore?.includes("other")) scoreValue = "other";
+              else scoreValue = vote.score || "";
+
+              orphanVotes.push({
+                voteId: voteId,
+                score: scoreValue,
+                title: vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
+              });
+            }
+          });
+        }
+
+        // Ensure arrays are not empty
+        if (!Array.isArray(votesScore) || votesScore.length === 0) {
+          votesScore = [{ voteId: "", score: "" }];
+        }
+
+        let pastVotesScore;
+        if (orphanVotes.length > 0) {
+          // Use orphan votes as pastVotesScore
+          pastVotesScore = orphanVotes;
+          const currentEditedFields = Array.isArray(formData?.editedFields)
+            ? [...formData.editedFields]
+            : [];
+
+          // Get current fieldEditors from formData or initialize empty object
+          const currentFieldEditors = { ...(formData?.fieldEditors || {}) };
+
+          // Add orphan votes to editedFields and fieldEditors
+          // Add orphan votes to editedFields and fieldEditors
+          orphanVotes.forEach((orphanVote) => {
+            if (orphanVote.voteId && orphanVote.voteId !== "") {
+              const voteData = allVotes.find(v => v._id === orphanVote.voteId);
+              if (voteData) {
+                const sanitizeKey = (str) => {
+                  return str
+                    .replace(/[^a-zA-Z0-9_]/g, "_")
+                    .replace(/_+/g, "_")
+                    .replace(/^_+|_+$/g, "");
+                };
+
+                const pastVoteEditorKey = `pastVotesScore_${sanitizeKey(voteData.title)}`;
+                const regularVoteEditorKey = `votesScore_${sanitizeKey(voteData.title)}`;
+
+                // Check if this orphan vote already exists in editedFields
+                const existingPastVoteField = currentEditedFields.find(field =>
+                  field.name === voteData.title &&
+                  Array.isArray(field.field) &&
+                  field.field[0] === "pastVotesScore"
+                );
+
+                // Check if this vote exists as a regular vote in senator's editedFields
+                const existingRegularVoteField = currentEditedFields.find(field =>
+                  field.name === voteData.title &&
+                  Array.isArray(field.field) &&
+                  field.field[0] === "votesScore"
+                );
+
+                if (!existingPastVoteField) {
+                  // Add to editedFields
+                  currentEditedFields.push({
+                    field: ["pastVotesScore"],
+                    name: voteData.title,
+                    fromQuorum: false,
+                    _id: orphanVote._id || `pastVote_${orphanVote.voteId}`
+                  });
+
+                  // Add to fieldEditors - FIRST check if there's existing editor info for this vote
+                  if (!currentFieldEditors[pastVoteEditorKey]) {
+                    // Check if this vote has existing editor info as a regular vote
+                    if (existingRegularVoteField && currentFieldEditors[regularVoteEditorKey]) {
+                      // Inherit editor info from the regular vote
+                      currentFieldEditors[pastVoteEditorKey] = {
+                        ...currentFieldEditors[regularVoteEditorKey]
+                      };
+                    } else {
+                      // Check if there's any existing editor info for this vote title in any form
+                      const existingEditorKey = Object.keys(currentFieldEditors).find(key =>
+                        key.includes(sanitizeKey(voteData.title))
+                      );
+
+                      if (existingEditorKey && currentFieldEditors[existingEditorKey]) {
+                        // Use existing editor info
+                        currentFieldEditors[pastVoteEditorKey] = {
+                          ...currentFieldEditors[existingEditorKey]
+                        };
+                      } else {
+                        // Create new editor entry as fallback
+                        currentFieldEditors[pastVoteEditorKey] = {
+                          editorName: "System",
+                          editedAt: new Date().toISOString()
+                        };
+                      }
+                    }
+                  }
+                } else if (existingPastVoteField && !currentFieldEditors[pastVoteEditorKey]) {
+                  // Field exists but no editor entry - try to find existing editor info
+                  if (existingRegularVoteField && currentFieldEditors[regularVoteEditorKey]) {
+                    currentFieldEditors[pastVoteEditorKey] = {
+                      ...currentFieldEditors[regularVoteEditorKey]
+                    };
+                  } else {
+                    const existingEditorKey = Object.keys(currentFieldEditors).find(key =>
+                      key.includes(sanitizeKey(voteData.title))
+                    );
+
+                    if (existingEditorKey && currentFieldEditors[existingEditorKey]) {
+                      currentFieldEditors[pastVoteEditorKey] = {
+                        ...currentFieldEditors[existingEditorKey]
+                      };
+                    } else {
+                      currentFieldEditors[pastVoteEditorKey] = {
+                        editorName: "System",
+                        editedAt: new Date().toISOString()
+                      };
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          // Update formData with the new editedFields and fieldEditors
+          setFormData(prev => ({
+            ...prev,
+            editedFields: currentEditedFields,
+            fieldEditors: currentFieldEditors
+          }));
+
+
+          // Update formData with the new editedFields and fieldEditors
+          setFormData(prev => ({
+            ...prev,
+            editedFields: currentEditedFields,
+            fieldEditors: currentFieldEditors
+          }));
+
+        } else if (
+          Array.isArray(term.pastVotesScore) &&
+          term.pastVotesScore.length > 0 &&
+          term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
+        ) {
+          pastVotesScore = term.pastVotesScore
+            .filter((vote) => {
+              const voteId = vote.voteId?._id || vote.voteId;
+              return voteId && voteId.toString().trim() !== "";
+            })
+            .map((vote) => {
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
+
+              const voteData = allVotes.find((v) => v._id === (vote.voteId?._id || vote.voteId));
+
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+                title: voteData?.title || vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
+              };
+            });
+        } else {
+          pastVotesScore = [{ voteId: "", score: "" }];
+        }
+
+
         const getActivityScore = (activityId) => {
           const senAct = senatorActivities.find((a) => {
             const aId =
@@ -1297,44 +1497,7 @@ export default function AddSenator(props) {
         if (!Array.isArray(activitiesScore) || activitiesScore.length === 0) {
           activitiesScore = [{ activityId: "", score: "" }];
         }
-        let pastVotesScore;
-        if (
-          Array.isArray(term.pastVotesScore) &&
-          term.pastVotesScore.length > 0 &&
-          term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
-        ) {
-          pastVotesScore = term.pastVotesScore
-            .filter((vote) => {
-              const voteId = vote.voteId?._id || vote.voteId;
-              return voteId && voteId.toString().trim() !== "";
-            })
-            .map((vote) => {
-              let scoreValue = "";
-              const dbScore = vote.score?.toLowerCase();
-              if (dbScore?.includes("yea")) {
-                scoreValue = "yea";
-              } else if (dbScore?.includes("nay")) {
-                scoreValue = "nay";
-              } else if (dbScore?.includes("other")) {
-                scoreValue = "other";
-              } else {
-                scoreValue = vote.score || "";
-              }
 
-
-              const voteData = allVotes.find((v) => v._id === (vote.voteId?._id || vote.voteId));
-
-              return {
-                voteId: vote.voteId?._id || vote.voteId || "",
-                score: scoreValue,
-                title: voteData?.title || vote.voteId?.title || vote.title || "",
-                _id: vote._id || undefined,
-              };
-            });
-        } else {
-
-          pastVotesScore = [{ voteId: "", score: "" }];
-        }
 
 
         return {
@@ -1361,6 +1524,7 @@ export default function AddSenator(props) {
           rating: "",
           votesScore: [{ voteId: "", score: "" }],
           activitiesScore: [{ activityId: "", score: "" }],
+          pastVotesScore: [{ voteId: "", score: "" }],
           currentTerm: false,
           termId: null,
           editedFields: [],
@@ -2345,8 +2509,7 @@ export default function AddSenator(props) {
                             }
 
                             const formatFieldName = (field, index, senatorTermData = [],) => {
-                             
-                           
+
                               if (typeof field === "object" && field !== null) {
 
                                 if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
