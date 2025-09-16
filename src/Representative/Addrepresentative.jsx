@@ -2302,7 +2302,7 @@ export default function Addrepresentative(props) {
                   px={9}
                 >
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Representative's Name
                     </InputLabel>
                   </Grid>
@@ -2773,7 +2773,7 @@ export default function Addrepresentative(props) {
   renderInput={(params) => (
     <TextField
       {...params}
-      placeholder="Select an Activity"
+      placeholder="Search activities..."
       size="small"
       sx={{
                   "& .MuiOutlinedInput-root": {

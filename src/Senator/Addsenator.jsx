@@ -2357,7 +2357,7 @@ const hasSelectedTerms = () => {
   return (
     <AppTheme key={componentKey}>
       <LoadingOverlay loading={loading} />
-      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff" }}>
+      <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -2373,12 +2373,11 @@ const hasSelectedTerms = () => {
           <MobileHeader />
 
           <Stack
-            spacing={2}
+            spacing={isMobile ? 1 : 2}
             sx={{
               alignItems: "center",
-              mx: 3,
-              // pb: 5,
-              mt: { xs: 8, md: 2.8 },
+              mx: {xs: 2, md: 3},
+              mt: { xs: 2, md: 2.8 },
               gap: 1,
             }}
           >
@@ -2972,7 +2971,7 @@ const hasSelectedTerms = () => {
               );
             })()}
 
-            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: "1px solid", borderColor: "divider" }}>
+             <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -3090,16 +3089,7 @@ const hasSelectedTerms = () => {
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{
-                alignSelf: "flex-start",
-                backgroundColor: "#173A5E !important",
-                color: "white !important",
-                padding: "0.5rem 1rem",
-                marginLeft: "0.5rem",
-                "&:hover": {
-                  backgroundColor: "#1E4C80 !important",
-                },
-              }}
+              className="addTerm-btn"
             >
               Add Another Term
             </Button>
