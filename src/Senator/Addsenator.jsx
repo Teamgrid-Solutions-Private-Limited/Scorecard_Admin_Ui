@@ -1,46 +1,94 @@
 import * as React from "react";
 import { useRef, useEffect, useState, useCallback } from "react";
-import { alpha, styled } from "@mui/material/styles";
-import Snackbar from "@mui/material/Snackbar";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
+// MUI Core
+import {
+  alpha,
+  styled,
+  useTheme
+} from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import {
+  Box,
+  Paper,
+  Stack,
+  Typography,
+  TextField,
+  Grid,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
+  Button,
+  ButtonGroup,
+  Switch,
+  Chip,
+  Autocomplete,
+  List,
+  ListItem,
+  ListItemText,
+  Snackbar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
+
+// MUI Components
 import MuiAlert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import { getSenatorDataBySenetorId } from "../redux/reducer/senetorTermSlice";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
-import SideMenu from "../components/SideMenu";
-import AppTheme from "../../src/shared-theme/AppTheme";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Grid from "@mui/material/Grid2";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import Button from "@mui/material/Button";
-import ButtonGroup from "@mui/material/ButtonGroup";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+// MUI Icons
+import {
+  CloudUpload as CloudUploadIcon,
+  DeleteForever as DeleteForeverIcon,
+  Add as AddIcon,
+  HourglassTop,
+  Verified,
+  Drafts,
+  CheckCircle,
+  Circle as CircleIcon,
+  HourglassEmpty,
+} from "@mui/icons-material";
+
+// External
 import { Editor } from "@tinymce/tinymce-react";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import AddIcon from "@mui/icons-material/Add";
-import Switch from "@mui/material/Switch";
+
+// Shared Theme & Layout
+import AppTheme from "../../src/shared-theme/AppTheme";
 import Copyright from "../../src/Dashboard/internals/components/Copyright";
-import { useDispatch, useSelector } from "react-redux";
-import { rating } from "../../src/Dashboard/global/common";
-import { useParams, useNavigate } from "react-router-dom";
-import { Chip, Autocomplete } from "@mui/material";
-import HourglassTop from "@mui/icons-material/HourglassTop";
-import Verified from "@mui/icons-material/Verified";
-import { Drafts } from "@mui/icons-material";
-import CheckCircle from "@mui/icons-material/CheckCircle";
-import { jwtDecode } from "jwt-decode";
-import CircleIcon from "@mui/icons-material/Circle";
-import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import { discardSenatorChanges } from "../redux/reducer/senetorSlice";
+import FixedHeader from "../components/FixedHeader";
+import Footer from "../components/Footer";
+import MobileHeader from "../components/MobileHeader";
+
+// Custom Components
+import SideMenu from "../components/SideMenu";
+import SenatorBasicInfo from "../components/senatorService/SenatorBasicInfo";
+import SenatorTermSection from "../components/senatorService/SenatorTermSection";
+import StatusDisplay from "../components/senatorService/StatusDisplay";
+import SnackbarComponent from "../components/senatorService/SnackbarComponent";
+import LoadingOverlay from "../components/senatorService/LoadingOverlay";
+import ActionButtons from "../components/senatorService/ActionButtons";
+
+// Redux Slices
+import {
+  getSenatorDataBySenetorId,
+  createSenatorData,
+  updateSenatorData,
+  clearSenatorDataState,
+  deleteSenatorData,
+} from "../redux/reducer/senetorTermSlice";
+import {
+  getSenatorById,
+  updateSenator,
+  clearSenatorState,
+  updateSenatorStatus,
+  discardSenatorChanges,
+} from "../redux/reducer/senetorSlice";
 import {
   getVoteById,
   clearVoteState,
@@ -49,32 +97,8 @@ import {
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
-import {
-  Alert,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
-import { createSenatorData } from "../redux/reducer/senetorTermSlice";
-import {
-  clearSenatorDataState,
-  updateSenatorData,
-} from "../redux/reducer/senetorTermSlice";
-import {
-  getSenatorById,
-  updateSenator,
-  clearSenatorState,
-  updateSenatorStatus,
-} from "../redux/reducer/senetorSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
-import FixedHeader from "../components/FixedHeader";
-import Footer from "../components/Footer";
-import { deleteSenatorData } from "../redux/reducer/senetorTermSlice";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
-import MobileHeader from "../components/MobileHeader";
+import { rating } from "../../src/Dashboard/global/common";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -95,7 +119,7 @@ export default function AddSenator(props) {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const allVotes = useSelector((state) => state.vote.votes);
-    const [selectionError, setSelectionError] = useState({
+  const [selectionError, setSelectionError] = useState({
     show: false,
     message: "",
     type: "",
@@ -104,53 +128,51 @@ export default function AddSenator(props) {
   const validateVoteInTermRange = (voteId, termId) => {
     if (!voteId || !termId)
       return { isValid: false, message: "Invalid selection" };
- 
+
     const vote = allVotes.find((v) => v._id === voteId);
     const term = terms.find((t) => t._id === termId);
- 
+
     if (!vote) return { isValid: false, message: "Vote not found" };
     if (!term) return { isValid: false, message: "Term not found" };
- 
+
     const voteDate = new Date(vote.date);
     const termStart = new Date(`${term.startYear}-01-03`);
     const termEnd = new Date(`${term.endYear}-01-02`);
 
     const isDateInRange = voteDate >= termStart && voteDate <= termEnd;
     const isCongressInTerm = term.congresses.includes(Number(vote.congress));
- 
+
     if (!isDateInRange) {
       return {
         isValid: false,
-        message: `Selected vote is outside the term range (${
-          term.startYear
-        }-${term.endYear})`,
+        message: `Selected vote is outside the term range (${term.startYear
+          }-${term.endYear})`,
       };
     }
- 
+
     if (!isCongressInTerm) {
       return {
         isValid: false,
-        message: `This vote (Congress ${
-          vote.congress
-        }) is not part of the selected term's congresses (${term.congresses.join(
-          ", "
-        )})`,
+        message: `This vote (Congress ${vote.congress
+          }) is not part of the selected term's congresses (${term.congresses.join(
+            ", "
+          )})`,
       };
     }
- 
+
     return { isValid: true, message: "" };
   };
- 
+
   const validateActivityInTermRange = (activityId, termId) => {
     if (!activityId || !termId)
       return { isValid: false, message: "Invalid selection" };
- 
+
     const activity = allActivities.find((a) => a._id === activityId);
     const term = terms.find((t) => t._id === termId);
- 
+
     if (!activity) return { isValid: false, message: "Activity not found" };
     if (!term) return { isValid: false, message: "Term not found" };
- 
+
     const activityDate = new Date(activity.date);
     const termStart = new Date(`${term.startYear}-01-03`);
     const termEnd = new Date(`${term.endYear}-01-02`);
@@ -159,32 +181,30 @@ export default function AddSenator(props) {
     const isCongressInTerm = term.congresses.includes(
       Number(activity.congress || 0)
     );
- 
+
     if (!isDateInRange) {
       return {
         isValid: false,
-        message: `Selected activity is outside the term range (${
-          term.startYear
-        }-${term.endYear})`,
+        message: `Selected activity is outside the term range (${term.startYear
+          }-${term.endYear})`,
       };
     }
- 
+
     if (!isCongressInTerm) {
       return {
         isValid: false,
-        message: `This activity (Congress ${
-          activity.congress
-        }) is not part of the selected term's congresses (${term.congresses.join(
-          ", "
-        )})`,
+        message: `This activity (Congress ${activity.congress
+          }) is not part of the selected term's congresses (${term.congresses.join(
+            ", "
+          )})`,
       };
     }
- 
+
     return { isValid: true, message: "" };
   };
 
   const allActivities = useSelector((state) => state.activity.activities);
- 
+
   const startYear = senatorData?.currentSenator?.[0]?.termId?.startYear;
 
   const termStart = new Date(
@@ -568,20 +588,20 @@ export default function AddSenator(props) {
             }
           }
         }
- 
+
         return updatedTerm;
       });
 
       // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
- 
+
       if (isActualChange && !localChanges.includes(fieldName)) {
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
         setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
- 
+
       return newTerms;
     });
   };
@@ -608,7 +628,12 @@ export default function AddSenator(props) {
       return newTerms;
     });
   };
-
+// Add this near your other helper functions
+const hasSelectedTerms = () => {
+  return senatorTermData.some(
+    (term) => term.termId && term.termId.toString().trim() !== ""
+  );
+};
   const handleSummaryChange = (termIndex, content) => {
     const fieldName = `term${termIndex}_summary`;
 
@@ -718,7 +743,7 @@ export default function AddSenator(props) {
     if (field === "voteId" && value) {
       const termId = senatorTermData[termIndex].termId;
       const validation = validateVoteInTermRange(value, termId);
- 
+
       if (!validation.isValid) {
         setSelectionError({
           show: true,
@@ -803,10 +828,10 @@ export default function AddSenator(props) {
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
       }`;
-       if (field === "activityId" && value) {
+    if (field === "activityId" && value) {
       const termId = senatorTermData[termIndex].termId;
       const validation = validateActivityInTermRange(value, termId);
- 
+
       if (!validation.isValid) {
         setSelectionError({
           show: true,
@@ -962,10 +987,10 @@ export default function AddSenator(props) {
     ]);
   };
 
-   const handleRemoveTerm = (termIndex) => {
+  const handleRemoveTerm = (termIndex) => {
     setSenatorTermData((prev) => {
       const removed = prev[termIndex];
-     const removalId = `Term_${termIndex+1} Removed`;
+      const removalId = `Term_${termIndex + 1} Removed`;
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
         if (!localChanges.includes(removalId)) {
@@ -1982,7 +2007,7 @@ export default function AddSenator(props) {
       const hasNonDefaultValue = (field, value) => {
         if (value === null || value === undefined) return false;
         if (typeof value === "string" && value.trim() === "") return false;
-       
+
         return true;
       };
 
@@ -2331,24 +2356,7 @@ export default function AddSenator(props) {
 
   return (
     <AppTheme key={componentKey}>
-      {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading} />
       <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff" }}>
         <SideMenu />
         <Box
@@ -2374,47 +2382,7 @@ export default function AddSenator(props) {
               gap: 1,
             }}
           >
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#E24042 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#C91E37 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
-            </Stack>
-
+            <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
             {(() => {
               const hasSelectedTerms = () => {
                 return senatorTermData.some(
@@ -3004,15 +2972,7 @@ export default function AddSenator(props) {
               );
             })()}
 
-            <Paper
-              sx={{
-                width: "100%",
-                bgcolor: "#fff",
-                borderRadius: 0.8,
-                border: "1px solid",
-                borderColor: "divider",
-              }}
-            >
+            <Paper sx={{ width: "100%", bgcolor: "#fff", borderRadius: 0.8, border: "1px solid", borderColor: "divider" }}>
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -3045,7 +3005,6 @@ export default function AddSenator(props) {
                     <strong>This action cannot be undone.</strong>
                   </DialogContentText>
                 </DialogContent>
-
                 <DialogActions>
                   <Stack
                     direction="row"
@@ -3076,246 +3035,13 @@ export default function AddSenator(props) {
                   </Stack>
                 </DialogActions>
               </Dialog>
-              <Box sx={{ p: 0 }}>
-                <Typography
-                  fontSize={"1rem"}
-                  fontWeight={500}
-                  sx={{
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    p: 1.5,
-                    px: 3,
-                  }}
-                >
-                  Senator's Information
-                </Typography>
-                <Grid
-                  container
-                  rowSpacing={2}
-                  columnSpacing={2}
-                  alignItems={"center"}
-
-                  py={3}
-
-                >
-                  <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Senator's Name
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
-                    <TextField
-                      required
-                      id="title"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      fullWidth
-                      size="small"
-                      autoComplete="off"
-                      variant="outlined"
-                    />
-                  </Grid>
-                  <Grid size={isMobile ? 12 : 1}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Status
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
-                    <ButtonGroup
-                      variant="outlined"
-                      aria-label="Basic button group"
-                      sx={{
-                        "& .MuiButton-outlined": {
-                          height: "36px",
-                          borderColor: "#4CAF50",
-                          color: "#4CAF50",
-                          "&:hover": {
-                            backgroundColor: "rgba(76, 175, 80, 0.04)",
-                            borderColor: "#4CAF50",
-                          },
-                        },
-                      }}
-                    >
-                      <Button
-                        variant={"outlined"}
-                        onClick={() => handleStatusChange("Active")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Active"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Active"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Active"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
-                      >
-                        Active
-                      </Button>
-                      <Button
-                        variant={"outlined"}
-                        onClick={() => handleStatusChange("Former")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Former"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Former"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Former"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
-                      >
-                        Former
-                      </Button>
-                    </ButtonGroup>
-                  </Grid>
-                  <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      State
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
-                    <TextField
-                      id="state"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleChange}
-                      fullWidth
-                      size="small"
-                      autoComplete="off"
-                      variant="outlined"
-                    />
-                  </Grid>
-                  <Grid
-                    size={isMobile ? 12 : 1}
-                    sx={{ alignContent: "center" }}
-                  >
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Party
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
-                    <FormControl fullWidth>
-                      <Select
-                        name="party"
-                        value={formData.party}
-                        onChange={handleChange}
-                        sx={{ background: "#fff" }}
-                      >
-                        <MenuItem value="republican">Republican</MenuItem>
-                        <MenuItem value="democrat">Democrat</MenuItem>
-                        <MenuItem value="independent">Independent</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Senator's Photo
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={10}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      {formData.photo ? (
-                        <img
-                          src={
-                            typeof formData.photo === "string"
-                              ? formData.photo
-                              : URL.createObjectURL(formData.photo)
-                          }
-                          alt="Senator's Photo"
-                          style={{
-                            width: "100px",
-                            height: "100px",
-                            objectFit: "cover",
-                            borderRadius: "8px",
-                          }}
-                        />
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          No photo uploaded
-                        </Typography>
-                      )}
-
-                      <Button
-                        component="label"
-                        variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
-                        startIcon={<CloudUploadIcon />}
-                      >
-                        Upload files
-                        <VisuallyHiddenInput
-                          type="file"
-                          onChange={handleFileChange}
-                          accept="image/*"
-                        />
-                      </Button>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
+              <SenatorBasicInfo
+                formData={formData}
+                handleChange={handleChange}
+                handleStatusChange={handleStatusChange}
+                handleFileChange={handleFileChange}
+                isMobile={isMobile}
+              />
             </Paper>
 
             {/* Render each term in senatorTermData */}
@@ -3332,812 +3058,30 @@ export default function AddSenator(props) {
                   borderColor: "divider",
                 }}
               >
-                <Box sx={{ padding: 0 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-
-                      borderBottom: '1px solid', borderColor: 'divider',
-                      p: 1.5, px: 3
-                    }}
-                  >
-                    <Typography fontSize={"1rem"} fontWeight={500}>
-                      Senator's Term Information {termIndex + 1}
-                    </Typography>
-
-                    {termIndex > 0 && (
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        startIcon={<DeleteForeverIcon />}
-                        onClick={() => handleRemoveTerm(termIndex)}
-                      >
-                        Remove Term
-                      </Button>
-                    )}
-                  </Box>
-                  <Grid
-                    container
-                    rowSpacing={2}
-                    columnSpacing={2}
-                    alignItems={"center"}
-                    py={3}
-                  >
-                    <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term
-                      </InputLabel>
-                    </Grid>
-                    <Grid size={isMobile ? 12 : 2.2}>
-                      <FormControl fullWidth>
-                        <Select
-                          // value={term.termId || ""}
-                          value={getValidTermId(
-                            term.termId?._id || term.termId || ""
-                          )}
-                          // value={terms.some(t => t._id === term.termId) ? term.termId : ''}
-                          id="term"
-                          name="termId"
-                          onChange={(event) =>
-                            handleTermChange(event, termIndex)
-                          }
-                          sx={{ background: "#fff" }}
-                        >
-                          <MenuItem value="" disabled>
-                            Select an option
-                          </MenuItem>
-                          {getAvailableTerms(termIndex).length > 0 ? (
-                            getAvailableTerms(termIndex).map((t) => (
-                              <MenuItem key={t._id} value={t._id} >                               
-                                  {t.name}
-                              </MenuItem>
-                            ))
-                          ) : (
-                            <MenuItem value="" disabled>
-                              No terms available
-                            </MenuItem>
-                          )}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid
-                      size={isMobile ? 6 : 2.1}
-                      sx={{ alignContent: "center" }}
-                    >
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Current Term
-                      </InputLabel>
-                    </Grid>
-                    <Grid size={isMobile ? 6 : 0}>
-                      <Switch
-                        {...label}
-                        name="currentTerm"
-                        checked={term.currentTerm}
-                        onChange={(e) => handleSwitchChange(e, termIndex)}
-                        color="warning"
-                      />
-                    </Grid>
-                    <Grid size={isMobile ? 6 : 2.39}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        SBA Rating
-                      </InputLabel>
-                    </Grid>
-                    <Grid size={isMobile ? 6 : 2.2}>
-                      <FormControl fullWidth>
-                        <Select
-                          value={term.rating || ""}
-                          id="rating"
-                          name="rating"
-                          onChange={(event) =>
-                            handleTermChange(event, termIndex)
-                          }
-                          sx={{ background: "#fff" }}
-                        >
-                          <MenuItem value="" disabled>
-                            Select a rating
-                          </MenuItem>
-                          {rating.map((rate, index) => (
-                            <MenuItem key={index} value={rate}>
-                              {rate}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    {/*term repeater start*/}
-                    <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term Summary
-                      </InputLabel>
-                    </Grid>
-                    {/* Editor Column */}
-                    <Grid size={isMobile ? 12 : 9.05}>
-                      <Editor
-                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                        licenseKey="gpl"
-                        onInit={(_evt, editor) => (editorRef.current = editor)}
-                        value={term?.summary || ""}
-                        onEditorChange={(content) => handleSummaryChange(termIndex, content)}
-                        init={{
-                          base_url: "/scorecard/admin/tinymce",
-                          height: 250,
-                          menubar: false,
-                          plugins: [
-                            "advlist",
-                            "autolink",
-                            "lists",
-                            "link",
-                            "image",
-                            "charmap",
-                            "preview",
-                            "anchor",
-                            "searchreplace",
-                            "visualblocks",
-                            "code",
-                            "fullscreen",
-                            "insertdatetime",
-                            "media",
-                            "table",
-                            "code",
-                            "help",
-                            "wordcount",
-                          ],
-                          toolbar:
-                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                          content_style:
-                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-                          directionality: "ltr",
-                        }}
-                      />
-                    </Grid>
-                    {/* {term?.summaries?.map((summary, summaryIndex) => (
-                      <>
-                        
-                        <Grid size={isMobile ? 12 : 2}>
-                          <InputLabel
-                            sx={{
-                              display: "flex",
-                              justifyContent: isMobile
-                                ? "flex-start"
-                                : "flex-end",
-                              fontWeight: 700,
-                              my: 0,
-                            }}
-                          >
-                            Term Summary 
-                          </InputLabel>
-                        </Grid>
-
-                        
-                        <Grid size={isMobile ? 12 : 9.05}>
-                          <Editor
-                            tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                            licenseKey="gpl"
-                            onInit={(_evt, editor) =>
-                              (editorRef.current = editor)
-                            }
-                            value={summary.content || ""}
-                            onEditorChange={(content) => {
-                              handleSummaryChange(
-                                termIndex,
-                                summaryIndex,
-                                content
-                              );
-                            }}
-                            init={{
-                              base_url: "/scorecard/admin/tinymce",
-                              height: 250,
-                              menubar: false,
-                              plugins: [
-                                "advlist",
-                                "autolink",
-                                "lists",
-                                "link",
-                                "image",
-                                "charmap",
-                                "preview",
-                                "anchor",
-                                "searchreplace",
-                                "visualblocks",
-                                "code",
-                                "fullscreen",
-                                "insertdatetime",
-                                "media",
-                                "table",
-                                "code",
-                                "help",
-                                "wordcount",
-                              ],
-                              toolbar:
-                                "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                              content_style:
-                                "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-                              directionality: "ltr",
-                            }}
-                          />
-                        </Grid>
-                        
-                        <Grid
-                          gridColumn={{ xs: 12, sm: 1 }}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {summaryIndex > 0 ? (
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveSummary(termIndex, summaryIndex)
-                              }
-                              sx={{ cursor: "pointer", color: "black" }}
-                            />
-                          ) : (
-                            
-                            <Box sx={{ width: 24, height: 24 }} />
-                          )}
-                        </Grid>
-                      </>
-                    ))} */}
-                    {/*term repeater end*/}
-                    <Grid size={1}></Grid>
-                    {/* <Grid size={10} sx={{ textAlign: "right" }}>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginTop: "1rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
-                        startIcon={<AddIcon />}
-                        onClick={() => handleAddSummary(termIndex)}
-                      >
-                        Add Another Summary
-                      </Button>
-                    </Grid> */}
-                    <Grid size={1}></Grid>
-                    {/* Vote Repeater Start */}
-                    {term.termId ? (
-                      <>
-                        {term.votesScore.map((vote, voteIndex) => (
-                          <Grid
-                            rowSpacing={2}
-                            sx={{ width: "100%" }}
-                            key={voteIndex}
-                          >
-                            <Grid
-                              size={12}
-                              display="flex"
-                              alignItems="center"
-                              columnGap={"15px"}
-                            >
-                              <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: isMobile
-                                      ? "flex-start"
-                                      : "flex-end",
-                                    fontWeight: 500,
-                                    my: 0,
-                                  }}
-                                >
-                                  Scored Vote {voteIndex + 1}
-                                </InputLabel>
-                              </Grid>
-                              <Grid size={isMobile ? 12 : 7.5}>
-                                <Autocomplete
-                                  options={allVotes.filter(
-                                    v => v.type === "senate_bill" && validateVoteInTermRange(v._id, term.termId).isValid
-                                  )}
-                                  getOptionLabel={(option) => option.title}
-                                  value={
-                                    allVotes.find((v) => v._id === vote.voteId) || null
-                                  }
-                                  onChange={(e, newValue) => {
-                                    handleVoteChange(termIndex, voteIndex, "voteId", newValue?._id || "");
-                                  }}
-                                  renderInput={(params) => (
-                                    <TextField {...params} placeholder="Search bills..." size="small" />
-                                  )}
-                                />
-                              </Grid>
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote?.score || ""}
-                                    onChange={(event) =>
-                                      handleVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "score",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff" }}
-                                  >
-                                    <MenuItem value="yea">Yea</MenuItem>
-                                    <MenuItem value="nay">Nay</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={1}>
-                                <DeleteForeverIcon
-                                  onClick={() =>
-                                    handleRemoveVote(termIndex, voteIndex)
-                                  }
-                                />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        ))}
-                      </>
-                    ) : (
-
-                      <Grid rowSpacing={2} sx={{ width: "100%" }}>
-                        <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
-                        >
-                          <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
-                            >
-                              Scored Vote 1
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 7.5}>
-                            <Autocomplete
-                              freeSolo
-                              disabled
-                              options={[]}
-                              popupIcon={null}
-                              clearIcon={null}
-                              sx={{
-                                "& .MuiOutlinedInput-root": {
-                                  background: "#fff",
-
-                                }
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  placeholder="Select a term first"
-                                  variant="outlined"
-                                  fullWidth
-                                />
-                              )}
-                            />
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff" }}
-                                disabled
-                              >
-                                <MenuItem value="yea">Yea</MenuItem>
-                                <MenuItem value="nay">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon sx={{ opacity: 0.5 }} />
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    )}
-
-                    <Grid size={1}></Grid>
-                    <Grid size={10} sx={{ textAlign: "right" }}>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
-                        startIcon={<AddIcon />}
-                        onClick={() => handleAddVote(termIndex)}
-                      >
-                        Add Vote
-                      </Button>
-                    </Grid>
-                    <Grid size={1}></Grid>
-                    <Grid size={1}></Grid>
-
-                    {term.termId ? (
-                      <>
-                        {term.activitiesScore.map((activity, activityIndex) => (
-                          <Grid
-                            rowSpacing={2}
-                            sx={{ width: "100%" }}
-                            key={activityIndex}
-                          >
-                            <Grid
-                              size={12}
-                              display="flex"
-                              alignItems="center"
-                              columnGap={"15px"}
-                            >
-                              <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: isMobile
-                                      ? "flex-start"
-                                      : "flex-end",
-                                    fontWeight: 500,
-                                    my: 0,
-                                  }}
-                                >
-                                  Tracked Activity {activityIndex + 1}
-                                </InputLabel>
-                              </Grid>
-                              <Grid size={isMobile ? 12 : 7.5}>
-                                <Autocomplete
-                                  options={allActivities.filter(
-                                    (a) => a.type === "senate" && validateActivityInTermRange(a._id, term.termId).isValid
-                                  )}
-                                  getOptionLabel={(option) => option.title || "Untitled Activity"}
-                                  value={
-                                    allActivities.find((a) => a._id === activity.activityId) || null
-                                  }
-                                  onChange={(e, newValue) =>
-                                    handleActivityChange(
-                                      termIndex,
-                                      activityIndex,
-                                      "activityId",
-                                      newValue?._id || ""
-                                    )
-                                  }
-                                  renderInput={(params) => (
-                                    <TextField
-                                      {...params}
-                                      placeholder="Search activities..."
-                                      size="small"
-                                      sx={{
-                                        "& .MuiOutlinedInput-root": {
-                                          height: "40px",
-                                          background: "#fff",
-                                          cursor: "pointer",
-                                          "& input": { cursor: "pointer" },
-                                          "& fieldset": { border: "none" },
-                                          "&:hover fieldset": { border: "none" },
-                                          "&.Mui-focused fieldset": { border: "none" },
-                                        },
-                                      }}
-                                    />
-                                  )}
-                                />
-                              </Grid>
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={activity?.score || ""}
-                                    onChange={(event) =>
-                                      handleActivityChange(
-                                        termIndex,
-                                        activityIndex,
-                                        "score",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff" }}
-                                  >
-                                    <MenuItem value="yes">Yea</MenuItem>
-                                    <MenuItem value="no">Nay</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={1}>
-                                <DeleteForeverIcon
-                                  onClick={() =>
-                                    handleRemoveActivity(
-                                      termIndex,
-                                      activityIndex
-                                    )
-                                  }
-                                />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        ))}
-                      </>
-                    ) : (
-
-                      <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
-                        <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
-                        >
-                          <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
-                            >
-                              Tracked Activity 1
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 7.5}>
-                            <Autocomplete
-                              freeSolo
-                              disabled
-                              options={[]}
-                              popupIcon={null}
-                              clearIcon={null}
-                              sx={{
-                                "& .MuiOutlinedInput-root": {
-                                  background: "#fff",
-                                },
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  placeholder="Select a term first"
-                                  variant="outlined"
-                                  fullWidth
-                                />
-                              )}
-                            />
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff" }}
-                                disabled
-                              >
-                                <MenuItem value="yes">Yea</MenuItem>
-                                <MenuItem value="no">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon sx={{ opacity: 0.5 }} />
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    )}{" "}
-                    {/* Activities Repeater Ends */}
-                    <Grid size={1}></Grid>
-                    <Grid size={10} sx={{ textAlign: "right" }}>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
-                        startIcon={<AddIcon />}
-                        onClick={() => handleAddActivity(termIndex)}
-                      >
-                        Add Activity
-                      </Button>
-                    </Grid>
-                    <Grid size={1}></Grid>
-                    <Grid size={1}></Grid>
-                    {term.termId ? (
-                      <>
-                        {(term.pastVotesScore || []).map((vote, voteIndex) => (
-                          <Grid rowSpacing={2} sx={{ width: "100%" }} key={`past-${voteIndex}`}>
-                            <Grid
-                              size={12}
-                              display="flex"
-                              alignItems="center"
-                              columnGap={"15px"}
-                            >
-                              <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel className="label">
-                                  Important Past Vote {voteIndex + 1}
-                                </InputLabel>
-                              </Grid>
-                              <Grid size={isMobile ? 12 : 7.5}>
-                                <Autocomplete
-                                  options={allVotes} // full list
-                                  getOptionLabel={(option) => option.title || ""}
-                                  value={allVotes.find((v) => v._id === vote.voteId) || null}
-                                  onChange={(e, newValue) =>
-                                    handlePastVoteChange(
-                                      termIndex,
-                                      voteIndex,
-                                      "voteId",
-                                      newValue?._id || ""
-                                    )
-                                  }
-                                  renderInput={(params) => (
-                                    <TextField
-                                      {...params}
-                                      placeholder="Search past votes..."
-                                      size="small"
-                                      sx={{
-                                        "& .MuiOutlinedInput-root": {
-                                          height: "40px",
-                                          background: "#fff",
-                                          cursor: "pointer",
-                                          "& input": {
-                                            cursor: "pointer",
-                                          },
-                                          "& fieldset": {
-                                            border: "none", // remove border
-                                          },
-                                        },
-                                      }}
-                                    />
-                                  )}
-                                />
-                              </Grid>
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
-                                  <Select
-                                    value={vote?.score || ""}
-                                    onChange={(event) =>
-                                      handlePastVoteChange(
-                                        termIndex,
-                                        voteIndex,
-                                        "score",
-                                        event.target.value
-                                      )
-                                    }
-                                    sx={{ background: "#fff" }}
-                                  >
-                                    <MenuItem value="yea">Yea</MenuItem>
-                                    <MenuItem value="nay">Nay</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid size={1}>
-                                <DeleteForeverIcon
-                                  onClick={() => handleRemovePastVote(termIndex, voteIndex)}
-                                />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        ))}
-                      </>
-                    ) : (
-                      <Grid rowSpacing={2} sx={{ width: "100%", mt: 2 }}>
-                        <Grid
-                          size={12}
-                          display="flex"
-                          alignItems="center"
-                          columnGap={"15px"}
-                        >
-                          <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
-                            >
-                              Important Past Vote 1
-                            </InputLabel>
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff", width: "100%" }}
-                                disabled
-                              >
-                                <MenuItem value="">
-                                  Select a term first
-                                </MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={isMobile ? 12 : 1.6}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff" }}
-                                disabled
-                              >
-                                <MenuItem value="yes">Yea</MenuItem>
-                                <MenuItem value="no">Nay</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid size={1}>
-                            <DeleteForeverIcon sx={{ opacity: 0.5 }} />
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    )}{" "}
-
-                    {/* Add Past Vote Button */}
-                    <Grid size={1}></Grid>
-                    <Grid size={10} sx={{ textAlign: "right" }}>
-                      <Button
-                        variant="outlined"
-                        className="addVoteActivity-btn"
-                        startIcon={<AddIcon />}
-                        onClick={() => handleAddPastVote(termIndex)}
-                      >
-                        Add Past Vote
-                      </Button>
-                    </Grid>
-                    <Grid size={1}></Grid>
-
-
-
-                  </Grid>
-                </Box>
+                <SenatorTermSection
+                  term={term}
+                  termIndex={termIndex}
+                  isMobile={isMobile}
+                  terms={terms}
+                  getAvailableTerms={getAvailableTerms}
+                  getValidTermId={getValidTermId}
+                  handleTermChange={handleTermChange}
+                  handleSwitchChange={handleSwitchChange}
+                  handleSummaryChange={handleSummaryChange}
+                  allVotes={allVotes}
+                  validateVoteInTermRange={validateVoteInTermRange}
+                  handleVoteChange={handleVoteChange}
+                  handleRemoveVote={handleRemoveVote}
+                  handleAddVote={handleAddVote}
+                  allActivities={allActivities}
+                  validateActivityInTermRange={validateActivityInTermRange}
+                  handleActivityChange={handleActivityChange}
+                  handleRemoveActivity={handleRemoveActivity}
+                  handleAddActivity={handleAddActivity}
+                  handleRemoveTerm={handleRemoveTerm}
+                  handleAddPastVote={handleAddPastVote}
+                  handlePastVoteChange={handlePastVoteChange}
+                />
               </Paper>
             ))}
 
@@ -4159,58 +3103,16 @@ export default function AddSenator(props) {
             >
               Add Another Term
             </Button>
-
-            <Snackbar
-  open={openSnackbar || selectionError.show}
-  autoHideDuration={6000}
-  onClose={() => {
-    handleSnackbarClose();
-    setSelectionError({ show: false, message: "", type: "" });
-  }}
-  anchorOrigin={{ vertical: "top", horizontal: "right" }}
->
-  <MuiAlert
-    onClose={() => {
-      handleSnackbarClose();
-      setSelectionError({ show: false, message: "", type: "" });
-    }}
-    severity={selectionError.show ? "error" : snackbarSeverity}
-    sx={{
-      width: "100%",
-      border: "none",
-      boxShadow: "none",
-      bgcolor:
-        snackbarMessage === "Changes published successfully!"
-          ? "#daf4f0"
-          : undefined,
-      "& .MuiAlert-icon": {
-        color:
-          snackbarMessage === "Changes published successfully!"
-            ? "#099885"
-            : undefined,
-      },
-      "& .MuiAlert-message": {
-        color:
-          snackbarMessage === "Changes published successfully!"
-            ? "#099885"
-            : undefined,
-      },
-      "& .MuiAlert-action": {
-                    display: "flex",
-                    alignItems: "center",
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                  },
-    }}
-    elevation={6}
-    variant="filled"
-  >
-    {selectionError.show ? selectionError.message : snackbarMessage}
-  </MuiAlert>
-</Snackbar>
-            
-
-
+            <SnackbarComponent
+              open={openSnackbar}
+              onClose={() => {
+                handleSnackbarClose();
+                setSelectionError({ show: false, message: "", type: "" });
+              }}
+              message={snackbarMessage}
+              severity={snackbarSeverity}
+              selectionError={selectionError}
+            />
 
           </Stack>
           <Box sx={{ mb: "40px", mx: "15px" }}>
