@@ -98,6 +98,7 @@ export default function AddActivity(props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+  const [readMoreType, setReadMoreType] = useState("file"); // 'url' or 'file'
   const navigate = useNavigate();
 
   const fieldLabels = {
@@ -112,7 +113,7 @@ export default function AddActivity(props) {
   };
 
   const compareValues = (newVal, oldVal, fieldName) => {
-    if (fieldName === 'status') return false;
+    if (fieldName === "status") return false;
     if (typeof newVal === "string" && typeof oldVal === "string") {
       return newVal.trim() !== oldVal.trim();
     }
@@ -166,18 +167,21 @@ export default function AddActivity(props) {
   }, [selectedActivity]);
 
   // 3. When formData changes, update editedFields (track all changes)
-useEffect(() => {
-  if (originalFormData && formData) {
-    const changes = [];
-    Object.keys(formData).forEach((key) => {
-      // Use the compareValues function with field name
-      if (key !== 'status' && compareValues(formData[key], originalFormData[key], key)) {
-        changes.push(key);
-      }
-    });
-    setEditedFields(changes);
-  }
-}, [formData, originalFormData]);
+  useEffect(() => {
+    if (originalFormData && formData) {
+      const changes = [];
+      Object.keys(formData).forEach((key) => {
+        // Use the compareValues function with field name
+        if (
+          key !== "status" &&
+          compareValues(formData[key], originalFormData[key], key)
+        ) {
+          changes.push(key);
+        }
+      });
+      setEditedFields(changes);
+    }
+  }, [formData, originalFormData]);
 
   useEffect(() => {
     if (id) {
@@ -204,6 +208,16 @@ useEffect(() => {
     whiteSpace: "nowrap",
     width: 1,
   });
+
+  
+  const handleReadMoreChange = (event) => {
+    const { value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      readMore: value,
+    }));
+  };
+
 
   // Update your handleChange and handleEditorChange to properly track changes
   const handleChange = (event) => {
@@ -288,16 +302,17 @@ useEffect(() => {
       const formDataToSend = new FormData();
 
       // Add all form fields EXCEPT status (we'll add it separately)
-      Object.keys(formData).forEach((key) => {
-        if (key === "readMore" && selectedFile) {
-          // If there's a selected file, append it
-          formDataToSend.append("readMore", selectedFile);
+       Object.keys(formData).forEach((key) => {
+        if (key === "readMore") {
+          if (readMoreType === "file" && selectedFile) {
+            formDataToSend.append("readMore", selectedFile);
+          } else if (readMoreType === "url") {
+            formDataToSend.append("readMore", formData.readMore);
+          }
         } else if (key !== "status") {
-          // Don't add status here
           formDataToSend.append(key, formData[key]);
         }
       });
-
       // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
         ? selectedActivity.editedFields
@@ -354,6 +369,16 @@ useEffect(() => {
         await dispatch(
           updateActivity({ id, updatedData: formDataToSend })
         ).unwrap();
+          if (readMoreType === "url") {
+          setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
+          setReadMoreType("url"); // force back to URL mode
+        } else if (readMoreType === "file" && selectedFile) {
+          setFormData((prev) => ({
+            ...prev,
+            readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
+          }));
+          setReadMoreType("file"); // stay in file mode
+        }
         await dispatch(getActivityById(id)).unwrap();
 
         setSnackbarMessage(
@@ -370,8 +395,6 @@ useEffect(() => {
           // Only clear locally if status is published
           if (finalStatus === "published") {
             setEditedFields([]);
-            // Update originalFormData to current form data to stop tracking changes
-            setOriginalFormData({ ...formData, status: "published" });
           }
         }
       } else {
@@ -385,14 +408,23 @@ useEffect(() => {
 
         const result = await dispatch(createActivity(formDataToSend)).unwrap();
         const newActivityId = result.info._id;
+        if (readMoreType === "url") {
+          setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
+          setReadMoreType("url");
+        } else if (readMoreType === "file" && selectedFile) {
+          setFormData((prev) => ({
+            ...prev,
+            readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
+          }));
+          setReadMoreType("file");
+        }
         setSnackbarMessage("Activity created successfully!");
         setSnackbarSeverity("success");
 
-        if(newActivityId ){
+        if (newActivityId) {
           setTimeout(() => {
             navigate(`/edit-activity/${newActivityId}`);
           }, 1500);
-             
         } else {
           console.error("Activity (_id) is missing in the API response.");
         }
@@ -1113,67 +1145,161 @@ useEffect(() => {
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="nameLabel">Read More</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <TextField
-                          className="customTextField"
-                          fullWidth
-                          variant="outlined"
-                          name="readMore"
-                          value={
-                            formData.readMore
-                              ? `${API_URL}/uploads/documents/${formData.readMore
-                                  .split("/")
-                                  .pop()}`
-                              : ""
-                          }
-                          onChange={handleChange}
-                          placeholder="File will be uploaded here"
-                          InputProps={{
-                            readOnly: true,
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Typography
-                                  fontWeight="500"
-                                  sx={{
-                                    fontSize: "13px",
-                                    backgroundColor: "#F9F9F9",
-                                  }}
-                                >
-                                  URL:
-                                </Typography>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                        <Button
-                          variant="outlined"
-                          component="label"
-                          startIcon={<CloudUploadIcon />}
-                          className="upload-btn"
-                        >
-                          Upload
-                          <input
-                            type="file"
-                            hidden
-                            onChange={handleFileUpload}
-                            accept=".pdf,.doc,.docx,.txt,.rtf"
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
+                        }}
+                      >
+                        {/* Input fields based on selected type */}
+                        {readMoreType === "url" ? (
+                          <TextField
+                            className="customTextField"
+                            fullWidth
+                            variant="outlined"
+                            name="readMore"
+                            value={
+                              readMoreType === "url"
+                                ? formData.readMore || ""
+                                : formData.readMore
+                                ? `${API_URL}/uploads/documents/${formData.readMore.replace(
+                                    "/uploads/",
+                                    ""
+                                  )}`
+                                : ""
+                            }
+                            onChange={(e) => {
+                              let rawValue = e.target.value;
+                              if (readMoreType === "file") {
+                                rawValue = rawValue.replace(
+                                  `${API_URL}/uploads/documents/`,
+                                  ""
+                                );
+                              }
+                              handleReadMoreChange({
+                                target: { name: "readMore", value: rawValue },
+                              });
+                            }}
+                            placeholder="Enter URL here"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <Typography
+                                    fontWeight="500"
+                                    sx={{
+                                      fontSize: "13px",
+                                      backgroundColor: "#F9F9F9",
+                                    }}
+                                  >
+                                    URL:
+                                  </Typography>
+                                </InputAdornment>
+                              ),
+                              endAdornment: (
+                                <InputAdornment position="end" sx={{ marginRight: "-8px" }}>
+                                  <Button
+                                    size="small"
+                                    onClick={() => setReadMoreType("file")}
+                                    sx={{
+                                      backgroundColor: "#173A5E",
+                                      color: "white",
+                                      boxShadow: "none",
+                                      "&:hover": {
+                                        backgroundColor: "#174776ff",
+                                        boxShadow: "none",
+                                      },
+                                      minWidth: "auto",
+                                      // padding: "4px 8px",
+                                      fontSize: "12px",
+                                      textTransform: "none",
+                                    }}
+                                  >
+                                    Switch to File
+                                  </Button>
+                                </InputAdornment>
+                              ),
+                            }}
                           />
-                        </Button>
+                        ) : (
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <TextField
+                              className="customTextField"
+                              fullWidth
+                              variant="outlined"
+                              name="readMore"
+                              value={
+                                selectedFile
+                                  ? selectedFile.name
+                                  : formData.readMore
+                                  ? formData.readMore.startsWith("http")
+                                    ? formData.readMore
+                                    : `${API_URL}/uploads/documents/${formData.readMore.replace(
+                                        "/uploads/",
+                                        ""
+                                      )}`
+                                  : ""
+                              }
+                              placeholder="File will be uploaded here"
+                              InputProps={{
+                                readOnly: true,
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <Typography
+                                      fontWeight="500"
+                                      sx={{
+                                        fontSize: "13px",
+                                        backgroundColor: "#F9F9F9",
+                                      }}
+                                    >
+                                      File:
+                                    </Typography>
+                                  </InputAdornment>
+                                ),
+                                endAdornment: (
+                                  <InputAdornment position="end" sx={{ marginRight: "-8px" }}>
+                                    <Button
+                                      size="small"
+                                      onClick={() => setReadMoreType("url")}
+                                      sx={{
+                                        backgroundColor: "#173A5E",
+                                        color: "white",
+                                        boxShadow: "none",
+                                        "&:hover": {
+                                          backgroundColor: "#174776ff",
+                                          boxShadow: "none",
+                                        },
+                                        minWidth: "auto",
+                                        padding: "4px 8px",
+                                        fontSize: "12px",
+                                        textTransform: "none",
+                                      }}
+                                    >
+                                      Switch to URL
+                                    </Button>
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                            <Button
+                              variant="outlined"
+                              component="label"
+                              startIcon={<CloudUploadIcon />}
+                              className="upload-btn"
+                            >
+                              Upload
+                              <input
+                                type="file"
+                                hidden
+                                onChange={handleFileUpload}
+                                accept=".pdf,.doc,.docx,.txt,.rtf"
+                              />
+                            </Button>
+                          </Box>
+                        )}
                       </Box>
-                      {selectedFile && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "success.main",
-                            mt: 0.5,
-                            display: "block",
-                          }}
-                        >
-                          File selected: {selectedFile.name}
-                        </Typography>
-                      )}
                     </FormControl>
                   </Grid>
 
