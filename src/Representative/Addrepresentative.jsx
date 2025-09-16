@@ -2773,7 +2773,7 @@ export default function Addrepresentative(props) {
   renderInput={(params) => (
     <TextField
       {...params}
-      placeholder="Select an Activity"
+      placeholder="Search activities..."
       size="small"
       sx={{
                   "& .MuiOutlinedInput-root": {

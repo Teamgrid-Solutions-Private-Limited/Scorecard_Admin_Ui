@@ -2332,24 +2332,11 @@ export default function AddSenator(props) {
   return (
     <AppTheme key={componentKey}>
       {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A !important" }} />
         </Box>
       )}
-      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff" }}>
+       <Box className="flexContainer">
         <SideMenu />
         <Box
           component="main"
@@ -2365,12 +2352,11 @@ export default function AddSenator(props) {
           <MobileHeader />
 
           <Stack
-            spacing={2}
+            spacing={isMobile ? 1 : 2}
             sx={{
               alignItems: "center",
-              mx: 3,
-              // pb: 5,
-              mt: { xs: 8, md: 2.8 },
+              mx: {xs: 2, md: 3},
+              mt: { xs: 2, md: 2.8 },
               gap: 1,
             }}
           >
@@ -2386,30 +2372,14 @@ export default function AddSenator(props) {
               <Button
                 variant="outlined"
                 onClick={handleDiscard}
-                sx={{
-                  backgroundColor: "#E24042 !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#C91E37 !important",
-                  },
-                }}
+                className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
               </Button>
               <Button
                 variant="outlined"
                 onClick={handleSave}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  padding: "0.5rem 1.5rem",
-                  marginLeft: "0.5rem",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
+                 className="publishBtn"
               >
                 {userRole === "admin" ? "Publish" : "Save Changes"}
               </Button>
@@ -3004,15 +2974,7 @@ export default function AddSenator(props) {
               );
             })()}
 
-            <Paper
-              sx={{
-                width: "100%",
-                bgcolor: "#fff",
-                borderRadius: 0.8,
-                border: "1px solid",
-                borderColor: "divider",
-              }}
-            >
+             <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -3077,16 +3039,7 @@ export default function AddSenator(props) {
                 </DialogActions>
               </Dialog>
               <Box sx={{ p: 0 }}>
-                <Typography
-                  fontSize={"1rem"}
-                  fontWeight={500}
-                  sx={{
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    p: 1.5,
-                    px: 3,
-                  }}
-                >
+                <Typography className="customTypography">
                   Senator's Information
                 </Typography>
                 <Grid
@@ -3099,19 +3052,11 @@ export default function AddSenator(props) {
 
                 >
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel className="label">
                       Senator's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
+                  <Grid size={isMobile ? 8 : 4}>
                     <TextField
                       required
                       id="title"
@@ -3122,99 +3067,40 @@ export default function AddSenator(props) {
                       size="small"
                       autoComplete="off"
                       variant="outlined"
+                      className="textField"
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 1}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Status
-                    </InputLabel>
+                    <InputLabel className="label">Status</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
+                  <Grid size={isMobile ? 8 : 4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
-                      sx={{
-                        "& .MuiButton-outlined": {
-                          height: "36px",
-                          borderColor: "#4CAF50",
-                          color: "#4CAF50",
-                          "&:hover": {
-                            backgroundColor: "rgba(76, 175, 80, 0.04)",
-                            borderColor: "#4CAF50",
-                          },
-                        },
-                      }}
+                      className="customButtonGroup"
                     >
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Active")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Active"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Active"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Active"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                        className={`statusBtn ${formData.status === "Active" ? "active" : ""
+                          }`}
                       >
                         Active
                       </Button>
                       <Button
                         variant={"outlined"}
                         onClick={() => handleStatusChange("Former")}
-                        sx={{
-                          backgroundColor:
-                            formData.status === "Former"
-                              ? "#4CAF50 !important"
-                              : "transparent",
-                          color:
-                            formData.status === "Former"
-                              ? "white !important"
-                              : "#4CAF50",
-                          borderColor: "#4CAF50 !important",
-                          "&:hover": {
-                            backgroundColor:
-                              formData.status === "Former"
-                                ? "#45a049 !important"
-                                : "rgba(76, 175, 80, 0.1)",
-                            borderColor: "#4CAF50 !important",
-                          },
-                        }}
+                         className={`statusBtn ${formData.status === "Former" ? "active" : ""
+                          }`}
                       >
                         Former
                       </Button>
                     </ButtonGroup>
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      State
-                    </InputLabel>
+                   <InputLabel className="label">State</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
+                  <Grid size={isMobile ? 8 : 4}>
                     <TextField
                       id="state"
                       name="state"
@@ -3224,25 +3110,17 @@ export default function AddSenator(props) {
                       size="small"
                       autoComplete="off"
                       variant="outlined"
+                      className="textField"
                     />
                   </Grid>
                   <Grid
                     size={isMobile ? 12 : 1}
                     sx={{ alignContent: "center" }}
                   >
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
-                      Party
-                    </InputLabel>
+                    <InputLabel className="label">Party</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
-                    <FormControl fullWidth>
+                  <Grid size={isMobile ? 8 : 4}>
+                    <FormControl fullWidth className="textField">
                       <Select
                         name="party"
                         value={formData.party}
@@ -3257,19 +3135,12 @@ export default function AddSenator(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile ? "flex-start" : "flex-end",
-                        fontWeight: 500,
-                        my: 0,
-                      }}
-                    >
+                    <InputLabel className="label">
                       Senator's Photo
                     </InputLabel>
                   </Grid>
                   <Grid size={10}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Box className="textField" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       {formData.photo ? (
                         <img
                           src={
@@ -3294,15 +3165,7 @@ export default function AddSenator(props) {
                       <Button
                         component="label"
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="uploadBtn"
                         startIcon={<CloudUploadIcon />}
                       >
                         Upload files
@@ -3320,29 +3183,9 @@ export default function AddSenator(props) {
 
             {/* Render each term in senatorTermData */}
             {senatorTermData.map((term, termIndex) => (
-              <Paper
-                key={termIndex}
-                sx={{
-                  width: "100%",
-                  marginBottom: "50px",
-                  position: "relative",
-                  bgcolor: "#fff",
-                  borderRadius: 0.8,
-                  border: "1px solid",
-                  borderColor: "divider",
-                }}
-              >
+              <Paper key={termIndex} className="termData-paper">
                 <Box sx={{ padding: 0 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-
-                      borderBottom: '1px solid', borderColor: 'divider',
-                      p: 1.5, px: 3
-                    }}
-                  >
+                   <Box className="termData-header">
                     <Typography fontSize={"1rem"} fontWeight={500}>
                       Senator's Term Information {termIndex + 1}
                     </Typography>
@@ -3365,21 +3208,11 @@ export default function AddSenator(props) {
                     alignItems={"center"}
                     py={3}
                   >
-                    <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term
-                      </InputLabel>
+                    <Grid size={isMobile ? 4 : 2}>
+                     <InputLabel className="label">Term</InputLabel>
                     </Grid>
-                    <Grid size={isMobile ? 12 : 2.2}>
-                      <FormControl fullWidth>
+                    <Grid size={isMobile ? 6 : 2.2}>
+                      <FormControl fullWidth >
                         <Select
                           // value={term.termId || ""}
                           value={getValidTermId(
@@ -3414,16 +3247,7 @@ export default function AddSenator(props) {
                       size={isMobile ? 6 : 2.1}
                       sx={{ alignContent: "center" }}
                     >
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Current Term
-                      </InputLabel>
+                      <InputLabel className="label">Current Term</InputLabel>
                     </Grid>
                     <Grid size={isMobile ? 6 : 0}>
                       <Switch
@@ -3435,19 +3259,9 @@ export default function AddSenator(props) {
                       />
                     </Grid>
                     <Grid size={isMobile ? 6 : 2.39}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        SBA Rating
-                      </InputLabel>
+                      <InputLabel className="label">SBA Rating</InputLabel>
                     </Grid>
-                    <Grid size={isMobile ? 6 : 2.2}>
+                    <Grid size={isMobile ? 4 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -3471,19 +3285,10 @@ export default function AddSenator(props) {
                     </Grid>
                     {/*term repeater start*/}
                     <Grid size={isMobile ? 12 : 2}>
-                      <InputLabel
-                        sx={{
-                          display: "flex",
-                          justifyContent: isMobile ? "flex-start" : "flex-end",
-                          fontWeight: 500,
-                          my: 0,
-                        }}
-                      >
-                        Term Summary
-                      </InputLabel>
+                      <InputLabel className="label">Term Summary</InputLabel>
                     </Grid>
                     {/* Editor Column */}
-                    <Grid size={isMobile ? 12 : 9.05}>
+                    <Grid className="textField" size={isMobile ? 11 : 9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"
@@ -3522,114 +3327,9 @@ export default function AddSenator(props) {
                         }}
                       />
                     </Grid>
-                    {/* {term?.summaries?.map((summary, summaryIndex) => (
-                      <>
-                        
-                        <Grid size={isMobile ? 12 : 2}>
-                          <InputLabel
-                            sx={{
-                              display: "flex",
-                              justifyContent: isMobile
-                                ? "flex-start"
-                                : "flex-end",
-                              fontWeight: 700,
-                              my: 0,
-                            }}
-                          >
-                            Term Summary 
-                          </InputLabel>
-                        </Grid>
-
-                        
-                        <Grid size={isMobile ? 12 : 9.05}>
-                          <Editor
-                            tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
-                            licenseKey="gpl"
-                            onInit={(_evt, editor) =>
-                              (editorRef.current = editor)
-                            }
-                            value={summary.content || ""}
-                            onEditorChange={(content) => {
-                              handleSummaryChange(
-                                termIndex,
-                                summaryIndex,
-                                content
-                              );
-                            }}
-                            init={{
-                              base_url: "/scorecard/admin/tinymce",
-                              height: 250,
-                              menubar: false,
-                              plugins: [
-                                "advlist",
-                                "autolink",
-                                "lists",
-                                "link",
-                                "image",
-                                "charmap",
-                                "preview",
-                                "anchor",
-                                "searchreplace",
-                                "visualblocks",
-                                "code",
-                                "fullscreen",
-                                "insertdatetime",
-                                "media",
-                                "table",
-                                "code",
-                                "help",
-                                "wordcount",
-                              ],
-                              toolbar:
-                                "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-                              content_style:
-                                "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; direction: ltr; }",
-                              directionality: "ltr",
-                            }}
-                          />
-                        </Grid>
-                        
-                        <Grid
-                          gridColumn={{ xs: 12, sm: 1 }}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {summaryIndex > 0 ? (
-                            <DeleteForeverIcon
-                              onClick={() =>
-                                handleRemoveSummary(termIndex, summaryIndex)
-                              }
-                              sx={{ cursor: "pointer", color: "black" }}
-                            />
-                          ) : (
-                            
-                            <Box sx={{ width: 24, height: 24 }} />
-                          )}
-                        </Grid>
-                      </>
-                    ))} */}
-                    {/*term repeater end*/}
+                    
                     <Grid size={1}></Grid>
-                    {/* <Grid size={10} sx={{ textAlign: "right" }}>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginTop: "1rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
-                        startIcon={<AddIcon />}
-                        onClick={() => handleAddSummary(termIndex)}
-                      >
-                        Add Another Summary
-                      </Button>
-                    </Grid> */}
+                    
                     <Grid size={1}></Grid>
                     {/* Vote Repeater Start */}
                     {term.termId ? (
@@ -3637,32 +3337,25 @@ export default function AddSenator(props) {
                         {term.votesScore.map((vote, voteIndex) => (
                           <Grid
                             rowSpacing={2}
-                            sx={{ width: "100%" }}
+                            sx={{ width: "100%", }}
                             key={voteIndex}
                           >
                             <Grid
                               size={12}
                               display="flex"
-                              alignItems="center"
+                              flexDirection={isMobile ? "column" : "row"}
+                              alignItems={isMobile ? "flex-start" : "center"}
+                              gap={isMobile ? 1 : 0}
                               columnGap={"15px"}
                             >
                               <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: isMobile
-                                      ? "flex-start"
-                                      : "flex-end",
-                                    fontWeight: 500,
-                                    my: 0,
-                                  }}
-                                >
+                                 <InputLabel className="label">
                                   Scored Vote {voteIndex + 1}
                                 </InputLabel>
                               </Grid>
-                              <Grid size={isMobile ? 12 : 7.5}>
+                              <Grid size={isMobile ? 11 : 7.5}>
                                 <Autocomplete
+                                className="textField"
                                   options={allVotes.filter(
                                     v => v.type === "senate_bill" && validateVoteInTermRange(v._id, term.termId).isValid
                                   )}
@@ -3678,8 +3371,8 @@ export default function AddSenator(props) {
                                   )}
                                 />
                               </Grid>
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
+                              <Grid size={isMobile ? 5 : 1.6}>
+                                <FormControl fullWidth className="textField">
                                   <Select
                                     value={vote?.score || ""}
                                     onChange={(event) =>
@@ -3700,6 +3393,7 @@ export default function AddSenator(props) {
                               </Grid>
                               <Grid size={1}>
                                 <DeleteForeverIcon
+                                className="textField"
                                   onClick={() =>
                                     handleRemoveVote(termIndex, voteIndex)
                                   }
@@ -3715,26 +3409,19 @@ export default function AddSenator(props) {
                         <Grid
                           size={12}
                           display="flex"
-                          alignItems="center"
+                          flexDirection={isMobile ? "column" : "row"}
+                          alignItems={isMobile ? "flex-start" : "center"}
+                          gap={isMobile ? 1 : 0}
                           columnGap={"15px"}
                         >
                           <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
-                            >
+                             <InputLabel className="label">
                               Scored Vote 1
                             </InputLabel>
                           </Grid>
-                          <Grid size={isMobile ? 12 : 7.5}>
+                          <Grid size={isMobile ? 11 : 7.5}>
                             <Autocomplete
+                            className="textField"
                               freeSolo
                               disabled
                               options={[]}
@@ -3756,8 +3443,8 @@ export default function AddSenator(props) {
                               )}
                             />
                           </Grid>
-                          <Grid size={isMobile ? 12 : 1.6}>
-                            <FormControl fullWidth>
+                          <Grid size={isMobile ? 5 : 1.6}>
+                            <FormControl fullWidth className="textField">
                               <Select
                                 value=""
                                 sx={{ background: "#fff" }}
@@ -3770,7 +3457,8 @@ export default function AddSenator(props) {
                             </FormControl>
                           </Grid>
                           <Grid size={1}>
-                            <DeleteForeverIcon sx={{ opacity: 0.5 }} />
+                            
+                            <DeleteForeverIcon className="textField" sx={{ opacity: 0.5 }} />
                           </Grid>
                         </Grid>
                       </Grid>
@@ -3780,15 +3468,7 @@ export default function AddSenator(props) {
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                        className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddVote(termIndex)}
                       >
@@ -3809,26 +3489,19 @@ export default function AddSenator(props) {
                             <Grid
                               size={12}
                               display="flex"
-                              alignItems="center"
+                              flexDirection={isMobile ? "column" : "row"}
+                              alignItems={isMobile ? "flex-start" : "center"}
+                              gap={isMobile ? 1 : 0}
                               columnGap={"15px"}
                             >
                               <Grid size={isMobile ? 12 : 2}>
-                                <InputLabel
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: isMobile
-                                      ? "flex-start"
-                                      : "flex-end",
-                                    fontWeight: 500,
-                                    my: 0,
-                                  }}
-                                >
+                                <InputLabel className="label">
                                   Tracked Activity {activityIndex + 1}
                                 </InputLabel>
                               </Grid>
-                              <Grid size={isMobile ? 12 : 7.5}>
+                              <Grid size={isMobile ? 11 : 7.5}>
                                 <Autocomplete
+                                className="textField"
                                   options={allActivities.filter(
                                     (a) => a.type === "senate" && validateActivityInTermRange(a._id, term.termId).isValid
                                   )}
@@ -3864,8 +3537,8 @@ export default function AddSenator(props) {
                                   )}
                                 />
                               </Grid>
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
+                              <Grid size={isMobile ? 5 : 1.6}>
+                                <FormControl fullWidth className="textField">
                                   <Select
                                     value={activity?.score || ""}
                                     onChange={(event) =>
@@ -3886,6 +3559,7 @@ export default function AddSenator(props) {
                               </Grid>
                               <Grid size={1}>
                                 <DeleteForeverIcon
+                                className="textField"
                                   onClick={() =>
                                     handleRemoveActivity(
                                       termIndex,
@@ -3904,26 +3578,19 @@ export default function AddSenator(props) {
                         <Grid
                           size={12}
                           display="flex"
-                          alignItems="center"
+                          flexDirection={isMobile ? "column" : "row"}
+                          alignItems={isMobile ? "flex-start" : "center"}
+                          gap={isMobile ? 1 : 0}
                           columnGap={"15px"}
                         >
                           <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
-                            >
+                             <InputLabel className="label">
                               Tracked Activity 1
                             </InputLabel>
                           </Grid>
-                          <Grid size={isMobile ? 12 : 7.5}>
+                          <Grid size={isMobile ? 11 : 7.5}>
                             <Autocomplete
+                            className="textField"
                               freeSolo
                               disabled
                               options={[]}
@@ -3944,8 +3611,8 @@ export default function AddSenator(props) {
                               )}
                             />
                           </Grid>
-                          <Grid size={isMobile ? 12 : 1.6}>
-                            <FormControl fullWidth>
+                          <Grid size={isMobile ? 5 : 1.6}>
+                            <FormControl fullWidth className="textField">
                               <Select
                                 value=""
                                 sx={{ background: "#fff" }}
@@ -3958,7 +3625,7 @@ export default function AddSenator(props) {
                             </FormControl>
                           </Grid>
                           <Grid size={1}>
-                            <DeleteForeverIcon sx={{ opacity: 0.5 }} />
+                            <DeleteForeverIcon className="textField" sx={{ opacity: 0.5 }} />
                           </Grid>
                         </Grid>
                       </Grid>
@@ -3968,15 +3635,7 @@ export default function AddSenator(props) {
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
                         variant="outlined"
-                        sx={{
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          padding: "0.5rem 1rem",
-                          marginLeft: "0.5rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                        }}
+                         className="addVoteActivity-btn"
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
@@ -3992,7 +3651,9 @@ export default function AddSenator(props) {
                             <Grid
                               size={12}
                               display="flex"
-                              alignItems="center"
+                             flexDirection={isMobile ? "column" : "row"}
+                              alignItems={isMobile ? "flex-start" : "center"}
+                              gap={isMobile ? 1 : 0}
                               columnGap={"15px"}
                             >
                               <Grid size={isMobile ? 12 : 2}>
@@ -4000,8 +3661,9 @@ export default function AddSenator(props) {
                                   Important Past Vote {voteIndex + 1}
                                 </InputLabel>
                               </Grid>
-                              <Grid size={isMobile ? 12 : 7.5}>
+                              <Grid size={isMobile ? 11 : 7.5}>
                                 <Autocomplete
+                                className="textField"
                                   options={allVotes} // full list
                                   getOptionLabel={(option) => option.title || ""}
                                   value={allVotes.find((v) => v._id === vote.voteId) || null}
@@ -4035,8 +3697,8 @@ export default function AddSenator(props) {
                                   )}
                                 />
                               </Grid>
-                              <Grid size={isMobile ? 12 : 1.6}>
-                                <FormControl fullWidth>
+                              <Grid size={isMobile ? 5 : 1.6}>
+                                <FormControl fullWidth className="textField">
                                   <Select
                                     value={vote?.score || ""}
                                     onChange={(event) =>
@@ -4057,6 +3719,7 @@ export default function AddSenator(props) {
                               </Grid>
                               <Grid size={1}>
                                 <DeleteForeverIcon
+                                className="textField"
                                   onClick={() => handleRemovePastVote(termIndex, voteIndex)}
                                 />
                               </Grid>
@@ -4069,39 +3732,41 @@ export default function AddSenator(props) {
                         <Grid
                           size={12}
                           display="flex"
-                          alignItems="center"
+                          flexDirection={isMobile ? "column" : "row"}
+                          alignItems={isMobile ? "flex-start" : "center"}
+                          gap={isMobile ? 1 : 0}
                           columnGap={"15px"}
                         >
                           <Grid size={isMobile ? 12 : 2}>
-                            <InputLabel
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: isMobile
-                                  ? "flex-start"
-                                  : "flex-end",
-                                fontWeight: 500,
-                                my: 0,
-                              }}
-                            >
+                             <InputLabel className="label">
                               Important Past Vote 1
                             </InputLabel>
                           </Grid>
-                          <Grid size={isMobile ? 12 : 7.5}>
-                            <FormControl fullWidth>
-                              <Select
-                                value=""
-                                sx={{ background: "#fff", width: "100%" }}
-                                disabled
-                              >
-                                <MenuItem value="">
-                                  Select a term first
-                                </MenuItem>
-                              </Select>
-                            </FormControl>
+                          <Grid size={isMobile ? 11 : 7.5}>
+                             <Autocomplete
+                            className="textField"
+                              freeSolo
+                              disabled
+                              options={[]}
+                              popupIcon={null}
+                              clearIcon={null}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  background: "#fff",
+                                },
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  placeholder="Select a term first"
+                                  variant="outlined"
+                                  fullWidth
+                                />
+                              )}
+                            />
                           </Grid>
-                          <Grid size={isMobile ? 12 : 1.6}>
-                            <FormControl fullWidth>
+                          <Grid size={isMobile ? 5 : 1.6}>
+                            <FormControl fullWidth className="textField">
                               <Select
                                 value=""
                                 sx={{ background: "#fff" }}
@@ -4114,7 +3779,7 @@ export default function AddSenator(props) {
                             </FormControl>
                           </Grid>
                           <Grid size={1}>
-                            <DeleteForeverIcon sx={{ opacity: 0.5 }} />
+                            <DeleteForeverIcon className="textField" sx={{ opacity: 0.5 }} />
                           </Grid>
                         </Grid>
                       </Grid>
@@ -4146,16 +3811,7 @@ export default function AddSenator(props) {
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddTerm}
-              sx={{
-                alignSelf: "flex-start",
-                backgroundColor: "#173A5E !important",
-                color: "white !important",
-                padding: "0.5rem 1rem",
-                marginLeft: "0.5rem",
-                "&:hover": {
-                  backgroundColor: "#1E4C80 !important",
-                },
-              }}
+              className="addTerm-btn"
             >
               Add Another Term
             </Button>
