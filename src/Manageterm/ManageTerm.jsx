@@ -146,7 +146,7 @@ const handleConfirmDelete = async () => {
 
         <Box
           sx={{
-            width: "80%",
+            width: { xs: "100%", md: "80%" },
             flexGrow: 1,
             filter: loading ? "blur(1px)" : "none",
             pointerEvents: loading ? "none" : "auto",
@@ -156,12 +156,12 @@ const handleConfirmDelete = async () => {
           <MobileHeader />
           <Box
             sx={{
-              mx: 3,
+              mx: { xs: 2, md: 3 },
               mt: 4,
-              // px: 3,
-              // maxWidth: "1200px",
+              // maxWidth: 1200,
               // width: "100%",
               pb: 5,
+              // marginInline: "auto",
             }}
           >
             {/* Snackbar */}
@@ -217,17 +217,23 @@ const handleConfirmDelete = async () => {
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: { xs: 2, md: 3 },
                 mb: 4,
-                borderRadius: 0.8,
+                borderRadius: 1,
                 backgroundColor: "#fff",
                 border: "1px solid",
                 borderColor: "divider",
+                // boxShadow: "0 2px 10px rgba(23,58,94,0.06)",
               }}
             >
-              <Typography sx={{ mb: 2, fontWeight: 500 }}>
-                Add New Term
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: "#173A5E" }}>
+                  Manage Terms
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  Create a new term by entering start and end years
+                </Typography>
+              </Box>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   fullWidth
@@ -238,7 +244,7 @@ const handleConfirmDelete = async () => {
                   onChange={(e) => setStartYear(e.target.value)}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      borderRadius: "10px",
+                      borderRadius: 1,
                       backgroundColor: "#fff",
                     },
                   }}
@@ -252,8 +258,9 @@ const handleConfirmDelete = async () => {
                   onChange={(e) => setEndYear(e.target.value)}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      borderRadius: "10px",
+                      borderRadius: 1,
                       backgroundColor: "#fff",
+                      height:'40px'
                     },
                   }}
                 />
@@ -263,10 +270,10 @@ const handleConfirmDelete = async () => {
                   sx={{
                     minWidth: 120,
                     textTransform: "none",
-                    boxShadow: "none",
                     bgcolor: "#173A5E",
                     color: "#fff",
-                    "&:hover": { boxShadow: "none", bgcolor: "#1E4C80" },
+                    borderRadius: 1,
+                    "&:hover": {  bgcolor: "#1E4C80" },
                   }}
                 >
                   Add Term
@@ -278,16 +285,22 @@ const handleConfirmDelete = async () => {
             <Paper
               elevation={0}
               sx={{
-                p: 3,
-                borderRadius: 0.8,
+                p: { xs: 2, md: 3 },
+                borderRadius: 1,
                 backgroundColor: "#fff",
                 border: "1px solid",
                 borderColor: "divider",
+               
               }}
             >
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
-                Terms List
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 500, color: "#173A5E" }}>
+                  Terms List
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  {terms?.length || 0} total
+                </Typography>
+              </Box>
 
               {terms?.length ? (
                 <Stack spacing={1.5}>
@@ -296,36 +309,43 @@ const handleConfirmDelete = async () => {
                       key={term._id}
                       elevation={0}
                       sx={{
-                        width:{xs:'undefined', lg:'50%'},
+                       
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
                         p: 2,
                         borderRadius: 1,
                         backgroundColor: "#fff",
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        transition: 'box-shadow .2s ease, transform .1s ease',
+                        "&:hover": {
+                          boxShadow: "0 6px 18px rgba(23,58,94,0.12)",
+                          transform: 'translateY(-0.5px)'
+                        }
                       }}
                     >
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant="body1">
-                          {index + 1}. {term.name}
-                        </Typography>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Box>
+                          <Typography  sx={{ fontWeight: 500 }}>
+                            {term.name}
+                          </Typography>
+                          
+                        </Box>
 
                         <Paper
                           elevation={0}
                           sx={{
-                            px: 1.5,
+                            px: 1.25,
                             py: 0.5,
                             borderRadius: 1,
-                            bgcolor: "#173A5E",
-                            color: "#fff",
+                            bgcolor: "#F1F5F9",
+                            color: "#0F172A",
                             fontSize: "0.8rem",
                             fontWeight: 500,
                           }}
                         >
-                          <Typography sx={{fontSize:'12px'}}>Congress:{" "}
-                          {term.congresses?.length
-                            ? term.congresses.join(", ")
-                            : "N/A"}</Typography>
+                          <Typography sx={{ fontSize: '12px' }}>Congress: {term.congresses?.length ? term.congresses.join(', ') : 'N/A'}</Typography>
                         </Paper>
                       </Stack>
 
@@ -337,6 +357,7 @@ const handleConfirmDelete = async () => {
                           color="error"
                            onClick={() => handleOpenConfirm(term._id)}
                           size="small"
+                          sx={{ ml: 2 }}
                         >
                           <Delete fontSize="small" />
                         </IconButton>
@@ -355,6 +376,8 @@ const handleConfirmDelete = async () => {
                     alignItems: "center",
                     backgroundColor: "#fff",
                     borderRadius: 1,
+                    border: '1px dashed',
+                    borderColor: 'divider',
                   }}
                 >
                   <Typography color="text.secondary" variant="body2">

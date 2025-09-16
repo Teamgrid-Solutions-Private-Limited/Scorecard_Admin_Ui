@@ -366,7 +366,7 @@ export default function Bills(props) {
                     value={bulkSbaPosition}
                     onChange={(e) => setBulkSbaPosition(e.target.value)}
                     size="small"
-                    sx={{ minWidth: 150 }}
+                    sx={{ minWidth: 160 }}
                   >
                     <MenuItem value="Yes">Yes</MenuItem>
                     <MenuItem value="No">No</MenuItem>

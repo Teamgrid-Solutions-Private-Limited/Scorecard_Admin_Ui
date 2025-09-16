@@ -58,6 +58,7 @@ import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
@@ -113,7 +114,7 @@ export default function AddActivity(props) {
   };
 
   const compareValues = (newVal, oldVal, fieldName) => {
-    if (fieldName === "status") return false;
+    if (fieldName === 'status') return false;
     if (typeof newVal === "string" && typeof oldVal === "string") {
       return newVal.trim() !== oldVal.trim();
     }
@@ -167,21 +168,18 @@ export default function AddActivity(props) {
   }, [selectedActivity]);
 
   // 3. When formData changes, update editedFields (track all changes)
-  useEffect(() => {
-    if (originalFormData && formData) {
-      const changes = [];
-      Object.keys(formData).forEach((key) => {
-        // Use the compareValues function with field name
-        if (
-          key !== "status" &&
-          compareValues(formData[key], originalFormData[key], key)
-        ) {
-          changes.push(key);
-        }
-      });
-      setEditedFields(changes);
-    }
-  }, [formData, originalFormData]);
+useEffect(() => {
+  if (originalFormData && formData) {
+    const changes = [];
+    Object.keys(formData).forEach((key) => {
+      // Use the compareValues function with field name
+      if (key !== 'status' && compareValues(formData[key], originalFormData[key], key)) {
+        changes.push(key);
+      }
+    });
+    setEditedFields(changes);
+  }
+}, [formData, originalFormData]);
 
   useEffect(() => {
     if (id) {

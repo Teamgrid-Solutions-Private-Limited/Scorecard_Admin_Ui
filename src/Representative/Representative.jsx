@@ -80,7 +80,7 @@ export default function Representative(props) {
   const [ratingFilter, setRatingFilter] = useState([]);
   const { houseData } = useSelector((state) => state.houseData);
   const [mergedHouses, setMergedHouses] = useState([]);
-  const [yearFilter, setYearFilter] = useState([]);
+  const [congressFilter, setCongressFilter] = useState([]);
   const [termFilter, setTermFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedFilter, setExpandedFilter] = useState(null);
@@ -88,7 +88,7 @@ export default function Representative(props) {
     party: "",
     district: "",
     rating: "",
-    year: "",
+    congress: "",
   });
   const { terms } = useSelector((state) => state.term);
 
@@ -96,11 +96,23 @@ export default function Representative(props) {
   const [statusFilter, setStatusFilter] = useState([]);
   const statusOptions = ["published", "under review", "draft"];
 
-  const currentYear = new Date().getFullYear();
-  const years = [];
-  for (let y = currentYear; y >= 2015; y--) {
-    years.push(y);
-  }
+  const getOrdinalSuffix = (num) => {
+    const n = Number(num);
+    const mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+    switch (n % 10) {
+      case 1:
+        return `${n}st`;
+      case 2:
+        return `${n}nd`;
+      case 3:
+        return `${n}rd`;
+      default:
+        return `${n}th`;
+    }
+  };
+
+  // Build congress options from available houseData terms
 
   useEffect(() => {
     dispatch(getAllHouses());
@@ -115,19 +127,17 @@ export default function Representative(props) {
       const currentTermData = houseRecords.find((rec) => rec.currentTerm === true);
 
       let termId;
-      let rating = "N/A"; // Default fallback
+      let rating = "N/A";
       let termName = "";
       let currentTerm = false;
 
       if (currentTermData) {
         termId = currentTermData.termId;
-        // Use the rating even if it's empty string, only fallback to "N/A" if undefined/null
         rating = currentTermData.rating !== undefined && currentTermData.rating !== null 
           ? currentTermData.rating 
           : "N/A";
         currentTerm = true;
 
-        // If rating is empty string, try to find a fallback
         if (currentTermData.rating === "") {
           const fallbackRecords = houseRecords
             .map((rec) => {
@@ -152,7 +162,6 @@ export default function Representative(props) {
         termName = termObj ? termObj.name : "";
         
       } else {
-        // ... rest of your else logic for non-current terms
         const validRecords = houseRecords
           .map((rec) => {
             const termObj = terms.find((t) => t._id === rec.termId);
@@ -172,7 +181,6 @@ export default function Representative(props) {
             rating = latest.rating;
             termName = latest.termObj.name;
           } else {
-            // Use the most recent record even if rating is empty
             const mostRecent = validRecords[0];
             termId = mostRecent.termId;
             rating = mostRecent.rating || "N/A";
@@ -186,12 +194,29 @@ export default function Representative(props) {
         }
       }
 
+      // Collect all term entries for this representative for filtering (congress)
+      const allTerms = houseRecords
+        .map((rec) => {
+          const termObj = terms.find((t) => t._id === rec.termId);
+          return termObj
+            ? {
+                termId: rec.termId,
+                termName: termObj.name || "",
+                currentTerm: rec.currentTerm || false,
+                rating: rec.rating,
+                congresses: Array.isArray(termObj.congresses) ? termObj.congresses : [],
+              }
+            : null;
+        })
+        .filter(Boolean);
+
       return {
         ...house,
         rating,
         termId,
         termName,
         currentTerm,
+        allTerms,
       };
     });
 
@@ -224,9 +249,30 @@ export default function Representative(props) {
     rating.toLowerCase().includes(searchTerms.rating)
   );
 
-  const filteredYearOptions = years.filter((year) =>
-    year.toString().includes(searchTerms.year)
-  );
+  // Build Congress options and map each congress to a year range using only terms with a single congress value
+  const congressYearMap = (() => {
+    const map = {};
+    (terms || []).forEach((t) => {
+      const list = Array.isArray(t.congresses) ? t.congresses : [];
+      if (list.length === 1) {
+        const c = list[0];
+        if (!map[c]) {
+          map[c] = { startYear: t.startYear, endYear: t.endYear };
+        }
+      }
+    });
+    return map;
+  })();
+
+  const congressOptions = [
+    ...new Set(Object.keys(congressYearMap).map((k) => Number(k))),
+  ].sort((a, b) => a - b);
+
+  const filteredCongressOptions = congressOptions.filter((c) => {
+    const yr = congressYearMap[c];
+    const label = yr ? `Congress ${c} (${yr.startYear}-${yr.endYear})` : `Congress ${c}`;
+    return label.toLowerCase().includes(searchTerms.congress);
+  });
 
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
@@ -236,15 +282,11 @@ export default function Representative(props) {
       } else if (termFilter === "past") {
         if (transformedHouse.currentTerm === true) return false;
       }
-      // const nameMatch = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
-      // .every((word) => transformedHouse.name.toLowerCase().includes(word));
-      if (yearFilter.length > 0) {
-        const [start, end] =
-          transformedHouse.termName?.split("-").map(Number) || [];
-        const matchesYear = yearFilter.some(
-          (year) => start && end && year >= start && year <= end
-        );
-        if (!matchesYear) return false;
+      // Congress filter: match if any of representative's term congress numbers intersect selection
+      if (congressFilter.length > 0) {
+        const houseTerms = mergedHouses.find((h) => h._id === transformedHouse._id)?.allTerms || [];
+        const matchesCongress = houseTerms.some((t) => Array.isArray(t.congresses) && t.congresses.some((num) => congressFilter.includes(num)));
+        if (!matchesCongress) return false;
       }
 
       // Name search filter
@@ -315,6 +357,14 @@ export default function Representative(props) {
     );
   };
 
+  const handleCongressFilter = (congress) => {
+    setCongressFilter((prev) =>
+      prev.includes(congress)
+        ? prev.filter((c) => c !== congress)
+        : [...prev, congress]
+    );
+  };
+
   const handleRatingFilter = (rating) => {
     setRatingFilter((prev) =>
       prev.includes(rating)
@@ -344,7 +394,7 @@ export default function Representative(props) {
     setPartyFilter([]);
     setDistrictFilter([]);
     setRatingFilter([]);
-    setYearFilter([]);
+    setCongressFilter([]);
     setTermFilter(null);
     setStatusFilter([]);
     setSearchQuery("");
@@ -453,7 +503,7 @@ export default function Representative(props) {
     partyFilter.length +
     districtFilter.length +
     ratingFilter.length +
-    yearFilter.length +
+    congressFilter.length +
     (termFilter ? 1 : 0) +
     statusFilter.length;
 
@@ -763,33 +813,33 @@ export default function Representative(props) {
                           )}
                         </Box>
 
-                        {/* Year Filter */}
+                        {/* Congress Filter */}
                         <Box
                           className={`filter-section ${
-                            expandedFilter === "year" ? "active" : ""
+                            expandedFilter === "congress" ? "active" : ""
                           }`}
                         >
                           <Box
                             className="filter-title"
-                            onClick={() => toggleFilterSection("year")}
+                            onClick={() => toggleFilterSection("congress")}
                           >
-                            <Typography variant="body1">Year</Typography>
-                            {expandedFilter === "year" ? (
+                            <Typography variant="body1">Congress</Typography>
+                            {expandedFilter === "congress" ? (
                               <ExpandLessIcon />
                             ) : (
                               <ExpandMoreIcon />
                             )}
                           </Box>
-                          {expandedFilter === "year" && (
+                          {expandedFilter === "congress" && (
                             <Box sx={{ py: 1, pt: 0 }}>
                               <Box sx={{ mb: 2, px: 2 }}>
                                 <TextField
                                   fullWidth
                                   size="small"
-                                  placeholder="Search years..."
-                                  value={searchTerms.year}
+                                  placeholder="Search Congress..."
+                                  value={searchTerms.congress}
                                   onChange={(e) =>
-                                    handleSearchChange("year", e.target.value)
+                                    handleSearchChange("congress", e.target.value)
                                   }
                                   InputProps={{
                                     startAdornment: (
@@ -801,14 +851,14 @@ export default function Representative(props) {
                                 />
                               </Box>
                               <Box className="filter-scroll">
-                                {filteredYearOptions.length > 0 ? (
-                                  filteredYearOptions.map((year) => (
+                                {filteredCongressOptions.length > 0 ? (
+                                  filteredCongressOptions.map((congress) => (
                                     <Box
-                                      key={year}
-                                      onClick={() => handleYearFilter(year)}
+                                      key={congress}
+                                      onClick={() => handleCongressFilter(congress)}
                                       className="filter-option"
                                     >
-                                      {yearFilter.includes(year) ? (
+                                      {congressFilter.includes(congress) ? (
                                         <CheckIcon
                                           color="primary"
                                           fontSize="small"
@@ -820,7 +870,9 @@ export default function Representative(props) {
                                         variant="body2"
                                         sx={{ ml: 1 }}
                                       >
-                                        {year}
+                                        {congressYearMap[congress]
+                                          ? `${getOrdinalSuffix(congress)} Congress (${congressYearMap[congress].startYear}-${congressYearMap[congress].endYear})`
+                                          : `${getOrdinalSuffix(congress)} Congress`}
                                       </Typography>
                                     </Box>
                                   ))
@@ -830,7 +882,7 @@ export default function Representative(props) {
                                     color="textSecondary"
                                     sx={{ p: 1 }}
                                   >
-                                    No years found
+                                    No Congress found
                                   </Typography>
                                 )}
                               </Box>
@@ -939,7 +991,7 @@ export default function Representative(props) {
                               !partyFilter.length &&
                               !districtFilter.length &&
                               !ratingFilter.length &&
-                              !yearFilter.length &&
+                              !congressFilter.length &&
                               !termFilter &&
                               !statusFilter.length
                             }
