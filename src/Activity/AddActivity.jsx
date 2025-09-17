@@ -992,7 +992,7 @@ useEffect(() => {
                   pr={7}
                 >
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Type</InputLabel>
+                    <InputLabel className="label">Type</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1009,7 +1009,7 @@ useEffect(() => {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Name</InputLabel>
+                    <InputLabel className="label">Name</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1028,7 +1028,7 @@ useEffect(() => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Activity Details
                     </InputLabel>
                   </Grid>
@@ -1072,7 +1072,7 @@ useEffect(() => {
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">Congress</InputLabel>
+                    <InputLabel className="label">Congress</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1091,7 +1091,7 @@ useEffect(() => {
                   </Grid>
 
                   <Grid size={2}>
-                    <InputLabel className="nameLabel">Date</InputLabel>
+                    <InputLabel className="label">Date</InputLabel>
                   </Grid>
                   <Grid size={10}>
                     <FormControl fullWidth>
@@ -1111,7 +1111,7 @@ useEffect(() => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">Read More</InputLabel>
+                    <InputLabel className="label">Read More</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 12 : 10}>
                     <FormControl fullWidth>
@@ -1178,7 +1178,7 @@ useEffect(() => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Tracked Activities
                     </InputLabel>
                   </Grid>

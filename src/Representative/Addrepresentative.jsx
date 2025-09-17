@@ -1622,12 +1622,11 @@ export default function Addrepresentative(props) {
           <MobileHeader />
 
           <Stack
-            spacing={2}
+             spacing={isMobile ? 1 : 2}
             sx={{
               alignItems: "center",
-              mx: 3,
-              // pb: 5,
-              mt: { xs: 8, md: 2.8 },
+              mx: {xs: 2, md: 3},
+              mt: { xs: 2, md: 2.8 },
               gap: 1,
             }}
           >
@@ -2299,14 +2298,14 @@ export default function Addrepresentative(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                   py={3}
-                  px={9}
+                  px={isMobile ? 0 : 9}
                 >
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel className="nameLabel">
+                    <InputLabel className="label">
                       Representative's Name
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
+                  <Grid size={isMobile ? 8 : 4}>
                     <TextField
                       required
                       id="title"
@@ -2317,12 +2316,13 @@ export default function Addrepresentative(props) {
                       size="small"
                       autoComplete="off"
                       variant="outlined"
+                      className="textField"
                     />
                   </Grid>
                   <Grid size={isMobile ? 12 : 1}>
                     <InputLabel className="label">Status</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
+                  <Grid size={isMobile ? 8 : 4}>
                     <ButtonGroup
                       variant="outlined"
                       aria-label="Basic button group"
@@ -2349,7 +2349,7 @@ export default function Addrepresentative(props) {
                   <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
                     <InputLabel className="label">District</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
+                  <Grid size={isMobile ? 8 : 4}>
                     <TextField
                       id="district"
                       name="district"
@@ -2359,6 +2359,7 @@ export default function Addrepresentative(props) {
                       size="small"
                       autoComplete="off"
                       variant="outlined"
+                      className="textField"
                     />
                   </Grid>
                   <Grid
@@ -2367,8 +2368,8 @@ export default function Addrepresentative(props) {
                   >
                     <InputLabel className="label">Party</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 4}>
-                    <FormControl fullWidth>
+                  <Grid size={isMobile ? 8 : 4}>
+                    <FormControl fullWidth className="textField">
                       <Select
                         name="party"
                         value={formData.party}
@@ -2387,8 +2388,8 @@ export default function Addrepresentative(props) {
                       Representative's Photo
                     </InputLabel>
                   </Grid>
-                  <Grid size={8}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Grid size={10}>
+                    <Box className="textField" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       {formData.photo ? (
                         <img
                           src={
@@ -2455,10 +2456,10 @@ export default function Addrepresentative(props) {
                     alignItems={"center"}
                     py={3}
                   >
-                    <Grid size={isMobile ? 12 : 2}>
+                    <Grid size={isMobile ? 4 : 2}>
                       <InputLabel className="label">Term</InputLabel>
                     </Grid>
-                    <Grid size={isMobile ? 12 : 2.2}>
+                    <Grid size={isMobile ? 6 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.termId || ""}
@@ -2531,7 +2532,7 @@ export default function Addrepresentative(props) {
                     <Grid size={isMobile ? 6 : 2.39}>
                       <InputLabel className="label">SBA Rating</InputLabel>
                     </Grid>
-                    <Grid size={isMobile ? 6 : 2.2}>
+                    <Grid size={isMobile ? 4 : 2.2}>
                       <FormControl fullWidth>
                         <Select
                           value={term.rating || ""}
@@ -2557,7 +2558,7 @@ export default function Addrepresentative(props) {
                     <Grid size={isMobile ? 12 : 2}>
                       <InputLabel className="label">Term Summary</InputLabel>
                     </Grid>
-                    <Grid size={isMobile ? 12 : 9.05}>
+                    <Grid className="textField" size={isMobile ? 11 : 9.05}>
                       <Editor
                         tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                         licenseKey="gpl"

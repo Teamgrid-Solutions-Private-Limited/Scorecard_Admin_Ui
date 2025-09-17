@@ -238,34 +238,35 @@ export default function ManageUser(props) {
               <Alert severity="error">
                 You do not have permission to view users.
               </Alert>
-            ) : loading ? (
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-                       <Box
-                         sx={{
-                           position: "fixed",
-                           top: 0,
-                           left: 0,
-                           width: "100%",
-                           height: "100%",
-                           backgroundColor: "rgba(255, 255, 255, 0.5)",
-                           display: "flex",
-                           justifyContent: "center",
-                           alignItems: "center",
-                           zIndex: 9999,
-                         }}
-                       >
-                         <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-                       </Box>
-              </Box>
-            ) : error ? (
-              <Alert severity="error">{error}</Alert>
             ) : (
-              <MainGrid
-                type="user"
-                data={users}
-                onEdit={handleEditUser}
-                onDelete={handleDeleteClick}
-              />
+              <>
+                {loading && (
+                  <Box
+                    sx={{
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "rgba(255, 255, 255, 0.5)",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      zIndex: 9999,
+                    }}
+                  >
+                    <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+                  </Box>
+                )}
+                {error && <Alert severity="error">{error}</Alert>}
+                <MainGrid
+                  type="user"
+                  data={users}
+                  onEdit={handleEditUser}
+                  onDelete={handleDeleteClick}
+                  loading={loading}
+                />
+              </>
             )}
 
             {/* Edit User Dialog */}
