@@ -586,11 +586,13 @@ export default function AddSenator(props) {
             if (updatedTerm.pastVotesScore.length === 0) {
               updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
             }
+
           }
         }
 
         return updatedTerm;
       });
+
 
       // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
@@ -628,12 +630,12 @@ export default function AddSenator(props) {
       return newTerms;
     });
   };
-// Add this near your other helper functions
-const hasSelectedTerms = () => {
-  return senatorTermData.some(
-    (term) => term.termId && term.termId.toString().trim() !== ""
-  );
-};
+  // Add this near your other helper functions
+  const hasSelectedTerms = () => {
+    return senatorTermData.some(
+      (term) => term.termId && term.termId.toString().trim() !== ""
+    );
+  };
   const handleSummaryChange = (termIndex, content) => {
     const fieldName = `term${termIndex}_summary`;
 
@@ -2014,7 +2016,8 @@ const hasSelectedTerms = () => {
 
       senatorTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
-        const termFields = ["summary", "rating", "currentTerm", "termId"];
+      
+        const termFields = ["summary", "rating", "termId"];
 
         termFields.forEach((field) => {
           const newValue = term[field];
@@ -2034,6 +2037,19 @@ const hasSelectedTerms = () => {
             });
           }
         });
+        // Handle currentTerm separately, skip false→undefined case
+        if (
+          !(originalTerm.currentTerm === undefined && term.currentTerm === false) &&
+          term.currentTerm !== originalTerm.currentTerm
+        ) {
+          const fieldName = `term${termIndex}_currentTerm`;
+          processedChanges.push({
+            uniqueId: fieldName,
+            displayName: `Term ${termIndex + 1}: Current Term`,
+            field: [fieldName],
+            name: `Term ${termIndex + 1}: Current Term`,
+          });
+        }
       });
 
       processedChanges.forEach((change) => {
@@ -2215,7 +2231,6 @@ const hasSelectedTerms = () => {
           fieldEditors: updatedFieldEditors,
           summary: term.summary,
         };
-
         return term._id
           ? dispatch(
             updateSenatorData({ id: term._id, data: termUpdate })
@@ -2376,7 +2391,7 @@ const hasSelectedTerms = () => {
             spacing={isMobile ? 1 : 2}
             sx={{
               alignItems: "center",
-              mx: {xs: 2, md: 3},
+              mx: { xs: 2, md: 3 },
               mt: { xs: 2, md: 2.8 },
               gap: 1,
             }}
@@ -2971,7 +2986,7 @@ const hasSelectedTerms = () => {
               );
             })()}
 
-             <Paper className="customPaper">
+            <Paper className="customPaper">
               <Dialog
                 open={openDiscardDialog}
                 onClose={() => setOpenDiscardDialog(false)}
@@ -3080,6 +3095,7 @@ const hasSelectedTerms = () => {
                   handleRemoveTerm={handleRemoveTerm}
                   handleAddPastVote={handleAddPastVote}
                   handlePastVoteChange={handlePastVoteChange}
+                  handleRemovePastVote={handleRemovePastVote}
                 />
               </Paper>
             ))}
