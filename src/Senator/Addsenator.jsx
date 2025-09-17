@@ -3056,13 +3056,7 @@ export default function AddSenator(props) {
                 handleFileChange={handleFileChange}
                 isMobile={isMobile}
               />
-              <SenatorBasicInfo
-                formData={formData}
-                handleChange={handleChange}
-                handleStatusChange={handleStatusChange}
-                handleFileChange={handleFileChange}
-                isMobile={isMobile}
-              />
+             
             </Paper>
 
             {/* Render each term in senatorTermData */}

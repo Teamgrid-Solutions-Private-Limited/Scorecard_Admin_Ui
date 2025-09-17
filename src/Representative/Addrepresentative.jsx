@@ -2664,7 +2664,7 @@ export default function Addrepresentative(props) {
                           >
                             <Grid size={isMobile ? 12 : 2}>
                               <InputLabel className="label">
-                                Scored Vote
+                                Scored Vote {voteIndex + 1}
                               </InputLabel>
                             </Grid>
                             <Grid size={isMobile ? 12 : 7.5}>
@@ -2775,7 +2775,7 @@ export default function Addrepresentative(props) {
                           >
                             <Grid size={isMobile ? 12 : 2}>
                               <InputLabel className="label">
-                                Tracked Activity
+                                Tracked Activity {activityIndex + 1}
                               </InputLabel>
                             </Grid>
                             <Grid size={isMobile ? 8 : 7.5}>
@@ -2794,7 +2794,7 @@ export default function Addrepresentative(props) {
                                   )
                                 }
                                 options={getFilteredActivities(termIndex)}
-                                getOptionLabel={(option) => option.title || ""}
+                                getOptionLabel={(option) => option.title ||""}
                                 renderInput={(params) => (
                                   <TextField
                                     {...params}
@@ -2849,7 +2849,7 @@ export default function Addrepresentative(props) {
                             <Grid size={1}>
                               <DeleteForeverIcon
                                 onClick={() =>
-                                  handleRemoveActivity(termIndex, activityIndex)
+                                  handleRemoveActivity(termIndex,activityIndex)
                                 }
                               />
                             </Grid>
@@ -2867,7 +2867,7 @@ export default function Addrepresentative(props) {
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
-                        Add Activity
+                        Add Activity 
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
