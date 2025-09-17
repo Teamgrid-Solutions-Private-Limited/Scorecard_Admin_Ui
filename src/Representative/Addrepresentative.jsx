@@ -1408,19 +1408,32 @@ export default function Addrepresentative(props) {
     }
   };
   // Helper function to get filtered votes based on selected term
+  // const getFilteredVotes = (termIndex) => {
+  //   const term = houseTermData[termIndex];
+  //   if (!term || !term.termId) return votes || [];
+
+  //   const selectedTerm = terms.find((t) => t._id === term.termId);
+  //   if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+
+  //   return (votes || []).filter(
+  //     (vote) =>
+  //       vote.type === "house_bill" &&
+  //       selectedTerm.congresses.includes(Number(vote.congress))
+  //   );
+  // };
   const getFilteredVotes = (termIndex) => {
-    const term = houseTermData[termIndex];
-    if (!term || !term.termId) return votes || [];
+  const term = houseTermData[termIndex];
+  if (!term || !term.termId) return votes || [];
 
-    const selectedTerm = terms.find((t) => t._id === term.termId);
-    if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+  const selectedTerm = terms.find((t) => t._id === term.termId);
+  if (!selectedTerm || !selectedTerm.congresses) return votes || [];
 
-    return (votes || []).filter(
-      (vote) =>
-        vote.type === "house_bill" &&
-        selectedTerm.congresses.includes(Number(vote.congress))
-    );
-  };
+  return (votes || []).filter(
+    (vote) =>
+      vote.type?.toLowerCase().includes("house") &&
+      selectedTerm.congresses.includes(Number(vote.congress))
+  );
+};
   // Helper function to get filtered activities based on selected term
   const getFilteredActivities = (termIndex) => {
     const term = houseTermData[termIndex];
@@ -2651,7 +2664,7 @@ export default function Addrepresentative(props) {
                           >
                             <Grid size={isMobile ? 12 : 2}>
                               <InputLabel className="label">
-                                Scored Vote
+                                Scored Vote {voteIndex + 1}
                               </InputLabel>
                             </Grid>
                             <Grid size={isMobile ? 12 : 7.5}>
@@ -2762,7 +2775,7 @@ export default function Addrepresentative(props) {
                           >
                             <Grid size={isMobile ? 12 : 2}>
                               <InputLabel className="label">
-                                Tracked Activity
+                                Tracked Activity {activityIndex + 1}
                               </InputLabel>
                             </Grid>
                             <Grid size={isMobile ? 8 : 7.5}>
@@ -2781,7 +2794,7 @@ export default function Addrepresentative(props) {
                                   )
                                 }
                                 options={getFilteredActivities(termIndex)}
-                                getOptionLabel={(option) => option.title || ""}
+                                getOptionLabel={(option) => option.title ||""}
                                 renderInput={(params) => (
                                   <TextField
                                     {...params}
@@ -2836,7 +2849,7 @@ export default function Addrepresentative(props) {
                             <Grid size={1}>
                               <DeleteForeverIcon
                                 onClick={() =>
-                                  handleRemoveActivity(termIndex, activityIndex)
+                                  handleRemoveActivity(termIndex,activityIndex)
                                 }
                               />
                             </Grid>
@@ -2854,7 +2867,7 @@ export default function Addrepresentative(props) {
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
-                        Add Activity
+                        Add Activity 
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
