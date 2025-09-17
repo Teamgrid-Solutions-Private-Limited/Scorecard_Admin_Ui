@@ -39,7 +39,6 @@ import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
- 
 
 export default function SearchBill(props) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,9 +49,7 @@ export default function SearchBill(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  console.log("token", token);
   const user = localStorage.getItem("user");
- 
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -155,24 +152,21 @@ export default function SearchBill(props) {
     setLoading(true);
     try {
       const allVotes = await dispatch(getAllVotes()).unwrap();
-      const isDuplicate = allVotes.some(vote => 
-      String(vote.quorumId) === String(bill.quorumId)
-);
-  if (isDuplicate) {
-  setSnackbarMessage("Bill already exists");
-  setSnackbarSeverity("info");
-  setSnackbarOpen(true);
-  setLoading(false);
-  return;
- 
-}
+      const isDuplicate = allVotes.some(
+        (vote) => String(vote.quorumId) === String(bill.quorumId)
+      );
+      if (isDuplicate) {
+        setSnackbarMessage("Bill already exists");
+        setSnackbarSeverity("info");
+        setSnackbarOpen(true);
+        setLoading(false);
+        return;
+      }
       const editorInfo = getEditorInfo();
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [bill],
-        editorInfo: editorInfo 
+        editorInfo: editorInfo,
       });
-      console.log("bill", bill);
-      console.log("response", response.data);
 
       // alert("Bill saved successfully");
 
@@ -191,20 +185,23 @@ export default function SearchBill(props) {
   const getEditorInfo = () => {
     try {
       if (!token) return null;
-     
+
       const decodedToken = jwtDecode(token);
-     
+
       return {
         editorId: decodedToken.userId || decodedToken.id || "unknown",
-        editorName: user || decodedToken.name || decodedToken.username || "Unknown Editor",
-        editedAt: new Date().toISOString()
+        editorName:
+          user ||
+          decodedToken.name ||
+          decodedToken.username ||
+          "Unknown Editor",
+        editedAt: new Date().toISOString(),
       };
     } catch (error) {
-      
       return {
         editorId: "unknown",
         editorName: "Unknown Editor",
-        editedAt: new Date().toISOString()
+        editedAt: new Date().toISOString(),
       };
     }
   };
@@ -248,7 +245,7 @@ export default function SearchBill(props) {
         </MuiAlert>
       </Snackbar>
 
-      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ",  minHeight: "100vh", }}>
+      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ", minHeight: "100vh" }}>
         <SideMenu />
         <Box
           component="main"
@@ -272,7 +269,7 @@ export default function SearchBill(props) {
               flex: 1,
             }}
           >
-            <Paper elevation={2} sx={{ width: "100%",bgcolor: "#fff" }}>
+            <Paper elevation={2} sx={{ width: "100%", bgcolor: "#fff" }}>
               <Box sx={{ padding: 0, pb: 5 }}>
                 <Typography
                   fontSize={"1rem"}
