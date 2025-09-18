@@ -77,6 +77,11 @@ import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust pat
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
+import ActionButtons from "../components/senatorService/ActionButtons";
+import LoadingOverlay from "../components/senatorService/LoadingOverlay";
+import SnackbarComponent from "../components/senatorService/SnackbarComponent";
+import BasicInfo from "../components/senatorService/BasicInfo";
+import StatusDisplay from "../components/senatorService/StatusDisplay";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -95,6 +100,11 @@ export default function Addrepresentative(props) {
   const [componentKey, setComponentKey] = useState(0);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+   const [selectionError, setSelectionError] = useState({
+      show: false,
+      message: "",
+      type: "",
+    });
 
   const navigate = useNavigate();
 
@@ -800,12 +810,12 @@ export default function Addrepresentative(props) {
     }
   }, [formData, originalFormData]);
 
-  // Update your change tracking useEffect
+  
   useEffect(() => {
     if (originalFormData && formData && originalTermData && houseTermData) {
       const changes = [];
 
-      // Track house-level changes
+
       Object.keys(formData).forEach((key) => {
         if (key === "editedFields" || key === "fieldEditors") return;
         if (compareValues(formData[key], originalFormData[key])) {
@@ -813,7 +823,7 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // Track term-level changes
+     
       houseTermData.forEach((term, termIndex) => {
         // For new terms, track all fields that have values
         if (term.isNew) {
@@ -1395,7 +1405,7 @@ export default function Addrepresentative(props) {
       setLocalChanges([]);
 
       userRole === "admin"
-        ? handleSnackbarOpen("Changes Published successfully!", "success")
+        ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
           'Status changed to "Under Review" for admin to moderate.',
           "info"
@@ -1601,11 +1611,7 @@ export default function Addrepresentative(props) {
 
   return (
     <AppTheme key={componentKey}>
-      {loading && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading} />
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -1630,597 +1636,15 @@ export default function Addrepresentative(props) {
               gap: 1,
             }}
           >
-            <Stack
-              direction="row"
-              spacing={2}
-              width="100%"
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleDiscard}
-                className="discardBtn"
-              >
-                {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleSave}
-                className="publishBtn"
-              >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
-              </Button>
-            </Stack>
-            {userRole &&
-              formData.publishStatus &&
-              statusData &&
-              (formData.publishStatus !== "published" ||
-                localChanges.length > 0) && (
-                <Box
-                  sx={{
-                    width: "97%",
-                    p: 2,
-                    backgroundColor: statusData.backgroundColor,
-                    borderLeft: `4px solid ${statusData.borderColor}`,
-                    borderRadius: "0 8px 8px 0",
-                    boxShadow: 1,
-                    mb: 2,
-                  }}
-                >
-                  <Box
-                    sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
-                  >
-                    {/* Status icon bubble */}
-                    <Box
-                      sx={{
-                        p: 1,
-                        borderRadius: "50%",
-                        backgroundColor: `rgba(${formData.publishStatus === "draft"
-                          ? "66, 165, 245"
-                          : formData.publishStatus === "under review"
-                            ? "230, 81, 0"
-                            : formData.publishStatus === "published"
-                              ? "76, 175, 80"
-                              : "244, 67, 54"
-                          }, 0.2)`,
-                        display: "grid",
-                        placeItems: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {React.cloneElement(statusData.icon, {
-                        sx: { color: statusData.iconColor },
-                      })}
-                    </Box>
-
-                    <Box sx={{ flex: 1 }}>
-                      {/* Header: title + pending count (admin only) */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight="600"
-                          sx={{
-                            color: statusData.titleColor,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          {statusData.title}
-                        </Typography>
-
-                        {/* {userRole === "admin" && (
-                          <Chip
-                            label={`${Array.isArray(formData?.editedFields)
-                              ? formData.editedFields.length
-                              : 0
-                              } pending changes`}
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                          />
-                        )} */}
-                      </Box>
-
-                      {/* Pending / New fields list */}
-                      <Box sx={{ mt: 1.5 }}>
-                        {(() => {
-                          const backendChanges = Array.isArray(
-                            formData?.editedFields
-                          )
-                            ? formData.editedFields
-                            : [];
-                          const hasChanges =
-                            backendChanges.length > 0 ||
-                            localChanges.length > 0;
-
-                          if (!hasChanges) {
-                            return (
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  color: "text.disabled",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 1,
-                                }}
-                              >
-                                No pending changes
-                              </Typography>
-                            );
-                          }
-
-                          // Field name formatter function
-                          const formatFieldName = (
-                            field,
-                            index,
-                            houseTermData = []
-                          ) => {
-                            // console.log("Formatting field:", field);
-                            // console.log("House Term Data:", houseTermData);
-
-                            // Handle object format (editedFields entry from backend)
-                            if (typeof field === "object" && field !== null) {
-                              // Handle votesScore fields with bill title in name
-                              if (
-                                Array.isArray(field.field) &&
-                                field.field[0] === "votesScore" &&
-                                field.name
-                              ) {
-                                const billTitle = field.name;
-
-                                // Search through all terms to find the matching vote by title
-                                for (
-                                  let termIndex = 0;
-                                  termIndex < houseTermData.length;
-                                  termIndex++
-                                ) {
-                                  const term = houseTermData[termIndex];
-                                  const votesScore = term?.votesScore || [];
-
-                                  for (
-                                    let voteIndex = 0;
-                                    voteIndex < votesScore.length;
-                                    voteIndex++
-                                  ) {
-                                    const vote = votesScore[voteIndex];
-
-                                    if (vote) {
-                                      // Case 1: vote has title directly (your latest data)
-                                      if (
-                                        vote.title &&
-                                        vote.title === billTitle
-                                      ) {
-                                        return `Term ${termIndex + 1
-                                          }: Scored Vote ${voteIndex + 1}`;
-                                      }
-
-                                      // Case 2: voteId is object with title
-                                      if (
-                                        typeof vote.voteId === "object" &&
-                                        vote.voteId.title === billTitle
-                                      ) {
-                                        return `Term ${termIndex + 1
-                                          }: Scored Vote ${voteIndex + 1}`;
-                                      }
-
-                                      // Case 3: voteId is string, match with field._id
-                                      if (
-                                        typeof vote.voteId === "string" &&
-                                        vote.voteId === field._id
-                                      ) {
-                                        return `Term ${termIndex + 1
-                                          }: Scored Vote ${voteIndex + 1}`;
-                                      }
-                                    }
-                                  }
-                                }
-
-                                // fallback if nothing matched
-                                return null;
-                              }
-                              // Handle activitiesScore fields
-                              if (
-                                Array.isArray(field.field) &&
-                                field.field[0] === "activitiesScore" &&
-                                field.name
-                              ) {
-                                const activityTitle = field.name;
-
-                                for (
-                                  let termIndex = 0;
-                                  termIndex < houseTermData.length;
-                                  termIndex++
-                                ) {
-                                  const term = houseTermData[termIndex];
-                                  const activitiesScore =
-                                    term?.activitiesScore || [];
-
-                                  for (
-                                    let activityIndex = 0;
-                                    activityIndex < activitiesScore.length;
-                                    activityIndex++
-                                  ) {
-                                    const activity =
-                                      activitiesScore[activityIndex];
-                                    if (activity) {
-                                      if (
-                                        activity.title &&
-                                        activity.title === activityTitle
-                                      ) {
-                                        return `Term ${termIndex + 1
-                                          }: Tracked Activity ${activityIndex + 1
-                                          }`;
-                                      }
-                                      if (
-                                        typeof activity.activityId ===
-                                        "object" &&
-                                        activity.activityId.title ===
-                                        activityTitle
-                                      ) {
-                                        return `Term ${termIndex + 1
-                                          }: Tracked Activity ${activityIndex + 1
-                                          }`;
-                                      }
-                                      if (
-                                        typeof activity.activityId ===
-                                        "string" &&
-                                        activity.activityId === field._id
-                                      ) {
-                                        return `Term ${termIndex + 1
-                                          }: Tracked Activity ${activityIndex + 1
-                                          }`;
-                                      }
-                                    }
-                                  }
-                                }
-                                return null;
-                              }
-                              // Handle regular term fields (term0_fieldName format)
-                              const fieldId = Array.isArray(field.field)
-                                ? field.field[0]
-                                : field.field;
-
-                              if (fieldId && fieldId.startsWith("term")) {
-                                const termMatch =
-                                  fieldId.match(/^term(\d+)_(.+)$/);
-                                if (termMatch) {
-                                  const [, termIndex, actualField] = termMatch;
-                                  const termNumber = parseInt(termIndex) + 1;
-
-                                  // Map field names to display names
-                                  const fieldDisplayMap = {
-                                    currentTerm: "Current Term",
-                                    summary: "Term Summary",
-                                    rating: "SBA Rating",
-                                    termId: "Term",
-                                    votesScore: "Scored Vote",
-                                    activitiesScore: "Tracked Activity",
-                                  };
-
-                                  const displayName =
-                                    fieldDisplayMap[actualField] || actualField;
-                                  return `Term ${termNumber}: ${displayName}`;
-                                }
-                              }
-
-                              // Handle simple fields
-                              const simpleFieldMap = {
-                                status: "Status",
-                                name: "Representative Name",
-                                district: "District",
-                                party: "Party",
-                                photo: "Photo",
-                                votesScore: "Scored Vote", // Fallback for votesScore without name
-                                activitiesScore: "Tracked Activity", // Fallback for activitiesScore without name
-                              };
-
-                              return (
-                                field.name ||
-                                simpleFieldMap[fieldId] ||
-                                fieldId ||
-                                "Unknown Field"
-                              );
-                            }
-
-                            // Handle string field format (legacy keys like "term0_votesScore_0_score")
-                            if (typeof field === "string") {
-                              const termArrayMatch = field.match(
-                                /^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/
-                              );
-
-                              if (termArrayMatch) {
-                                const [, termIdx, category, itemIdx] =
-                                  termArrayMatch;
-                                const termNumber = parseInt(termIdx) + 1;
-
-                                if (category === "votesScore") {
-                                  const voteNumber = parseInt(itemIdx) + 1;
-                                  return `Term ${termNumber}: Scored Vote ${voteNumber}`;
-                                }
-                                if (category === "activitiesScore") {
-                                  const activityNumber = parseInt(itemIdx) + 1;
-                                  return `Term ${termNumber}: Tracked Activity ${activityNumber}`;
-                                }
-                                return `Term ${termNumber}: ${category}`;
-                              }
-
-                              // Handle term fields like "term0_currentTerm", "term0_summary", etc.
-                              if (field.startsWith("term")) {
-                                const termMatch =
-                                  field.match(/^term(\d+)_(.+)$/);
-                                if (termMatch) {
-                                  const [, termIndex, actualField] = termMatch;
-                                  const termNumber = parseInt(termIndex) + 1;
-
-                                  const fieldDisplayMap = {
-                                    currentTerm: "Current Term",
-                                    summary: "Term Summary",
-                                    rating: "SBA Rating",
-                                    termId: "Term",
-                                    votesScore: "Scored Vote",
-                                    activitiesScore: "Tracked Activity",
-                                  };
-
-                                  const displayName =
-                                    fieldDisplayMap[actualField] || actualField;
-                                  return `Term ${termNumber}: ${displayName}`;
-                                }
-
-                                // Fallback for any other term field
-                                const parts = field.split("_");
-                                const termNumber =
-                                  parseInt(parts[0].replace("term", "")) + 1;
-                                const fieldKey = parts.slice(1).join("_");
-                                return `Term ${termNumber}: ${fieldKey}`;
-                              }
-
-                              // Handle simple fields
-                              const simpleFieldMap = {
-                                status: "Status",
-                                name: "Representative Name",
-                                district: "District",
-                                party: "Party",
-                                photo: "Photo",
-                                votesScore: "Scored Vote",
-                                activitiesScore: "Tracked Activity",
-                              };
-
-                              return simpleFieldMap[field] || field;
-                            }
-
-                            return `Field ${index + 1}`;
-                          };
-
-                          return (
-                            <>
-                              {/* Backend pending changes */}
-                              {backendChanges.length > 0 && (
-                                <Box
-                                  sx={{
-                                    backgroundColor: "#fff",
-                                    borderRadius: 1,
-                                    p: 1.5,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    mb: 2,
-                                  }}
-                                >
-                                  <Typography
-                                    variant="overline"
-                                    sx={{ color: "text.secondary", mb: 1 }}
-                                  >
-                                    Saved Changes
-                                  </Typography>
-                                  <List dense sx={{ py: 0 }}>
-                                    {backendChanges.map((field, index) => {
-                                      const fieldLabel = formatFieldName(
-                                        field,
-                                        index,
-                                        houseTermData
-                                      );
-                                      if (!fieldLabel) return null; // ⬅ skip rendering if no label
-                                      const sanitizeKey = (str) => {
-                                        return str
-                                          .replace(/[^a-zA-Z0-9_]/g, "_") // replace invalid chars
-                                          .replace(/_+/g, "_") // collapse multiple underscores
-                                          .replace(/^_+|_+$/g, ""); // remove leading/trailing underscores
-                                      };
-                                      // Helper function to generate the correct editor key
-                                      const getEditorKey = (field) => {
-                                        if (
-                                          typeof field === "object" &&
-                                          field !== null
-                                        ) {
-                                          if (
-                                            Array.isArray(field.field) &&
-                                            field.field[0] === "votesScore" &&
-                                            field.name
-                                          ) {
-                                            return `votesScore_${sanitizeKey(
-                                              field.name
-                                            )}`;
-                                          }
-                                          if (
-                                            Array.isArray(field.field) &&
-                                            field.field[0] ===
-                                            "activitiesScore" &&
-                                            field.name
-                                          ) {
-                                            return `activitiesScore_${sanitizeKey(
-                                              field.name
-                                            )}`;
-                                          }
-                                          if (Array.isArray(field.field)) {
-                                            return field.field[0]; // For simple fields like ["status"]
-                                          }
-                                          return field.field; // For other fields
-                                        }
-                                        return field; // For string fields
-                                      };
-
-                                      const editorKey = getEditorKey(field);
-                                      const editorInfo =
-                                        formData?.fieldEditors?.[editorKey];
-                                      const editor =
-                                        editorInfo?.editorName ||
-                                        "Unknown Editor";
-                                      const editTime = editorInfo?.editedAt
-                                        ? new Date(
-                                            editorInfo.editedAt
-                                          ).toLocaleString([], {
-                                            month: "short",
-                                            day: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                          })
-                                        : "unknown time";
-                                      const fromQuorum =
-                                        field.fromQuorum || false;
-                                      // console.log("Field fromQuorum:", field, fromQuorum);
-
-                                      return (
-                                        <ListItem
-                                          key={`backend-${field.field || field
-                                            }-${index}`}
-                                          sx={{ py: 0.5, px: 1 }}
-                                        >
-                                          <ListItemText
-                                            primary={
-                                              <Box
-                                                sx={{
-                                                  display: "flex",
-                                                  alignItems: "center",
-                                                  gap: 1,
-                                                }}
-                                              >
-                                                <Box
-                                                  sx={{
-                                                    width: 8,
-                                                    height: 8,
-                                                    borderRadius: "50%",
-                                                    backgroundColor:
-                                                      statusData.iconColor,
-                                                  }}
-                                                />
-                                                <Typography
-                                                  variant="body2"
-                                                  fontWeight="500"
-                                                >
-                                                  {formatFieldName(
-                                                    field,
-                                                    index,
-                                                    houseTermData
-                                                  )}
-                                                </Typography>
-                                              </Box>
-                                            }
-                                            secondary={
-                                              <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                              >
-                                                {fromQuorum
-                                                  ? `Fetched from Quorum by ${editor} on ${editTime}`
-                                                  : `Updated by ${editor} on ${editTime}`}
-                                              </Typography>
-                                            }
-                                            sx={{ my: 0 }}
-                                          />
-                                        </ListItem>
-                                      );
-                                    })}
-                                  </List>
-                                </Box>
-                              )}
-
-                              {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
-                                <Box
-                                  sx={{
-                                    backgroundColor: "#fff",
-                                    borderRadius: 1,
-                                    p: 1.5,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                  }}
-                                >
-                                  <Typography
-                                    variant="overline"
-                                    sx={{ color: "text.secondary", mb: 1 }}
-                                  >
-                                    {formData.publishStatus === "published"
-                                      ? ""
-                                      : "Unsaved Changes"}
-                                  </Typography>
-                                  <List dense sx={{ py: 0 }}>
-                                    {localChanges.map((field, index) => (
-                                      <ListItem
-                                        key={`local-${field}`}
-                                        sx={{ py: 0, px: 1 }}
-                                      >
-                                        <ListItemText
-                                          primary={
-                                            <Box
-                                              sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: 1,
-                                              }}
-                                            >
-                                              <Box
-                                                sx={{
-                                                  width: 8,
-                                                  height: 8,
-                                                  borderRadius: "50%",
-                                                  backgroundColor:
-                                                    statusData.iconColor,
-                                                }}
-                                              />
-                                              <Typography
-                                                variant="body2"
-                                                fontWeight="500"
-                                              >
-                                                {formatFieldName(
-                                                  field,
-                                                  index,
-                                                  houseTermData
-                                                )}
-                                              </Typography>
-                                            </Box>
-                                          }
-                                          // secondary={
-                                          //   <Typography
-                                          //     variant="caption"
-                                          //     color="text.secondary"
-                                          //   >
-                                          //     Edited just now
-                                          //   </Typography>
-                                          // }
-                                          // sx={{ my: 0 }}
-                                        />
-                                      </ListItem>
-                                    ))}
-                                  </List>
-                                </Box>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </Box>
-                    </Box>
-                  </Box>
-                </Box>
-              )}
+            <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
+           <StatusDisplay 
+           userRole={userRole}
+           formData={formData}
+           localChanges={localChanges}
+           statusData={statusData}
+           termData={houseTermData}
+           mode="representative"
+           />
 
 
             <Paper className="customPaper">
@@ -2288,146 +1712,14 @@ export default function Addrepresentative(props) {
                 </DialogActions>
               </Dialog>
 
-              <Box sx={{ p: 0 }}>
-                <Typography className="customTypography">
-                  Representative's Information
-                </Typography>
-                <Grid
-                  container
-                  rowSpacing={2}
-                  columnSpacing={2}
-                  alignItems={"center"}
-                  py={3}
-                  px={isMobile ? 0 : 9}
-                >
-                  <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel className="label">
-                      Representative's Name
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={isMobile ? 8 : 4}>
-                    <TextField
-                      required
-                      id="title"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      fullWidth
-                      size="small"
-                      autoComplete="off"
-                      variant="outlined"
-                      className="textField"
-                    />
-                  </Grid>
-                  <Grid size={isMobile ? 12 : 1}>
-                    <InputLabel className="label">Status</InputLabel>
-                  </Grid>
-                  <Grid size={isMobile ? 8 : 4}>
-                    <ButtonGroup
-                      variant="outlined"
-                      aria-label="Basic button group"
-                      className="customButtonGroup"
-                    >
-                      <Button
-                        variant={"outlined"}
-                        onClick={() => handleStatusChange("Active")}
-                        className={`statusBtn ${formData.status === "Active" ? "active" : ""
-                          }`}
-                      >
-                        Active
-                      </Button>
-                      <Button
-                        variant={"outlined"}
-                        onClick={() => handleStatusChange("Former")}
-                        className={`statusBtn ${formData.status === "Former" ? "active" : ""
-                          }`}
-                      >
-                        Former
-                      </Button>
-                    </ButtonGroup>
-                  </Grid>
-                  <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel className="label">District</InputLabel>
-                  </Grid>
-                  <Grid size={isMobile ? 8 : 4}>
-                    <TextField
-                      id="district"
-                      name="district"
-                      value={formData.district}
-                      onChange={handleChange}
-                      fullWidth
-                      size="small"
-                      autoComplete="off"
-                      variant="outlined"
-                      className="textField"
-                    />
-                  </Grid>
-                  <Grid
-                    size={isMobile ? 12 : 1}
-                    sx={{ alignContent: "center" }}
-                  >
-                    <InputLabel className="label">Party</InputLabel>
-                  </Grid>
-                  <Grid size={isMobile ? 8 : 4}>
-                    <FormControl fullWidth className="textField">
-                      <Select
-                        name="party"
-                        value={formData.party}
-                        onChange={handleChange}
-                        sx={{ background: "#fff" }}
-                      >
-                        <MenuItem value="republican">Republican</MenuItem>
-                        <MenuItem value="democrat">Democrat</MenuItem>
-                        <MenuItem value="independent">Independent</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-                    <InputLabel className="label">
-                      Representative's Photo
-                    </InputLabel>
-                  </Grid>
-                  <Grid size={10}>
-                    <Box className="textField" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      {formData.photo ? (
-                        <img
-                          src={
-                            typeof formData.photo === "string"
-                              ? formData.photo
-                              : URL.createObjectURL(formData.photo)
-                          }
-                          alt="Representative's Photo"
-                          style={{
-                            width: "100px",
-                            height: "100px",
-                            objectFit: "cover",
-                            borderRadius: "8px",
-                          }}
-                        />
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          No photo uploaded
-                        </Typography>
-                      )}
-
-                      <Button
-                        component="label"
-                        variant="outlined"
-                        className="uploadBtn"
-                        startIcon={<CloudUploadIcon />}
-                      >
-                        Upload files
-                        <VisuallyHiddenInput
-                          type="file"
-                          onChange={handleFileChange}
-                          accept="image/*"
-                        />
-                      </Button>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
+              <BasicInfo
+                formData={formData}
+                handleChange={handleChange}
+                handleStatusChange={handleStatusChange}
+                handleFileChange={handleFileChange}
+                isMobile={isMobile}
+                mode="representative"
+              />
             </Paper>
 
             {/* Render each term in houseTermData */}
@@ -2862,48 +2154,16 @@ export default function Addrepresentative(props) {
               Add Another Term
             </Button>
 
-            <Snackbar
-              open={openSnackbar}
-              autoHideDuration={6000}
-              onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MuiAlert
-                onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                sx={{
-                  width: "100%",
-                  border: "none",
-                  boxShadow: "none",
-                  bgcolor:
-                    snackbarMessage === "Changes Published successfully!"
-                      ? "#daf4f0"
-                      : undefined,
-                  "& .MuiAlert-icon": {
-                    color:
-                      snackbarMessage === "Changes Published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-message": {
-                    color:
-                      snackbarMessage === "Changes Published successfully!"
-                        ? "#099885"
-                        : undefined,
-                  },
-                  "& .MuiAlert-action": {
-                    display: "flex",
-                    alignItems: "center",
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                  },
-                }}
-                elevation={6}
-                variant="filled"
-              >
-                {snackbarMessage}
-              </MuiAlert>
-            </Snackbar>
+                        <SnackbarComponent
+                          open={openSnackbar}
+                          onClose={() => {
+                            handleSnackbarClose();
+                            setSelectionError({ show: false, message: "", type: "" });
+                          }}
+                          message={snackbarMessage}
+                          severity={snackbarSeverity}
+                          selectionError={selectionError}
+                        />
           </Stack>
           <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
