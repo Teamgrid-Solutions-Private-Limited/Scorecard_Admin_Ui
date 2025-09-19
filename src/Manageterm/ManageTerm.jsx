@@ -231,7 +231,7 @@ const handleConfirmDelete = async () => {
                   Manage Terms
                 </Typography>
                 <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Create a new term by entering start and end years
+                Define Term Duration (Start Year – End Year)
                 </Typography>
               </Box>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
