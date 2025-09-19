@@ -150,7 +150,7 @@ export default function SenatorTermSection({
                                     </Grid>
                                     <Grid size={isMobile ? 12 : 7.5}>
                                         <Autocomplete
-                                            options={allVotes.filter(v => v.type === "senate_bill" && validateVoteInTermRange(v._id, term.termId).isValid)}
+                                            options={allVotes.filter(v =>  validateVoteInTermRange(v._id, term.termId).isValid)}
                                             getOptionLabel={(option) => option.title}
                                             value={allVotes.find((v) => v._id === vote.voteId) || null}
                                             onChange={(e, newValue) => handleVoteChange(termIndex, voteIndex, "voteId", newValue?._id || "")}
