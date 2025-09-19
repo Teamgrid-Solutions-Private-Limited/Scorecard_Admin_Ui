@@ -1,68 +1,46 @@
 import * as React from "react";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { alpha, styled } from "@mui/material/styles";
-import Snackbar from "@mui/material/Snackbar";
-import MuiAlert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
 import SideMenu from "../components/SideMenu";
 import AppTheme from "../shared-theme/AppTheme";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid2";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import Button from "@mui/material/Button";
-import ButtonGroup from "@mui/material/ButtonGroup";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { Editor } from "@tinymce/tinymce-react";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
-import Switch from "@mui/material/Switch";
-import Copyright from "../Dashboard/internals/components/Copyright";
 import { useDispatch, useSelector } from "react-redux";
 import { rating } from "../Dashboard/global/common";
 import { useParams, useNavigate } from "react-router-dom";
-import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
-import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
-import CheckCircle from "@mui/icons-material/CheckCircle";
 import { jwtDecode } from "jwt-decode";
-import CircleIcon from "@mui/icons-material/Circle";
-import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
 import {
-  Alert,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Autocomplete,
+  Box,
+  Paper,
+  Stack,
+  Typography,
+  TextField,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
+  Button,
+  Switch,
 } from "@mui/material";
-
 import {
-  getVoteById,
-  clearVoteState,
-  updateVote,
-  createVote,
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { discardHouseChanges } from "../redux/reducer/houseSlice";
 import {
   clearHouseState,
-  updateRepresentativeStatus,
   getHouseById,
   updateHouse,
-  createHouse,
 } from "../redux/reducer/houseSlice";
 import {
   getHouseDataByHouseId,
@@ -77,11 +55,12 @@ import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust pat
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
-import ActionButtons from "../components/senatorService/ActionButtons";
-import LoadingOverlay from "../components/senatorService/LoadingOverlay";
-import SnackbarComponent from "../components/senatorService/SnackbarComponent";
-import BasicInfo from "../components/senatorService/BasicInfo";
-import StatusDisplay from "../components/senatorService/StatusDisplay";
+import ActionButtons from "../components/ActionButtons";
+import LoadingOverlay from "../components/LoadingOverlay";
+import SnackbarComponent from "../components/SnackbarComponent";
+import BasicInfo from "../components/BasicInfo";
+import StatusDisplay from "../components/StatusDisplay";
+import DialogBox from "../components/DialogBox";
 
 export default function Addrepresentative(props) {
   const { id } = useParams();
@@ -151,9 +130,8 @@ export default function Addrepresentative(props) {
     status: "Active",
     publishStatus: "",
   });
-  // console.log("house Data:", houseData);
-  const housedataByid = houseData?.currentHouse;
-  // console.log("housedataByid:", housedataByid);
+
+
   const [houseTermData, setHouseTermData] = useState([
     {
       houseId: id,
@@ -166,43 +144,7 @@ export default function Addrepresentative(props) {
     },
   ]);
 
-  // const handleTermChange = (e, termIndex) => {
-  //   const fieldName = `term${termIndex}_${e.target.name}`;
-  //   if (!localChanges.includes(fieldName)) {
-  //     setLocalChanges((prev) => [...prev, fieldName]);
-  //   }
-  //   setHouseTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? { ...term, [e.target.name]: e.target.value }
-  //         : term
-  //     )
-  //   );
-  // };
 
-  // const handleTermChange = (e, termIndex) => {
-  //   const { name, value } = e.target;
-  //   const fieldName = `term${termIndex}_${e.target.name}`;
-
-  //   setHouseTermData((prev) => {
-  //     const newTerms = prev.map((term, index) =>
-  //       index === termIndex ? { ...term, [name]: value } : term
-  //     );
-
-  //     // Compare with original data
-  //     const originalTerm = originalTermData[termIndex] || {};
-  //     const isActualChange = compareValues(value, originalTerm[name]);
-
-  //     if (isActualChange && !localChanges.includes(fieldName)) {
-  //       setLocalChanges((prev) => [...prev, fieldName]);
-  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
-  //       setLocalChanges((prev) => prev.filter(f => f !== fieldName));
-  //     }
-
-  //     return newTerms;
-  //   });
-
-  // };
   const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${name}`;
@@ -327,19 +269,7 @@ export default function Addrepresentative(props) {
       return newTerms;
     });
   };
-  // const handleSwitchChange = (e, termIndex) => {
-  //   const fieldName = `term${termIndex}_${e.target.name}`;
-  //   if (!localChanges.includes(fieldName)) {
-  //     setLocalChanges((prev) => [...prev, fieldName]);
-  //   }
-  //   setHouseTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? { ...term, [e.target.name]: e.target.checked }
-  //         : term
-  //     )
-  //   );
-  // };
+
 
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
@@ -364,43 +294,7 @@ export default function Addrepresentative(props) {
     });
   };
 
-  // const handleSwitchChange = (e, termIndex) => {
-  //   const { name, checked } = e.target;
-  //   const fieldName = `term${termIndex}_${name}`;
 
-  //   setHouseTermData((prev) => {
-  //     let newTerms;
-
-  //     // If setting currentTerm to true, ensure only one term is current
-  //     if (name === "currentTerm" && checked) {
-  //       newTerms = prev.map((term, index) => ({
-  //         ...term,
-  //         currentTerm: index === termIndex
-  //       }));
-  //     } else {
-  //       newTerms = prev.map((term, index) =>
-  //         index === termIndex ? { ...term, [name]: checked } : term
-  //       );
-  //     }
-
-  //     // Compare with original data
-  //     const originalTerm = originalTermData[termIndex] || {};
-  //     const isActualChange = compareValues(
-  //       name === "currentTerm" && checked
-  //         ? true // For currentTerm, we need to check if this specific term should be current
-  //         : checked,
-  //       originalTerm[name]
-  //     );
-
-  //     if (isActualChange && !localChanges.includes(fieldName)) {
-  //       setLocalChanges((prev) => [...prev, fieldName]);
-  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
-  //       setLocalChanges((prev) => prev.filter(f => f !== fieldName));
-  //     }
-
-  //     return newTerms;
-  //   });
-  // };
   const handleAddVote = (termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
@@ -414,19 +308,7 @@ export default function Addrepresentative(props) {
     );
   };
 
-  // const handleRemoveVote = (termIndex, voteIndex) => {
 
-  //   setHouseTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //           ...term,
-  //           votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-  //         }
-  //         : term
-  //     )
-  //   );
-  // };
   const handleRemoveVote = (termIndex, voteIndex) => {
     setHouseTermData((prev) => {
       const updatedTerms = prev.map((term, index) =>
@@ -449,34 +331,6 @@ export default function Addrepresentative(props) {
       return updatedTerms;
     });
   };
-  // const handleVoteChange = (termIndex, voteIndex, field, value) => {
-  //   // Construct the field name for change tracking
-  //   // Construct the field name for change tracking
-  //   const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
-
-  //   // Update local changes if not already tracked
-  //   setLocalChanges((prev) =>
-  //     prev.includes(voteChangeId) ? prev : [...prev, voteChangeId]
-  //   );
-
-  //   // const fieldName = `term${termIndex}_votesScore_${voteIndex}_${field}`;
-
-  //   // setLocalChanges((prev) =>
-  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-  //   // );
-  //   setHouseTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //             ...term,
-  //             votesScore: term.votesScore.map((vote, i) =>
-  //               i === voteIndex ? { ...vote, [field]: value } : vote
-  //             ),
-  //           }
-  //         : term
-  //     )
-  //   );
-  // };
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
@@ -551,34 +405,7 @@ export default function Addrepresentative(props) {
     });
   };
 
-  // const handleActivityChange = (termIndex, activityIndex, field, value) => {
-  //   // Construct the field name for change tracking
-  //   const activityChangeId = `term${termIndex}_TrackedActivity_${
-  //     activityIndex + 1
-  //   }`;
 
-  //   // Update local changes if not already tracked
-  //   setLocalChanges((prev) =>
-  //     prev.includes(activityChangeId) ? prev : [...prev, activityChangeId]
-  //   );
-  //   // const fieldName = `term${termIndex}_activitiesScore_${activityIndex}_${field}`;
-
-  //   // setLocalChanges((prev) =>
-  //   //   prev.includes(fieldName) ? prev : [...prev, fieldName]
-  //   // );
-  //   setHouseTermData((prev) =>
-  //     prev.map((term, index) =>
-  //       index === termIndex
-  //         ? {
-  //             ...term,
-  //             activitiesScore: term.activitiesScore.map((activity, i) =>
-  //               i === activityIndex ? { ...activity, [field]: value } : activity
-  //             ),
-  //           }
-  //         : term
-  //     )
-  //   );
-  // };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${
@@ -626,18 +453,7 @@ export default function Addrepresentative(props) {
     );
   }, []);
 
-  const handleBlur = useCallback((termIndex) => {
-    // setHouseTermData((prev) =>
-    //   prev.map((term, index) =>
-    //     index === termIndex
-    //       ? {
-    //           ...term,
-    //           summary: contentRefs.current[termIndex]?.content || "",
-    //         }
-    //       : term
-    //   )
-    // );
-  }, []);
+
 
   // Add a new empty term
   const handleAddTerm = () => {
@@ -674,16 +490,7 @@ export default function Addrepresentative(props) {
       return prev.filter((_, index) => index !== termIndex);
     });
   };
-  // const handleRemoveTerm = (termIndex) => {
-  //   setHouseTermData((prev) => prev.filter((_, index) => index !== termIndex));
-  // };
 
-  // const compareValues = (newVal, oldVal) => {
-  //   if (typeof newVal === "string" && typeof oldVal === "string") {
-  //     return newVal.trim() !== oldVal.trim();
-  //   }
-  //   return newVal !== oldVal;
-  // };
 
   const compareValues = (newVal, oldVal) => {
     // Handle null/undefined cases
@@ -940,26 +747,7 @@ export default function Addrepresentative(props) {
     preFillForm();
   }, [house, terms]);
 
-  // const handleChange = (event) => {
-  //   const { name, value } = event.target;
 
-  //   // Track the changed field
-  //   if (!localChanges.includes(name)) {
-  //     setLocalChanges((prev) => [...prev, name]);
-  //   }
-  //   setFormData((prev) => {
-  //     const newData = { ...prev, [name]: value };
-
-  //     // if (originalFormData) {
-  //     //   const changes = Object.keys(newData).filter((key) =>
-  //     //     compareValues(newData[key], originalFormData[key])
-  //     //   );
-  //     //   setEditedFields(changes);
-  //     // }
-
-  //     return newData;
-  //   });
-  // };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -1417,20 +1205,7 @@ export default function Addrepresentative(props) {
       setLoading(false);
     }
   };
-  // Helper function to get filtered votes based on selected term
-  // const getFilteredVotes = (termIndex) => {
-  //   const term = houseTermData[termIndex];
-  //   if (!term || !term.termId) return votes || [];
 
-  //   const selectedTerm = terms.find((t) => t._id === term.termId);
-  //   if (!selectedTerm || !selectedTerm.congresses) return votes || [];
-
-  //   return (votes || []).filter(
-  //     (vote) =>
-  //       vote.type === "house_bill" &&
-  //       selectedTerm.congresses.includes(Number(vote.congress))
-  //   );
-  // };
   const getFilteredVotes = (termIndex) => {
   const term = houseTermData[termIndex];
   if (!term || !term.termId) return votes || [];
@@ -1470,27 +1245,7 @@ export default function Addrepresentative(props) {
   };
 
   const editorRef = useRef(null);
-  const VisuallyHiddenInput = styled("input")({
-    clip: "rect(0 0 0 0)",
-    clipPath: "inset(50%)",
-    height: 1,
-    overflow: "hidden",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    whiteSpace: "nowrap",
-    width: 1,
-  });
 
-  // const handleStatusChange = (status) => {
-  //   const fieldName = "status"; // The field being changed
-
-  //   // Update local changes if not already tracked
-  //   setLocalChanges((prev) =>
-  //     prev.includes(fieldName) ? prev : [...prev, fieldName]
-  //   );
-  //   setFormData((prev) => ({ ...prev, status }));
-  // };
 
   const handleStatusChange = (status) => {
     const fieldName = "status"; // The field being changed
@@ -1660,69 +1415,7 @@ export default function Addrepresentative(props) {
            />
 
             <Paper className="customPaper">
-              <Dialog
-                open={openDiscardDialog}
-                onClose={() => setOpenDiscardDialog(false)}
-                PaperProps={{
-                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
-                }}
-              >
-                <DialogTitle
-                  sx={{
-                    fontSize: "1.4rem",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    color: "warning.main",
-                  }}
-                >
-                  {userRole === "admin" ? "Discard" : "Undo"} Changes?
-                </DialogTitle>
-
-                <DialogContent>
-                  <DialogContentText
-                    sx={{
-                      textAlign: "center",
-                      fontSize: "1rem",
-                      color: "text.secondary",
-                    }}
-                  >
-                    Are you sure you want to{" "}
-                    {userRole === "admin" ? "discard" : "undo"} all changes?{" "}
-                    <br />
-                    <strong>This action cannot be undone.</strong>
-                  </DialogContentText>
-                </DialogContent>
-
-                <DialogActions>
-                  <Stack
-                    direction="row"
-                    spacing={2}
-                    sx={{
-                      width: "100%",
-                      justifyContent: "center",
-                      paddingBottom: 2,
-                    }}
-                  >
-                    <Button
-                      onClick={() => setOpenDiscardDialog(false)}
-                      variant="outlined"
-                      color="secondary"
-                      sx={{ borderRadius: 2, paddingX: 3 }}
-                    >
-                      Cancel
-                    </Button>
-
-                    <Button
-                      onClick={handleConfirmDiscard}
-                      variant="contained"
-                      color="warning"
-                      sx={{ borderRadius: 2, paddingX: 3 }}
-                    >
-                      {userRole === "admin" ? "Discard" : "Undo"}
-                    </Button>
-                  </Stack>
-                </DialogActions>
-              </Dialog>
+              <DialogBox userRole={userRole} openDiscardDialog={openDiscardDialog} setOpenDiscardDialog={setOpenDiscardDialog} handleConfirmDiscard={handleConfirmDiscard}/>
 
               <BasicInfo
                 formData={formData}
