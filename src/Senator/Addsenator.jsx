@@ -2398,14 +2398,18 @@ export default function AddSenator(props) {
             }}
           >
             <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
-            <StatusDisplay
-            userRole={userRole}
-            formData={formData}
-            localChanges={localChanges}
-            statusData={statusData}
-            termData={senatorTermData}
-            mode="senator" 
-            />
+            
+            {!(formData.publishStatus === "under review" && !hasSelectedTerms()) && (
+              <StatusDisplay
+                  userRole={userRole}
+                  formData={formData}
+                  localChanges={localChanges}
+                  statusData={statusData}
+                  termData={senatorTermData}
+                  mode="senator"
+                />
+              )}
+
 
             <Paper className="customPaper">
               <DialogBox
