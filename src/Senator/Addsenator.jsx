@@ -1015,6 +1015,7 @@ export default function AddSenator(props) {
 
   const termPreFill = () => {
     if (senatorData?.currentSenator?.length > 0) {
+
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
         if (!matchedTerm) {
@@ -1325,6 +1326,7 @@ export default function AddSenator(props) {
                     }
                   }
                 }
+                 
               }
             }
           });
@@ -1335,14 +1337,13 @@ export default function AddSenator(props) {
             editedFields: currentEditedFields,
             fieldEditors: currentFieldEditors
           }));
-
-
+          
           // Update formData with the new editedFields and fieldEditors
-          setFormData(prev => ({
-            ...prev,
-            editedFields: currentEditedFields,
-            fieldEditors: currentFieldEditors
-          }));
+          // setFormData(prev => ({
+          //   ...prev,
+          //   editedFields: currentEditedFields,
+          //   fieldEditors: currentFieldEditors
+          // }));
 
         } else if (
           Array.isArray(term.pastVotesScore) &&
@@ -1379,8 +1380,7 @@ export default function AddSenator(props) {
         } else {
           pastVotesScore = [{ voteId: "", score: "" }];
         }
-
-
+       
         const getActivityScore = (activityId) => {
           const senAct = senatorActivities.find((a) => {
             const aId =
@@ -1524,8 +1524,6 @@ export default function AddSenator(props) {
         if (!Array.isArray(activitiesScore) || activitiesScore.length === 0) {
           activitiesScore = [{ activityId: "", score: "" }];
         }
-
-
 
         return {
           _id: term._id,
@@ -2016,7 +2014,7 @@ export default function AddSenator(props) {
 
       senatorTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
-      
+
         const termFields = ["summary", "rating", "termId"];
 
         termFields.forEach((field) => {
@@ -2397,14 +2395,16 @@ export default function AddSenator(props) {
             }}
           >
             <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
-            <StatusDisplay
-            userRole={userRole}
-            formData={formData}
-            localChanges={localChanges}
-            statusData={statusData}
-            termData={senatorTermData}
-            mode="senator" 
-            />
+            {!(formData.publishStatus === "under review" && !hasSelectedTerms()) && (
+              <StatusDisplay
+                userRole={userRole}
+                formData={formData}
+                localChanges={localChanges}
+                statusData={statusData}
+                termData={senatorTermData}
+                mode="senator"
+              />
+            )}
 
             <Paper className="customPaper">
               <Dialog
@@ -2476,7 +2476,7 @@ export default function AddSenator(props) {
                 handleFileChange={handleFileChange}
                 isMobile={isMobile}
               />
-             
+
             </Paper>
 
             {/* Render each term in senatorTermData */}
