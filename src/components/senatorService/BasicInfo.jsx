@@ -24,7 +24,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-export default function SenatorBasicInfo({ formData, handleChange, handleStatusChange, handleFileChange, isMobile }) {
+export default function SenatorBasicInfo({ formData, handleChange, handleStatusChange, handleFileChange, isMobile, mode = "senator" }) {
   return (
     <Box sx={{ p: 0 }}>
       <Typography
@@ -32,12 +32,12 @@ export default function SenatorBasicInfo({ formData, handleChange, handleStatusC
         fontWeight={500}
         sx={{ borderBottom: "1px solid", borderColor: "divider", p: 1.5, px: 3 }}
       >
-        Senator's Information
+        {mode === "representative" ? "Representative's Information" : "Senator's Information"}
       </Typography>
       <Grid container rowSpacing={2} columnSpacing={2} alignItems={"center"} py={3}>
         <Grid size={isMobile ? 12 : 2}>
           <InputLabel sx={{ display: "flex", alignItems: "center", justifyContent: isMobile ? "flex-start" : "flex-end", fontWeight: 500, my: 0 }}>
-            Senator's Name
+            {mode === "representative" ? "Representative's Name" : "Senator's Name"}
           </InputLabel>
         </Grid>
         <Grid size={isMobile ? 12 : 4}>
@@ -52,12 +52,25 @@ export default function SenatorBasicInfo({ formData, handleChange, handleStatusC
             <Button variant={"outlined"} onClick={() => handleStatusChange("Former")} sx={{ backgroundColor: formData.status === "Former" ? "#4CAF50 !important" : "transparent", color: formData.status === "Former" ? "white !important" : "#4CAF50", borderColor: "#4CAF50 !important", "&:hover": { backgroundColor: formData.status === "Former" ? "#45a049 !important" : "rgba(76, 175, 80, 0.1)", borderColor: "#4CAF50 !important" } }}>Former</Button>
           </ButtonGroup>
         </Grid>
-        <Grid size={isMobile ? 12 : 2}>
-          <InputLabel sx={{ display: "flex", justifyContent: isMobile ? "flex-start" : "flex-end", fontWeight: 500, my: 0 }}>State</InputLabel>
-        </Grid>
-        <Grid size={isMobile ? 12 : 4}>
-          <TextField id="state" name="state" value={formData.state} onChange={handleChange} fullWidth size="small" autoComplete="off" variant="outlined" />
-        </Grid>
+        {mode === "senator" ? (
+          <>
+            <Grid size={isMobile ? 12 : 2}>
+              <InputLabel sx={{ display: "flex", justifyContent: isMobile ? "flex-start" : "flex-end", fontWeight: 500, my: 0 }}>State</InputLabel>
+            </Grid>
+            <Grid size={isMobile ? 12 : 4}>
+              <TextField id="state" name="state" value={formData.state} onChange={handleChange} fullWidth size="small" autoComplete="off" variant="outlined" />
+            </Grid>
+          </>
+        ) : (
+          <>
+            <Grid size={isMobile ? 12 : 2}>
+              <InputLabel sx={{ display: "flex", justifyContent: isMobile ? "flex-start" : "flex-end", fontWeight: 500, my: 0 }}>District</InputLabel>
+            </Grid>
+            <Grid size={isMobile ? 12 : 4}>
+              <TextField id="district" name="district" value={formData.district} onChange={handleChange} fullWidth size="small" autoComplete="off" variant="outlined" />
+            </Grid>
+          </>
+        )}
         <Grid size={isMobile ? 12 : 1} sx={{ alignContent: "center" }}>
           <InputLabel sx={{ display: "flex", justifyContent: isMobile ? "flex-start" : "flex-end", fontWeight: 500, my: 0 }}>Party</InputLabel>
         </Grid>
@@ -71,7 +84,7 @@ export default function SenatorBasicInfo({ formData, handleChange, handleStatusC
           </FormControl>
         </Grid>
         <Grid size={isMobile ? 12 : 2}>
-          <InputLabel sx={{ display: "flex", justifyContent: isMobile ? "flex-start" : "flex-end", fontWeight: 500, my: 0 }}>Senator's Photo</InputLabel>
+          <InputLabel sx={{ display: "flex", justifyContent: isMobile ? "flex-start" : "flex-end", fontWeight: 500, my: 0 }}>{mode === "representative" ? "Representative's Photo" : "Senator's Photo"}</InputLabel>
         </Grid>
         <Grid size={10}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
