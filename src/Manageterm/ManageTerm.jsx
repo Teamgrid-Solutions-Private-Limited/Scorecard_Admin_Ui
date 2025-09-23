@@ -395,7 +395,7 @@ const handleConfirmDelete = async () => {
   onClose={handleCloseConfirm}
   aria-labelledby="confirm-dialog"
   PaperProps={{
-    sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+    sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
   }}
 >
   <DialogTitle

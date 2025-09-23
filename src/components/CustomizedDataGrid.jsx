@@ -177,6 +177,16 @@ export default function CustomizedDataGrid({
 
   const navigate = useNavigate();
 
+    const storageKey = `dataGridPagination_${type}`;
+  const [paginationModel, setPaginationModel] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : { page: 0, pageSize: 20 };
+  });
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(paginationModel));
+  }, [paginationModel, storageKey]);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -497,167 +507,165 @@ export default function CustomizedDataGrid({
             field: "nickName",
             flex: 1.5,
             headerName: "Nick Name",
-            minWidth: 120,
+            minWidth: 140,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
                 {params.colDef.headerName}
               </Typography>
             ),
 
-            renderCell: (params) => {
-              const nickName = params.value || "";
-              return (
-                <Typography
-                  sx={{ height: "100%", display: "flex", alignItems: "center" }}
-                >
-                  {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
-                </Typography>
-              );
+              renderCell: (params) => {
+                const nickName = params.value || "";
+                return (
+                  <Typography sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+                    {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
+                  </Typography>
+                );
+              }
             },
-          },
-          {
-            field: "email",
-            flex: 2,
-            headerName: "Email",
-            minWidth: 180,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-          },
-          {
-            field: "role",
-            flex: 1,
-            headerName: "Role",
-            minWidth: 100,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            valueGetter: (params) =>
-              params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
-          },
-          {
-            field: "action",
-            flex: 1,
-            headerName: "Action",
-            minWidth: 60,
-            headerAlign: "right",
-            align: "right",
-            renderHeader: (params) => (
-              <Typography sx={{ paddingRight: "32px", fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  paddingRight: "32px",
-                  columnGap: "10px",
-                  height: "100%",
-                }}
-              >
-                <EditIcon
-                  onClick={() => onEdit && onEdit(params.row)}
-                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-                />
-                {userRole === "admin" && (
-                  <DeleteForeverIcon
-                    onClick={() => onDelete && onDelete(params.row._id)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+            {
+              field: "email",
+              flex: 2,
+              headerName: "Email",
+              minWidth: 180,
+              renderHeader: (params) => (
+                <Typography sx={{ fontWeight: "bold" }}>
+                  {params.colDef.headerName}
+                </Typography>
+              ),
+            },
+            {
+              field: "role",
+              flex: 1,
+              headerName: "Role",
+              minWidth: 110,
+              renderHeader: (params) => (
+                <Typography sx={{ fontWeight: "bold" }}>
+                  {params.colDef.headerName}
+                </Typography>
+              ),
+              valueGetter: (params) =>
+                params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
+            },
+            {
+              field: "action",
+              flex: 1,
+              headerName: "Action",
+              minWidth: isMobile?130:60,
+              headerAlign:isMobile?"center":"right",
+              align: "right",
+              renderHeader: (params) => (
+                <Typography sx={{ paddingRight: "32px", fontWeight: "bold" }}>
+                  {params.colDef.headerName}
+                </Typography>
+              ),
+              renderCell: (params) => (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: isMobile? "center":"flex-end",
+                    paddingRight: isMobile?"0px":"32px",
+                    columnGap: "10px",
+                    height: "100%",
+                  }}
+                >
+                  <EditIcon
+                    onClick={() => onEdit && onEdit(params.row)}
+                    sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                   />
-                )}
-              </div>
-            ),
-          },
-        ]
-      : [
-          {
-            field: "name",
-            flex: 2,
-            headerName: type === "senator" ? "Senator" : "Representative",
-            minWidth: isMobile ? 180 : 150,
-            maxWidth: isMobile ? 200 : undefined,
-            minHeight: 200,
-            headerAlign: "left",
-            align: "left",
-            renderHeader: (params) => (
-              <Typography
-                sx={{
-                  paddingLeft: isMobile ? "12px" : "32px",
-                  fontWeight: "bold",
-                }}
-              >
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  columnGap: "10px",
-                  width: "fit-content",
-                  height: "100%",
-                  paddingLeft: isMobile ? "12px" : "32px",
-                  "&:hover": {
-                    cursor: "pointer",
-                  },
-                }}
-                onClick={() => {
-                  if (type === "senator" && params.row._id) {
-                    navigate(`edit-senator/${params.row._id}`);
-                  } else {
-                    navigate(`/edit-representative/${params.row._id}`);
-                  }
-                }}
-              >
+                  {userRole === "admin" && (
+                    <DeleteForeverIcon
+                      onClick={() => onDelete && onDelete(params.row._id)}
+                      sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                    />
+                  )}
+                </div>
+              ),
+            },
+          ]
+          : [
+            {
+              field: "name",
+              flex: 2,
+              headerName: type === "senator" ? "Senator" : "Representative",
+              minWidth: isMobile ? 180 : 150,
+              maxWidth: isMobile ? 200 : undefined,
+              minHeight: 200,
+              headerAlign: "left",
+              align: "left",
+              renderHeader: (params) => (
+                <Typography
+                  sx={{
+                    paddingLeft: isMobile ? "12px" : "32px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {params.colDef.headerName}
+                </Typography>
+              ),
+              renderCell: (params) => (
                 <Box
                   sx={{
-                    width: isMobile ? 36 : 50,
-                    height: isMobile ? 36 : 50,
-                    borderRadius: "50%",
                     display: "flex",
+                    flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "center",
-                    border: `2px solid ${getBorderColor(params.row.party)}`,
-                  }}
-                >
-                  <Avatar
-                    src={params.row.photo}
-                    sx={{
-                      width: isMobile ? 32 : 45,
-                      height: isMobile ? 32 : 45,
-                    }}
-                  />
-                </Box>
-                <Typography
-                  sx={{
-                    transition: "color 0.3s ease-in-out",
+                    columnGap: "10px",
+                    width: "fit-content",
+                    height: "100%",
+                    paddingLeft: isMobile ? "12px" : "32px",
                     "&:hover": {
-                      color: getBorderColor(params.row.party),
+                      cursor: "pointer",
                     },
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: isMobile ? "90px" : undefined,
-                    minWidth: isMobile ? "40px" : undefined,
+                  }}
+                  onClick={() => {
+                    if (type === "senator" && params.row._id) {
+                      navigate(`edit-senator/${params.row._id}`);
+                    } else {
+                      navigate(`/edit-representative/${params.row._id}`);
+                    }
                   }}
                 >
-                  {params.row.name}
-                </Typography>
-              </Box>
-            ),
-          },
-          ...(type === "representative"
-            ? [
+                  <Box
+                    sx={{
+                      width: isMobile ? 36 : 50,
+                      height: isMobile ? 36 : 50,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: `2px solid ${getBorderColor(params.row.party)}`,
+                    }}
+                  >
+                    <Avatar
+                      src={params.row.photo}
+                      sx={{
+                        width: isMobile ? 32 : 45,
+                        height: isMobile ? 32 : 45,
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    sx={{
+                      transition: "color 0.3s ease-in-out",
+                      "&:hover": {
+                        color: getBorderColor(params.row.party),
+                      },
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: isMobile ? "90px" : undefined,
+                      minWidth: isMobile ? "40px" : undefined,
+                    }}
+                  >
+                    {params.row.name}
+                  </Typography>
+                </Box>
+              ),
+            },
+            ...(type === "representative"
+              ? [
                 {
                   field: "district",
                   flex: 1,
@@ -842,7 +850,8 @@ export default function CustomizedDataGrid({
         columns={columns}
         loading={loading}
         getRowId={(row) => row._id}
-        initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel} 
         pageSizeOptions={[10, 20, 50]}
         disableColumnFilter
         disableColumnSelector
