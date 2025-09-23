@@ -69,6 +69,7 @@ export default function AddActivity(props) {
   const dispatch = useDispatch();
   const { activity: selectedActivity } = useSelector((state) => state.activity);
   const { terms } = useSelector((state) => state.term);
+  const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -151,7 +152,7 @@ export default function AddActivity(props) {
 
   // 2. When selectedActivity changes, set editedFields from backend
   useEffect(() => {
-    if (selectedActivity) {
+    if (selectedActivity && !isDataFetching) {
       preFillForm();
       // Only set editedFields from backend on initial load
       // This prevents overwriting local unsaved changes
@@ -164,7 +165,7 @@ export default function AddActivity(props) {
         isInitialLoad.current = false;
       }
     }
-  }, [selectedActivity]);
+  }, [selectedActivity , isDataFetching]);
 
   // 3. When formData changes, update editedFields (track all changes)
 useEffect(() => {
@@ -180,17 +181,36 @@ useEffect(() => {
   }
 }, [formData, originalFormData]);
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getActivityById(id));
-    }
-    dispatch(getAllTerms());
+useEffect(() => {
+  const fetchData = async () => {
+    setIsDataFetching(true); // optional loading state
+    try {
+      if (id) {
+        // Fetch id-dependent data concurrently
+        await Promise.all([
+          dispatch(getActivityById(id)).unwrap(),
+          dispatch(getAllTerms()).unwrap(),
+        ]);
+      }
+      return () => {
+        dispatch(clearActivityState());
+        setSelectedFile(null);
+      };
 
-    return () => {
-      dispatch(clearActivityState());
-      setSelectedFile(null);
-    };
-  }, [id, dispatch]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setSnackbarMessage("Error loading data. Please try again.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    } finally {
+      setIsDataFetching(false);
+    }
+  };
+
+  fetchData();
+
+
+}, [id, dispatch]);
 
   const editorRef = useRef(null);
   const isInitialLoad = useRef(true);
@@ -557,11 +577,11 @@ useEffect(() => {
   ]);
   return (
     <AppTheme>
-      {loading && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+         {(loading || isDataFetching) && (
+      <Box className="circularLoader">
+        <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+      </Box>
+    )}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
@@ -617,6 +637,7 @@ useEffect(() => {
             // overflow: "auto",
             // overflow: "auto",
           })}
+          className={`${isDataFetching ? "fetching" : "notFetching"}`}
         >
           <FixedHeader />
           <MobileHeader />

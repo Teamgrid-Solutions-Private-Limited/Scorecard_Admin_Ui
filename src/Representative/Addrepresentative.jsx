@@ -13,6 +13,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
+import CircularProgress from "@mui/material/CircularProgress";
 import {
   Dialog,
   DialogActions,
@@ -77,6 +78,7 @@ export default function Addrepresentative(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
+  const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
    const [selectionError, setSelectionError] = useState({
@@ -702,9 +704,11 @@ export default function Addrepresentative(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-  useEffect(() => {
+useEffect(() => {
+  if (!isDataFetching && id && houseData) {
     termPreFill();
-  }, [id, houseData]);
+  }
+}, [id, houseData, isDataFetching]);
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -729,23 +733,44 @@ export default function Addrepresentative(props) {
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getHouseById(id));
-      dispatch(getHouseDataByHouseId(id));
-    }
-    dispatch(getAllTerms());
-    dispatch(getAllVotes());
-    dispatch(getAllActivity());
+   useEffect(() => {
+    const fetchData = async () => {
+      setIsDataFetching(true);
+      try {
+        if (id) {
+          await Promise.all([
+            dispatch(getHouseById(id)),
+            dispatch(getHouseDataByHouseId(id))
+          ]);
+        }
+        await Promise.all([
+          dispatch(getAllTerms()),
+          dispatch(getAllVotes()),
+          dispatch(getAllActivity())
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setSnackbarMessage("Error loading data. Please try again.");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      } finally {
+        setIsDataFetching(false);
+      }
+    };
+  
+    fetchData();
+  
     return () => {
       dispatch(clearHouseState());
       dispatch(clearHouseDataState());
     };
   }, [id, dispatch]);
 
-  useEffect(() => {
+useEffect(() => {
+  if (!isDataFetching && house) {
     preFillForm();
-  }, [house, terms]);
+  }
+}, [house, terms, isDataFetching]);
 
 
 
@@ -1379,7 +1404,11 @@ export default function Addrepresentative(props) {
 
   return (
     <AppTheme key={componentKey}>
-      <LoadingOverlay loading={loading} />
+       {(loading || isDataFetching) && (
+            <Box className="circularLoader">
+              <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+            </Box>
+          )}
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -1391,6 +1420,7 @@ export default function Addrepresentative(props) {
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
           })}
+          className={`${isDataFetching ? "fetching" : "notFetching"}`}
         >
           <FixedHeader />
           <MobileHeader />

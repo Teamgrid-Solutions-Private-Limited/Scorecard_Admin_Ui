@@ -3,7 +3,6 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-
 // MUI Core
 import {
   alpha,
@@ -126,6 +125,7 @@ export default function AddSenator(props) {
     type: "",
   });
   const [billSearch, setBillSearch] = useState("");
+  const [isDataFetching, setIsDataFetching] = useState(true);
   const validateVoteInTermRange = (voteId, termId) => {
     if (!voteId || !termId)
       return { isValid: false, message: "Invalid selection" };
@@ -1663,9 +1663,11 @@ export default function AddSenator(props) {
     setEditedFields(changes);
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
-  useEffect(() => {
+useEffect(() => {
+  if (!isDataFetching && id && senatorData) {
     termPreFill();
-  }, [id, senatorData]);
+  }
+}, [id, senatorData, isDataFetching]);
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -1696,23 +1698,44 @@ export default function AddSenator(props) {
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getSenatorById(id));
-      dispatch(getSenatorDataBySenetorId(id));
+ useEffect(() => {
+  const fetchData = async () => {
+    setIsDataFetching(true);
+    try {
+      if (id) {
+        await Promise.all([
+          dispatch(getSenatorById(id)),
+          dispatch(getSenatorDataBySenetorId(id))
+        ]);
+      }
+      await Promise.all([
+        dispatch(getAllTerms()),
+        dispatch(getAllVotes()),
+        dispatch(getAllActivity())
+      ]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setSnackbarMessage("Error loading data. Please try again.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    } finally {
+      setIsDataFetching(false);
     }
-    dispatch(getAllTerms());
-    dispatch(getAllVotes());
-    dispatch(getAllActivity());
-    return () => {
-      dispatch(clearSenatorState());
-      dispatch(clearSenatorDataState());
-    };
-  }, [id, dispatch]);
+  };
 
-  useEffect(() => {
+  fetchData();
+
+  return () => {
+    dispatch(clearSenatorState());
+    dispatch(clearSenatorDataState());
+  };
+}, [id, dispatch]);
+
+useEffect(() => {
+  if (!isDataFetching && senator) {
     preFillForm();
-  }, [senator, terms]);
+  }
+}, [senator, terms, isDataFetching]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -2366,65 +2389,75 @@ export default function AddSenator(props) {
     const voteExists = votes.some((v) => v._id === voteId);
     return voteExists ? voteId : "";
   };
+// Replace your current loading condition with this enhanced version
 
+// Replace your current loading condition with this enhanced version
 
-  return (
-    <AppTheme key={componentKey}>
-      <LoadingOverlay loading={loading} />
-      <Box className="flexContainer">
-        <SideMenu />
-        <Box
-          component="main"
-          sx={(theme) => ({
-            width: "80%",
-            flexGrow: 1,
-            backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.background} / 1)`
-              : alpha(theme.palette.background.default, 1),
-          })}
+return (
+  <AppTheme key={componentKey}>
+    {(loading || isDataFetching) && (
+      <Box className="circularLoader">
+        <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+      </Box>
+    )}
+
+    <Box className="flexContainer">
+      <SideMenu />
+      <Box
+        component="main"
+        sx={(theme) => ({
+          width: "80%",
+          flexGrow: 1,
+          backgroundColor: theme.vars
+            ? `rgba(${theme.vars.palette.background} / 1)`
+            : theme.palette.background.default,
+        })}
+        className={`${isDataFetching ? "fetching" : "notFetching"}`}
+      >
+        <FixedHeader />
+        <MobileHeader />
+
+        <Stack
+          spacing={isMobile ? 1 : 2}
+          sx={{
+            alignItems: "center",
+            mx: { xs: 2, md: 3 },
+            mt: { xs: 2, md: 2.8 },
+            gap: 1,
+          }}
         >
-          <FixedHeader />
-          <MobileHeader />
+          <ActionButtons
+            onDiscard={handleDiscard}
+            onSave={handleSave}
+            userRole={userRole}
+          />
 
-          <Stack
-            spacing={isMobile ? 1 : 2}
-            sx={{
-              alignItems: "center",
-              mx: { xs: 2, md: 3 },
-              mt: { xs: 2, md: 2.8 },
-              gap: 1,
-            }}
-          >
-            <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
-            
-            {!(formData.publishStatus === "under review" && !hasSelectedTerms()) && (
-              <StatusDisplay
-                  userRole={userRole}
-                  formData={formData}
-                  localChanges={localChanges}
-                  statusData={statusData}
-                  termData={senatorTermData}
-                  mode="senator"
-                />
-              )}
+          {!(formData.publishStatus === "under review" && !hasSelectedTerms()) && (
+            <StatusDisplay
+              userRole={userRole}
+              formData={formData}
+              localChanges={localChanges}
+              statusData={statusData}
+              termData={senatorTermData}
+              mode="senator"
+            />
+          )}
 
-
-            <Paper className="customPaper">
-              <DialogBox
-                userRole={userRole}
-                openDiscardDialog={openDiscardDialog}
-                setOpenDiscardDialog={setOpenDiscardDialog}
-                handleConfirmDiscard={handleConfirmDiscard}
-              />
-              <BasicInfo
-                formData={formData}
-                handleChange={handleChange}
-                handleStatusChange={handleStatusChange}
-                handleFileChange={handleFileChange}
-                isMobile={isMobile}
-              />
-
-            </Paper>
+          <Paper className="customPaper">
+            <DialogBox
+              userRole={userRole}
+              openDiscardDialog={openDiscardDialog}
+              setOpenDiscardDialog={setOpenDiscardDialog}
+              handleConfirmDiscard={handleConfirmDiscard}
+            />
+            <BasicInfo
+              formData={formData}
+              handleChange={handleChange}
+              handleStatusChange={handleStatusChange}
+              handleFileChange={handleFileChange}
+              isMobile={isMobile}
+            />
+          </Paper>
 
             {/* Render each term in senatorTermData */}
             {senatorTermData.map((term, termIndex) => (
@@ -2460,32 +2493,33 @@ export default function AddSenator(props) {
               </Paper>
             ))}
 
-            {/* Add Term Button */}
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={handleAddTerm}
-              className="addTerm-btn"
-            >
-              Add Another Term
-            </Button>
-            <SnackbarComponent
-              open={openSnackbar}
-              onClose={() => {
-                handleSnackbarClose();
-                setSelectionError({ show: false, message: "", type: "" });
-              }}
-              message={snackbarMessage}
-              severity={snackbarSeverity}
-              selectionError={selectionError}
-            />
+          {/* Add Term Button */}
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={handleAddTerm}
+            className="addTerm-btn"
+          >
+            Add Another Term
+          </Button>
 
-          </Stack>
-          <Box sx={{ mb: "40px", mx: "15px" }}>
-            <Footer />
-          </Box>
+          <SnackbarComponent
+            open={openSnackbar}
+            onClose={() => {
+              handleSnackbarClose();
+              setSelectionError({ show: false, message: "", type: "" });
+            }}
+            message={snackbarMessage}
+            severity={snackbarSeverity}
+            selectionError={selectionError}
+          />
+        </Stack>
+
+        <Box sx={{ mb: "40px", mx: "15px" }}>
+          <Footer />
         </Box>
       </Box>
-    </AppTheme>
-  );
+    </Box>
+  </AppTheme>
+);
 }
