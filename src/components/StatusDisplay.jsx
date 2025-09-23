@@ -14,12 +14,12 @@ const StatusDisplay = ({
   localChanges = [],
   statusData,
   termData = [],
-  mode = 'senator' 
+  mode = 'senator'
 }) => {
   if (!userRole || !formData?.publishStatus || !statusData) return null;
   if (formData.publishStatus === "published" && localChanges.length === 0) return null;
 
-
+  console.log("Rendering StatusDisplay with:", { statusData, });
   const fieldLabels = {
     status: "Status",
     name: mode === 'senator' ? "Senator Name" : "Representative Name",
@@ -39,6 +39,7 @@ const StatusDisplay = ({
   };
 
   const senatorFormatFieldName = (field, index, senatorTermData = []) => {
+    console.log("Formatting field:", senatorTermData);
     if (typeof field === "object" && field !== null) {
       if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
         const billTitle = field.name;
@@ -199,7 +200,7 @@ const StatusDisplay = ({
     return `Field ${index + 1}`;
   };
 
- 
+
   const representativeFormatFieldName = (field, index, houseTermData = []) => {
     if (typeof field === "object" && field !== null) {
       if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
@@ -386,6 +387,7 @@ const StatusDisplay = ({
         }}
       >
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+          {/* Status icon bubble */}
           <Box
             sx={{
               p: 1,
@@ -396,8 +398,7 @@ const StatusDisplay = ({
                   ? "230, 81, 0"
                   : formData.publishStatus === "published"
                     ? "76, 175, 80"
-                    : "244, 67, 54"
-                }, 0.2)`,
+                    : "244, 67, 54"}, 0.2)`,
               display: "grid",
               placeItems: "center",
               flexShrink: 0,
@@ -407,21 +408,30 @@ const StatusDisplay = ({
               sx: { color: statusData.iconColor },
             })}
           </Box>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "text.disabled",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            No pending changes
-          </Typography>
+
+          <Box sx={{ flex: 1 }}>
+            {/* Title */}
+            <Typography
+              variant="subtitle1"
+              fontWeight="600"
+              sx={{
+                color: statusData.titleColor,
+                mb: 0.5,
+              }}
+            >
+              {statusData.title}
+            </Typography>
+
+            {/* No changes info */}
+            <Typography variant="body2" sx={{ color: "text.disabled" }}>
+              No pending changes
+            </Typography>
+          </Box>
         </Box>
       </Box>
     );
   }
+
 
   return (
     <Box
@@ -513,11 +523,11 @@ const StatusDisplay = ({
                     const editor = editorInfo?.editorName || "Unknown Editor";
                     const editTime = editorInfo?.editedAt
                       ? new Date(editorInfo.editedAt).toLocaleString([], {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
                       : "unknown time";
                     const fromQuorum = field.fromQuorum || false;
 

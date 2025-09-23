@@ -11,7 +11,7 @@ import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
-import { useTheme, useMediaQuery,Chip } from "@mui/material";
+import { useTheme, useMediaQuery, Chip } from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
@@ -45,7 +45,6 @@ export default function CustomizedDataGrid({
   const userRole = decodedToken.role;
   const { terms } = useSelector((state) => state.term);
 
-  
   useEffect(() => {
     dispatch(getAllSenatorData());
     dispatch(getAllHouseData());
@@ -64,21 +63,50 @@ export default function CustomizedDataGrid({
         });
         setMergedRows(merged);
       } else if (type === "representative" && houseData) {
-       const merged = rows.map((row) => {
-        const houseRecords = houseData.filter((data) => data.houseId === row._id);
+        const merged = rows.map((row) => {
+          const houseRecords = houseData.filter(
+            (data) => data.houseId === row._id
+          );
 
-        const currentTermData = houseRecords.find((rec) => rec.currentTerm === true);
-        let rating = "N/A";
-        let termId = row.termId;
-        let termName = "";
-        let currentTerm = false;
+          const currentTermData = houseRecords.find(
+            (rec) => rec.currentTerm === true
+          );
+          let rating = "N/A";
+          let termId = row.termId;
+          let termName = "";
+          let currentTerm = false;
 
-        if (currentTermData) {
-          termId = currentTermData.termId;
-          rating = currentTermData.rating || "N/A";
-          currentTerm = true;
-          if (!currentTermData.rating) {
-            const fallbackRecords = houseRecords
+          if (currentTermData) {
+            termId = currentTermData.termId;
+            rating = currentTermData.rating || "N/A";
+            currentTerm = true;
+            if (!currentTermData.rating) {
+              const fallbackRecords = houseRecords
+                .map((rec) => {
+                  const termObj = terms.find((t) => t._id === rec.termId);
+                  return termObj ? { ...rec, termObj } : null;
+                })
+                .filter(Boolean)
+                .sort((a, b) => {
+                  const aYear = parseInt(a.termObj.endYear, 10) || 0;
+                  const bYear = parseInt(b.termObj.endYear, 10) || 0;
+                  return bYear - aYear;
+                });
+
+              const valid = fallbackRecords.find(
+                (rec) => rec.rating && rec.rating !== ""
+              );
+              if (valid) {
+                rating = valid.rating;
+                termId = valid.termId;
+                termName = valid.termObj.name;
+              }
+            } else {
+              const termObj = terms.find((t) => t._id === termId);
+              termName = termObj ? termObj.name : "";
+            }
+          } else {
+            const validRecords = houseRecords
               .map((rec) => {
                 const termObj = terms.find((t) => t._id === rec.termId);
                 return termObj ? { ...rec, termObj } : null;
@@ -90,52 +118,31 @@ export default function CustomizedDataGrid({
                 return bYear - aYear;
               });
 
-            const valid = fallbackRecords.find((rec) => rec.rating && rec.rating !== "");
-            if (valid) {
-              rating = valid.rating;
-              termId = valid.termId;
-              termName = valid.termObj.name;
+            if (validRecords.length > 0) {
+              const latest = validRecords.find(
+                (rec) => rec.rating && rec.rating !== ""
+              );
+              if (latest) {
+                rating = latest.rating;
+                termId = latest.termId;
+                termName = latest.termObj.name;
+              }
+            } else {
+              const termObj = terms.find((t) => t._id === row.termId);
+              termName = termObj ? termObj.name : "";
             }
-          } else {
-            const termObj = terms.find((t) => t._id === termId);
-            termName = termObj ? termObj.name : "";
           }
-        } else {
-          const validRecords = houseRecords
-            .map((rec) => {
-              const termObj = terms.find((t) => t._id === rec.termId);
-              return termObj ? { ...rec, termObj } : null;
-            })
-            .filter(Boolean)
-            .sort((a, b) => {
-              const aYear = parseInt(a.termObj.endYear, 10) || 0;
-              const bYear = parseInt(b.termObj.endYear, 10) || 0;
-              return bYear - aYear;
-            });
 
-          if (validRecords.length > 0) {
-            const latest = validRecords.find((rec) => rec.rating && rec.rating !== "");
-            if (latest) {
-              rating = latest.rating;
-              termId = latest.termId;
-              termName = latest.termObj.name;
-            }
-          } else {
-            const termObj = terms.find((t) => t._id === row.termId);
-            termName = termObj ? termObj.name : "";
-          }
-        }
+          return {
+            ...row,
+            rating,
+            termId,
+            termName,
+            currentTerm,
+          };
+        });
 
-        return {
-          ...row,
-          rating,
-          termId,
-          termName,
-          currentTerm,
-        };
-      });
-
-      setMergedRows(merged);
+        setMergedRows(merged);
       } else {
         // For bills/activities or if data isn't loaded yet
         setMergedRows(
@@ -156,15 +163,15 @@ export default function CustomizedDataGrid({
     return "gray";
   };
 
-   // Function to get status color based on status value
+  // Function to get status color based on status value
   const getStatusColor = (status) => {
     if (!status) return "default";
-    
+
     const lowerStatus = status.toLowerCase();
     if (lowerStatus.includes("published")) return "success";
     if (lowerStatus.includes("draft")) return "default";
     if (lowerStatus.includes("review")) return "warning";
-    
+
     return "default";
   };
 
@@ -207,7 +214,37 @@ export default function CustomizedDataGrid({
                 {params.colDef.headerName}
               </Typography>
             ),
+            renderCell: (params) => (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  height: "100%",
+                  columnGap: "10px",
+                  "&:hover": {
+                    cursor: "pointer",
+                  },
+                }}
+                onClick={() => onEdit(params.row)}
+              >
+                <Typography
+                  sx={{
+                    transition: "color 0.3s ease-in-out",
+                    "&:hover": {
+                      color: "primary.main",
+                    },
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {params.row.bill}
+                </Typography>
+              </Box>
+            ),
           },
+
           {
             field: "billsType",
             flex: 2,
@@ -245,51 +282,51 @@ export default function CustomizedDataGrid({
                     .join(" ")
                 : "N/A";
 
-            return (
-              <Chip 
-                  label={displayStatus} 
+              return (
+                <Chip
+                  label={displayStatus}
                   color={getStatusColor(status)}
                   variant="outlined"
                   size="small"
                 />
-            );
+              );
+            },
           },
-        },
-        {
-          field: "action",
-          flex: 1,
-          headerName: "Action",
-          minWidth: 140,
-          headerAlign: "center",
-          renderHeader: (params) => (
-            <Typography sx={{ fontWeight: "bold" }}>
-              {params.colDef.headerName}
-            </Typography>
-          ),
-          renderCell: (params) => (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                height: "100%",
-                alignItems: "center",
-                columnGap: "10px",
-              }}
-            >
-              <EditIcon
-                onClick={() => onEdit(params.row)}
-                sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-              />
-          {userRole === "admin" && (
-              <DeleteForeverIcon
-                onClick={() => onDelete(params.row)}
-                sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-              />
-          )}
-            </div>
-          ),
-        },
-      ]
+          {
+            field: "action",
+            flex: 1,
+            headerName: "Action",
+            minWidth: 140,
+            headerAlign: "center",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  height: "100%",
+                  alignItems: "center",
+                  columnGap: "10px",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                {userRole === "admin" && (
+                  <DeleteForeverIcon
+                    onClick={() => onDelete(params.row)}
+                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                  />
+                )}
+              </div>
+            ),
+          },
+        ]
       : type === "activities"
       ? [
           {
@@ -312,6 +349,35 @@ export default function CustomizedDataGrid({
               <Typography sx={{ fontWeight: "bold" }}>
                 {params.colDef.headerName}
               </Typography>
+            ),
+            renderCell: (params) => (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  height: "100%",
+                  columnGap: "10px",
+                  "&:hover": {
+                    cursor: "pointer",
+                  },
+                }}
+                onClick={() => onEdit(params.row)}
+              >
+                <Typography
+                  sx={{
+                    transition: "color 0.3s ease-in-out",
+                    "&:hover": {
+                      color: "primary.main",
+                    },
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {params.row.activity}
+                </Typography>
+              </Box>
             ),
           },
           {
@@ -351,8 +417,8 @@ export default function CustomizedDataGrid({
                 : "N/A";
 
               return (
-                <Chip 
-                  label={displayStatus} 
+                <Chip
+                  label={displayStatus}
                   color={getStatusColor(status)}
                   variant="outlined"
                   size="small"
@@ -688,8 +754,8 @@ export default function CustomizedDataGrid({
                       : "N/A";
 
                     return (
-                      <Chip 
-                        label={displayStatus} 
+                      <Chip
+                        label={displayStatus}
                         color={getStatusColor(status)}
                         variant="outlined"
                         size="small"
@@ -722,8 +788,8 @@ export default function CustomizedDataGrid({
                       : "N/A";
 
                     return (
-                      <Chip 
-                        label={displayStatus} 
+                      <Chip
+                        label={displayStatus}
                         color={getStatusColor(status)}
                         variant="outlined"
                         size="small"
@@ -733,49 +799,49 @@ export default function CustomizedDataGrid({
                 },
               ]),
 
-            {
-              field: "action",
-              // flex: 0.7,
-              headerName: "Action",
-              minWidth: 140,
-              headerAlign: "center",
-              // align: "right",
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-              renderCell: (params) => (
-                <Box
-                  sx={{
-                    //     display: "flex",
-                    //     flexDirection: "row",
-                    //     alignItems: "center",
-                    //  paddingRight: "32px",
-                    //     justifyContent: "flex-end",
-                    //     columnGap: "10px",
-                    //     height: "100%",
-                    display: "flex",
-                    justifyContent: "center",
-                    height: "100%",
-                    alignItems: "center",
-                    columnGap: "10px",
-                  }}
-                >
-                  <EditIcon
-                    onClick={() => onEdit(params.row)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+          {
+            field: "action",
+            // flex: 0.7,
+            headerName: "Action",
+            minWidth: 140,
+            headerAlign: "center",
+            // align: "right",
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <Box
+                sx={{
+                  //     display: "flex",
+                  //     flexDirection: "row",
+                  //     alignItems: "center",
+                  //  paddingRight: "32px",
+                  //     justifyContent: "flex-end",
+                  //     columnGap: "10px",
+                  //     height: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  height: "100%",
+                  alignItems: "center",
+                  columnGap: "10px",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                {userRole === "admin" && (
+                  <DeleteForeverIcon
+                    onClick={() => onDelete(params.row)}
+                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
                   />
-                  {userRole === "admin" && (
-                    <DeleteForeverIcon
-                      onClick={() => onDelete(params.row)}
-                      sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                    />
-                  )}
-                </Box>
-              ),
-            },
-          ];
+                )}
+              </Box>
+            ),
+          },
+        ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
@@ -808,17 +874,16 @@ export default function CustomizedDataGrid({
             overflowX: "auto",
             width: "100vw",
             minWidth: 0,
-            '& .MuiDataGrid-main': {
-              minWidth: '600px',
+            "& .MuiDataGrid-main": {
+              minWidth: "600px",
             },
-            '& .MuiDataGrid-columnHeader': {
-              fontSize: '13px',
-              padding: '4px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+            "& .MuiDataGrid-columnHeader": {
+              fontSize: "13px",
+              padding: "4px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             },
-            
           }),
           "& .MuiDataGrid-row": {
             maxHeight: "70px !important",
