@@ -1662,7 +1662,9 @@ useEffect(() => {
                           <Grid
                             size={12}
                             display="flex"
-                            alignItems="center"
+                            flexDirection={isMobile? "column":"row"}
+                            gap={isMobile ? 1 : 0}
+                            alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
                           >
                             <Grid size={isMobile ? 12 : 2}>
@@ -1670,8 +1672,9 @@ useEffect(() => {
                                 Scored Vote {voteIndex + 1}
                               </InputLabel>
                             </Grid>
-                            <Grid size={isMobile ? 12 : 7.5}>
+                            <Grid size={isMobile ? 11 : 7.5}>
                               <Autocomplete
+                              className="textField"
                                 options={getFilteredVotes(termIndex)}
                                 getOptionLabel={(option) => option.title || ""}
                                 value={
@@ -1714,8 +1717,8 @@ useEffect(() => {
                                 }
                               />
                             </Grid>
-                            <Grid size={isMobile ? 12 : 1.6}>
-                              <FormControl fullWidth>
+                            <Grid size={isMobile ? 5 : 1.6}>
+                              <FormControl fullWidth className="textField">
                                 <Select
                                   value={vote.score || ""}
                                   onChange={(event) =>
@@ -1737,6 +1740,7 @@ useEffect(() => {
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
+                              className="paddingLeft"
                                 onClick={() =>
                                   handleRemoveVote(termIndex, voteIndex)
                                 }
@@ -1773,7 +1777,9 @@ useEffect(() => {
                           <Grid
                             size={12}
                             display="flex"
-                            alignItems="center"
+                            flexDirection={isMobile? "column":"row"}
+                            gap={isMobile ? 1 : 0}
+                            alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
                           >
                             <Grid size={isMobile ? 12 : 2}>
@@ -1781,8 +1787,9 @@ useEffect(() => {
                                 Tracked Activity {activityIndex + 1}
                               </InputLabel>
                             </Grid>
-                            <Grid size={isMobile ? 8 : 7.5}>
+                            <Grid size={isMobile ? 11 : 7.5}>
                               <Autocomplete
+                              className="textField"
                                 value={
                                   getFilteredActivities(termIndex).find(
                                     (a) => a._id === activity.activityId
@@ -1828,8 +1835,8 @@ useEffect(() => {
                                 }
                               />
                             </Grid>
-                            <Grid size={isMobile ? 6 : 1.6}>
-                              <FormControl fullWidth>
+                            <Grid size={isMobile ? 5 : 1.6}>
+                              <FormControl fullWidth className="paddingLeft">
                                 <Select
                                   value={activity?.score || ""}
                                   onChange={(event) =>
@@ -1851,6 +1858,7 @@ useEffect(() => {
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
+                              className="paddingLeft"
                                 onClick={() =>
                                   handleRemoveActivity(termIndex,activityIndex)
                                 }

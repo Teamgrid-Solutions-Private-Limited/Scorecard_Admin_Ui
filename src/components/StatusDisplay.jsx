@@ -449,7 +449,7 @@ const StatusDisplay = ({
         {/* Status icon bubble */}
         <Box
           sx={{
-            p: 1,
+            p: {xs:0.4,sm:1},
             borderRadius: "50%",
             backgroundColor: `rgba(${formData.publishStatus === "draft"
               ? "66, 165, 245"

@@ -2459,47 +2459,39 @@ return (
             />
           </Paper>
 
-          {/* Render each term in senatorTermData */}
-          {senatorTermData.map((term, termIndex) => (
-            <Paper
-              key={termIndex}
-              sx={{
-                width: "100%",
-                mb: 6,
-                position: "relative",
-                bgcolor: "#fff",
-                borderRadius: 0.8,
-                border: "1px solid",
-                borderColor: "divider",
-              }}
-            >
-              <SenatorTermSection
-                term={term}
-                termIndex={termIndex}
-                isMobile={isMobile}
-                terms={terms}
-                getAvailableTerms={getAvailableTerms}
-                getValidTermId={getValidTermId}
-                handleTermChange={handleTermChange}
-                handleSwitchChange={handleSwitchChange}
-                handleSummaryChange={handleSummaryChange}
-                allVotes={allVotes}
-                validateVoteInTermRange={validateVoteInTermRange}
-                handleVoteChange={handleVoteChange}
-                handleRemoveVote={handleRemoveVote}
-                handleAddVote={handleAddVote}
-                allActivities={allActivities}
-                validateActivityInTermRange={validateActivityInTermRange}
-                handleActivityChange={handleActivityChange}
-                handleRemoveActivity={handleRemoveActivity}
-                handleAddActivity={handleAddActivity}
-                handleRemoveTerm={handleRemoveTerm}
-                handleAddPastVote={handleAddPastVote}
-                handlePastVoteChange={handlePastVoteChange}
-                handleRemovePastVote={handleRemovePastVote}
-              />
-            </Paper>
-          ))}
+            {/* Render each term in senatorTermData */}
+            {senatorTermData.map((term, termIndex) => (
+              <Paper
+                key={termIndex}
+                className="termData-paper"
+              >
+                <SenatorTermSection
+                  term={term}
+                  termIndex={termIndex}
+                  isMobile={isMobile}
+                  terms={terms}
+                  getAvailableTerms={getAvailableTerms}
+                  getValidTermId={getValidTermId}
+                  handleTermChange={handleTermChange}
+                  handleSwitchChange={handleSwitchChange}
+                  handleSummaryChange={handleSummaryChange}
+                  allVotes={allVotes}
+                  validateVoteInTermRange={validateVoteInTermRange}
+                  handleVoteChange={handleVoteChange}
+                  handleRemoveVote={handleRemoveVote}
+                  handleAddVote={handleAddVote}
+                  allActivities={allActivities}
+                  validateActivityInTermRange={validateActivityInTermRange}
+                  handleActivityChange={handleActivityChange}
+                  handleRemoveActivity={handleRemoveActivity}
+                  handleAddActivity={handleAddActivity}
+                  handleRemoveTerm={handleRemoveTerm}
+                  handleAddPastVote={handleAddPastVote}
+                  handlePastVoteChange={handlePastVoteChange}
+                  handleRemovePastVote={handleRemovePastVote}
+                />
+              </Paper>
+            ))}
 
           {/* Add Term Button */}
           <Button

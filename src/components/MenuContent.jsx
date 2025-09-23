@@ -172,7 +172,7 @@ export default function MenuContent() {
           open={openLogoutDialog}
           onClose={handleCancelLogout}
           PaperProps={{
-            sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 400 },
+            sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
           }}
       >
         <DialogTitle

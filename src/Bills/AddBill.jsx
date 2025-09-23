@@ -686,9 +686,9 @@ return () => {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: {xs: 2, md: 3},
               // pb: 5,
-              mt: { xs: 8, md: 2 },
+              mt:  2 ,
             }}
           >
             <Stack
@@ -1005,12 +1005,12 @@ return () => {
                   columnSpacing={2}
                   alignItems={"center"}
                   py={3}
-                  pr={7}
+                  pr={isMobile?3:7}
                 >
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Type</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <Select
                         value={formData.type}
@@ -1024,10 +1024,10 @@ return () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Title</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1048,7 +1048,7 @@ return () => {
                       Short Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1096,7 +1096,7 @@ return () => {
                       Long Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1137,10 +1137,10 @@ return () => {
                     />
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Date</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <TextField
                         type="date"
@@ -1157,10 +1157,10 @@ return () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile ? 6 : 2}>
+                  <Grid size={isMobile ? 4 : 2}>
                     <InputLabel className="label">Congress</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 6 : 10}>
+                  <Grid size={isMobile ? 8 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1176,10 +1176,10 @@ return () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Term</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <TextField
                         value={formData.termId || ""}
@@ -1213,8 +1213,8 @@ return () => {
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">Roll Call</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
-                    <FormControl fullWidth>
+                  <Grid size={isMobile ? 11 : 10}>
+                    <FormControl fullWidth className="paddingLeft"> 
                       <TextField
                         className="customTextField"
                         fullWidth
@@ -1244,8 +1244,8 @@ return () => {
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">Read More</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
-                    <FormControl fullWidth>
+                  <Grid size={isMobile ? 11 : 10}>
+                    <FormControl fullWidth className="paddingLeft">
                       <Box
                         sx={{
                           display: "flex",
@@ -1407,11 +1407,11 @@ return () => {
                       </Box>
                     </FormControl>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 2}>
+                  <Grid size={isMobile ? 5 : 2}>
                     <InputLabel className="label">SBA Position</InputLabel>
                   </Grid>
 
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid size={isMobile ? 7 : 10}>
                     <FormControl
                       fullWidth
                       sx={{

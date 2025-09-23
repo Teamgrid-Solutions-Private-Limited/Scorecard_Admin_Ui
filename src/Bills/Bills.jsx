@@ -233,7 +233,7 @@ export default function Bills(props) {
              <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
-                alignItems="center"
+                alignItems={{xs:"flex-start", sm:"center"}}
                 sx={{ ml: "auto", width: { xs: "100%", sm: "auto" } }}
               >
                 <TextField
@@ -443,7 +443,7 @@ export default function Bills(props) {
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
         PaperProps={{
-          sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+          sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
         }}
       >
         <DialogTitle className="dialogBox">

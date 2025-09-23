@@ -384,7 +384,7 @@ export default function ManageUser(props) {
               open={openDeleteDialog}
               onClose={() => setOpenDeleteDialog(false)}
               PaperProps={{
-                sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+                sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
               }}
             >
               <DialogTitle className="dialogBox">
