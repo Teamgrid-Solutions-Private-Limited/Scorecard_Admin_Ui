@@ -2432,15 +2432,7 @@ export default function AddSenator(props) {
             {senatorTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-                sx={{
-                  width: "100%",
-                  marginBottom: "50px",
-                  position: "relative",
-                  bgcolor: "#fff",
-                  borderRadius: 0.8,
-                  border: "1px solid",
-                  borderColor: "divider",
-                }}
+                className="termData-paper"
               >
                 <SenatorTermSection
                   term={term}

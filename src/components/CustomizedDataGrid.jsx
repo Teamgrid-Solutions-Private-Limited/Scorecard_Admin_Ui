@@ -170,6 +170,16 @@ export default function CustomizedDataGrid({
 
   const navigate = useNavigate();
 
+    const storageKey = `dataGridPagination_${type}`;
+  const [paginationModel, setPaginationModel] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : { page: 0, pageSize: 20 };
+  });
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(paginationModel));
+  }, [paginationModel, storageKey]);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -431,7 +441,7 @@ export default function CustomizedDataGrid({
             field: "nickName",
             flex: 1.5,
             headerName: "Nick Name",
-            minWidth: 120,
+            minWidth: 140,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
                 {params.colDef.headerName}
@@ -462,7 +472,7 @@ export default function CustomizedDataGrid({
               field: "role",
               flex: 1,
               headerName: "Role",
-              minWidth: 100,
+              minWidth: 110,
               renderHeader: (params) => (
                 <Typography sx={{ fontWeight: "bold" }}>
                   {params.colDef.headerName}
@@ -475,8 +485,8 @@ export default function CustomizedDataGrid({
               field: "action",
               flex: 1,
               headerName: "Action",
-              minWidth: 60,
-              headerAlign: "right",
+              minWidth: isMobile?130:60,
+              headerAlign:isMobile?"center":"right",
               align: "right",
               renderHeader: (params) => (
                 <Typography sx={{ paddingRight: "32px", fontWeight: "bold" }}>
@@ -489,8 +499,8 @@ export default function CustomizedDataGrid({
                     display: "flex",
                     flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "flex-end",
-                    paddingRight: "32px",
+                    justifyContent: isMobile? "center":"flex-end",
+                    paddingRight: isMobile?"0px":"32px",
                     columnGap: "10px",
                     height: "100%",
                   }}
@@ -774,7 +784,8 @@ export default function CustomizedDataGrid({
         columns={columns}
         loading={loading}
         getRowId={(row) => row._id}
-        initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel} 
         pageSizeOptions={[10, 20, 50]}
         disableColumnFilter
         disableColumnSelector

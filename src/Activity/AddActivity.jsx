@@ -624,9 +624,9 @@ useEffect(() => {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+               mx: {xs: 2, md: 3},
               // pb: 5,
-              mt: { xs: 8, md: 2 },
+              mt: 2 ,
             }}
           >
             <Stack
@@ -945,13 +945,7 @@ useEffect(() => {
               <Box sx={{ padding: 0 }}>
                 <Typography
                   fontSize={"1rem"}
-                  fontWeight={500}
-                  sx={{
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    p: 1.5,
-                    px: 3,
-                  }}
+                  className="customTypography"
                 >
                   Activity Information
                 </Typography>
@@ -961,12 +955,12 @@ useEffect(() => {
                   columnSpacing={2}
                   alignItems={"center"}
                   py={3}
-                  pr={7}
+                   pr={isMobile?3:7}
                 >
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Type</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <Select
                         value={formData.type}
@@ -980,10 +974,10 @@ useEffect(() => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Name</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1004,7 +998,7 @@ useEffect(() => {
                       Activity Details
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1043,10 +1037,10 @@ useEffect(() => {
                       }}
                     />
                   </Grid>
-                  <Grid size={isMobile ? 12 : 2}>
+                  <Grid size={isMobile ? 4 : 2}>
                     <InputLabel className="label">Congress</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid size={isMobile ? 8 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1062,10 +1056,10 @@ useEffect(() => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Date</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <TextField
                         type="date"
@@ -1085,8 +1079,8 @@ useEffect(() => {
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">Read More</InputLabel>
                   </Grid>
-                   <Grid size={isMobile ? 12 : 10}>
-                    <FormControl fullWidth>
+                   <Grid size={isMobile ? 11 : 10}>
+                    <FormControl fullWidth className="paddingLeft">
                       <Box
                         sx={{
                           display: "flex",
@@ -1249,8 +1243,9 @@ useEffect(() => {
                     </InputLabel>
                   </Grid>
 
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 7 : 10}>
                     <FormControl
+                    className="paddingLeft"
                       sx={{
                         fontFamily: "'Be Vietnam Pro', sans-serif",
                         "& .MuiFormControlLabel-label": {
