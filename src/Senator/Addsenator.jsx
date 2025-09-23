@@ -1016,7 +1016,6 @@ export default function AddSenator(props) {
 
   const termPreFill = () => {
     if (senatorData?.currentSenator?.length > 0) {
-
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
         if (!matchedTerm) {
@@ -1327,7 +1326,7 @@ export default function AddSenator(props) {
                     }
                   }
                 }
-                 
+
               }
             }
           });
@@ -1338,13 +1337,7 @@ export default function AddSenator(props) {
             editedFields: currentEditedFields,
             fieldEditors: currentFieldEditors
           }));
-          
-          // Update formData with the new editedFields and fieldEditors
-          // setFormData(prev => ({
-          //   ...prev,
-          //   editedFields: currentEditedFields,
-          //   fieldEditors: currentFieldEditors
-          // }));
+
 
         } else if (
           Array.isArray(term.pastVotesScore) &&
@@ -1381,7 +1374,52 @@ export default function AddSenator(props) {
         } else {
           pastVotesScore = [{ voteId: "", score: "" }];
         }
-       
+
+// Collect DB pastVotes if present
+let dbPastVotes = [];
+if (
+  Array.isArray(term.pastVotesScore) &&
+  term.pastVotesScore.length > 0 &&
+  term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
+) {
+  dbPastVotes = term.pastVotesScore
+    .filter((vote) => {
+      const voteId = vote.voteId?._id || vote.voteId;
+      return voteId && voteId.toString().trim() !== "";
+    })
+    .map((vote) => {
+      let scoreValue = "";
+      const dbScore = vote.score?.toLowerCase();
+      if (dbScore?.includes("yea")) scoreValue = "yea";
+      else if (dbScore?.includes("nay")) scoreValue = "nay";
+      else if (dbScore?.includes("other")) scoreValue = "other";
+      else scoreValue = vote.score || "";
+
+      const voteData = allVotes.find(
+        (v) => v._id === (vote.voteId?._id || vote.voteId)
+      );
+
+      return {
+        voteId: vote.voteId?._id || vote.voteId || "",
+        score: scoreValue,
+        title: voteData?.title || vote.voteId?.title || vote.title || "",
+        _id: vote._id || undefined,
+      };
+    });
+}
+
+// Merge orphanVotes + dbPastVotes, dedupe by voteId
+const pastVotesMap = new Map();
+[...dbPastVotes, ...orphanVotes].forEach((v) => {
+  if (v.voteId) pastVotesMap.set(v.voteId, v);
+});
+
+ pastVotesScore = Array.from(pastVotesMap.values());
+
+// Fallback if empty
+if (pastVotesScore.length === 0) {
+  pastVotesScore = [{ voteId: "", score: "" }];
+}
         const getActivityScore = (activityId) => {
           const senAct = senatorActivities.find((a) => {
             const aId =
@@ -2396,17 +2434,17 @@ export default function AddSenator(props) {
             }}
           >
             <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
-            
+
             {!(formData.publishStatus === "under review" && !hasSelectedTerms()) && (
               <StatusDisplay
-                  userRole={userRole}
-                  formData={formData}
-                  localChanges={localChanges}
-                  statusData={statusData}
-                  termData={senatorTermData}
-                  mode="senator"
-                />
-              )}
+                userRole={userRole}
+                formData={formData}
+                localChanges={localChanges}
+                statusData={statusData}
+                termData={senatorTermData}
+                mode="senator"
+              />
+            )}
 
 
             <Paper className="customPaper">
