@@ -64,6 +64,7 @@ import {
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import DialogBox from "../components/DialogBox";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -73,6 +74,7 @@ export default function AddSenator(props) {
   const { votes } = useSelector((state) => state.vote);
   const { activities } = useSelector((state) => state.activity);
   const senatorData = useSelector((state) => state.senatorData);
+  const loadingg = useSelector((state) => state.senatorData.loading);
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [originalTermData, setOriginalTermData] = useState([]);
@@ -80,6 +82,9 @@ export default function AddSenator(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
+
+    const [loading, setLoading] = useState(loadingg);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -885,7 +890,6 @@ export default function AddSenator(props) {
 
   const termPreFill = () => {
     if (senatorData?.currentSenator?.length > 0) {
-
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
         if (!matchedTerm) {
@@ -1194,7 +1198,7 @@ export default function AddSenator(props) {
                     }
                   }
                 }
-                 
+
               }
             }
           });
@@ -1242,7 +1246,52 @@ export default function AddSenator(props) {
         } else {
           pastVotesScore = [{ voteId: "", score: "" }];
         }
-       
+
+// Collect DB pastVotes if present
+let dbPastVotes = [];
+if (
+  Array.isArray(term.pastVotesScore) &&
+  term.pastVotesScore.length > 0 &&
+  term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
+) {
+  dbPastVotes = term.pastVotesScore
+    .filter((vote) => {
+      const voteId = vote.voteId?._id || vote.voteId;
+      return voteId && voteId.toString().trim() !== "";
+    })
+    .map((vote) => {
+      let scoreValue = "";
+      const dbScore = vote.score?.toLowerCase();
+      if (dbScore?.includes("yea")) scoreValue = "yea";
+      else if (dbScore?.includes("nay")) scoreValue = "nay";
+      else if (dbScore?.includes("other")) scoreValue = "other";
+      else scoreValue = vote.score || "";
+
+      const voteData = allVotes.find(
+        (v) => v._id === (vote.voteId?._id || vote.voteId)
+      );
+
+      return {
+        voteId: vote.voteId?._id || vote.voteId || "",
+        score: scoreValue,
+        title: voteData?.title || vote.voteId?.title || vote.title || "",
+        _id: vote._id || undefined,
+      };
+    });
+}
+
+// Merge orphanVotes + dbPastVotes, dedupe by voteId
+const pastVotesMap = new Map();
+[...dbPastVotes, ...orphanVotes].forEach((v) => {
+  if (v.voteId) pastVotesMap.set(v.voteId, v);
+});
+
+ pastVotesScore = Array.from(pastVotesMap.values());
+
+// Fallback if empty
+if (pastVotesScore.length === 0) {
+  pastVotesScore = [{ voteId: "", score: "" }];
+}
         const getActivityScore = (activityId) => {
           const senAct = senatorActivities.find((a) => {
             const aId =
@@ -1526,12 +1575,9 @@ export default function AddSenator(props) {
   useEffect(() => {
     termPreFill();
   }, [id, senatorData]);
-
-  const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
   const preFillForm = () => {
     if (senator) {
       const termId =
@@ -2217,7 +2263,11 @@ export default function AddSenator(props) {
 
   return (
     <AppTheme key={componentKey}>
-      <LoadingOverlay loading={loading} />
+      {loadingg && (
+  <Box className="circularLoader">
+    <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+  </Box>
+)}
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -2243,17 +2293,17 @@ export default function AddSenator(props) {
             }}
           >
             <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
-            
+
             {!(formData.publishStatus === "under review" && !hasSelectedTerms()) && (
               <StatusDisplay
-                  userRole={userRole}
-                  formData={formData}
-                  localChanges={localChanges}
-                  statusData={statusData}
-                  termData={senatorTermData}
-                  mode="senator"
-                />
-              )}
+                userRole={userRole}
+                formData={formData}
+                localChanges={localChanges}
+                statusData={statusData}
+                termData={senatorTermData}
+                mode="senator"
+              />
+            )}
 
 
             <Paper className="customPaper">

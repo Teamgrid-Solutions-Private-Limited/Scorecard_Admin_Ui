@@ -55,6 +55,7 @@ export default function AddBill(props) {
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
   const { terms } = useSelector((state) => state.term);
+  const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -150,7 +151,7 @@ export default function AddBill(props) {
 
   // When selectedVote changes, set editedFields from backend
   useEffect(() => {
-    if (selectedVote) {
+    if (selectedVote && !isDataFetching) {
       preFillForm();
       setEditedFields(
         Array.isArray(selectedVote.editedFields)
@@ -158,7 +159,7 @@ export default function AddBill(props) {
           : []
       );
     }
-  }, [selectedVote]);
+  }, [selectedVote , isDataFetching]);
 
   // When formData changes, update editedFields (track all changes)
   useEffect(() => {
@@ -174,15 +175,35 @@ export default function AddBill(props) {
   }, [formData, originalFormData]);
 
   useEffect(() => {
-    if (id) {
-      dispatch(getVoteById(id));
+  const fetchData = async () => {
+    setIsDataFetching(true); // optional loading state
+    try {
+      if (id) {
+        // Fetch id-dependent data concurrently
+        await Promise.all([
+          dispatch(getVoteById(id)).unwrap(),
+          dispatch(getAllTerms()).unwrap(),
+        ]);
+      }
+return () => {
+        dispatch(clearVoteState());
+}
+    
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setSnackbarMessage("Error loading data. Please try again.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    } finally {
+      setIsDataFetching(false);
     }
-    dispatch(getAllTerms());
+  };
 
-    return () => {
-      dispatch(clearVoteState());
-    };
-  }, [id, dispatch]);
+  fetchData();
+
+
+}, [id, dispatch]);
+
 
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
@@ -592,11 +613,11 @@ export default function AddBill(props) {
 
   return (
     <AppTheme>
-      {loading && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+        {(loading || isDataFetching) && (
+      <Box className="circularLoader">
+        <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+      </Box>
+    )}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
@@ -649,6 +670,7 @@ export default function AddBill(props) {
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
           })}
+          className={`${isDataFetching ? "fetching" : "notFetching"}`}
         >
           <FixedHeader />
           <MobileHeader />
