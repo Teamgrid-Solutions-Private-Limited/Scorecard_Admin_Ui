@@ -355,7 +355,7 @@ export default function Bills(props) {
 
             {isBulkEditMode && (
               <Box className="bulkEditContainer">
-                <Typography variant="subtitle1">
+                <Typography variant="subtitle1" sx={{fontSize:{xs:"11px",md:"14px"}}}>
                   {selectedBills.length} bill(s) selected
                 </Typography>
 
@@ -366,7 +366,12 @@ export default function Bills(props) {
                     value={bulkSbaPosition}
                     onChange={(e) => setBulkSbaPosition(e.target.value)}
                     size="small"
-                    sx={{ minWidth: 160 }}
+                    sx={{ minWidth: {xs:130 ,md:160}}}
+                    InputLabelProps={{
+                            sx: {
+                              fontSize: {xs:"0.7rem",md:"0.9rem"}, 
+                            },
+                          }}
                   >
                     <MenuItem value="Yes">Yes</MenuItem>
                     <MenuItem value="No">No</MenuItem>

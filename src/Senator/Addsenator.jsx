@@ -3,8 +3,6 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-
-// MUI Core
 import {
   alpha,
   styled,
@@ -15,52 +13,19 @@ import {
   Box,
   Paper,
   Stack,
-  Typography,
-  TextField,
-  Grid,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  Select,
   Button,
-  ButtonGroup,
-  Switch,
-  Chip,
-  Autocomplete,
-  List,
-  ListItem,
-  ListItemText,
-  Snackbar,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
 } from "@mui/material";
-
-// MUI Components
-import MuiAlert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-
-// MUI Icons
 import {
   CloudUpload as CloudUploadIcon,
   DeleteForever as DeleteForeverIcon,
   Add as AddIcon,
   HourglassTop,
-  Verified,
   Drafts,
-  CheckCircle,
   Circle as CircleIcon,
-  HourglassEmpty,
 } from "@mui/icons-material";
-
-// External
-import { Editor } from "@tinymce/tinymce-react";
 
 // Shared Theme & Layout
 import AppTheme from "../../src/shared-theme/AppTheme";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
@@ -98,7 +63,6 @@ import {
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
-import { rating } from "../../src/Dashboard/global/common";
 import DialogBox from "../components/DialogBox";
 
 export default function AddSenator(props) {
@@ -125,7 +89,7 @@ export default function AddSenator(props) {
     message: "",
     type: "",
   });
-  const [billSearch, setBillSearch] = useState("");
+
   const validateVoteInTermRange = (voteId, termId) => {
     if (!voteId || !termId)
       return { isValid: false, message: "Invalid selection" };
@@ -206,32 +170,18 @@ export default function AddSenator(props) {
 
   const allActivities = useSelector((state) => state.activity.activities);
 
-  const startYear = senatorData?.currentSenator?.[0]?.termId?.startYear;
-
   const termStart = new Date(
     `${senatorData?.currentSenator?.[0]?.termId?.startYear}-01-03`
   );
   const termEnd = new Date(
     `${senatorData?.currentSenator?.[0]?.termId?.endYear}-01-02`
   );
-  const filteredVotes = allVotes.filter((vote) => {
-    const voteDate = new Date(vote.date);
-    return (
-      voteDate >= termStart &&
-      voteDate <= termEnd &&
-      senatorData?.currentSenator?.[0]?.termId?.congresses.includes(
-        Number(vote.congress)
-      )
-    );
-  });
-
-
+ 
   const senatorr = senatorData?.currentSenator?.[0];
   const senatorVotes = senatorr?.votesScore || [];
 
   const participatedVotes = allVotes.filter((vote) => {
     const voteDate = new Date(vote.date);
-
 
     const inTerm =
       voteDate >= termStart &&
@@ -239,8 +189,6 @@ export default function AddSenator(props) {
       senatorr?.termId?.congresses.includes(Number(vote.congress));
 
     if (!inTerm) return false;
-
-
     return senatorVotes.some((v) => {
       if (!v?.score || v.score.trim() === "") return false;
 
@@ -254,16 +202,7 @@ export default function AddSenator(props) {
     });
   });
 
-  const filteredActivities = allActivities.filter((activity) => {
-    const activityDate = new Date(activity.date);
-    return (
-      activityDate >= termStart &&
-      activityDate <= termEnd &&
-      senatorData?.currentSenator?.[0]?.termId?.congresses.includes(
-        Number(activity.congress)
-      )
-    );
-  });
+
   // Helper function to check if a vote belongs to a term
   const doesVoteBelongToTerm = (voteData, term) => {
     if (!voteData || !term) return false;
@@ -299,34 +238,6 @@ export default function AddSenator(props) {
   };
 
   const senatorActivities = senatorr?.activitiesScore || [];
-
-  const participatedActivities = allActivities.filter((activity) => {
-    const activityDate = new Date(activity.date);
-
-    const inTerm =
-      activityDate >= termStart &&
-      activityDate <= termEnd &&
-      senatorr?.termId?.congresses.includes(Number(activity.congress));
-
-    if (!inTerm) return false;
-
-
-    return senatorActivities.some((a) => {
-      if (!a?.score || a.score.trim() === "") return false;
-
-      const aId =
-        typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
-
-      return (
-        aId === activity._id ||
-        (a.actionId && activity.actionId && a.actionId === activity.actionId) ||
-        (a.billNumber &&
-          activity.billNumber &&
-          a.billNumber === activity.billNumber)
-      );
-    });
-  });
-
 
   const fieldLabels = {
     // Senator fields
@@ -385,13 +296,11 @@ export default function AddSenator(props) {
 
     return terms?.filter((term) => !selectedTermIds.includes(term._id)) || [];
   };
+
   // Helper function to get display name
   const getFieldDisplayName = (field) => {
-    // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
       return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
         }`;
     }
@@ -411,7 +320,6 @@ export default function AddSenator(props) {
     {
       senateId: id,
       summary: "",
-      // summaries: [{ content: "" }],
       rating: "",
       votesScore: [{ voteId: "", score: "" }], //
       activitiesScore: [{ activityId: "", score: "" }],
@@ -430,19 +338,16 @@ export default function AddSenator(props) {
 
         let updatedTerm = { ...term, [name]: value };
 
-        // SPECIAL HANDLING: If termId is being changed, update filtered votes
         if (name === "termId" && value) {
           const selectedTerm = terms?.find((t) => t._id === value);
 
           if (selectedTerm) {
-            // Recalculate filtered votes based on new term - only show votes senator participated in
             const newTermStart = new Date(`${selectedTerm.startYear}-01-03`);
             const newTermEnd = new Date(`${selectedTerm.endYear}-01-02`);
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
 
-              // Must be inside the term range
               const inTerm =
                 voteDate >= newTermStart &&
                 voteDate <= newTermEnd &&
@@ -472,7 +377,6 @@ export default function AddSenator(props) {
 
             // Create new votesScore array with senator's actual scores
             updatedTerm.votesScore = newFilteredVotes.map((vote) => {
-              // Find the senator's actual score for this vote
               const senatorVote = senatorVotes.find((v) => {
                 const vId =
                   typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
@@ -675,7 +579,6 @@ export default function AddSenator(props) {
     );
   };
 
-
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -728,7 +631,6 @@ export default function AddSenator(props) {
           : term
       );
 
-
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -739,7 +641,6 @@ export default function AddSenator(props) {
       return updatedTerms;
     });
   };
-
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
@@ -800,7 +701,6 @@ export default function AddSenator(props) {
     );
   };
 
-
   const handleRemoveActivity = (termIndex, activityIndex) => {
     setSenatorTermData((prev) => {
       const updatedTerms = prev.map((term, index) =>
@@ -813,7 +713,6 @@ export default function AddSenator(props) {
           }
           : term
       );
-
 
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
@@ -939,36 +838,7 @@ export default function AddSenator(props) {
     });
   };
 
-
   const contentRefs = useRef([]);
-  const handleEditorChange = useCallback((content, termIndex) => {
-    const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
-
-
-    setLocalChanges((prev) => {
-      return prev.includes(fieldName) ? prev : [...prev, fieldName];
-    });
-
-
-    if (!contentRefs.current[termIndex]) {
-      contentRefs.current[termIndex] = {};
-    }
-    contentRefs.current[termIndex].content = content;
-  }, []);
-
-  const handleBlur = useCallback((termIndex) => {
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-            ...term,
-            summary: contentRefs.current[termIndex]?.content || "",
-          }
-          : term
-      )
-    );
-  }, []);
-
 
   const handleAddTerm = () => {
     setSenatorTermData((prev) => [
@@ -976,15 +846,14 @@ export default function AddSenator(props) {
       {
         senateId: id,
         summary: "",
-        // summaries: [{ content: "" }],
         rating: "",
-        votesScore: [{ voteId: "", score: "" }], // Start with empty, will be populated when term is selected
+        votesScore: [{ voteId: "", score: "" }], 
         activitiesScore: [{ activityId: "", score: "" }],
         pastVotesScore: [{ voteId: "", score: "" }],
         currentTerm: false,
         termId: null,
-        editedFields: [], // Initialize empty
-        fieldEditors: {}, // Initialize empty
+        editedFields: [], 
+        fieldEditors: {}, 
         isNew: true,
       },
     ]);
@@ -1237,8 +1106,6 @@ export default function AddSenator(props) {
           // Get current fieldEditors from formData or initialize empty object
           const currentFieldEditors = { ...(formData?.fieldEditors || {}) };
 
-          // Add orphan votes to editedFields and fieldEditors
-          // Add orphan votes to editedFields and fieldEditors
           orphanVotes.forEach((orphanVote) => {
             if (orphanVote.voteId && orphanVote.voteId !== "") {
               const voteData = allVotes.find(v => v._id === orphanVote.voteId);
@@ -1339,12 +1206,6 @@ export default function AddSenator(props) {
             fieldEditors: currentFieldEditors
           }));
           
-          // Update formData with the new editedFields and fieldEditors
-          // setFormData(prev => ({
-          //   ...prev,
-          //   editedFields: currentEditedFields,
-          //   fieldEditors: currentFieldEditors
-          // }));
 
         } else if (
           Array.isArray(term.pastVotesScore) &&
@@ -1652,7 +1513,6 @@ export default function AddSenator(props) {
       });
     });
 
-
     const backendEditedFields = Array.isArray(formData.editedFields)
       ? formData.editedFields
       : [];
@@ -1771,7 +1631,6 @@ export default function AddSenator(props) {
     });
   };
 
-
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -1853,8 +1712,6 @@ export default function AddSenator(props) {
         );
         setDeletedTermIds([]);
       }
-
-
 
       const existingEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
@@ -2131,9 +1988,6 @@ export default function AddSenator(props) {
           return;
         }
 
-
-
-
         editorKey = change;
         updatedFieldEditors[editorKey] = currentEditor;
         changedFieldsInThisSession.add(editorKey);
@@ -2239,7 +2093,6 @@ export default function AddSenator(props) {
 
       await Promise.all(termPromises);
 
-      // Reload data
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
       await dispatch(getSenatorById(id)).unwrap();
 
@@ -2360,12 +2213,6 @@ export default function AddSenator(props) {
     return termExists ? termId : "";
   };
 
-  // Add this helper function to validate activity IDs
-  const getValidVoteId = (voteId) => {
-    if (!votes || votes.length === 0) return "";
-    const voteExists = votes.some((v) => v._id === voteId);
-    return voteExists ? voteId : "";
-  };
 
 
   return (
@@ -2460,7 +2307,7 @@ export default function AddSenator(props) {
               </Paper>
             ))}
 
-            {/* Add Term Button */}
+
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
