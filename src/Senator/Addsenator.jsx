@@ -1664,9 +1664,9 @@ export default function AddSenator(props) {
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
 useEffect(() => {
-  if (!isDataFetching && id && senatorData) {
+  
     termPreFill();
-  }
+  
 }, [id, senatorData, isDataFetching]);
 
   const [loading, setLoading] = useState(false);
@@ -1697,24 +1697,39 @@ useEffect(() => {
       setOriginalFormData(JSON.parse(JSON.stringify(newFormData)));
     }
   };
-
- useEffect(() => {
-  const fetchData = async () => {
-    setIsDataFetching(true);
+// Runs only once on mount for global data
+useEffect(() => {
+  const fetchGlobalData = async () => {
     try {
-      if (id) {
-        await Promise.all([
-          dispatch(getSenatorById(id)),
-          dispatch(getSenatorDataBySenetorId(id))
-        ]);
-      }
       await Promise.all([
         dispatch(getAllTerms()),
         dispatch(getAllVotes()),
-        dispatch(getAllActivity())
+        dispatch(getAllActivity()),
       ]);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching global data:", error);
+      setSnackbarMessage("Error loading data. Please try again.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  };
+
+  fetchGlobalData();
+}, [dispatch]);
+
+// Runs when id changes for senator-specific data
+useEffect(() => {
+  if (!id) return;
+
+  const fetchSenatorData = async () => {
+    setIsDataFetching(true);
+    try {
+      await Promise.all([
+        dispatch(getSenatorById(id)),
+        dispatch(getSenatorDataBySenetorId(id)),
+      ]);
+    } catch (error) {
+      console.error("Error fetching senator data:", error);
       setSnackbarMessage("Error loading data. Please try again.");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -1723,7 +1738,7 @@ useEffect(() => {
     }
   };
 
-  fetchData();
+  fetchSenatorData();
 
   return () => {
     dispatch(clearSenatorState());
@@ -1731,10 +1746,11 @@ useEffect(() => {
   };
 }, [id, dispatch]);
 
+
 useEffect(() => {
-  if (!isDataFetching && senator) {
+ 
     preFillForm();
-  }
+  
 }, [senator, terms, isDataFetching]);
 
   const handleChange = (event) => {
