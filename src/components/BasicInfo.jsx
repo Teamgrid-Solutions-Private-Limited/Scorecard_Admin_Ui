@@ -45,7 +45,7 @@ export default function SenatorBasicInfo({
         columnSpacing={2}
         alignItems={"center"}
         py={3}
-        px={mode === "representative" ? 9 : 0}
+        pl={{xs:0, sm: mode === "representative" ? 9 : 0}}
       >
         <Grid
           size={isMobile ? 12 : 2}
@@ -57,7 +57,7 @@ export default function SenatorBasicInfo({
               : "Senator's Name"}
           </InputLabel>
         </Grid>
-        <Grid size={isMobile ? 12 : 4}>
+        <Grid size={isMobile ? 10 : 4}>
           <TextField
             required
             id="title"
@@ -68,6 +68,7 @@ export default function SenatorBasicInfo({
             size="small"
             autoComplete="off"
             variant="outlined"
+            className="textField"
           />
         </Grid>
         <Grid size={isMobile ? 12 : 1}>
@@ -102,18 +103,11 @@ export default function SenatorBasicInfo({
         {mode === "senator" ? (
           <>
             <Grid size={isMobile ? 12 : 2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: isMobile ? "flex-start" : "flex-end",
-                  fontWeight: 500,
-                  my: 0,
-                }}
-              >
+              <InputLabel className="label">
                 State
               </InputLabel>
             </Grid>
-            <Grid size={isMobile ? 12 : 4}>
+            <Grid size={isMobile ? 10 : 4}>
               <TextField
                 id="state"
                 name="state"
@@ -123,6 +117,7 @@ export default function SenatorBasicInfo({
                 size="small"
                 autoComplete="off"
                 variant="outlined"
+                className="textField"
               />
             </Grid>
           </>
@@ -135,7 +130,7 @@ export default function SenatorBasicInfo({
                 District
               </InputLabel>
             </Grid>
-            <Grid size={isMobile ? 12 : 4}>
+            <Grid size={isMobile ? 10 : 4}>
               <TextField
                 id="district"
                 name="district"
@@ -145,6 +140,7 @@ export default function SenatorBasicInfo({
                 size="small"
                 autoComplete="off"
                 variant="outlined"
+                className="textField"
               />
             </Grid>
           </>
@@ -156,8 +152,8 @@ export default function SenatorBasicInfo({
             Party
           </InputLabel>
         </Grid>
-        <Grid size={isMobile ? 12 : 4}>
-          <FormControl fullWidth>
+        <Grid size={isMobile ? 10 : 4}>
+          <FormControl fullWidth className="paddingLeft ">
             <Select
               name="party"
               value={formData.party}
@@ -180,8 +176,8 @@ export default function SenatorBasicInfo({
               : "Senator's Photo"}
           </InputLabel>
         </Grid>
-        <Grid size={8}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Grid size={isMobile?10:8}>
+          <Box className="paddingLeft" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {formData.photo ? (
               <img
                 src={

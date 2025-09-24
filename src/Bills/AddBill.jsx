@@ -63,6 +63,7 @@ export default function AddBill(props) {
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
   const { terms } = useSelector((state) => state.term);
+  const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -158,7 +159,7 @@ export default function AddBill(props) {
 
   // When selectedVote changes, set editedFields from backend
   useEffect(() => {
-    if (selectedVote) {
+    if (selectedVote && !isDataFetching) {
       preFillForm();
       setEditedFields(
         Array.isArray(selectedVote.editedFields)
@@ -166,7 +167,7 @@ export default function AddBill(props) {
           : []
       );
     }
-  }, [selectedVote]);
+  }, [selectedVote , isDataFetching]);
 
   // When formData changes, update editedFields (track all changes)
   useEffect(() => {
@@ -182,15 +183,35 @@ export default function AddBill(props) {
   }, [formData, originalFormData]);
 
   useEffect(() => {
-    if (id) {
-      dispatch(getVoteById(id));
+  const fetchData = async () => {
+    setIsDataFetching(true); // optional loading state
+    try {
+      if (id) {
+        // Fetch id-dependent data concurrently
+        await Promise.all([
+          dispatch(getVoteById(id)).unwrap(),
+          dispatch(getAllTerms()).unwrap(),
+        ]);
+      }
+return () => {
+        dispatch(clearVoteState());
+}
+    
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setSnackbarMessage("Error loading data. Please try again.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    } finally {
+      setIsDataFetching(false);
     }
-    dispatch(getAllTerms());
+  };
 
-    return () => {
-      dispatch(clearVoteState());
-    };
-  }, [id, dispatch]);
+  fetchData();
+
+
+}, [id, dispatch]);
+
 
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
@@ -600,11 +621,11 @@ export default function AddBill(props) {
 
   return (
     <AppTheme>
-      {loading && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+        {(loading || isDataFetching) && (
+      <Box className="circularLoader">
+        <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+      </Box>
+    )}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
@@ -657,6 +678,7 @@ export default function AddBill(props) {
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
           })}
+          className={`${isDataFetching ? "fetching" : "notFetching"}`}
         >
           <FixedHeader />
           <MobileHeader />
@@ -664,9 +686,9 @@ export default function AddBill(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: {xs: 2, md: 3},
               // pb: 5,
-              mt: { xs: 8, md: 2 },
+              mt:  2 ,
             }}
           >
             <Stack
@@ -983,12 +1005,12 @@ export default function AddBill(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                   py={3}
-                  pr={7}
+                  pr={isMobile?3:7}
                 >
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Type</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <Select
                         value={formData.type}
@@ -1002,10 +1024,10 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Title</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1026,7 +1048,7 @@ export default function AddBill(props) {
                       Short Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1074,7 +1096,7 @@ export default function AddBill(props) {
                       Long Description
                     </InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1115,10 +1137,10 @@ export default function AddBill(props) {
                     />
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Date</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <TextField
                         type="date"
@@ -1135,10 +1157,10 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile ? 6 : 2}>
+                  <Grid size={isMobile ? 4 : 2}>
                     <InputLabel className="label">Congress</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 6 : 10}>
+                  <Grid size={isMobile ? 8 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1154,10 +1176,10 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile?3:2}>
                     <InputLabel className="label">Term</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile?9:10}>
                     <FormControl fullWidth>
                       <TextField
                         value={formData.termId || ""}
@@ -1191,8 +1213,8 @@ export default function AddBill(props) {
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">Roll Call</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
-                    <FormControl fullWidth>
+                  <Grid size={isMobile ? 11 : 10}>
+                    <FormControl fullWidth className="paddingLeft"> 
                       <TextField
                         className="customTextField"
                         fullWidth
@@ -1222,8 +1244,8 @@ export default function AddBill(props) {
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">Read More</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
-                    <FormControl fullWidth>
+                  <Grid size={isMobile ? 11 : 10}>
+                    <FormControl fullWidth className="paddingLeft">
                       <Box
                         sx={{
                           display: "flex",
@@ -1385,11 +1407,11 @@ export default function AddBill(props) {
                       </Box>
                     </FormControl>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 2}>
+                  <Grid size={isMobile ? 5 : 2}>
                     <InputLabel className="label">SBA Position</InputLabel>
                   </Grid>
 
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid size={isMobile ? 7 : 10}>
                     <FormControl
                       fullWidth
                       sx={{

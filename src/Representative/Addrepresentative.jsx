@@ -13,6 +13,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
+import CircularProgress from "@mui/material/CircularProgress";
 import {
   Dialog,
   DialogActions,
@@ -77,6 +78,7 @@ export default function Addrepresentative(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
+  const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
    const [selectionError, setSelectionError] = useState({
@@ -702,9 +704,11 @@ export default function Addrepresentative(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-  useEffect(() => {
+useEffect(() => {
+  if (!isDataFetching && id && houseData) {
     termPreFill();
-  }, [id, houseData]);
+  }
+}, [id, houseData, isDataFetching]);
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -729,23 +733,44 @@ export default function Addrepresentative(props) {
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getHouseById(id));
-      dispatch(getHouseDataByHouseId(id));
-    }
-    dispatch(getAllTerms());
-    dispatch(getAllVotes());
-    dispatch(getAllActivity());
+   useEffect(() => {
+    const fetchData = async () => {
+      setIsDataFetching(true);
+      try {
+        if (id) {
+          await Promise.all([
+            dispatch(getHouseById(id)),
+            dispatch(getHouseDataByHouseId(id))
+          ]);
+        }
+        await Promise.all([
+          dispatch(getAllTerms()),
+          dispatch(getAllVotes()),
+          dispatch(getAllActivity())
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setSnackbarMessage("Error loading data. Please try again.");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      } finally {
+        setIsDataFetching(false);
+      }
+    };
+  
+    fetchData();
+  
     return () => {
       dispatch(clearHouseState());
       dispatch(clearHouseDataState());
     };
   }, [id, dispatch]);
 
-  useEffect(() => {
+useEffect(() => {
+  if (!isDataFetching && house) {
     preFillForm();
-  }, [house, terms]);
+  }
+}, [house, terms, isDataFetching]);
 
 
 
@@ -1379,7 +1404,11 @@ export default function Addrepresentative(props) {
 
   return (
     <AppTheme key={componentKey}>
-      <LoadingOverlay loading={loading} />
+       {(loading || isDataFetching) && (
+            <Box className="circularLoader">
+              <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+            </Box>
+          )}
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -1391,6 +1420,7 @@ export default function Addrepresentative(props) {
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
           })}
+          className={`${isDataFetching ? "fetching" : "notFetching"}`}
         >
           <FixedHeader />
           <MobileHeader />
@@ -1632,7 +1662,9 @@ export default function Addrepresentative(props) {
                           <Grid
                             size={12}
                             display="flex"
-                            alignItems="center"
+                            flexDirection={isMobile? "column":"row"}
+                            gap={isMobile ? 1 : 0}
+                            alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
                           >
                             <Grid size={isMobile ? 12 : 2}>
@@ -1640,8 +1672,9 @@ export default function Addrepresentative(props) {
                                 Scored Vote {voteIndex + 1}
                               </InputLabel>
                             </Grid>
-                            <Grid size={isMobile ? 12 : 7.5}>
+                            <Grid size={isMobile ? 11 : 7.5}>
                               <Autocomplete
+                              className="textField"
                                 options={getFilteredVotes(termIndex)}
                                 getOptionLabel={(option) => option.title || ""}
                                 value={
@@ -1684,8 +1717,8 @@ export default function Addrepresentative(props) {
                                 }
                               />
                             </Grid>
-                            <Grid size={isMobile ? 12 : 1.6}>
-                              <FormControl fullWidth>
+                            <Grid size={isMobile ? 5 : 1.6}>
+                              <FormControl fullWidth className="textField">
                                 <Select
                                   value={vote.score || ""}
                                   onChange={(event) =>
@@ -1707,6 +1740,7 @@ export default function Addrepresentative(props) {
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
+                              className="paddingLeft"
                                 onClick={() =>
                                   handleRemoveVote(termIndex, voteIndex)
                                 }
@@ -1743,7 +1777,9 @@ export default function Addrepresentative(props) {
                           <Grid
                             size={12}
                             display="flex"
-                            alignItems="center"
+                            flexDirection={isMobile? "column":"row"}
+                            gap={isMobile ? 1 : 0}
+                            alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
                           >
                             <Grid size={isMobile ? 12 : 2}>
@@ -1751,8 +1787,9 @@ export default function Addrepresentative(props) {
                                 Tracked Activity {activityIndex + 1}
                               </InputLabel>
                             </Grid>
-                            <Grid size={isMobile ? 8 : 7.5}>
+                            <Grid size={isMobile ? 11 : 7.5}>
                               <Autocomplete
+                              className="textField"
                                 value={
                                   getFilteredActivities(termIndex).find(
                                     (a) => a._id === activity.activityId
@@ -1798,8 +1835,8 @@ export default function Addrepresentative(props) {
                                 }
                               />
                             </Grid>
-                            <Grid size={isMobile ? 6 : 1.6}>
-                              <FormControl fullWidth>
+                            <Grid size={isMobile ? 5 : 1.6}>
+                              <FormControl fullWidth className="paddingLeft">
                                 <Select
                                   value={activity?.score || ""}
                                   onChange={(event) =>
@@ -1821,6 +1858,7 @@ export default function Addrepresentative(props) {
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
+                              className="paddingLeft"
                                 onClick={() =>
                                   handleRemoveActivity(termIndex,activityIndex)
                                 }

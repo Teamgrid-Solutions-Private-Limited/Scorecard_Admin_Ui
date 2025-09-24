@@ -564,6 +564,9 @@ h6 {
   .uploadBtn{
     font-size: 12px !important;
   }
+  .paddingLeft{
+    padding-left: 24px !important;
+  }
 }
 
 
