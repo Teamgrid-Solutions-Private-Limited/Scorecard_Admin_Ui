@@ -109,6 +109,7 @@ export default function AddSenator(props) {
   const { votes } = useSelector((state) => state.vote);
   const { activities } = useSelector((state) => state.activity);
   const senatorData = useSelector((state) => state.senatorData);
+  const loadingg = useSelector((state) => state.senatorData.loading);
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [originalTermData, setOriginalTermData] = useState([]);
@@ -116,6 +117,9 @@ export default function AddSenator(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
+
+    const [loading, setLoading] = useState(loadingg);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -1704,12 +1708,9 @@ if (pastVotesScore.length === 0) {
   useEffect(() => {
     termPreFill();
   }, [id, senatorData]);
-
-  const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
   const preFillForm = () => {
     if (senator) {
       const termId =
@@ -2408,7 +2409,11 @@ if (pastVotesScore.length === 0) {
 
   return (
     <AppTheme key={componentKey}>
-      <LoadingOverlay loading={loading} />
+      {loadingg && (
+  <Box className="circularLoader">
+    <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+  </Box>
+)}
       <Box className="flexContainer">
         <SideMenu />
         <Box
