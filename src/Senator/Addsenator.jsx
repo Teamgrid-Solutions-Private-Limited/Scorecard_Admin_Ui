@@ -125,7 +125,10 @@ export default function AddSenator(props) {
     type: "",
   });
   const [billSearch, setBillSearch] = useState("");
+  
   const [isDataFetching, setIsDataFetching] = useState(true);
+  const loadingg = useSelector((state) => state.senatorData.loading);
+  
   const validateVoteInTermRange = (voteId, termId) => {
     if (!voteId || !termId)
       return { isValid: false, message: "Invalid selection" };
@@ -1669,7 +1672,7 @@ useEffect(() => {
   
 }, [id, senatorData, isDataFetching]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(loadingg);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -1697,54 +1700,24 @@ useEffect(() => {
       setOriginalFormData(JSON.parse(JSON.stringify(newFormData)));
     }
   };
-// Runs only once on mount for global data
+
 useEffect(() => {
-  const fetchGlobalData = async () => {
-    try {
-      await Promise.all([
-        dispatch(getAllTerms()),
-        dispatch(getAllVotes()),
-        dispatch(getAllActivity()),
-      ]);
-    } catch (error) {
-      console.error("Error fetching global data:", error);
-      setSnackbarMessage("Error loading data. Please try again.");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
-  };
-
-  fetchGlobalData();
-}, [dispatch]);
-
-// Runs when id changes for senator-specific data
-useEffect(() => {
-  if (!id) return;
-
-  const fetchSenatorData = async () => {
-    setIsDataFetching(true);
-    try {
-      await Promise.all([
-        dispatch(getSenatorById(id)),
-        dispatch(getSenatorDataBySenetorId(id)),
-      ]);
-    } catch (error) {
-      console.error("Error fetching senator data:", error);
-      setSnackbarMessage("Error loading data. Please try again.");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    } finally {
-      setIsDataFetching(false);
-    }
-  };
-
-  fetchSenatorData();
+  if (id) {
+    dispatch(getSenatorById(id));
+    dispatch(getSenatorDataBySenetorId(id));
+    dispatch(getAllTerms());
+    dispatch(getAllVotes());
+    dispatch(getAllActivity());
+  }
 
   return () => {
     dispatch(clearSenatorState());
     dispatch(clearSenatorDataState());
   };
 }, [id, dispatch]);
+
+ console.log("Loading state:", loading);
+
 
 
 useEffect(() => {
@@ -2411,11 +2384,11 @@ useEffect(() => {
 
 return (
   <AppTheme key={componentKey}>
-    {(loading || isDataFetching) && (
-      <Box className="circularLoader">
-        <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-      </Box>
-    )}
+  {loadingg && (
+  <Box className="circularLoader">
+    <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+  </Box>
+)}
 
     <Box className="flexContainer">
       <SideMenu />
@@ -2428,7 +2401,7 @@ return (
             ? `rgba(${theme.vars.palette.background} / 1)`
             : theme.palette.background.default,
         })}
-        className={`${isDataFetching ? "fetching" : "notFetching"}`}
+        className={`${loading ? "fetching" : "notFetching"}`}
       >
         <FixedHeader />
         <MobileHeader />
