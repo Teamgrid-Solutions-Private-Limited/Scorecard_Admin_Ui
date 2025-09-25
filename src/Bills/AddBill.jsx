@@ -11,14 +11,6 @@ import {
   discardVoteChanges,
 } from "../redux/reducer/voteSlice";
 import { API_URL } from "../redux/API";
-import {
-  Alert,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -720,7 +712,7 @@ return () => {
               (currentStatus !== "published" || hasAnyChanges) && (
                 <Box
                   sx={{
-                    width: "97%",
+                    width: {xs:"90%",sm:"97%"},
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -779,21 +771,6 @@ return () => {
                           {statusData.title}
                         </Typography>
 
-                        {/* {userRole === "admin" && (
-                          <Chip
-                            label={`${
-                              (Array.isArray(selectedVote?.editedFields)
-                                ? selectedVote.editedFields.length
-                                : 0) +
-                              (Array.isArray(editedFields)
-                                ? editedFields.length
-                                : 0)
-                            } pending changes`}
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                          />
-                        )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -967,12 +944,7 @@ return () => {
                                               </Typography>
                                             </Box>
                                           }
-                                          // secondary={
-                                          //   <Typography variant="caption" color="text.secondary">
-                                          //     Edited just now
-                                          //   </Typography>
-                                          // }
-                                          // sx={{ my: 0 }}
+
                                         />
                                       </ListItem>
                                     ))}
@@ -1192,20 +1164,7 @@ return () => {
                         variant="outlined"
                         //sx={{ background: "#fff" }}
                       >
-                        {/* <MenuItem value="" disabled>
-                          Select an option
-                        </MenuItem>
-                        {terms && terms.length > 0 ? (
-                          terms.map((term) => (
-                            <MenuItem key={term._id} value={term._id}>
-                              {term.name}
-                            </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem value="" disabled>
-                            No terms available
-                          </MenuItem>
-                        )} */}
+
                       </TextField>
                     </FormControl>
                   </Grid>

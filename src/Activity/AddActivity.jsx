@@ -32,13 +32,6 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -634,8 +627,7 @@ useEffect(() => {
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
-            // overflow: "auto",
-            // overflow: "auto",
+
           })}
           className={`${isDataFetching ? "fetching" : "notFetching"}`}
         >
@@ -687,7 +679,7 @@ useEffect(() => {
               (currentStatus !== "published" || hasAnyChanges) && (
                 <Box
                   sx={{
-                    width: "97%",
+                    width: {xs:"90%",sm:"97%"},
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -725,7 +717,7 @@ useEffect(() => {
                     </Box>
 
                     <Box sx={{ flex: 1 }}>
-                      {/* Header: title + pending count (admin only) */}
+
                       <Box
                         sx={{
                           display: "flex",
@@ -746,27 +738,6 @@ useEffect(() => {
                           {statusData.title}
                         </Typography>
 
-                        {/* {userRole === "admin" && (
-                        <Chip
-                          label={`${(() => {
-                            const backend = Array.isArray(
-                              selectedActivity?.editedFields
-                            )
-                              ? selectedActivity.editedFields
-                              : [];
-                            const local = Array.isArray(editedFields)
-                              ? editedFields
-                              : [];
-                            const localOnly = local.filter(
-                              (f) => !backend.includes(f)
-                            );
-                            return backend.length + localOnly.length;
-                          })()} pending changes`}
-                          size="small"
-                          color="warning"
-                          variant="outlined"
-                        />
-                      )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -1023,7 +994,6 @@ useEffect(() => {
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
-                      //apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")

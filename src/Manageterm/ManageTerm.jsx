@@ -38,7 +38,6 @@ export default function ManageTerm(props) {
   const dispatch = useDispatch();
   const { terms, loading } = useSelector((state) => state.term);
 
-  // New state for term inputs
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
 
@@ -49,7 +48,6 @@ export default function ManageTerm(props) {
   const [selectedTermId, setSelectedTermId] = useState(null);
 
   const token = localStorage.getItem("token");
-  // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
@@ -78,14 +76,14 @@ export default function ManageTerm(props) {
     dispatch(getAllTerms());
   }, [dispatch]);
 
-  // ✅ Create Term
+
   const handleCreateTerm = async () => {
     if (!startYear.trim() || !endYear.trim()) {
       handleSnackbarOpen("Start and End Year are required", "error");
       return;
     }
 
-    // Validate years
+  
     const start = parseInt(startYear);
     const end = parseInt(endYear);
 
@@ -123,20 +121,7 @@ const handleConfirmDelete = async () => {
   return (
     <AppTheme {...props}>
       {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <Box className="circularLoader">
           <CircularProgress sx={{ color: "#CC9A3A" }} />
         </Box>
       )}
@@ -158,13 +143,10 @@ const handleConfirmDelete = async () => {
             sx={{
               mx: { xs: 2, md: 3 },
               mt: 4,
-              // maxWidth: 1200,
-              // width: "100%",
               pb: 5,
-              // marginInline: "auto",
             }}
           >
-            {/* Snackbar */}
+            
             <Snackbar
               open={openSnackbar}
               autoHideDuration={6000}
@@ -178,7 +160,6 @@ const handleConfirmDelete = async () => {
       border: "none",
       boxShadow:"none",
       width: "100%",
-      // ✅ Background conditions
       bgcolor:
         snackbarMessage === `Term deleted successfully`
           ? "#fde8e4"
@@ -186,7 +167,6 @@ const handleConfirmDelete = async () => {
           ? "#daf4f0"
           : undefined,
 
-      // ✅ Icon color conditions
       "& .MuiAlert-icon": {
         color:
           snackbarMessage === `Term deleted successfully`
@@ -196,7 +176,6 @@ const handleConfirmDelete = async () => {
             : undefined,
       },
 
-      // ✅ Text color conditions
       "& .MuiAlert-message": {
         color:
           snackbarMessage === `Term deleted successfully`
@@ -205,6 +184,12 @@ const handleConfirmDelete = async () => {
             ? "#099885"
             : undefined,
       },
+      "& .MuiAlert-action": {
+            display: "flex",
+            alignItems: "center",
+            paddingTop: 0,
+            paddingBottom: 0,
+          },
     }}
                 elevation={6}
                 variant="filled"
@@ -213,7 +198,6 @@ const handleConfirmDelete = async () => {
               </MuiAlert>
             </Snackbar>
 
-            {/* Add Term Section */}
             <Paper
               elevation={0}
               sx={{
@@ -223,7 +207,7 @@ const handleConfirmDelete = async () => {
                 backgroundColor: "#fff",
                 border: "1px solid",
                 borderColor: "divider",
-                // boxShadow: "0 2px 10px rgba(23,58,94,0.06)",
+
               }}
             >
               <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mb: 2 }}>
@@ -246,6 +230,7 @@ const handleConfirmDelete = async () => {
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
                       backgroundColor: "#fff",
+                       height:'40px'
                     },
                   }}
                 />
@@ -281,7 +266,7 @@ const handleConfirmDelete = async () => {
               </Stack>
             </Paper>
 
-            {/* Term List */}
+        
             <Paper
               elevation={0}
               sx={{
