@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useRef } from "react";
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -27,34 +26,37 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
-import { InputAdornment, CircularProgress } from "@mui/material";
+import {
+  InputAdornment,
+  CircularProgress,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Chip,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
-import { List, ListItem, ListItemText } from "@mui/material";
-import CircleIcon from "@mui/icons-material/Circle";
-import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
 import Footer from "../components/Footer";
-import CheckCircle from "@mui/icons-material/CheckCircle";
 import DialogBox from "../components/DialogBox";
 
 export default function AddBill(props) {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
-  const { terms } = useSelector((state) => state.term);
   const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
