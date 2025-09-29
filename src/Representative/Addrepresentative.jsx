@@ -75,7 +75,7 @@ export default function Addrepresentative(props) {
   const [componentKey, setComponentKey] = useState(0);
   const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
    const [selectionError, setSelectionError] = useState({
       show: false,
       message: "",
@@ -87,17 +87,13 @@ export default function Addrepresentative(props) {
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
 
-  // Field labels for display
   const fieldLabels = {
-    // Representative fields
     name: "Representative Name",
     status: "Status",
     district: "District",
     party: "Party",
     photo: "Photo",
     publishStatus: "Publish Status",
-
-    // Term fields (will be prefixed with termX_)
     houseId: "House ID",
     summary: "Term Summary",
     rating: "SBA Rating",
@@ -106,15 +102,11 @@ export default function Addrepresentative(props) {
     currentTerm: "Current Term",
     termId: "Term",
   };
-
-  // Helper function to get display name
   const getFieldDisplayName = (field) => {
-    // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -128,7 +120,6 @@ export default function Addrepresentative(props) {
     publishStatus: "",
   });
 
-
   const [houseTermData, setHouseTermData] = useState([
     {
       houseId: id,
@@ -141,7 +132,6 @@ export default function Addrepresentative(props) {
     },
   ]);
 
-
   const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${name}`;
@@ -149,17 +139,11 @@ export default function Addrepresentative(props) {
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) => {
         if (index !== termIndex) return term;
-
-        // If term is changing, check if we have existing data for this term
         if (name === "termId" && value !== term.termId) {
           const newTermId = value;
           const selectedTerm = terms.find((t) => t._id === newTermId);
           const termCongresses = selectedTerm?.congresses || [];
-
-          // Convert congress numbers to strings for comparison
           const termCongressStrings = termCongresses.map((c) => c.toString());
-
-          // Check if we have existing data for this term in houseData
           const existingTermData = houseData?.currentHouse?.find(
             (ht) =>
               ht.termId &&
@@ -171,8 +155,8 @@ export default function Addrepresentative(props) {
 
           let votesScore = [];
           let activitiesScore = [];
-          let summary = ""; 
-          let rating = ""; 
+          let summary = "";
+          let rating = "";
           let currentTerm = false;
 
           if (existingTermData) {
@@ -198,9 +182,8 @@ export default function Addrepresentative(props) {
                 ? existingTermData.currentTerm
                 : false;
           } else {
-            // Filter votes to keep only those that belong to the new term's congresses
             votesScore = term.votesScore.filter((vote) => {
-              if (!vote.voteId || vote.voteId === "") return true; 
+              if (!vote.voteId || vote.voteId === "") return true;
 
               const voteItem = votes.find((v) => v._id === vote.voteId);
               if (!voteItem) return false;
@@ -208,7 +191,6 @@ export default function Addrepresentative(props) {
               return termCongressStrings.includes(voteItem.congress);
             });
 
-            // Filter activities to keep only those that belong to the new term's congresses
             activitiesScore = term.activitiesScore.filter((activity) => {
               if (!activity.activityId || activity.activityId === "")
                 return true;
@@ -239,16 +221,14 @@ export default function Addrepresentative(props) {
             [name]: value,
             votesScore: finalVotesScore,
             activitiesScore: finalActivitiesScore,
-            summary, 
-            rating, 
-            currentTerm, 
+            summary,
+            rating,
+            currentTerm,
           };
         }
 
         return { ...term, [name]: value };
       });
-
-      // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
@@ -270,8 +250,6 @@ export default function Addrepresentative(props) {
       const newTerms = prev.map((term, index) =>
         index === termIndex ? { ...term, [name]: checked } : term
       );
-
-      // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(checked, originalTerm[name]);
 
@@ -285,15 +263,14 @@ export default function Addrepresentative(props) {
     });
   };
 
-
   const handleAddVote = (termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: "", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -304,9 +281,9 @@ export default function Addrepresentative(props) {
       const updatedTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       );
 
@@ -329,15 +306,14 @@ export default function Addrepresentative(props) {
       const newTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
           : term
       );
 
-      // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const originalVote = originalTerm.votesScore?.[voteIndex] || {};
       const isActualChange = compareValues(value, originalVote[field]);
@@ -357,12 +333,12 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: "", score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: "", score: "" },
+            ],
+          }
           : term
       )
     );
@@ -373,11 +349,11 @@ export default function Addrepresentative(props) {
       const updatedTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       );
 
@@ -396,9 +372,8 @@ export default function Addrepresentative(props) {
   };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    const activityChangeId = `term${termIndex}_TrackedActivity_${
-      activityIndex + 1
-    }`;
+    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
+      }`;
 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, idx) => {
@@ -411,7 +386,6 @@ export default function Addrepresentative(props) {
         return { ...term, activitiesScore: newActivities };
       });
 
-      // Compare with original data if available
       const originalTerm = originalTermData[termIndex] || {};
       const originalActivity =
         originalTerm.activitiesScore?.[activityIndex] || {};
@@ -430,18 +404,14 @@ export default function Addrepresentative(props) {
     });
   };
 
-  
+
 
   const handleEditorChange = useCallback((content, termIndex) => {
-    const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
-
-    // Track the change if not already tracked
+    const fieldName = `term${termIndex}_summary`; 
     setLocalChanges((prev) =>
       prev.includes(fieldName) ? prev : [...prev, fieldName]
     );
   }, []);
-
-  // Add a new empty term
   const handleAddTerm = () => {
     setHouseTermData((prev) => [
       ...prev,
@@ -453,30 +423,38 @@ export default function Addrepresentative(props) {
         activitiesScore: [{ activityId: "", score: "" }],
         currentTerm: false,
         termId: null,
-        editedFields: [], 
-        fieldEditors: {}, 
-        isNew: true, 
+        editedFields: [],
+        fieldEditors: {},
+        isNew: true,
       },
     ]);
+    
   };
 
-  // Remove a term
-  const handleRemoveTerm = (termIndex) => {
-    setHouseTermData((prev) => {
-      const removed = prev[termIndex];
+const handleRemoveTerm = (termIndex) => {
+  setHouseTermData((prev) => {
+    const removed = prev[termIndex];
+    const removalId = `Term_${termIndex + 1} Removed`;
+        if (!removed.isNew) {
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
+        if (!localChanges.includes(removalId)) {
+          setLocalChanges((prev) => [...prev, removalId]);
+        }
+      } else {
+        if (!localChanges.includes(removalId)) {
+          setLocalChanges((prev) => [...prev, removalId]);
+        }
       }
-
-
-      setLocalChanges((prevChanges) =>
-        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
-      );
-
-      return prev.filter((_, index) => index !== termIndex);
-    });
-  };
-
+    }
+    
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+    );
+    
+    return prev.filter((_, index) => index !== termIndex);
+  });
+};
 
   const compareValues = (newVal, oldVal) => {
     if (newVal == null || oldVal == null) return newVal !== oldVal;
@@ -486,9 +464,9 @@ export default function Addrepresentative(props) {
 
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
+
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => {
-          // Case 1: term.termId is an object with name property
           if (
             term.termId &&
             typeof term.termId === "object" &&
@@ -496,46 +474,42 @@ export default function Addrepresentative(props) {
           ) {
             return t.name === term.termId.name;
           }
-          // Case 2: term.termId is a string (the term name)
           else if (typeof term.termId === "string") {
             return t.name === term.termId;
           }
-          // Case 3: term.termId is an ObjectId - find by ID
           else if (
             term.termId &&
             mongoose.Types.ObjectId.isValid(term.termId)
           ) {
             return t._id.toString() === term.termId.toString();
           }
-          // Case 4: No valid termId found
           return false;
         });
-        // Transform votesScore with the same logic as house data
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
             ? term.votesScore.map((vote) => {
-                let scoreValue = "";
-                const dbScore = vote.score?.toLowerCase();
-                if (dbScore?.includes("yea")) {
-                  scoreValue = "yea";
-                } else if (dbScore?.includes("nay")) {
-                  scoreValue = "nay";
-                } else if (dbScore?.includes("other")) {
-                  scoreValue = "other";
-                } else {
-                  scoreValue = vote.score || "";
-                }
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
 
-                return {
-                  voteId: vote.voteId?._id || vote.voteId || "",
-                  score: scoreValue,
-                  title: vote.voteId?.title || vote.title || "",
-                  _id: vote._id || undefined,
-                };
-              })
-            : [{ voteId: "", score: "" }]; 
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+                title: vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
+              };
+            })
+            : [{ voteId: "", score: "" }];
 
-     
+
         if (
           votesScore.length === 0 ||
           votesScore.every((v) => v.voteId == null)
@@ -551,18 +525,18 @@ export default function Addrepresentative(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          isNew: false, 
+          isNew: false,
           votesScore,
 
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId:
-                    activity.activityId?._id || activity.activityId || null,
-                  score: activity.score || "",
-                  title: activity.activityId?.title || activity.title || "",
-                  _id: activity._id || undefined,
-                }))
+                activityId:
+                  activity.activityId?._id || activity.activityId || null,
+                score: activity.score || "",
+                title: activity.activityId?.title || activity.title || "",
+                _id: activity._id || undefined,
+              }))
               : [{ activityId: "", score: "" }],
         };
       });
@@ -581,7 +555,7 @@ export default function Addrepresentative(props) {
           termId: null,
           editedFields: [],
           fieldEditors: {},
-          isNew: true, 
+          isNew: true,
         },
       ];
 
@@ -602,7 +576,7 @@ export default function Addrepresentative(props) {
     }
   }, [formData, originalFormData]);
 
-  
+
   useEffect(() => {
     if (originalFormData && formData && originalTermData && houseTermData) {
       const changes = [];
@@ -615,9 +589,8 @@ export default function Addrepresentative(props) {
         }
       });
 
-     
+
       houseTermData.forEach((term, termIndex) => {
-        // For new terms, track all fields that have values
         if (term.isNew) {
           Object.keys(term).forEach((key) => {
             if (
@@ -648,7 +621,6 @@ export default function Addrepresentative(props) {
             }
           });
         } else {
-          // Existing term logic
           const originalTerm = originalTermData[termIndex] || {};
           Object.keys(term).forEach((key) => {
             if (
@@ -682,11 +654,11 @@ export default function Addrepresentative(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-useEffect(() => {
-  if (!isDataFetching && id && houseData) {
-    termPreFill();
-  }
-}, [id, houseData, isDataFetching]);
+  useEffect(() => {
+    if (!isDataFetching && id && houseData) {
+      termPreFill();
+    }
+  }, [id, houseData, isDataFetching]);
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -711,7 +683,7 @@ useEffect(() => {
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       setIsDataFetching(true);
       try {
@@ -735,20 +707,20 @@ useEffect(() => {
         setIsDataFetching(false);
       }
     };
-  
+
     fetchData();
-  
+
     return () => {
       dispatch(clearHouseState());
       dispatch(clearHouseDataState());
     };
   }, [id, dispatch]);
 
-useEffect(() => {
-  if (!isDataFetching && house) {
-    preFillForm();
-  }
-}, [house, terms, isDataFetching]);
+  useEffect(() => {
+    if (!isDataFetching && house) {
+      preFillForm();
+    }
+  }, [house, terms, isDataFetching]);
 
 
 
@@ -757,8 +729,6 @@ useEffect(() => {
 
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
-
-      // Compare with original data
       if (originalFormData) {
         const isActualChange = compareValues(value, originalFormData[name]);
 
@@ -778,7 +748,7 @@ useEffect(() => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    const fieldName = "Photo"; 
+    const fieldName = "Photo";
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -792,9 +762,9 @@ useEffect(() => {
 
     const sanitizeKey = (str) => {
       return str
-        .replace(/[^a-zA-Z0-9_]/g, "_") 
-        .replace(/_+/g, "_") 
-        .replace(/^_+|_+$/g, ""); 
+        .replace(/[^a-zA-Z0-9_]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
     };
 
     try {
@@ -810,7 +780,6 @@ useEffect(() => {
         );
         return;
       }
-      //  Prevent duplicate termId selections
       const termIdCounts = houseTermData
         .map((t) => t.termId)
         .filter(Boolean)
@@ -826,8 +795,6 @@ useEffect(() => {
         );
         return;
       }
-
-      //  Only one current term
       const currentTerms = houseTermData.filter((term) => term.currentTerm);
       if (currentTerms.length > 1) {
         setLoading(false);
@@ -843,14 +810,11 @@ useEffect(() => {
         deletedTermIds.length > 0 ||
         (formData?.fieldEditors &&
           Object.keys(formData.fieldEditors).length > 0);
-
-      //  Prevent saving if no local changes of any kind
       if (userRole === "editor" && !hasLocalChanges) {
         setLoading(false);
         handleSnackbarOpen("No changes detected. Nothing to update.", "info");
         return;
       }
-      //  Current editor info
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -858,15 +822,12 @@ useEffect(() => {
         editedAt: new Date(),
       };
 
-      // Delete removed terms
       if (deletedTermIds.length > 0) {
         await Promise.all(
           deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
         );
         setDeletedTermIds([]);
       }
-
-      // Prepare existing editedFields
       const existingEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
         : [];
@@ -891,27 +852,22 @@ useEffect(() => {
         existingFieldsMap.set(fieldKey, { ...field });
       });
 
-      //  Process current votes & activities
       const processedChanges = [];
-      // Helper function to check if a vote has changed
       const hasVoteChanged = (termIndex, voteIndex, vote) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalVote = originalTerm.votesScore?.[voteIndex] || {};
 
-        // Check if voteId or score has changed
         return (
           vote.voteId !== originalVote.voteId ||
           vote.score !== originalVote.score
         );
       };
 
-      // Helper function to check if an activity has changed
       const hasActivityChanged = (termIndex, activityIndex, activity) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalActivity =
           originalTerm.activitiesScore?.[activityIndex] || {};
 
-        // Check if activityId or score has changed
         return (
           activity.activityId !== originalActivity.activityId ||
           activity.score !== originalActivity.score
@@ -919,19 +875,16 @@ useEffect(() => {
       };
 
       houseTermData.forEach((term, termIndex) => {
-        // votesScore - only process changed votes
         term.votesScore.forEach((vote, voteIndex) => {
           if (vote.voteId && vote.voteId.toString().trim() !== "") {
-            // Only add if this vote has actually changed
             if (hasVoteChanged(termIndex, voteIndex, vote)) {
               const voteItem = votes.find((v) => v._id === vote.voteId);
               if (voteItem) {
                 const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Scored Vote ${
-                    voteIndex + 1
-                  }`,
+                  displayName: `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1
+                    }`,
                   field: ["votesScore"],
                   name: voteItem.title,
                   termIndex,
@@ -942,13 +895,11 @@ useEffect(() => {
           }
         });
 
-        // activitiesScore - only process changed activities
         term.activitiesScore.forEach((activity, activityIndex) => {
           if (
             activity.activityId &&
             activity.activityId.toString().trim() !== ""
           ) {
-            // Only add if this activity has actually changed
             if (hasActivityChanged(termIndex, activityIndex, activity)) {
               const activityItem = houseActivities.find(
                 (a) => a._id === activity.activityId
@@ -959,9 +910,8 @@ useEffect(() => {
                 )}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Tracked Activity ${
-                    activityIndex + 1
-                  }`,
+                  displayName: `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1
+                    }`,
                   field: ["activitiesScore"],
                   name: activityItem.title,
                   termIndex,
@@ -972,7 +922,6 @@ useEffect(() => {
           }
         });
       });
-      //  Process other local changes
       localChanges.forEach((change) => {
         if (
           !change.includes("votesScore_") &&
@@ -988,10 +937,7 @@ useEffect(() => {
         }
       });
 
-      // helper for deep equality check
       const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-
-      // helper: check if a value is meaningful (not empty/default)
       const hasNonDefaultValue = (field, value) => {
         if (value === null || value === undefined) return false;
         if (typeof value === "string" && value.trim() === "") return false;
@@ -999,7 +945,6 @@ useEffect(() => {
         return true;
       };
 
-      //  Process term-level changes
       houseTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
         const termFields = ["summary", "rating", "currentTerm", "termId"];
@@ -1008,7 +953,7 @@ useEffect(() => {
           const newValue = term[field];
           const oldValue = originalTerm[field];
 
-     
+
           if (
             !isEqual(newValue, oldValue) &&
             hasNonDefaultValue(field, newValue)
@@ -1016,17 +961,14 @@ useEffect(() => {
             const fieldName = `term${termIndex}_${field}`;
             processedChanges.push({
               uniqueId: fieldName,
-              displayName: `Term ${termIndex + 1}: ${
-                fieldLabels[field] || field
-              }`,
+              displayName: `Term ${termIndex + 1}: ${fieldLabels[field] || field
+                }`,
               field: [fieldName],
               name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
             });
           }
         });
       });
-
-      //  Merge with existing fields
       processedChanges.forEach((change) => {
         const existingField = existingFieldsMap.get(change.uniqueId);
         if (!existingField || existingField.name !== change.name) {
@@ -1046,17 +988,12 @@ useEffect(() => {
       });
 
       const allChanges = Array.from(existingFieldsMap.values());
-      // Update fieldEditors safely
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-
-      // Track which fields were actually changed in this session
       const changedFieldsInThisSession = new Set();
 
-      //  Process localChanges to update only changed votes/activities/terms
       localChanges.forEach((change) => {
         let editorKey;
 
-        // Handle votes: termX_ScoredVote_Y
         const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
         if (voteMatch) {
           const [, termIndex, voteIndex] = voteMatch;
@@ -1070,10 +1007,9 @@ useEffect(() => {
               changedFieldsInThisSession.add(editorKey);
             }
           }
-          return; 
+          return;
         }
 
-        // Handle activities: termX_TrackedActivity_Y
         const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
         if (activityMatch) {
           const [, termIndex, activityIndex] = activityMatch;
@@ -1089,29 +1025,27 @@ useEffect(() => {
               changedFieldsInThisSession.add(editorKey);
             }
           }
-          return; 
+          return;
         }
 
-        // Term-level or simple fields
         editorKey = change;
         updatedFieldEditors[editorKey] = currentEditor;
         changedFieldsInThisSession.add(editorKey);
       });
 
-      
+
       processedChanges.forEach((change) => {
         if (!changedFieldsInThisSession.has(change.uniqueId)) {
-          // preserve existing editor if any
           updatedFieldEditors[change.uniqueId] =
             updatedFieldEditors[change.uniqueId] || currentEditor;
         }
       });
 
-     
+
       const representativeUpdate = {
         ...formData,
         editedFields: allChanges,
-        fieldEditors: updatedFieldEditors, // Use the updated field editors
+        fieldEditors: updatedFieldEditors, 
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
 
@@ -1134,7 +1068,6 @@ useEffect(() => {
         await dispatch(updateHouse({ id, formData: formDataToSend })).unwrap();
       }
 
-      //  Update terms
       const termPromises = houseTermData.map((term, index) => {
         const cleanVotesScore = term.votesScore
           .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
@@ -1158,8 +1091,8 @@ useEffect(() => {
             typeof f === "string"
               ? f
               : Array.isArray(f.field)
-              ? f.field[0]
-              : f.field;
+                ? f.field[0]
+                : f.field;
           return fieldName.startsWith(`term${index}_`);
         });
         const termUpdate = {
@@ -1169,12 +1102,12 @@ useEffect(() => {
           isNew: false,
           houseId: id,
           editedFields: termSpecificChanges,
-          fieldEditors: updatedFieldEditors, 
+          fieldEditors: updatedFieldEditors,
         };
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateHouseData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -1186,13 +1119,14 @@ useEffect(() => {
       setOriginalFormData(JSON.parse(JSON.stringify(formData)));
       setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
       setLocalChanges([]);
+       setDeletedTermIds([]);
 
       userRole === "admin"
         ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -1202,19 +1136,18 @@ useEffect(() => {
   };
 
   const getFilteredVotes = (termIndex) => {
-  const term = houseTermData[termIndex];
-  if (!term || !term.termId) return votes || [];
+    const term = houseTermData[termIndex];
+    if (!term || !term.termId) return votes || [];
 
-  const selectedTerm = terms.find((t) => t._id === term.termId);
-  if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+    const selectedTerm = terms.find((t) => t._id === term.termId);
+    if (!selectedTerm || !selectedTerm.congresses) return votes || [];
 
-  return (votes || []).filter(
-    (vote) =>
-      vote.type?.toLowerCase().includes("house") &&
-      selectedTerm.congresses.includes(Number(vote.congress))
-  );
-};
-  // Helper function to get filtered activities based on selected term
+    return (votes || []).filter(
+      (vote) =>
+        vote.type?.toLowerCase().includes("house") &&
+        selectedTerm.congresses.includes(Number(vote.congress))
+    );
+  };
   const getFilteredActivities = (termIndex) => {
     const term = houseTermData[termIndex];
     if (!term || !term.termId) return houseActivities || [];
@@ -1243,17 +1176,15 @@ useEffect(() => {
 
 
   const handleStatusChange = (status) => {
-    const fieldName = "status"; 
+    const fieldName = "status";
 
     setFormData((prev) => {
       const newData = { ...prev, status };
 
-      // Compare with original value to determine if this is an actual change
       const isActualChange = originalFormData
         ? status !== originalFormData.status
         : true;
 
-      // Update local changes based on whether it's an actual change
       setLocalChanges((prevChanges) => {
         if (isActualChange && !prevChanges.includes(fieldName)) {
           return [...prevChanges, fieldName];
@@ -1365,11 +1296,11 @@ useEffect(() => {
 
   return (
     <AppTheme key={componentKey}>
-       {(loading || isDataFetching) && (
-            <Box className="circularLoader">
-              <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-            </Box>
-          )}
+      {(loading || isDataFetching) && (
+        <Box className="circularLoader">
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+        </Box>
+      )}
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -1387,26 +1318,26 @@ useEffect(() => {
           <MobileHeader />
 
           <Stack
-             spacing={isMobile ? 1 : 2}
+            spacing={isMobile ? 1 : 2}
             sx={{
               alignItems: "center",
-              mx: {xs: 2, md: 3},
+              mx: { xs: 2, md: 3 },
               mt: { xs: 2, md: 2.8 },
               gap: 1,
             }}
           >
             <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
-           <StatusDisplay 
-           userRole={userRole}
-           formData={formData}
-           localChanges={localChanges}
-           statusData={statusData}
-           termData={houseTermData}
-           mode="representative"
-           />
+            <StatusDisplay
+              userRole={userRole}
+              formData={formData}
+              localChanges={localChanges}
+              statusData={statusData}
+              termData={houseTermData}
+              mode="representative"
+            />
 
             <Paper className="customPaper">
-              <DialogBox userRole={userRole} openDiscardDialog={openDiscardDialog} setOpenDiscardDialog={setOpenDiscardDialog} handleConfirmDiscard={handleConfirmDiscard}/>
+              <DialogBox userRole={userRole} openDiscardDialog={openDiscardDialog} setOpenDiscardDialog={setOpenDiscardDialog} handleConfirmDiscard={handleConfirmDiscard} />
 
               <BasicInfo
                 formData={formData}
@@ -1468,17 +1399,16 @@ useEffect(() => {
                                   t.startYear &&
                                   t.endYear &&
                                   t.endYear - t.startYear === 1 &&
-                                  t.startYear % 2 === 1 && 
-                                  t.endYear % 2 === 0 && 
-                                  t.startYear >= 2015 && 
+                                  t.startYear % 2 === 1 &&
+                                  t.endYear % 2 === 0 &&
+                                  t.startYear >= 2015 &&
                                   t.endYear >= 2015
-                              ) 
+                              )
                               .filter(
                                 (t) =>
                                   Array.isArray(t.congresses) &&
                                   t.congresses.length > 0
                               )
-                              // Hide terms already selected in other term sections
                               .filter(
                                 (t) =>
                                   !houseTermData.some(
@@ -1558,7 +1488,6 @@ useEffect(() => {
                               idx === termIndex ? { ...t, summary: content } : t
                             )
                           );
-                          // Optionally update localChanges here too
                           const fieldName = `term${termIndex}_summary`;
                           const originalTerm =
                             originalTermData[termIndex] || {};
@@ -1578,7 +1507,7 @@ useEffect(() => {
                             return prev;
                           });
                         }}
-                        onBlur={() => {}}
+                        onBlur={() => { }}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -1612,9 +1541,8 @@ useEffect(() => {
                       />
                     </Grid>
 
-                    {/* Vote Repeater Start */}
                     {term.votesScore.map((vote, voteIndex) =>
-                      vote.voteId != null ? ( // Only render if voteId is not null
+                      vote.voteId != null ? ( 
                         <Grid
                           rowSpacing={2}
                           sx={{ width: "100%" }}
@@ -1623,7 +1551,7 @@ useEffect(() => {
                           <Grid
                             size={12}
                             display="flex"
-                            flexDirection={isMobile? "column":"row"}
+                            flexDirection={isMobile ? "column" : "row"}
                             gap={isMobile ? 1 : 0}
                             alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
@@ -1635,7 +1563,7 @@ useEffect(() => {
                             </Grid>
                             <Grid size={isMobile ? 11 : 7.5}>
                               <Autocomplete
-                              className="textField"
+                                className="textField"
                                 options={getFilteredVotes(termIndex)}
                                 getOptionLabel={(option) => option.title || ""}
                                 value={
@@ -1665,7 +1593,7 @@ useEffect(() => {
                                           cursor: "pointer",
                                         },
                                         "& fieldset": {
-                                          border: "none", 
+                                          border: "none",
                                         },
                                       },
                                     }}
@@ -1695,13 +1623,13 @@ useEffect(() => {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-                                 
+
                                 </Select>
                               </FormControl>
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
-                              className="paddingLeft"
+                                className="paddingLeft"
                                 onClick={() =>
                                   handleRemoveVote(termIndex, voteIndex)
                                 }
@@ -1711,7 +1639,6 @@ useEffect(() => {
                         </Grid>
                       ) : null
                     )}
-                    {/* Vote Repeater Ends */}
 
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
@@ -1727,7 +1654,6 @@ useEffect(() => {
                     <Grid size={1}></Grid>
                     <Grid size={1}></Grid>
 
-                    {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) =>
                       activity.activityId != null ? (
                         <Grid
@@ -1738,7 +1664,7 @@ useEffect(() => {
                           <Grid
                             size={12}
                             display="flex"
-                            flexDirection={isMobile? "column":"row"}
+                            flexDirection={isMobile ? "column" : "row"}
                             gap={isMobile ? 1 : 0}
                             alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
@@ -1750,7 +1676,7 @@ useEffect(() => {
                             </Grid>
                             <Grid size={isMobile ? 11 : 7.5}>
                               <Autocomplete
-                              className="textField"
+                                className="textField"
                                 value={
                                   getFilteredActivities(termIndex).find(
                                     (a) => a._id === activity.activityId
@@ -1765,7 +1691,7 @@ useEffect(() => {
                                   )
                                 }
                                 options={getFilteredActivities(termIndex)}
-                                getOptionLabel={(option) => option.title ||""}
+                                getOptionLabel={(option) => option.title || ""}
                                 renderInput={(params) => (
                                   <TextField
                                     {...params}
@@ -1780,7 +1706,7 @@ useEffect(() => {
                                           cursor: "pointer",
                                         },
                                         "& fieldset": {
-                                          border: "none", 
+                                          border: "none",
                                         },
                                       },
                                     }}
@@ -1813,15 +1739,15 @@ useEffect(() => {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-                                  
+
                                 </Select>
                               </FormControl>
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
-                              className="paddingLeft"
+                                className="paddingLeft"
                                 onClick={() =>
-                                  handleRemoveActivity(termIndex,activityIndex)
+                                  handleRemoveActivity(termIndex, activityIndex)
                                 }
                               />
                             </Grid>
@@ -1829,8 +1755,6 @@ useEffect(() => {
                         </Grid>
                       ) : null
                     )}
-                    {/* Activities Repeater Ends */}
-
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
@@ -1839,7 +1763,7 @@ useEffect(() => {
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
-                        Add Activity 
+                        Add Activity
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
@@ -1847,8 +1771,6 @@ useEffect(() => {
                 </Box>
               </Paper>
             ))}
-
-            {/* Add Term Button */}
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
@@ -1858,16 +1780,16 @@ useEffect(() => {
               Add Another Term
             </Button>
 
-                        <SnackbarComponent
-                          open={openSnackbar}
-                          onClose={() => {
-                            handleSnackbarClose();
-                            setSelectionError({ show: false, message: "", type: "" });
-                          }}
-                          message={snackbarMessage}
-                          severity={snackbarSeverity}
-                          selectionError={selectionError}
-                        />
+            <SnackbarComponent
+              open={openSnackbar}
+              onClose={() => {
+                handleSnackbarClose();
+                setSelectionError({ show: false, message: "", type: "" });
+              }}
+              message={snackbarMessage}
+              severity={snackbarSeverity}
+              selectionError={selectionError}
+            />
           </Stack>
           <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />
