@@ -1133,8 +1133,7 @@ const handleRemoveTerm = (termIndex) => {
 
     const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return votes || [];
-    const selectedTerm = terms.find((t) => t._id === term.termId);
-    if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+  
 
     return (votes || []).filter(
       (vote) =>
@@ -1307,10 +1306,8 @@ const handleRemoveTerm = (termIndex) => {
 
           <Stack
             spacing={isMobile ? 1 : 2}
-            spacing={isMobile ? 1 : 2}
             sx={{
               alignItems: "center",
-              mx: { xs: 2, md: 3 },
               mx: { xs: 2, md: 3 },
               mt: { xs: 2, md: 2.8 },
               gap: 1,
@@ -1619,7 +1616,6 @@ const handleRemoveTerm = (termIndex) => {
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
-                                className="paddingLeft"
                                 className="paddingLeft"
                                 onClick={() =>
                                   handleRemoveVote(termIndex, voteIndex)
