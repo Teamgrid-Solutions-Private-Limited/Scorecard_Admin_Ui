@@ -72,29 +72,25 @@ export default function Addrepresentative(props) {
   const [componentKey, setComponentKey] = useState(0);
   const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
-  const [selectionError, setSelectionError] = useState({
-    show: false,
-    message: "",
-    type: "",
-  });
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
+   const [selectionError, setSelectionError] = useState({
+      show: false,
+      message: "",
+      type: "",
+    });
 
   const navigate = useNavigate();
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
 
-  // Field labels for display
   const fieldLabels = {
-    // Representative fields
     name: "Representative Name",
     status: "Status",
     district: "District",
     party: "Party",
     photo: "Photo",
     publishStatus: "Publish Status",
-
-    // Term fields (will be prefixed with termX_)
     houseId: "House ID",
     summary: "Term Summary",
     rating: "SBA Rating",
@@ -103,15 +99,11 @@ export default function Addrepresentative(props) {
     currentTerm: "Current Term",
     termId: "Term",
   };
-
-  // Helper function to get display name
   const getFieldDisplayName = (field) => {
-    // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -144,17 +136,11 @@ export default function Addrepresentative(props) {
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) => {
         if (index !== termIndex) return term;
-
-        // If term is changing, check if we have existing data for this term
         if (name === "termId" && value !== term.termId) {
           const newTermId = value;
           const selectedTerm = terms.find((t) => t._id === newTermId);
           const termCongresses = selectedTerm?.congresses || [];
-
-          // Convert congress numbers to strings for comparison
           const termCongressStrings = termCongresses.map((c) => c.toString());
-
-          // Check if we have existing data for this term in houseData
           const existingTermData = houseData?.currentHouse?.find(
             (ht) =>
               ht.termId &&
@@ -191,7 +177,6 @@ export default function Addrepresentative(props) {
                 ? existingTermData.currentTerm
                 : false;
           } else {
-            // Filter votes to keep only those that belong to the new term's congresses
             votesScore = term.votesScore.filter((vote) => {
               if (!vote.voteId || vote.voteId === "") return true;
 
@@ -201,7 +186,6 @@ export default function Addrepresentative(props) {
               return termCongressStrings.includes(voteItem.congress);
             });
 
-            // Filter activities to keep only those that belong to the new term's congresses
             activitiesScore = term.activitiesScore.filter((activity) => {
               if (!activity.activityId || activity.activityId === "")
                 return true;
@@ -240,8 +224,6 @@ export default function Addrepresentative(props) {
 
         return { ...term, [name]: value };
       });
-
-      // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
@@ -263,8 +245,6 @@ export default function Addrepresentative(props) {
       const newTerms = prev.map((term, index) =>
         index === termIndex ? { ...term, [name]: checked } : term
       );
-
-      // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(checked, originalTerm[name]);
 
@@ -283,9 +263,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: "", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -296,9 +276,9 @@ export default function Addrepresentative(props) {
       const updatedTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       );
 
@@ -320,15 +300,14 @@ export default function Addrepresentative(props) {
       const newTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
           : term
       );
 
-      // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const originalVote = originalTerm.votesScore?.[voteIndex] || {};
       const isActualChange = compareValues(value, originalVote[field]);
@@ -348,12 +327,12 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: "", score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: "", score: "" },
+            ],
+          }
           : term
       )
     );
@@ -364,11 +343,11 @@ export default function Addrepresentative(props) {
       const updatedTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       );
 
@@ -386,9 +365,8 @@ export default function Addrepresentative(props) {
   };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    const activityChangeId = `term${termIndex}_TrackedActivity_${
-      activityIndex + 1
-    }`;
+    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
+      }`;
 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, idx) => {
@@ -401,7 +379,6 @@ export default function Addrepresentative(props) {
         return { ...term, activitiesScore: newActivities };
       });
 
-      // Compare with original data if available
       const originalTerm = originalTermData[termIndex] || {};
       const originalActivity =
         originalTerm.activitiesScore?.[activityIndex] || {};
@@ -420,16 +397,14 @@ export default function Addrepresentative(props) {
     });
   };
 
-  const handleEditorChange = useCallback((content, termIndex) => {
-    const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
 
-    // Track the change if not already tracked
+
+  const handleEditorChange = useCallback((content, termIndex) => {
+    const fieldName = `term${termIndex}_summary`; 
     setLocalChanges((prev) =>
       prev.includes(fieldName) ? prev : [...prev, fieldName]
     );
   }, []);
-
-  // Add a new empty term
   const handleAddTerm = () => {
     setHouseTermData((prev) => [
       ...prev,
@@ -446,23 +421,33 @@ export default function Addrepresentative(props) {
         isNew: true,
       },
     ]);
+    
   };
 
-  // Remove a term
-  const handleRemoveTerm = (termIndex) => {
-    setHouseTermData((prev) => {
-      const removed = prev[termIndex];
+const handleRemoveTerm = (termIndex) => {
+  setHouseTermData((prev) => {
+    const removed = prev[termIndex];
+    const removalId = `Term_${termIndex + 1} Removed`;
+        if (!removed.isNew) {
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
+        if (!localChanges.includes(removalId)) {
+          setLocalChanges((prev) => [...prev, removalId]);
+        }
+      } else {
+        if (!localChanges.includes(removalId)) {
+          setLocalChanges((prev) => [...prev, removalId]);
+        }
       }
-
-      setLocalChanges((prevChanges) =>
-        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
-      );
-
-      return prev.filter((_, index) => index !== termIndex);
-    });
-  };
+    }
+    
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+    );
+    
+    return prev.filter((_, index) => index !== termIndex);
+  });
+};
 
   const compareValues = (newVal, oldVal) => {
     if (newVal == null || oldVal == null) return newVal !== oldVal;
@@ -472,9 +457,9 @@ export default function Addrepresentative(props) {
 
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
+
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => {
-          // Case 1: term.termId is an object with name property
           if (
             term.termId &&
             typeof term.termId === "object" &&
@@ -482,44 +467,41 @@ export default function Addrepresentative(props) {
           ) {
             return t.name === term.termId.name;
           }
-          // Case 2: term.termId is a string (the term name)
           else if (typeof term.termId === "string") {
             return t.name === term.termId;
           }
-          // Case 3: term.termId is an ObjectId - find by ID
           else if (
             term.termId &&
             mongoose.Types.ObjectId.isValid(term.termId)
           ) {
             return t._id.toString() === term.termId.toString();
           }
-          // Case 4: No valid termId found
           return false;
         });
-        // Transform votesScore with the same logic as house data
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
             ? term.votesScore.map((vote) => {
-                let scoreValue = "";
-                const dbScore = vote.score?.toLowerCase();
-                if (dbScore?.includes("yea")) {
-                  scoreValue = "yea";
-                } else if (dbScore?.includes("nay")) {
-                  scoreValue = "nay";
-                } else if (dbScore?.includes("other")) {
-                  scoreValue = "other";
-                } else {
-                  scoreValue = vote.score || "";
-                }
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
 
-                return {
-                  voteId: vote.voteId?._id || vote.voteId || "",
-                  score: scoreValue,
-                  title: vote.voteId?.title || vote.title || "",
-                  _id: vote._id || undefined,
-                };
-              })
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+                title: vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
+              };
+            })
             : [{ voteId: "", score: "" }];
+
 
         if (
           votesScore.length === 0 ||
@@ -542,12 +524,12 @@ export default function Addrepresentative(props) {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId:
-                    activity.activityId?._id || activity.activityId || null,
-                  score: activity.score || "",
-                  title: activity.activityId?.title || activity.title || "",
-                  _id: activity._id || undefined,
-                }))
+                activityId:
+                  activity.activityId?._id || activity.activityId || null,
+                score: activity.score || "",
+                title: activity.activityId?.title || activity.title || "",
+                _id: activity._id || undefined,
+              }))
               : [{ activityId: "", score: "" }],
         };
       });
@@ -587,6 +569,7 @@ export default function Addrepresentative(props) {
     }
   }, [formData, originalFormData]);
 
+
   useEffect(() => {
     if (originalFormData && formData && originalTermData && houseTermData) {
       const changes = [];
@@ -598,8 +581,8 @@ export default function Addrepresentative(props) {
         }
       });
 
+
       houseTermData.forEach((term, termIndex) => {
-        // For new terms, track all fields that have values
         if (term.isNew) {
           Object.keys(term).forEach((key) => {
             if (
@@ -630,7 +613,6 @@ export default function Addrepresentative(props) {
             }
           });
         } else {
-          // Existing term logic
           const originalTerm = originalTermData[termIndex] || {};
           Object.keys(term).forEach((key) => {
             if (
@@ -732,13 +714,13 @@ export default function Addrepresentative(props) {
     }
   }, [house, terms, isDataFetching]);
 
+
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
-
-      // Compare with original data
       if (originalFormData) {
         const isActualChange = compareValues(value, originalFormData[name]);
 
@@ -790,7 +772,6 @@ export default function Addrepresentative(props) {
         );
         return;
       }
-      //  Prevent duplicate termId selections
       const termIdCounts = houseTermData
         .map((t) => t.termId)
         .filter(Boolean)
@@ -806,8 +787,6 @@ export default function Addrepresentative(props) {
         );
         return;
       }
-
-      //  Only one current term
       const currentTerms = houseTermData.filter((term) => term.currentTerm);
       if (currentTerms.length > 1) {
         setLoading(false);
@@ -823,14 +802,11 @@ export default function Addrepresentative(props) {
         deletedTermIds.length > 0 ||
         (formData?.fieldEditors &&
           Object.keys(formData.fieldEditors).length > 0);
-
-      //  Prevent saving if no local changes of any kind
       if (userRole === "editor" && !hasLocalChanges) {
         setLoading(false);
         handleSnackbarOpen("No changes detected. Nothing to update.", "info");
         return;
       }
-      //  Current editor info
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -838,15 +814,12 @@ export default function Addrepresentative(props) {
         editedAt: new Date(),
       };
 
-      // Delete removed terms
       if (deletedTermIds.length > 0) {
         await Promise.all(
           deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
         );
         setDeletedTermIds([]);
       }
-
-      // Prepare existing editedFields
       const existingEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
         : [];
@@ -871,27 +844,22 @@ export default function Addrepresentative(props) {
         existingFieldsMap.set(fieldKey, { ...field });
       });
 
-      //  Process current votes & activities
       const processedChanges = [];
-      // Helper function to check if a vote has changed
       const hasVoteChanged = (termIndex, voteIndex, vote) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalVote = originalTerm.votesScore?.[voteIndex] || {};
 
-        // Check if voteId or score has changed
         return (
           vote.voteId !== originalVote.voteId ||
           vote.score !== originalVote.score
         );
       };
 
-      // Helper function to check if an activity has changed
       const hasActivityChanged = (termIndex, activityIndex, activity) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalActivity =
           originalTerm.activitiesScore?.[activityIndex] || {};
 
-        // Check if activityId or score has changed
         return (
           activity.activityId !== originalActivity.activityId ||
           activity.score !== originalActivity.score
@@ -899,19 +867,16 @@ export default function Addrepresentative(props) {
       };
 
       houseTermData.forEach((term, termIndex) => {
-        // votesScore - only process changed votes
         term.votesScore.forEach((vote, voteIndex) => {
           if (vote.voteId && vote.voteId.toString().trim() !== "") {
-            // Only add if this vote has actually changed
             if (hasVoteChanged(termIndex, voteIndex, vote)) {
               const voteItem = votes.find((v) => v._id === vote.voteId);
               if (voteItem) {
                 const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Scored Vote ${
-                    voteIndex + 1
-                  }`,
+                  displayName: `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1
+                    }`,
                   field: ["votesScore"],
                   name: voteItem.title,
                   termIndex,
@@ -922,13 +887,11 @@ export default function Addrepresentative(props) {
           }
         });
 
-        // activitiesScore - only process changed activities
         term.activitiesScore.forEach((activity, activityIndex) => {
           if (
             activity.activityId &&
             activity.activityId.toString().trim() !== ""
           ) {
-            // Only add if this activity has actually changed
             if (hasActivityChanged(termIndex, activityIndex, activity)) {
               const activityItem = houseActivities.find(
                 (a) => a._id === activity.activityId
@@ -939,9 +902,8 @@ export default function Addrepresentative(props) {
                 )}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Tracked Activity ${
-                    activityIndex + 1
-                  }`,
+                  displayName: `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1
+                    }`,
                   field: ["activitiesScore"],
                   name: activityItem.title,
                   termIndex,
@@ -952,7 +914,6 @@ export default function Addrepresentative(props) {
           }
         });
       });
-      //  Process other local changes
       localChanges.forEach((change) => {
         if (
           !change.includes("votesScore_") &&
@@ -968,10 +929,7 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // helper for deep equality check
       const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-
-      // helper: check if a value is meaningful (not empty/default)
       const hasNonDefaultValue = (field, value) => {
         if (value === null || value === undefined) return false;
         if (typeof value === "string" && value.trim() === "") return false;
@@ -979,7 +937,6 @@ export default function Addrepresentative(props) {
         return true;
       };
 
-      //  Process term-level changes
       houseTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
         const termFields = ["summary", "rating", "currentTerm", "termId"];
@@ -988,6 +945,7 @@ export default function Addrepresentative(props) {
           const newValue = term[field];
           const oldValue = originalTerm[field];
 
+
           if (
             !isEqual(newValue, oldValue) &&
             hasNonDefaultValue(field, newValue)
@@ -995,17 +953,14 @@ export default function Addrepresentative(props) {
             const fieldName = `term${termIndex}_${field}`;
             processedChanges.push({
               uniqueId: fieldName,
-              displayName: `Term ${termIndex + 1}: ${
-                fieldLabels[field] || field
-              }`,
+              displayName: `Term ${termIndex + 1}: ${fieldLabels[field] || field
+                }`,
               field: [fieldName],
               name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
             });
           }
         });
       });
-
-      //  Merge with existing fields
       processedChanges.forEach((change) => {
         const existingField = existingFieldsMap.get(change.uniqueId);
         if (!existingField || existingField.name !== change.name) {
@@ -1025,17 +980,12 @@ export default function Addrepresentative(props) {
       });
 
       const allChanges = Array.from(existingFieldsMap.values());
-      // Update fieldEditors safely
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-
-      // Track which fields were actually changed in this session
       const changedFieldsInThisSession = new Set();
 
-      //  Process localChanges to update only changed votes/activities/terms
       localChanges.forEach((change) => {
         let editorKey;
 
-        // Handle votes: termX_ScoredVote_Y
         const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
         if (voteMatch) {
           const [, termIndex, voteIndex] = voteMatch;
@@ -1052,7 +1002,6 @@ export default function Addrepresentative(props) {
           return;
         }
 
-        // Handle activities: termX_TrackedActivity_Y
         const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
         if (activityMatch) {
           const [, termIndex, activityIndex] = activityMatch;
@@ -1071,24 +1020,24 @@ export default function Addrepresentative(props) {
           return;
         }
 
-        // Term-level or simple fields
         editorKey = change;
         updatedFieldEditors[editorKey] = currentEditor;
         changedFieldsInThisSession.add(editorKey);
       });
 
+
       processedChanges.forEach((change) => {
         if (!changedFieldsInThisSession.has(change.uniqueId)) {
-          // preserve existing editor if any
           updatedFieldEditors[change.uniqueId] =
             updatedFieldEditors[change.uniqueId] || currentEditor;
         }
       });
 
+
       const representativeUpdate = {
         ...formData,
         editedFields: allChanges,
-        fieldEditors: updatedFieldEditors, // Use the updated field editors
+        fieldEditors: updatedFieldEditors, 
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
 
@@ -1111,7 +1060,6 @@ export default function Addrepresentative(props) {
         await dispatch(updateHouse({ id, formData: formDataToSend })).unwrap();
       }
 
-      //  Update terms
       const termPromises = houseTermData.map((term, index) => {
         const cleanVotesScore = term.votesScore
           .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
@@ -1135,8 +1083,8 @@ export default function Addrepresentative(props) {
             typeof f === "string"
               ? f
               : Array.isArray(f.field)
-              ? f.field[0]
-              : f.field;
+                ? f.field[0]
+                : f.field;
           return fieldName.startsWith(`term${index}_`);
         });
         const termUpdate = {
@@ -1150,8 +1098,8 @@ export default function Addrepresentative(props) {
         };
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateHouseData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -1163,13 +1111,14 @@ export default function Addrepresentative(props) {
       setOriginalFormData(JSON.parse(JSON.stringify(formData)));
       setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
       setLocalChanges([]);
+       setDeletedTermIds([]);
 
       userRole === "admin"
         ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -1184,6 +1133,7 @@ export default function Addrepresentative(props) {
 
     const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+  
 
     return (votes || []).filter(
       (vote) =>
@@ -1191,7 +1141,6 @@ export default function Addrepresentative(props) {
         selectedTerm.congresses.includes(Number(vote.congress))
     );
   };
-  // Helper function to get filtered activities based on selected term
   const getFilteredActivities = (termIndex) => {
     const term = houseTermData[termIndex];
     if (!term || !term.termId) return houseActivities || [];
@@ -1224,12 +1173,10 @@ export default function Addrepresentative(props) {
     setFormData((prev) => {
       const newData = { ...prev, status };
 
-      // Compare with original value to determine if this is an actual change
       const isActualChange = originalFormData
         ? status !== originalFormData.status
         : true;
 
-      // Update local changes based on whether it's an actual change
       setLocalChanges((prevChanges) => {
         if (isActualChange && !prevChanges.includes(fieldName)) {
           return [...prevChanges, fieldName];
@@ -1366,11 +1313,7 @@ export default function Addrepresentative(props) {
               gap: 1,
             }}
           >
-            <ActionButtons
-              onDiscard={handleDiscard}
-              onSave={handleSave}
-              userRole={userRole}
-            />
+            <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
             <StatusDisplay
               userRole={userRole}
               formData={formData}
@@ -1381,12 +1324,7 @@ export default function Addrepresentative(props) {
             />
 
             <Paper className="customPaper">
-              <DialogBox
-                userRole={userRole}
-                openDiscardDialog={openDiscardDialog}
-                setOpenDiscardDialog={setOpenDiscardDialog}
-                handleConfirmDiscard={handleConfirmDiscard}
-              />
+              <DialogBox userRole={userRole} openDiscardDialog={openDiscardDialog} setOpenDiscardDialog={setOpenDiscardDialog} handleConfirmDiscard={handleConfirmDiscard} />
 
               <BasicInfo
                 formData={formData}
@@ -1458,7 +1396,6 @@ export default function Addrepresentative(props) {
                                   Array.isArray(t.congresses) &&
                                   t.congresses.length > 0
                               )
-                              // Hide terms already selected in other term sections
                               .filter(
                                 (t) =>
                                   !houseTermData.some(
@@ -1538,7 +1475,6 @@ export default function Addrepresentative(props) {
                               idx === termIndex ? { ...t, summary: content } : t
                             )
                           );
-                          // Optionally update localChanges here too
                           const fieldName = `term${termIndex}_summary`;
                           const originalTerm =
                             originalTermData[termIndex] || {};
@@ -1558,7 +1494,7 @@ export default function Addrepresentative(props) {
                             return prev;
                           });
                         }}
-                        onBlur={() => {}}
+                        onBlur={() => { }}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -1592,9 +1528,8 @@ export default function Addrepresentative(props) {
                       />
                     </Grid>
 
-                    {/* Vote Repeater Start */}
                     {term.votesScore.map((vote, voteIndex) =>
-                      vote.voteId != null ? ( // Only render if voteId is not null
+                      vote.voteId != null ? ( 
                         <Grid
                           rowSpacing={2}
                           sx={{ width: "100%" }}
@@ -1675,6 +1610,7 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
+
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1690,7 +1626,6 @@ export default function Addrepresentative(props) {
                         </Grid>
                       ) : null
                     )}
-                    {/* Vote Repeater Ends */}
 
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
@@ -1706,7 +1641,6 @@ export default function Addrepresentative(props) {
                     <Grid size={1}></Grid>
                     <Grid size={1}></Grid>
 
-                    {/* Activities Repeater Start */}
                     {term.activitiesScore.map((activity, activityIndex) =>
                       activity.activityId != null ? (
                         <Grid
@@ -1792,6 +1726,7 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
+
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1807,8 +1742,6 @@ export default function Addrepresentative(props) {
                         </Grid>
                       ) : null
                     )}
-                    {/* Activities Repeater Ends */}
-
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
@@ -1825,8 +1758,6 @@ export default function Addrepresentative(props) {
                 </Box>
               </Paper>
             ))}
-
-            {/* Add Term Button */}
             <Button
               variant="outlined"
               startIcon={<AddIcon />}

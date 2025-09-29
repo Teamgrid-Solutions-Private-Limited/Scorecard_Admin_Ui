@@ -2326,7 +2326,15 @@ if (pastVotesScore.length === 0) {
             {senatorTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-                className="termData-paper"
+                sx={{
+                  width: "100%",
+                  marginBottom: "50px",
+                  position: "relative",
+                  bgcolor: "#fff",
+                  borderRadius: 0.8,
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
               >
                 <SenatorTermSection
                   term={term}
