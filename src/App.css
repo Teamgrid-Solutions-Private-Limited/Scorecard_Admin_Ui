@@ -45,9 +45,6 @@ h6 {
   flex-grow: 1;
   width: 100%;              
   min-height: 100vh;
-  /* padding-left: 16px;      
-  padding-right: 16px; */
-  /* padding-top: 8px;          */
 }
 
 
@@ -101,7 +98,7 @@ h6 {
   justify-content: flex-end;
   align-items: stretch;       
   margin-top: 16px;   
-  gap: 16px;                 
+  gap: 8px;                 
 }
 @media (min-width: 600px) {
   .actionsBox {
@@ -109,11 +106,7 @@ h6 {
     align-items: center;
   }
 }
-@media (min-width: 900px) {
-  .actionsBox {
-    margin-top: 32px;       
-  }
-}
+
 .adminBox {
   width: 70%;
   display: block;          
@@ -217,7 +210,6 @@ h6 {
   .filter-paper {
     right: 34%;
     width: 60vw;
-    /* height: 70vh; */
   }
 }
 
@@ -243,10 +235,7 @@ h6 {
   cursor: pointer;
 }
 
-/* .filter-content {
-  padding: 8px 0;
-  background-color: #fff;
-} */
+
 
 .filter-scroll {
   max-height: 200px;
@@ -421,7 +410,7 @@ h6 {
   background-color: #173a5e !important;
   color: white !important;
   padding: 0.5rem 1rem !important;
-  /* margin-left: 0.5rem !important; */
+
 }
 
 .bulkEditBtn:hover {
@@ -441,7 +430,7 @@ h6 {
   background-color: #173a5e !important;
   color: white !important;
   padding: 0.5rem 1rem !important;
-  /* margin-left: 0.5rem !important; */
+
 }
 
 .addBillsBtn:hover {
@@ -449,7 +438,6 @@ h6 {
 }
 
 .bulkEditContainer {
-  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -567,6 +555,12 @@ h6 {
   .paddingLeft{
     padding-left: 24px !important;
   }
+}
+
+@media (min-width:768px) {
+  .bulkEditContainer{
+    width: 100%;
+  } 
 }
 
 

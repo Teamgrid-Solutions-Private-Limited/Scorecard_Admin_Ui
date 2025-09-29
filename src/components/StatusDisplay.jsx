@@ -5,7 +5,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Chip
 } from "@mui/material";
 
 const StatusDisplay = ({
@@ -19,27 +18,7 @@ const StatusDisplay = ({
   if (!userRole || !formData?.publishStatus || !statusData) return null;
   if (formData.publishStatus === "published" && localChanges.length === 0) return null;
 
-  console.log("Rendering StatusDisplay with:", { statusData, });
-  const fieldLabels = {
-    status: "Status",
-    name: mode === 'senator' ? "Senator Name" : "Representative Name",
-    party: "Party",
-    photo: "Photo",
-    publishStatus: "Publish Status",
-    state: "State",
-    district: "District",
-
-    summary: "Term Summary",
-    rating: "SBA Rating",
-    votesScore: "Scored Vote",
-    activitiesScore: "Tracked Activity",
-    pastVotesScore: "Important Past Vote",
-    currentTerm: "Current Term",
-    termId: "Term",
-  };
-
   const senatorFormatFieldName = (field, index, senatorTermData = []) => {
-    console.log("Formatting field:", senatorTermData);
     if (typeof field === "object" && field !== null) {
       if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
         const billTitle = field.name;
@@ -370,7 +349,7 @@ const StatusDisplay = ({
   };
 
   const backendChanges = Array.isArray(formData?.editedFields) ? formData.editedFields : [];
-  console.log("backend changes:", backendChanges);
+
   const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
 
   if (!hasChanges) {
@@ -436,7 +415,7 @@ const StatusDisplay = ({
   return (
     <Box
       sx={{
-        width: "97%",
+        width: {xs:"90%",sm:"97%"},
         p: 2,
         backgroundColor: statusData.backgroundColor,
         borderLeft: `4px solid ${statusData.borderColor}`,
@@ -515,7 +494,6 @@ const StatusDisplay = ({
                 <List dense sx={{ py: 0 }}>
                   {backendChanges.map((field, index) => {
                     const fieldLabel = formatFieldName(field, index);
-                    console.log("fieldLabel:", fieldLabel);
                     if (!fieldLabel) return null;
 
                     const editorKey = getEditorKey(field);

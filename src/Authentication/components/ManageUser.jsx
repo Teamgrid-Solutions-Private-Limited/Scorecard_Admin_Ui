@@ -177,18 +177,6 @@ export default function ManageUser(props) {
     }
   };
 
- 
-  //   try {
-  //     await dispatch(deleteUser(userId)).unwrap();
-  //     setSnackbarMessage("User deleted successfully");
-  //     setSnackbarSeverity("success");
-  //     setOpenSnackbar(true);
-  //   } catch (error) {
-  //     setSnackbarMessage(error.message || "Failed to delete user");
-  //     setSnackbarSeverity("error");
-  //     setOpenSnackbar(true);
-  //   }
-  // };
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -241,20 +229,7 @@ export default function ManageUser(props) {
             ) : (
               <>
                 {loading && (
-                  <Box
-                    sx={{
-                      position: "fixed",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      zIndex: 9999,
-                    }}
-                  >
+                  <Box className="circularLoader" >
                     <CircularProgress sx={{ color: "#CC9A3A !important" }} />
                   </Box>
                 )}
@@ -429,7 +404,7 @@ export default function ManageUser(props) {
                 setSnackbarMessage("User added successfully");
                 setSnackbarSeverity("success");
                 setOpenSnackbar(true);
-                dispatch(getAllUsers()); // Refresh the user list
+                dispatch(getAllUsers()); 
               }}
               onError={(error) => {
                 setSnackbarMessage(error);
@@ -460,13 +435,12 @@ export default function ManageUser(props) {
       border: "none",
       boxShadow:"none",
       width: "100%",
-      // ✅ Background conditions
       bgcolor:
         snackbarMessage === `User deleted successfully`
           ? "#fde8e4"
           : undefined,
 
-      // ✅ Icon color conditions
+
       "& .MuiAlert-icon": {
         color:
           snackbarMessage === `User deleted successfully`
@@ -474,13 +448,19 @@ export default function ManageUser(props) {
             : undefined,
       },
 
-      // ✅ Text color conditions
+
       "& .MuiAlert-message": {
         color:
           snackbarMessage === `User deleted successfully`
             ? "#cc563d"
             : undefined,
       },
+      "& .MuiAlert-action": {
+            display: "flex",
+            alignItems: "center",
+            paddingTop: 0,
+            paddingBottom: 0,
+          },
     }}
               >
                 {snackbarMessage}
