@@ -161,7 +161,7 @@ export default function AddBill(props) {
           : []
       );
     }
-  }, [selectedVote , isDataFetching]);
+  }, [selectedVote, isDataFetching]);
 
   // When formData changes, update editedFields (track all changes)
   useEffect(() => {
@@ -177,35 +177,31 @@ export default function AddBill(props) {
   }, [formData, originalFormData]);
 
   useEffect(() => {
-  const fetchData = async () => {
-    setIsDataFetching(true); // optional loading state
-    try {
-      if (id) {
-        // Fetch id-dependent data concurrently
-        await Promise.all([
-          dispatch(getVoteById(id)).unwrap(),
-          dispatch(getAllTerms()).unwrap(),
-        ]);
+    const fetchData = async () => {
+      setIsDataFetching(true); // optional loading state
+      try {
+        if (id) {
+          // Fetch id-dependent data concurrently
+          await Promise.all([
+            dispatch(getVoteById(id)).unwrap(),
+            dispatch(getAllTerms()).unwrap(),
+          ]);
+        }
+        return () => {
+          dispatch(clearVoteState());
+        };
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setSnackbarMessage("Error loading data. Please try again.");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      } finally {
+        setIsDataFetching(false);
       }
-return () => {
-        dispatch(clearVoteState());
-}
-    
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setSnackbarMessage("Error loading data. Please try again.");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    } finally {
-      setIsDataFetching(false);
-    }
-  };
+    };
 
-  fetchData();
-
-
-}, [id, dispatch]);
-
+    fetchData();
+  }, [id, dispatch]);
 
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
@@ -402,15 +398,15 @@ return () => {
           updateVote({ id, updatedData: formDataToSend })
         ).unwrap();
         if (readMoreType === "url") {
-                  setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
-                  setReadMoreType("url"); // force back to URL mode
-                } else if (readMoreType === "file" && selectedFile) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
-                  }));
-                  setReadMoreType("file"); // stay in file mode
-                }
+          setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
+          setReadMoreType("url"); // force back to URL mode
+        } else if (readMoreType === "file" && selectedFile) {
+          setFormData((prev) => ({
+            ...prev,
+            readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
+          }));
+          setReadMoreType("file"); // stay in file mode
+        }
         await dispatch(getVoteById(id)).unwrap();
 
         setSnackbarMessage(
@@ -615,9 +611,8 @@ return () => {
 
   return (
     <AppTheme>
-        {(loading || isDataFetching) && (
-   <LoadingOverlay />
-    )}
+      <LoadingOverlay loading={loading || isDataFetching} />
+
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
@@ -678,9 +673,9 @@ return () => {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: {xs: 2, md: 3},
+              mx: { xs: 2, md: 3 },
               // pb: 5,
-              mt:  2 ,
+              mt: 2,
             }}
           >
             <Stack
@@ -712,7 +707,7 @@ return () => {
               (currentStatus !== "published" || hasAnyChanges) && (
                 <Box
                   sx={{
-                    width: {xs:"90%",sm:"97%"},
+                    width: { xs: "90%", sm: "97%" },
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -770,7 +765,6 @@ return () => {
                         >
                           {statusData.title}
                         </Typography>
-
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -944,7 +938,6 @@ return () => {
                                               </Typography>
                                             </Box>
                                           }
-
                                         />
                                       </ListItem>
                                     ))}
@@ -965,7 +958,7 @@ return () => {
                 userRole={userRole}
                 openDiscardDialog={openDiscardDialog}
                 setOpenDiscardDialog={setOpenDiscardDialog}
-                handleConfirmDiscard={handleConfirmDiscard} 
+                handleConfirmDiscard={handleConfirmDiscard}
               />
               <Box sx={{ padding: 0 }}>
                 <Typography className="customTypography">
@@ -977,12 +970,12 @@ return () => {
                   columnSpacing={2}
                   alignItems={"center"}
                   py={3}
-                  pr={isMobile?3:7}
+                  pr={isMobile ? 3 : 7}
                 >
-                  <Grid size={isMobile?3:2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Type</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?9:10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <Select
                         value={formData.type}
@@ -996,10 +989,10 @@ return () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?3:2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Title</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?9:10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1016,9 +1009,7 @@ return () => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="label">
-                      Short Description
-                    </InputLabel>
+                    <InputLabel className="label">Short Description</InputLabel>
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
@@ -1064,9 +1055,7 @@ return () => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="label">
-                      Long Description
-                    </InputLabel>
+                    <InputLabel className="label">Long Description</InputLabel>
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
@@ -1109,10 +1098,10 @@ return () => {
                     />
                   </Grid>
 
-                  <Grid size={isMobile?3:2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Date</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?9:10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         type="date"
@@ -1148,10 +1137,10 @@ return () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?3:2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Term</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?9:10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         value={formData.termId || ""}
@@ -1163,9 +1152,7 @@ return () => {
                         autoComplete="off"
                         variant="outlined"
                         //sx={{ background: "#fff" }}
-                      >
-
-                      </TextField>
+                      ></TextField>
                     </FormControl>
                   </Grid>
 
@@ -1173,7 +1160,7 @@ return () => {
                     <InputLabel className="label">Roll Call</InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 11 : 10}>
-                    <FormControl fullWidth className="paddingLeft"> 
+                    <FormControl fullWidth className="paddingLeft">
                       <TextField
                         className="customTextField"
                         fullWidth

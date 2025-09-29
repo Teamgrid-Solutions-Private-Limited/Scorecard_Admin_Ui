@@ -19,7 +19,6 @@ import {
   treeViewCustomizations,
 } from "../../src/Themes/customizations";
 import {
-  CircularProgress,
   Snackbar,
   Alert,
   TextField,
