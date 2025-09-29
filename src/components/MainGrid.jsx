@@ -1,21 +1,19 @@
 import * as React from "react";
-import { Box, Typography, Grid } from "@mui/material";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
+import { Box, Grid } from "@mui/material";
 import CustomizedDataGrid from "./CustomizedDataGrid";
 import Footer from "./Footer";
 
 export default function MainGrid({
   type,
   data,
-  loading,
   onEdit,
   onDelete,
   onToggleStatus ,
   handleToggleStatusAct,
   handleToggleStatusSenator,
   handleToggleStatusHouse,
-  isSelectable = false, // New prop for bulk edit mode
-  onSelectionChange, // New prop to handle selection changes
+  isSelectable = false, 
+  onSelectionChange, 
   selectedItems = []
 }) {
   const title =
@@ -36,13 +34,12 @@ export default function MainGrid({
           <CustomizedDataGrid
             type={type}
             rows={data}
-            // loading={loading}
             onEdit={onEdit}
             onDelete={onDelete}
             onToggleStatus={onToggleStatus}
             handleToggleStatusAct={handleToggleStatusAct}
-             isSelectable={isSelectable} // Pass to CustomizedDataGrid
-            onSelectionChange={onSelectionChange} // Pass to CustomizedDataGrid
+             isSelectable={isSelectable} 
+            onSelectionChange={onSelectionChange}
             selectedItems={selectedItems}
             handleToggleStatusSenator={handleToggleStatusSenator}
             handleToggleStatusHouse={handleToggleStatusHouse}

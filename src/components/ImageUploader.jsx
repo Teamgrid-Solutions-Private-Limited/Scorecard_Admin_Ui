@@ -6,17 +6,16 @@ const ImageUploader = () => {
   const [imagePreview, setImagePreview] = useState(null);
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0]; // Get the selected file
+    const file = event.target.files[0];
     if (file) {
-      setImagePreview(URL.createObjectURL(file)); // Create preview URL
+      setImagePreview(URL.createObjectURL(file));
     } else {
-      setImagePreview(null); // Reset preview if no file is selected
+      setImagePreview(null);
     }
   };
 
   return (
     <Box display="flex" alignItems="center" gap={3}>
-      {/* Upload Button */}
       <Button
         component="label"
         variant="contained"
@@ -30,8 +29,6 @@ const ImageUploader = () => {
           onChange={handleFileChange}
         />
       </Button>
-
-      {/* Preview Box */}
       <Box display="flex" flexDirection="column" alignItems="center">
         <Typography variant="subtitle1">Preview</Typography>
         {imagePreview ? (
