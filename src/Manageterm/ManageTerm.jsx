@@ -33,6 +33,7 @@ import {
   DialogContentText,
   DialogActions
 } from "@mui/material";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function ManageTerm(props) {
   const dispatch = useDispatch();
@@ -120,11 +121,7 @@ const handleConfirmDelete = async () => {
 
   return (
     <AppTheme {...props}>
-      {loading && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A" }} />
-        </Box>
-      )}
+    <LoadingOverlay loading={loading} />
 
       <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f6f6f6ff" }}>
         <SideMenu />

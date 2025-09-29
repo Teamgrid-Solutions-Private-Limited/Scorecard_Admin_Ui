@@ -36,7 +36,6 @@ import BasicInfo from "../components/BasicInfo";
 import SenatorTermSection from "../components/senatorService/SenatorTermSection";
 import StatusDisplay from "../components/StatusDisplay";
 import SnackbarComponent from "../components/SnackbarComponent";
-import LoadingOverlay from "../components/LoadingOverlay";
 import ActionButtons from "../components/ActionButtons";
 
 // Redux Slices

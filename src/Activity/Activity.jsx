@@ -21,7 +21,6 @@ import {
   treeViewCustomizations,
 } from "../../src/Themes/customizations";
 import {
-  CircularProgress,
   Snackbar,
   Alert,
   TextField,
@@ -51,6 +50,7 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 
 export default function Activity(props) {
@@ -221,11 +221,7 @@ export default function Activity(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      {(loading || fetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || fetching} />
      <Box className="container">
         <SideMenu/>
         <Box

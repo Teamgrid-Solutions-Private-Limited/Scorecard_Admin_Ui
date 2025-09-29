@@ -13,7 +13,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
-import CircularProgress from "@mui/material/CircularProgress";
 import {
   Autocomplete,
   Box,
@@ -28,9 +27,7 @@ import {
   Button,
   Switch,
 } from "@mui/material";
-import {
-  getAllVotes,
-} from "../redux/reducer/voteSlice";
+import { getAllVotes } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { discardHouseChanges } from "../redux/reducer/houseSlice";
 import {
@@ -47,7 +44,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
-import { deleteHouseData } from "../redux/reducer/houseTermSlice"; 
+import { deleteHouseData } from "../redux/reducer/houseTermSlice";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
@@ -166,14 +163,12 @@ export default function Addrepresentative(props) {
                 score: vote.score || "",
               })) || [];
 
-
             activitiesScore =
               existingTermData.activitiesScore?.map((activity) => ({
                 activityId:
                   activity.activityId?._id || activity.activityId || "",
                 score: activity.score || "",
               })) || [];
-
 
             summary = existingTermData.summary || "";
             rating = existingTermData.rating || "";
@@ -287,7 +282,6 @@ export default function Addrepresentative(props) {
           : term
       );
 
-
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -356,7 +350,6 @@ export default function Addrepresentative(props) {
           }
           : term
       );
-
 
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
@@ -581,7 +574,6 @@ const handleRemoveTerm = (termIndex) => {
     if (originalFormData && formData && originalTermData && houseTermData) {
       const changes = [];
 
-
       Object.keys(formData).forEach((key) => {
         if (key === "editedFields" || key === "fieldEditors") return;
         if (compareValues(formData[key], originalFormData[key])) {
@@ -690,13 +682,13 @@ const handleRemoveTerm = (termIndex) => {
         if (id) {
           await Promise.all([
             dispatch(getHouseById(id)),
-            dispatch(getHouseDataByHouseId(id))
+            dispatch(getHouseDataByHouseId(id)),
           ]);
         }
         await Promise.all([
           dispatch(getAllTerms()),
           dispatch(getAllVotes()),
-          dispatch(getAllActivity())
+          dispatch(getAllActivity()),
         ]);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -1141,6 +1133,8 @@ const handleRemoveTerm = (termIndex) => {
 
     const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+    const selectedTerm = terms.find((t) => t._id === term.termId);
+    if (!selectedTerm || !selectedTerm.congresses) return votes || [];
 
     return (votes || []).filter(
       (vote) =>
@@ -1173,7 +1167,6 @@ const handleRemoveTerm = (termIndex) => {
   };
 
   const editorRef = useRef(null);
-
 
   const handleStatusChange = (status) => {
     const fieldName = "status";
@@ -1241,7 +1234,6 @@ const handleRemoveTerm = (termIndex) => {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-
     };
 
     return configs[currentStatus];
@@ -1296,11 +1288,7 @@ const handleRemoveTerm = (termIndex) => {
 
   return (
     <AppTheme key={componentKey}>
-      {(loading || isDataFetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || isDataFetching} />
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -1319,8 +1307,10 @@ const handleRemoveTerm = (termIndex) => {
 
           <Stack
             spacing={isMobile ? 1 : 2}
+            spacing={isMobile ? 1 : 2}
             sx={{
               alignItems: "center",
+              mx: { xs: 2, md: 3 },
               mx: { xs: 2, md: 3 },
               mt: { xs: 2, md: 2.8 },
               gap: 1,
@@ -1629,6 +1619,7 @@ const handleRemoveTerm = (termIndex) => {
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
+                                className="paddingLeft"
                                 className="paddingLeft"
                                 onClick={() =>
                                   handleRemoveVote(termIndex, voteIndex)
