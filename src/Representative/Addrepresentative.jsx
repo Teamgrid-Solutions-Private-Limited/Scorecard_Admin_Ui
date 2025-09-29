@@ -1539,7 +1539,6 @@ const handleRemoveTerm = (termIndex) => {
                             size={12}
                             display="flex"
                             flexDirection={isMobile ? "column" : "row"}
-                            flexDirection={isMobile ? "column" : "row"}
                             gap={isMobile ? 1 : 0}
                             alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
