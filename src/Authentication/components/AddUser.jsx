@@ -28,29 +28,7 @@ import { API_URL } from "../../redux/API";
 import { useDispatch } from "react-redux";
 import { addUser ,getAllUsers} from "../../redux/reducer/loginSlice";
 
-const Card = styled(MuiCard)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  alignSelf: "center",
-  width: "100%",
-  paddingBottom: theme.spacing(4),
-  gap: theme.spacing(2),
-  margin: "auto",
-  borderRadius: "10px",
-  maxWidth: "420px",
-  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-  background: "white",
-  overflow: "hidden",
-}));
 
-const AddUserContainer = styled(Stack)(({ theme }) => ({
-  minHeight: "100vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  background: "#f4f6f8",
-  padding: theme.spacing(2),
-}));
 
 const Header = styled(Box)(({ theme }) => ({
   textAlign: 'center',

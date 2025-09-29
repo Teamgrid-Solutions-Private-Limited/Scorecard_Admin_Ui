@@ -66,16 +66,15 @@ export default function Activity(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const token = localStorage.getItem("token");
-  // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
   const statusOptions = ["published", "draft", "under review"];
-  const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); // Store selected activity IDs
-  const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
-  const [bulkTrackActivity, setBulkTrackActivity] = useState(""); // Store bulk track activity value
+  const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); 
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
+  const [bulkTrackActivity, setBulkTrackActivity] = useState("");
 
   
   useEffect(() => {
@@ -87,7 +86,7 @@ export default function Activity(props) {
   };
 
  const filteredActivities = activities.filter((activity) => {
-    // Status filter
+ 
     const statusMatch =
       statusFilter.length === 0 ||
       (activity.status && statusFilter.includes(activity.status));
@@ -113,7 +112,7 @@ export default function Activity(props) {
     status: activity.status,
   }));
 
-  // Filter handlers
+
   const toggleFilter = () => {
     setFilterOpen(!filterOpen);
   };
@@ -136,8 +135,8 @@ export default function Activity(props) {
     navigate(`/edit-activity/${row._id}`);
   };
   const handleDeleteClick = (row) => {
-    setSelectedVote(row); // Store senator data
-    setOpenDeleteDialog(true); // Open dialog
+    setSelectedVote(row); 
+    setOpenDeleteDialog(true); 
   };
   const handleConfirmDelete = async () => {
     setOpenDeleteDialog(false);
@@ -177,7 +176,7 @@ export default function Activity(props) {
         setSnackbarOpen(true);
       });
   };
-  // In your Activity component, update the handleBulkUpdate function:
+ 
   const handleBulkUpdate = async () => {
     if (!selectedTrackActivity.length || !bulkTrackActivity) {
       setSnackbarMessage("Please select activities and a status");
@@ -188,13 +187,13 @@ export default function Activity(props) {
 
     setFetching(true);
     try {
-      // Dispatch and unwrap the result to properly catch errors
+     
       const result = await dispatch(
         bulkUpdateTrackActivities({
           ids: selectedTrackActivity,
           trackActivities: bulkTrackActivity,
         })
-      ).unwrap(); // This is crucial for proper error handling
+      ).unwrap(); 
 
       setSnackbarMessage(
         `Successfully updated ${
@@ -203,12 +202,12 @@ export default function Activity(props) {
       );
       setSnackbarSeverity("success");
 
-      // Reset selection
+     
       setSelectedTrackActivity([]);
       setBulkTrackActivity("");
       setIsBulkEditMode(false);
 
-      // Refresh the data
+     
       dispatch(getAllActivity());
     } catch (error) {
       console.error("Bulk update failed:", error);
@@ -219,32 +218,7 @@ export default function Activity(props) {
       setSnackbarOpen(true);
     }
   };
-  // const handleBulkUpdate = async () => {
-  //   if (!selectedTrackActivity.length || !bulkTrackActivity) return;
 
-  //   setFetching(true);
-  //   try {
-  //     await dispatch(bulkUpdateTrackActivities({
-  //       ids: selectedTrackActivity,
-  //       trackActivities: bulkTrackActivity
-  //     }));
-
-  //     await dispatch(getAllActivity());
-  //     setSnackbarMessage(`Updated trackActivities for ${selectedTrackActivity.length} activity(ies)`);
-  //     setSnackbarSeverity("success");
-
-  //     // Reset selection
-  //     setSelectedTrackActivity([]);
-  //     setBulkTrackActivity("");
-  //     setIsBulkEditMode(false);
-  //   } catch (error) {
-  //     setSnackbarMessage("Failed to update activities");
-  //     setSnackbarSeverity("error");
-  //   } finally {
-  //     setFetching(false);
-  //     setSnackbarOpen(true);
-  //   }
-  // };
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       {(loading || fetching) && (
@@ -344,7 +318,7 @@ export default function Activity(props) {
                           ))}
                         </Box>
  
-                        {/* Clear All Button */}
+                      
                         <Box>
                           <Button
                             fullWidth
@@ -489,10 +463,6 @@ export default function Activity(props) {
         <DialogContent>
           <DialogContentText className="dialogTitle">
             Are you sure you want to delete?
-            {/* {selectedVote?.activity && (
-              <> <strong>{selectedVote.activity}</strong>?</>
-            )}
-            {!selectedVote?.activity && '?'} */}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

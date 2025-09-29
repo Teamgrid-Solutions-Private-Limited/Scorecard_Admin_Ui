@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useRef } from "react";
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -11,14 +10,6 @@ import {
   discardVoteChanges,
 } from "../redux/reducer/voteSlice";
 import { API_URL } from "../redux/API";
-import {
-  Alert,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -35,34 +26,38 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
-import { InputAdornment, CircularProgress } from "@mui/material";
+import {
+  InputAdornment,
+  CircularProgress,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Chip,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
-import { List, ListItem, ListItemText } from "@mui/material";
-import CircleIcon from "@mui/icons-material/Circle";
-import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
 import Footer from "../components/Footer";
-import CheckCircle from "@mui/icons-material/CheckCircle";
 import DialogBox from "../components/DialogBox";
 
 export default function AddBill(props) {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
-  const { terms } = useSelector((state) => state.term);
+
   const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
@@ -720,7 +715,7 @@ return () => {
               (currentStatus !== "published" || hasAnyChanges) && (
                 <Box
                   sx={{
-                    width: "97%",
+                    width: {xs:"90%",sm:"97%"},
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -779,21 +774,6 @@ return () => {
                           {statusData.title}
                         </Typography>
 
-                        {/* {userRole === "admin" && (
-                          <Chip
-                            label={`${
-                              (Array.isArray(selectedVote?.editedFields)
-                                ? selectedVote.editedFields.length
-                                : 0) +
-                              (Array.isArray(editedFields)
-                                ? editedFields.length
-                                : 0)
-                            } pending changes`}
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                          />
-                        )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -967,12 +947,7 @@ return () => {
                                               </Typography>
                                             </Box>
                                           }
-                                          // secondary={
-                                          //   <Typography variant="caption" color="text.secondary">
-                                          //     Edited just now
-                                          //   </Typography>
-                                          // }
-                                          // sx={{ my: 0 }}
+
                                         />
                                       </ListItem>
                                     ))}
@@ -1192,20 +1167,7 @@ return () => {
                         variant="outlined"
                         //sx={{ background: "#fff" }}
                       >
-                        {/* <MenuItem value="" disabled>
-                          Select an option
-                        </MenuItem>
-                        {terms && terms.length > 0 ? (
-                          terms.map((term) => (
-                            <MenuItem key={term._id} value={term._id}>
-                              {term.name}
-                            </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem value="" disabled>
-                            No terms available
-                          </MenuItem>
-                        )} */}
+
                       </TextField>
                     </FormControl>
                   </Grid>

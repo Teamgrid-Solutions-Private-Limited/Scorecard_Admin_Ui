@@ -15,11 +15,6 @@ import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
 import CircularProgress from "@mui/material/CircularProgress";
 import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Autocomplete,
   Box,
   Paper,
@@ -52,7 +47,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
-import { deleteHouseData } from "../redux/reducer/houseTermSlice"; // adjust path as needed
+import { deleteHouseData } from "../redux/reducer/houseTermSlice"; 
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
@@ -176,20 +171,18 @@ export default function Addrepresentative(props) {
 
           let votesScore = [];
           let activitiesScore = [];
-          let summary = ""; // Initialize as empty
-          let rating = ""; // Initialize as empty
-          let currentTerm = false; // Initialize as false
+          let summary = ""; 
+          let rating = ""; 
+          let currentTerm = false;
 
-          // If we have existing data for this term, use it
           if (existingTermData) {
-            // Map votes from existing data
             votesScore =
               existingTermData.votesScore?.map((vote) => ({
                 voteId: vote.voteId?._id || vote.voteId || "",
                 score: vote.score || "",
               })) || [];
 
-            // Map activities from existing data
+
             activitiesScore =
               existingTermData.activitiesScore?.map((activity) => ({
                 activityId:
@@ -197,7 +190,7 @@ export default function Addrepresentative(props) {
                 score: activity.score || "",
               })) || [];
 
-            // Only use existing values if they exist
+
             summary = existingTermData.summary || "";
             rating = existingTermData.rating || "";
             currentTerm =
@@ -207,7 +200,7 @@ export default function Addrepresentative(props) {
           } else {
             // Filter votes to keep only those that belong to the new term's congresses
             votesScore = term.votesScore.filter((vote) => {
-              if (!vote.voteId || vote.voteId === "") return true; // keep placeholder
+              if (!vote.voteId || vote.voteId === "") return true; 
 
               const voteItem = votes.find((v) => v._id === vote.voteId);
               if (!voteItem) return false;
@@ -218,7 +211,7 @@ export default function Addrepresentative(props) {
             // Filter activities to keep only those that belong to the new term's congresses
             activitiesScore = term.activitiesScore.filter((activity) => {
               if (!activity.activityId || activity.activityId === "")
-                return true; // keep placeholder
+                return true;
 
               const activityItem = houseActivities.find(
                 (a) => a._id === activity.activityId
@@ -228,17 +221,14 @@ export default function Addrepresentative(props) {
               return termCongressStrings.includes(activityItem.congress);
             });
 
-            // Set all fields to empty/false for new terms without existing data
             summary = "";
             rating = "";
             currentTerm = false;
           }
 
-          // If no votes remain after filtering, add an empty vote
           const finalVotesScore =
             votesScore.length > 0 ? votesScore : [{ voteId: "", score: "" }];
 
-          // If no activities remain after filtering, add an empty activity
           const finalActivitiesScore =
             activitiesScore.length > 0
               ? activitiesScore
@@ -249,9 +239,9 @@ export default function Addrepresentative(props) {
             [name]: value,
             votesScore: finalVotesScore,
             activitiesScore: finalActivitiesScore,
-            summary, // Will be empty if no existing data
-            rating, // Will be empty if no existing data
-            currentTerm, // Will be false if no existing data
+            summary, 
+            rating, 
+            currentTerm, 
           };
         }
 
@@ -271,7 +261,6 @@ export default function Addrepresentative(props) {
       return newTerms;
     });
   };
-
 
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
@@ -310,7 +299,6 @@ export default function Addrepresentative(props) {
     );
   };
 
-
   const handleRemoveVote = (termIndex, voteIndex) => {
     setHouseTermData((prev) => {
       const updatedTerms = prev.map((term, index) =>
@@ -322,7 +310,7 @@ export default function Addrepresentative(props) {
           : term
       );
 
-      // Clean up tracked changes for this vote
+
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -393,7 +381,7 @@ export default function Addrepresentative(props) {
           : term
       );
 
-      // Clean up tracked changes for this activity
+
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -406,8 +394,6 @@ export default function Addrepresentative(props) {
       return updatedTerms;
     });
   };
-
-
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
     const activityChangeId = `term${termIndex}_TrackedActivity_${
@@ -444,7 +430,7 @@ export default function Addrepresentative(props) {
     });
   };
 
-  // Remove contentRefs for summary
+  
 
   const handleEditorChange = useCallback((content, termIndex) => {
     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
@@ -454,8 +440,6 @@ export default function Addrepresentative(props) {
       prev.includes(fieldName) ? prev : [...prev, fieldName]
     );
   }, []);
-
-
 
   // Add a new empty term
   const handleAddTerm = () => {
@@ -469,9 +453,9 @@ export default function Addrepresentative(props) {
         activitiesScore: [{ activityId: "", score: "" }],
         currentTerm: false,
         termId: null,
-        editedFields: [], // Initialize empty
-        fieldEditors: {}, // Initialize empty
-        isNew: true, // Mark as new for tracking
+        editedFields: [], 
+        fieldEditors: {}, 
+        isNew: true, 
       },
     ]);
   };
@@ -484,7 +468,7 @@ export default function Addrepresentative(props) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
       }
 
-      // Remove any tracked changes for this term
+
       setLocalChanges((prevChanges) =>
         prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
       );
@@ -495,13 +479,8 @@ export default function Addrepresentative(props) {
 
 
   const compareValues = (newVal, oldVal) => {
-    // Handle null/undefined cases
     if (newVal == null || oldVal == null) return newVal !== oldVal;
-
-    // Handle booleans and other primitives directly
     if (typeof newVal !== "object") return newVal !== oldVal;
-
-    // Handle arrays and objects
     return JSON.stringify(newVal) !== JSON.stringify(oldVal);
   };
 
@@ -554,14 +533,14 @@ export default function Addrepresentative(props) {
                   _id: vote._id || undefined,
                 };
               })
-            : [{ voteId: "", score: "" }]; // Changed from empty string to null
+            : [{ voteId: "", score: "" }]; 
 
-        // If all voteId are null or array is empty, add a blank row
+     
         if (
           votesScore.length === 0 ||
           votesScore.every((v) => v.voteId == null)
         ) {
-          votesScore = [{ voteId: "", score: "" }]; // Use null instead of empty string
+          votesScore = [{ voteId: "", score: "" }];
         }
 
         return {
@@ -572,7 +551,7 @@ export default function Addrepresentative(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          isNew: false, // Mark as not new
+          isNew: false, 
           votesScore,
 
           activitiesScore:
@@ -602,7 +581,7 @@ export default function Addrepresentative(props) {
           termId: null,
           editedFields: [],
           fieldEditors: {},
-          isNew: true, // Mark as new for tracking
+          isNew: true, 
         },
       ];
 
@@ -690,7 +669,6 @@ export default function Addrepresentative(props) {
         }
       });
 
-      // Use only local diffs for editedFields so reverting removes from list
       const backendEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
         : [];
@@ -800,7 +778,7 @@ useEffect(() => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    const fieldName = "Photo"; // The field name you want to track
+    const fieldName = "Photo"; 
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -812,12 +790,11 @@ useEffect(() => {
     e.preventDefault();
     setLoading(true);
 
-    // Helper: sanitize keys for MongoDB
     const sanitizeKey = (str) => {
       return str
-        .replace(/[^a-zA-Z0-9_]/g, "_") // replace invalid chars
-        .replace(/_+/g, "_") // collapse multiple underscores
-        .replace(/^_+|_+$/g, ""); // remove leading/trailing underscores
+        .replace(/[^a-zA-Z0-9_]/g, "_") 
+        .replace(/_+/g, "_") 
+        .replace(/^_+|_+$/g, ""); 
     };
 
     try {
@@ -1031,9 +1008,7 @@ useEffect(() => {
           const newValue = term[field];
           const oldValue = originalTerm[field];
 
-          // only log change if:
-          // - value is actually different (deep compare), AND
-          // - new value is non-default
+     
           if (
             !isEqual(newValue, oldValue) &&
             hasNonDefaultValue(field, newValue)
@@ -1095,7 +1070,7 @@ useEffect(() => {
               changedFieldsInThisSession.add(editorKey);
             }
           }
-          return; // skip further processing
+          return; 
         }
 
         // Handle activities: termX_TrackedActivity_Y
@@ -1114,7 +1089,7 @@ useEffect(() => {
               changedFieldsInThisSession.add(editorKey);
             }
           }
-          return; // skip further processing
+          return; 
         }
 
         // Term-level or simple fields
@@ -1123,7 +1098,7 @@ useEffect(() => {
         changedFieldsInThisSession.add(editorKey);
       });
 
-      //  Optional: update processedChanges for other fields (non-votes/activities)
+      
       processedChanges.forEach((change) => {
         if (!changedFieldsInThisSession.has(change.uniqueId)) {
           // preserve existing editor if any
@@ -1132,9 +1107,7 @@ useEffect(() => {
         }
       });
 
-      //  Finally, updatedFieldEditors now contains only updated votes/activities
-
-      //  Prepare representative update
+     
       const representativeUpdate = {
         ...formData,
         editedFields: allChanges,
@@ -1142,13 +1115,11 @@ useEffect(() => {
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
 
-      // Clear if publishing
       if (representativeUpdate.publishStatus === "published") {
         representativeUpdate.editedFields = [];
         representativeUpdate.fieldEditors = {};
       }
 
-      //  Update representative
       if (id) {
         const formDataToSend = new FormData();
         Object.entries(representativeUpdate).forEach(([key, value]) => {
@@ -1198,7 +1169,7 @@ useEffect(() => {
           isNew: false,
           houseId: id,
           editedFields: termSpecificChanges,
-          fieldEditors: updatedFieldEditors, // Use the updated field editors
+          fieldEditors: updatedFieldEditors, 
         };
         return term._id
           ? dispatch(
@@ -1209,7 +1180,6 @@ useEffect(() => {
 
       await Promise.all(termPromises);
 
-      //  Reload data
       await dispatch(getHouseDataByHouseId(id)).unwrap();
       await dispatch(getHouseById(id)).unwrap();
 
@@ -1273,7 +1243,7 @@ useEffect(() => {
 
 
   const handleStatusChange = (status) => {
-    const fieldName = "status"; // The field being changed
+    const fieldName = "status"; 
 
     setFormData((prev) => {
       const newData = { ...prev, status };
@@ -1340,16 +1310,7 @@ useEffect(() => {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-      // published: {
-      //   backgroundColor: "rgba(76, 175, 80, 0.12)",
-      //   borderColor: "#4CAF50",
-      //   iconColor: "#2E7D32",
-      //   icon: <CheckCircle sx={{ fontSize: "20px" }} />,
-      //   title: "Published",
-      //   description: "Published and live",
-      //   titleColor: "#2E7D32",
-      //   descColor: "#388E3C",
-      // },
+
     };
 
     return configs[currentStatus];
@@ -1507,11 +1468,11 @@ useEffect(() => {
                                   t.startYear &&
                                   t.endYear &&
                                   t.endYear - t.startYear === 1 &&
-                                  t.startYear % 2 === 1 && // must be odd
-                                  t.endYear % 2 === 0 && // must be even
-                                  t.startYear >= 2015 && // no terms before 1789
+                                  t.startYear % 2 === 1 && 
+                                  t.endYear % 2 === 0 && 
+                                  t.startYear >= 2015 && 
                                   t.endYear >= 2015
-                              ) // must be even
+                              ) 
                               .filter(
                                 (t) =>
                                   Array.isArray(t.congresses) &&
@@ -1704,7 +1665,7 @@ useEffect(() => {
                                           cursor: "pointer",
                                         },
                                         "& fieldset": {
-                                          border: "none", // remove border
+                                          border: "none", 
                                         },
                                       },
                                     }}
@@ -1734,7 +1695,7 @@ useEffect(() => {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                 
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1819,7 +1780,7 @@ useEffect(() => {
                                           cursor: "pointer",
                                         },
                                         "& fieldset": {
-                                          border: "none", // remove border
+                                          border: "none", 
                                         },
                                       },
                                     }}
@@ -1852,7 +1813,7 @@ useEffect(() => {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-                                  {/* <MenuItem value="None">None</MenuItem> */}
+                                  
                                 </Select>
                               </FormControl>
                             </Grid>

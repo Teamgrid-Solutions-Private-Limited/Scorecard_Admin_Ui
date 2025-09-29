@@ -32,13 +32,6 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -104,7 +97,7 @@ export default function AddActivity(props) {
 
   const fieldLabels = {
     type: "Type",
-    title: "Name",
+    title: "Title",
     shortDesc: "Activity Details",
     congress: "Congress",
     date: "Date",
@@ -114,7 +107,7 @@ export default function AddActivity(props) {
   };
 
   const compareValues = (newVal, oldVal, fieldName) => {
-    if (fieldName === 'status') return false;
+    if (fieldName === "status") return false;
     if (typeof newVal === "string" && typeof oldVal === "string") {
       return newVal.trim() !== oldVal.trim();
     }
@@ -165,52 +158,52 @@ export default function AddActivity(props) {
         isInitialLoad.current = false;
       }
     }
-  }, [selectedActivity , isDataFetching]);
+  }, [selectedActivity, isDataFetching]);
 
   // 3. When formData changes, update editedFields (track all changes)
-useEffect(() => {
-  if (originalFormData && formData) {
-    const changes = [];
-    Object.keys(formData).forEach((key) => {
-      // Use the compareValues function with field name
-      if (key !== 'status' && compareValues(formData[key], originalFormData[key], key)) {
-        changes.push(key);
-      }
-    });
-    setEditedFields(changes);
-  }
-}, [formData, originalFormData]);
-
-useEffect(() => {
-  const fetchData = async () => {
-    setIsDataFetching(true); // optional loading state
-    try {
-      if (id) {
-        // Fetch id-dependent data concurrently
-        await Promise.all([
-          dispatch(getActivityById(id)).unwrap(),
-          dispatch(getAllTerms()).unwrap(),
-        ]);
-      }
-      return () => {
-        dispatch(clearActivityState());
-        setSelectedFile(null);
-      };
-
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setSnackbarMessage("Error loading data. Please try again.");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    } finally {
-      setIsDataFetching(false);
+  useEffect(() => {
+    if (originalFormData && formData) {
+      const changes = [];
+      Object.keys(formData).forEach((key) => {
+        // Use the compareValues function with field name
+        if (
+          key !== "status" &&
+          compareValues(formData[key], originalFormData[key], key)
+        ) {
+          changes.push(key);
+        }
+      });
+      setEditedFields(changes);
     }
-  };
+  }, [formData, originalFormData]);
 
-  fetchData();
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsDataFetching(true); // optional loading state
+      try {
+        if (id) {
+          // Fetch id-dependent data concurrently
+          await Promise.all([
+            dispatch(getActivityById(id)).unwrap(),
+            dispatch(getAllTerms()).unwrap(),
+          ]);
+        }
+        return () => {
+          dispatch(clearActivityState());
+          setSelectedFile(null);
+        };
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setSnackbarMessage("Error loading data. Please try again.");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      } finally {
+        setIsDataFetching(false);
+      }
+    };
 
-
-}, [id, dispatch]);
+    fetchData();
+  }, [id, dispatch]);
 
   const editorRef = useRef(null);
   const isInitialLoad = useRef(true);
@@ -226,7 +219,6 @@ useEffect(() => {
     width: 1,
   });
 
-  
   const handleReadMoreChange = (event) => {
     const { value } = event.target;
     setFormData((prev) => ({
@@ -234,7 +226,6 @@ useEffect(() => {
       readMore: value,
     }));
   };
-
 
   // Update your handleChange and handleEditorChange to properly track changes
   const handleChange = (event) => {
@@ -319,7 +310,7 @@ useEffect(() => {
       const formDataToSend = new FormData();
 
       // Add all form fields EXCEPT status (we'll add it separately)
-       Object.keys(formData).forEach((key) => {
+      Object.keys(formData).forEach((key) => {
         if (key === "readMore") {
           if (readMoreType === "file" && selectedFile) {
             formDataToSend.append("readMore", selectedFile);
@@ -386,7 +377,7 @@ useEffect(() => {
         await dispatch(
           updateActivity({ id, updatedData: formDataToSend })
         ).unwrap();
-          if (readMoreType === "url") {
+        if (readMoreType === "url") {
           setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
           setReadMoreType("url"); // force back to URL mode
         } else if (readMoreType === "file" && selectedFile) {
@@ -577,11 +568,11 @@ useEffect(() => {
   ]);
   return (
     <AppTheme>
-         {(loading || isDataFetching) && (
-      <Box className="circularLoader">
-        <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-      </Box>
-    )}
+      {(loading || isDataFetching) && (
+        <Box className="circularLoader">
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+        </Box>
+      )}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
@@ -634,8 +625,6 @@ useEffect(() => {
             backgroundColor: theme.vars
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
-            // overflow: "auto",
-            // overflow: "auto",
           })}
           className={`${isDataFetching ? "fetching" : "notFetching"}`}
         >
@@ -645,9 +634,9 @@ useEffect(() => {
             spacing={2}
             sx={{
               alignItems: "center",
-               mx: {xs: 2, md: 3},
+              mx: { xs: 2, md: 3 },
               // pb: 5,
-              mt: 2 ,
+              mt: 2,
             }}
           >
             <Stack
@@ -687,7 +676,7 @@ useEffect(() => {
               (currentStatus !== "published" || hasAnyChanges) && (
                 <Box
                   sx={{
-                    width: "97%",
+                    width: { xs: "90%", sm: "97%" },
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -725,7 +714,6 @@ useEffect(() => {
                     </Box>
 
                     <Box sx={{ flex: 1 }}>
-                      {/* Header: title + pending count (admin only) */}
                       <Box
                         sx={{
                           display: "flex",
@@ -745,28 +733,6 @@ useEffect(() => {
                         >
                           {statusData.title}
                         </Typography>
-
-                        {/* {userRole === "admin" && (
-                        <Chip
-                          label={`${(() => {
-                            const backend = Array.isArray(
-                              selectedActivity?.editedFields
-                            )
-                              ? selectedActivity.editedFields
-                              : [];
-                            const local = Array.isArray(editedFields)
-                              ? editedFields
-                              : [];
-                            const localOnly = local.filter(
-                              (f) => !backend.includes(f)
-                            );
-                            return backend.length + localOnly.length;
-                          })()} pending changes`}
-                          size="small"
-                          color="warning"
-                          variant="outlined"
-                        />
-                      )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -964,10 +930,7 @@ useEffect(() => {
                 handleConfirmDiscard={handleConfirmDiscard}
               />
               <Box sx={{ padding: 0 }}>
-                <Typography
-                  fontSize={"1rem"}
-                  className="customTypography"
-                >
+                <Typography fontSize={"1rem"} className="customTypography">
                   Activity Information
                 </Typography>
                 <Grid
@@ -976,12 +939,12 @@ useEffect(() => {
                   columnSpacing={2}
                   alignItems={"center"}
                   py={3}
-                   pr={isMobile?3:7}
+                  pr={isMobile ? 3 : 7}
                 >
-                  <Grid size={isMobile?3:2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Type</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?9:10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <Select
                         value={formData.type}
@@ -995,10 +958,10 @@ useEffect(() => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?3:2}>
-                    <InputLabel className="label">Name</InputLabel>
+                  <Grid size={isMobile ? 3 : 2}>
+                    <InputLabel className="label">Title</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?9:10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1015,15 +978,12 @@ useEffect(() => {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="label">
-                      Activity Details
-                    </InputLabel>
+                    <InputLabel className="label">Activity Details</InputLabel>
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
-                      //apiKey="nbxuqfjn2kwm9382tv3bi98nn95itbawmplf1l3x826f16u4"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
@@ -1077,10 +1037,10 @@ useEffect(() => {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile?3:2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Date</InputLabel>
                   </Grid>
-                  <Grid size={isMobile?9:10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         type="date"
@@ -1100,7 +1060,7 @@ useEffect(() => {
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">Read More</InputLabel>
                   </Grid>
-                   <Grid size={isMobile ? 11 : 10}>
+                  <Grid size={isMobile ? 11 : 10}>
                     <FormControl fullWidth className="paddingLeft">
                       <Box
                         sx={{
@@ -1120,10 +1080,7 @@ useEffect(() => {
                               readMoreType === "url"
                                 ? formData.readMore || ""
                                 : formData.readMore
-                                ? `${API_URL}/uploads/documents/${formData.readMore.replace(
-                                    "/uploads/",
-                                    ""
-                                  )}`
+                                ? `${API_URL}${formData.readMore}`
                                 : ""
                             }
                             onChange={(e) => {
@@ -1154,7 +1111,10 @@ useEffect(() => {
                                 </InputAdornment>
                               ),
                               endAdornment: (
-                                <InputAdornment position="end" sx={{ marginRight: "-8px" }}>
+                                <InputAdornment
+                                  position="end"
+                                  sx={{ marginRight: "-8px" }}
+                                >
                                   <Button
                                     size="small"
                                     onClick={() => setReadMoreType("file")}
@@ -1191,10 +1151,7 @@ useEffect(() => {
                                   : formData.readMore
                                   ? formData.readMore.startsWith("http")
                                     ? formData.readMore
-                                    : `${API_URL}/uploads/documents/${formData.readMore.replace(
-                                        "/uploads/",
-                                        ""
-                                      )}`
+                                    : `${API_URL}${formData.readMore}`
                                   : ""
                               }
                               placeholder="File will be uploaded here"
@@ -1214,7 +1171,10 @@ useEffect(() => {
                                   </InputAdornment>
                                 ),
                                 endAdornment: (
-                                  <InputAdornment position="end" sx={{ marginRight: "-8px" }}>
+                                  <InputAdornment
+                                    position="end"
+                                    sx={{ marginRight: "-8px" }}
+                                  >
                                     <Button
                                       size="small"
                                       onClick={() => setReadMoreType("url")}
@@ -1266,7 +1226,7 @@ useEffect(() => {
 
                   <Grid size={isMobile ? 7 : 10}>
                     <FormControl
-                    className="paddingLeft"
+                      className="paddingLeft"
                       sx={{
                         fontFamily: "'Be Vietnam Pro', sans-serif",
                         "& .MuiFormControlLabel-label": {
