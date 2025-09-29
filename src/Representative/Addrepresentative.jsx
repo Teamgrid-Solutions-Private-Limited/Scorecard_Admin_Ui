@@ -72,12 +72,12 @@ export default function Addrepresentative(props) {
   const [componentKey, setComponentKey] = useState(0);
   const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
-   const [selectionError, setSelectionError] = useState({
-      show: false,
-      message: "",
-      type: "",
-    });
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [selectionError, setSelectionError] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
 
   const navigate = useNavigate();
 
@@ -397,14 +397,6 @@ export default function Addrepresentative(props) {
     });
   };
 
-
-
-  const handleEditorChange = useCallback((content, termIndex) => {
-    const fieldName = `term${termIndex}_summary`; 
-    setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
-    );
-  }, []);
   const handleAddTerm = () => {
     setHouseTermData((prev) => [
       ...prev,
@@ -1313,7 +1305,11 @@ const handleRemoveTerm = (termIndex) => {
               gap: 1,
             }}
           >
-            <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
+            <ActionButtons
+              onDiscard={handleDiscard}
+              onSave={handleSave}
+              userRole={userRole}
+            />
             <StatusDisplay
               userRole={userRole}
               formData={formData}
@@ -1324,7 +1320,12 @@ const handleRemoveTerm = (termIndex) => {
             />
 
             <Paper className="customPaper">
-              <DialogBox userRole={userRole} openDiscardDialog={openDiscardDialog} setOpenDiscardDialog={setOpenDiscardDialog} handleConfirmDiscard={handleConfirmDiscard} />
+              <DialogBox
+                userRole={userRole}
+                openDiscardDialog={openDiscardDialog}
+                setOpenDiscardDialog={setOpenDiscardDialog}
+                handleConfirmDiscard={handleConfirmDiscard}
+              />
 
               <BasicInfo
                 formData={formData}
@@ -1336,7 +1337,6 @@ const handleRemoveTerm = (termIndex) => {
               />
             </Paper>
 
-            {/* Render each term in houseTermData */}
             {houseTermData.map((term, termIndex) => (
               <Paper key={termIndex} className="termData-paper">
                 <Box sx={{ padding: 0 }}>

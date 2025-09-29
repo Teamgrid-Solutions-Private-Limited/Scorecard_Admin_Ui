@@ -1571,7 +1571,8 @@ if (pastVotesScore.length === 0) {
     setEditedFields(changes);
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
-  useEffect(() => {
+useEffect(() => {
+  
     termPreFill();
   }, [id, senatorData]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -1601,23 +1602,30 @@ if (pastVotesScore.length === 0) {
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getSenatorById(id));
-      dispatch(getSenatorDataBySenetorId(id));
-    }
+useEffect(() => {
+  if (id) {
+    dispatch(getSenatorById(id));
+    dispatch(getSenatorDataBySenetorId(id));
     dispatch(getAllTerms());
     dispatch(getAllVotes());
     dispatch(getAllActivity());
-    return () => {
-      dispatch(clearSenatorState());
-      dispatch(clearSenatorDataState());
-    };
-  }, [id, dispatch]);
+  }
 
-  useEffect(() => {
+  return () => {
+    dispatch(clearSenatorState());
+    dispatch(clearSenatorDataState());
+  };
+}, [id, dispatch]);
+
+ console.log("Loading state:", loading);
+
+
+
+useEffect(() => {
+ 
     preFillForm();
-  }, [senator, terms]);
+  
+}, [senator, terms]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -2259,6 +2267,7 @@ if (pastVotesScore.length === 0) {
   };
 
 
+// Replace your current loading condition with this enhanced version
 
   return (
     <AppTheme key={componentKey}>
@@ -2304,23 +2313,21 @@ if (pastVotesScore.length === 0) {
               />
             )}
 
-
-            <Paper className="customPaper">
-              <DialogBox
-                userRole={userRole}
-                openDiscardDialog={openDiscardDialog}
-                setOpenDiscardDialog={setOpenDiscardDialog}
-                handleConfirmDiscard={handleConfirmDiscard}
-              />
-              <BasicInfo
-                formData={formData}
-                handleChange={handleChange}
-                handleStatusChange={handleStatusChange}
-                handleFileChange={handleFileChange}
-                isMobile={isMobile}
-              />
-
-            </Paper>
+          <Paper className="customPaper">
+            <DialogBox
+              userRole={userRole}
+              openDiscardDialog={openDiscardDialog}
+              setOpenDiscardDialog={setOpenDiscardDialog}
+              handleConfirmDiscard={handleConfirmDiscard}
+            />
+            <BasicInfo
+              formData={formData}
+              handleChange={handleChange}
+              handleStatusChange={handleStatusChange}
+              handleFileChange={handleFileChange}
+              isMobile={isMobile}
+            />
+          </Paper>
 
             {/* Render each term in senatorTermData */}
             {senatorTermData.map((term, termIndex) => (

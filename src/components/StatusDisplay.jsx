@@ -1,11 +1,5 @@
-import React from 'react';
-import {
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
+import React from "react";
+import { Box, Typography, List, ListItem, ListItemText } from "@mui/material";
 
 const StatusDisplay = ({
   userRole,
@@ -13,16 +7,25 @@ const StatusDisplay = ({
   localChanges = [],
   statusData,
   termData = [],
-  mode = 'senator'
+  mode = "senator",
 }) => {
   if (!userRole || !formData?.publishStatus || !statusData) return null;
-  if (formData.publishStatus === "published" && localChanges.length === 0) return null;
+  if (formData.publishStatus === "published" && localChanges.length === 0)
+    return null;
 
   const senatorFormatFieldName = (field, index, senatorTermData = []) => {
     if (typeof field === "object" && field !== null) {
-      if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
+      if (
+        Array.isArray(field.field) &&
+        field.field[0] === "votesScore" &&
+        field.name
+      ) {
         const billTitle = field.name;
-        for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
+        for (
+          let termIndex = 0;
+          termIndex < senatorTermData.length;
+          termIndex++
+        ) {
           const term = senatorTermData[termIndex];
           const votesScore = term?.votesScore || [];
           for (let voteIndex = 0; voteIndex < votesScore.length; voteIndex++) {
@@ -31,10 +34,16 @@ const StatusDisplay = ({
               if (vote.title && vote.title === billTitle) {
                 return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
               }
-              if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
+              if (
+                typeof vote.voteId === "object" &&
+                vote.voteId.title === billTitle
+              ) {
                 return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
               }
-              if (typeof vote.voteId === "string" && vote.voteId === field._id) {
+              if (
+                typeof vote.voteId === "string" &&
+                vote.voteId === field._id
+              ) {
                 return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
               }
             }
@@ -43,22 +52,46 @@ const StatusDisplay = ({
         return null;
       }
 
-      if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
+      if (
+        Array.isArray(field.field) &&
+        field.field[0] === "activitiesScore" &&
+        field.name
+      ) {
         const activityTitle = field.name;
-        for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
+        for (
+          let termIndex = 0;
+          termIndex < senatorTermData.length;
+          termIndex++
+        ) {
           const term = senatorTermData[termIndex];
           const activitiesScore = term?.activitiesScore || [];
-          for (let activityIndex = 0; activityIndex < activitiesScore.length; activityIndex++) {
+          for (
+            let activityIndex = 0;
+            activityIndex < activitiesScore.length;
+            activityIndex++
+          ) {
             const activity = activitiesScore[activityIndex];
             if (activity) {
               if (activity.title && activity.title === activityTitle) {
-                return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
+                return `Term ${termIndex + 1}: Tracked Activity ${
+                  activityIndex + 1
+                }`;
               }
-              if (typeof activity.activityId === "object" && activity.activityId.title === activityTitle) {
-                return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
+              if (
+                typeof activity.activityId === "object" &&
+                activity.activityId.title === activityTitle
+              ) {
+                return `Term ${termIndex + 1}: Tracked Activity ${
+                  activityIndex + 1
+                }`;
               }
-              if (typeof activity.activityId === "string" && activity.activityId === field._id) {
-                return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
+              if (
+                typeof activity.activityId === "string" &&
+                activity.activityId === field._id
+              ) {
+                return `Term ${termIndex + 1}: Tracked Activity ${
+                  activityIndex + 1
+                }`;
               }
             }
           }
@@ -66,22 +99,46 @@ const StatusDisplay = ({
         return null;
       }
 
-      if (Array.isArray(field.field) && field.field[0] === "pastVotesScore" && field.name) {
+      if (
+        Array.isArray(field.field) &&
+        field.field[0] === "pastVotesScore" &&
+        field.name
+      ) {
         const billTitle = field.name;
-        for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
+        for (
+          let termIndex = 0;
+          termIndex < senatorTermData.length;
+          termIndex++
+        ) {
           const term = senatorTermData[termIndex];
           const pastVotesScore = term?.pastVotesScore || [];
-          for (let voteIndex = 0; voteIndex < pastVotesScore.length; voteIndex++) {
+          for (
+            let voteIndex = 0;
+            voteIndex < pastVotesScore.length;
+            voteIndex++
+          ) {
             const vote = pastVotesScore[voteIndex];
             if (vote) {
               if (vote.title && vote.title === billTitle) {
-                return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+                return `Term ${termIndex + 1}: Important Past Vote ${
+                  voteIndex + 1
+                }`;
               }
-              if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
-                return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+              if (
+                typeof vote.voteId === "object" &&
+                vote.voteId.title === billTitle
+              ) {
+                return `Term ${termIndex + 1}: Important Past Vote ${
+                  voteIndex + 1
+                }`;
               }
-              if (typeof vote.voteId === "string" && vote.voteId === field._id) {
-                return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
+              if (
+                typeof vote.voteId === "string" &&
+                vote.voteId === field._id
+              ) {
+                return `Term ${termIndex + 1}: Important Past Vote ${
+                  voteIndex + 1
+                }`;
               }
             }
           }
@@ -118,11 +175,15 @@ const StatusDisplay = ({
         votesScore: "Scored Vote",
         activitiesScore: "Tracked Activity",
       };
-      return field.name || simpleFieldMap[fieldId] || fieldId || "Unknown Field";
+      return (
+        field.name || simpleFieldMap[fieldId] || fieldId || "Unknown Field"
+      );
     }
 
     if (typeof field === "string") {
-      const termArrayMatch = field.match(/^term(\d+)_(votesScore|activitiesScore|pastVotesScore)_(\d+)_(.+)$/);
+      const termArrayMatch = field.match(
+        /^term(\d+)_(votesScore|activitiesScore|pastVotesScore)_(\d+)_(.+)$/
+      );
       if (termArrayMatch) {
         const [, termIdx, category, itemIdx] = termArrayMatch;
         const termNumber = parseInt(termIdx) + 1;
@@ -179,10 +240,13 @@ const StatusDisplay = ({
     return `Field ${index + 1}`;
   };
 
-
   const representativeFormatFieldName = (field, index, houseTermData = []) => {
     if (typeof field === "object" && field !== null) {
-      if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
+      if (
+        Array.isArray(field.field) &&
+        field.field[0] === "votesScore" &&
+        field.name
+      ) {
         const billTitle = field.name;
         for (let termIndex = 0; termIndex < houseTermData.length; termIndex++) {
           const term = houseTermData[termIndex];
@@ -193,10 +257,16 @@ const StatusDisplay = ({
               if (vote.title && vote.title === billTitle) {
                 return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
               }
-              if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
+              if (
+                typeof vote.voteId === "object" &&
+                vote.voteId.title === billTitle
+              ) {
                 return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
               }
-              if (typeof vote.voteId === "string" && vote.voteId === field._id) {
+              if (
+                typeof vote.voteId === "string" &&
+                vote.voteId === field._id
+              ) {
                 return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
               }
             }
@@ -205,22 +275,42 @@ const StatusDisplay = ({
         return null;
       }
 
-      if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
+      if (
+        Array.isArray(field.field) &&
+        field.field[0] === "activitiesScore" &&
+        field.name
+      ) {
         const activityTitle = field.name;
         for (let termIndex = 0; termIndex < houseTermData.length; termIndex++) {
           const term = houseTermData[termIndex];
           const activitiesScore = term?.activitiesScore || [];
-          for (let activityIndex = 0; activityIndex < activitiesScore.length; activityIndex++) {
+          for (
+            let activityIndex = 0;
+            activityIndex < activitiesScore.length;
+            activityIndex++
+          ) {
             const activity = activitiesScore[activityIndex];
             if (activity) {
               if (activity.title && activity.title === activityTitle) {
-                return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
+                return `Term ${termIndex + 1}: Tracked Activity ${
+                  activityIndex + 1
+                }`;
               }
-              if (typeof activity.activityId === "object" && activity.activityId.title === activityTitle) {
-                return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
+              if (
+                typeof activity.activityId === "object" &&
+                activity.activityId.title === activityTitle
+              ) {
+                return `Term ${termIndex + 1}: Tracked Activity ${
+                  activityIndex + 1
+                }`;
               }
-              if (typeof activity.activityId === "string" && activity.activityId === field._id) {
-                return `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`;
+              if (
+                typeof activity.activityId === "string" &&
+                activity.activityId === field._id
+              ) {
+                return `Term ${termIndex + 1}: Tracked Activity ${
+                  activityIndex + 1
+                }`;
               }
             }
           }
@@ -256,11 +346,15 @@ const StatusDisplay = ({
         votesScore: "Scored Vote",
         activitiesScore: "Tracked Activity",
       };
-      return field.name || simpleFieldMap[fieldId] || fieldId || "Unknown Field";
+      return (
+        field.name || simpleFieldMap[fieldId] || fieldId || "Unknown Field"
+      );
     }
 
     if (typeof field === "string") {
-      const termArrayMatch = field.match(/^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/);
+      const termArrayMatch = field.match(
+        /^term(\d+)_(votesScore|activitiesScore)_(\d+)_(.+)$/
+      );
       if (termArrayMatch) {
         const [, termIdx, category, itemIdx] = termArrayMatch;
         const termNumber = parseInt(termIdx) + 1;
@@ -311,17 +405,14 @@ const StatusDisplay = ({
 
     return `Field ${index + 1}`;
   };
-
-  // Choose the appropriate format function based on mode
   const formatFieldName = (field, index) => {
-    if (mode === 'senator') {
+    if (mode === "senator") {
       return senatorFormatFieldName(field, index, termData);
     } else {
       return representativeFormatFieldName(field, index, termData);
     }
   };
 
-  // Helper to generate editor key
   const getEditorKey = (field) => {
     const sanitizeKey = (str) => {
       return str
@@ -331,13 +422,25 @@ const StatusDisplay = ({
     };
 
     if (typeof field === "object" && field !== null) {
-      if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
+      if (
+        Array.isArray(field.field) &&
+        field.field[0] === "votesScore" &&
+        field.name
+      ) {
         return `votesScore_${sanitizeKey(field.name)}`;
       }
-      if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
+      if (
+        Array.isArray(field.field) &&
+        field.field[0] === "activitiesScore" &&
+        field.name
+      ) {
         return `activitiesScore_${sanitizeKey(field.name)}`;
       }
-      if (Array.isArray(field.field) && field.field[0] === "pastVotesScore" && field.name) {
+      if (
+        Array.isArray(field.field) &&
+        field.field[0] === "pastVotesScore" &&
+        field.name
+      ) {
         return `pastVotesScore_${sanitizeKey(field.name)}`;
       }
       if (Array.isArray(field.field)) {
@@ -348,7 +451,9 @@ const StatusDisplay = ({
     return field;
   };
 
-  const backendChanges = Array.isArray(formData?.editedFields) ? formData.editedFields : [];
+  const backendChanges = Array.isArray(formData?.editedFields)
+    ? formData.editedFields
+    : [];
 
   const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
 
@@ -366,18 +471,19 @@ const StatusDisplay = ({
         }}
       >
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-          {/* Status icon bubble */}
           <Box
             sx={{
               p: 1,
               borderRadius: "50%",
-              backgroundColor: `rgba(${formData.publishStatus === "draft"
-                ? "66, 165, 245"
-                : formData.publishStatus === "under review"
+              backgroundColor: `rgba(${
+                formData.publishStatus === "draft"
+                  ? "66, 165, 245"
+                  : formData.publishStatus === "under review"
                   ? "230, 81, 0"
                   : formData.publishStatus === "published"
-                    ? "76, 175, 80"
-                    : "244, 67, 54"}, 0.2)`,
+                  ? "76, 175, 80"
+                  : "244, 67, 54"
+              }, 0.2)`,
               display: "grid",
               placeItems: "center",
               flexShrink: 0,
@@ -389,7 +495,6 @@ const StatusDisplay = ({
           </Box>
 
           <Box sx={{ flex: 1 }}>
-            {/* Title */}
             <Typography
               variant="subtitle1"
               fontWeight="600"
@@ -400,8 +505,6 @@ const StatusDisplay = ({
             >
               {statusData.title}
             </Typography>
-
-            {/* No changes info */}
             <Typography variant="body2" sx={{ color: "text.disabled" }}>
               No pending changes
             </Typography>
@@ -411,11 +514,10 @@ const StatusDisplay = ({
     );
   }
 
-
   return (
     <Box
       sx={{
-        width: {xs:"90%",sm:"97%"},
+        width: { xs: "90%", sm: "97%" },
         p: 2,
         backgroundColor: statusData.backgroundColor,
         borderLeft: `4px solid ${statusData.borderColor}`,
@@ -425,19 +527,19 @@ const StatusDisplay = ({
       }}
     >
       <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-        {/* Status icon bubble */}
         <Box
           sx={{
-            p: {xs:0.4,sm:1},
+            p: { xs: 0.4, sm: 1 },
             borderRadius: "50%",
-            backgroundColor: `rgba(${formData.publishStatus === "draft"
-              ? "66, 165, 245"
-              : formData.publishStatus === "under review"
+            backgroundColor: `rgba(${
+              formData.publishStatus === "draft"
+                ? "66, 165, 245"
+                : formData.publishStatus === "under review"
                 ? "230, 81, 0"
                 : formData.publishStatus === "published"
-                  ? "76, 175, 80"
-                  : "244, 67, 54"
-              }, 0.2)`,
+                ? "76, 175, 80"
+                : "244, 67, 54"
+            }, 0.2)`,
             display: "grid",
             placeItems: "center",
             flexShrink: 0,
@@ -449,7 +551,6 @@ const StatusDisplay = ({
         </Box>
 
         <Box sx={{ flex: 1 }}>
-          {/* Header */}
           <Box
             sx={{
               display: "flex",
@@ -470,10 +571,7 @@ const StatusDisplay = ({
               {statusData.title}
             </Typography>
           </Box>
-
-          {/* Pending / New fields list */}
           <Box sx={{ mt: 1.5 }}>
-            {/* Backend pending changes */}
             {backendChanges.length > 0 && (
               <Box
                 sx={{
@@ -501,11 +599,11 @@ const StatusDisplay = ({
                     const editor = editorInfo?.editorName || "Unknown Editor";
                     const editTime = editorInfo?.editedAt
                       ? new Date(editorInfo.editedAt).toLocaleString([], {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                       : "unknown time";
                     const fromQuorum = field.fromQuorum || false;
 
@@ -516,7 +614,13 @@ const StatusDisplay = ({
                       >
                         <ListItemText
                           primary={
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
                               <Box
                                 sx={{
                                   width: 8,
@@ -531,7 +635,10 @@ const StatusDisplay = ({
                             </Box>
                           }
                           secondary={
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {fromQuorum
                                 ? `Fetched from Quorum by ${editor} on ${editTime}`
                                 : `Updated by ${editor} on ${editTime}`}
@@ -545,8 +652,6 @@ const StatusDisplay = ({
                 </List>
               </Box>
             )}
-
-            {/* Local unsaved changes */}
             {localChanges.length > 0 && (
               <Box
                 sx={{
@@ -561,14 +666,25 @@ const StatusDisplay = ({
                   variant="overline"
                   sx={{ color: "text.secondary", mb: 1 }}
                 >
-                  {formData.publishStatus === "published" ? "" : "Unsaved Changes"}
+                  {formData.publishStatus === "published"
+                    ? ""
+                    : "Unsaved Changes"}
                 </Typography>
                 <List dense sx={{ py: 0 }}>
                   {localChanges.map((field, index) => (
-                    <ListItem key={`local-${field}-${index}`} sx={{ py: 0, px: 1 }}>
+                    <ListItem
+                      key={`local-${field}-${index}`}
+                      sx={{ py: 0, px: 1 }}
+                    >
                       <ListItemText
                         primary={
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
                             <Box
                               sx={{
                                 width: 8,

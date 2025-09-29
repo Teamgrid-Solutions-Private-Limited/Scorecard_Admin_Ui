@@ -1,4 +1,3 @@
-import * as React from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 import InputLabel from "@mui/material/InputLabel";
@@ -51,7 +50,6 @@ export default function SenatorTermSection({
             color="error"
             startIcon={<DeleteForeverIcon />}
             onClick={() => handleRemoveTerm(termIndex)}
-         
           >
             Remove Term
           </Button>
@@ -182,11 +180,10 @@ export default function SenatorTermSection({
                 <Grid
                   size={12}
                   display="flex"
-                  flexDirection={isMobile? "column":"row"}
+                  flexDirection={isMobile ? "column" : "row"}
                   gap={isMobile ? 1 : 0}
                   alignItems={isMobile ? "flex-start" : "center"}
                   columnGap={"15px"}
-                  
                 >
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">
@@ -195,7 +192,7 @@ export default function SenatorTermSection({
                   </Grid>
                   <Grid size={isMobile ? 11 : 7.5}>
                     <Autocomplete
-                    className="textField"
+                      className="textField"
                       options={allVotes.filter(
                         (v) =>
                           validateVoteInTermRange(v._id, term.termId).isValid
@@ -218,18 +215,18 @@ export default function SenatorTermSection({
                           placeholder="Search bills..."
                           size="small"
                           sx={{
-                                      "& .MuiOutlinedInput-root": {
-                                        height: "40px",
-                                        background: "#fff",
-                                        cursor: "pointer",
-                                        "& input": {
-                                          cursor: "pointer",
-                                        },
-                                        "& fieldset": {
-                                          border: "none", // remove border
-                                        },
-                                      },
-                                    }}
+                            "& .MuiOutlinedInput-root": {
+                              height: "40px",
+                              background: "#fff",
+                              cursor: "pointer",
+                              "& input": {
+                                cursor: "pointer",
+                              },
+                              "& fieldset": {
+                                border: "none",
+                              },
+                            },
+                          }}
                         />
                       )}
                     />
@@ -256,7 +253,7 @@ export default function SenatorTermSection({
                   </Grid>
                   <Grid size={1}>
                     <DeleteForeverIcon
-                    className="paddingLeft"
+                      className="paddingLeft"
                       onClick={() => handleRemoveVote(termIndex, voteIndex)}
                     />
                   </Grid>
@@ -269,19 +266,17 @@ export default function SenatorTermSection({
             <Grid
               size={12}
               display="flex"
-               flexDirection={isMobile ? "column" : "row"}
-               alignItems={isMobile ? "flex-start" : "center"}
-               gap={isMobile ? 1 : 0}
+              flexDirection={isMobile ? "column" : "row"}
+              alignItems={isMobile ? "flex-start" : "center"}
+              gap={isMobile ? 1 : 0}
               columnGap={"15px"}
             >
               <Grid size={isMobile ? 12 : 2}>
-                 <InputLabel className="label">
-                  Scored Vote 1
-                </InputLabel>
+                <InputLabel className="label">Scored Vote 1</InputLabel>
               </Grid>
               <Grid size={isMobile ? 11 : 7.5}>
                 <Autocomplete
-                className="textField"
+                  className="textField"
                   freeSolo
                   disabled
                   options={[]}
@@ -294,18 +289,18 @@ export default function SenatorTermSection({
                       variant="outlined"
                       fullWidth
                       sx={{
-                                      "& .MuiOutlinedInput-root": {
-                                        height: "40px",
-                                        background: "#fff",
-                                        cursor: "pointer",
-                                        "& input": {
-                                          cursor: "pointer",
-                                        },
-                                        "& fieldset": {
-                                          border: "none", // remove border
-                                        },
-                                      },
-                                    }}
+                        "& .MuiOutlinedInput-root": {
+                          height: "40px",
+                          background: "#fff",
+                          cursor: "pointer",
+                          "& input": {
+                            cursor: "pointer",
+                          },
+                          "& fieldset": {
+                            border: "none",
+                          },
+                        },
+                      }}
                     />
                   )}
                 />
@@ -320,7 +315,10 @@ export default function SenatorTermSection({
                 </FormControl>
               </Grid>
               <Grid size={1}>
-                <DeleteForeverIcon className="paddingLeft" sx={{ opacity: 0.5 }} />
+                <DeleteForeverIcon
+                  className="paddingLeft"
+                  sx={{ opacity: 0.5 }}
+                />
               </Grid>
             </Grid>
           </Grid>
@@ -353,13 +351,13 @@ export default function SenatorTermSection({
                   columnGap={"15px"}
                 >
                   <Grid size={isMobile ? 12 : 2}>
-                     <InputLabel className="label">
+                    <InputLabel className="label">
                       Tracked Activity {activityIndex + 1}
                     </InputLabel>
                   </Grid>
                   <Grid size={isMobile ? 11 : 7.5}>
                     <Autocomplete
-                    className="textField"
+                      className="textField"
                       options={allActivities.filter(
                         (a) =>
                           a.type === "senate" &&
@@ -424,7 +422,7 @@ export default function SenatorTermSection({
                   </Grid>
                   <Grid size={1}>
                     <DeleteForeverIcon
-                    className="paddingLeft"
+                      className="paddingLeft"
                       onClick={() =>
                         handleRemoveActivity(termIndex, activityIndex)
                       }
@@ -439,19 +437,17 @@ export default function SenatorTermSection({
             <Grid
               size={12}
               display="flex"
-               flexDirection={isMobile ? "column" : "row"}
-               alignItems={isMobile ? "flex-start" : "center"}
-               gap={isMobile ? 1 : 0}
+              flexDirection={isMobile ? "column" : "row"}
+              alignItems={isMobile ? "flex-start" : "center"}
+              gap={isMobile ? 1 : 0}
               columnGap={"15px"}
             >
               <Grid size={isMobile ? 12 : 2}>
-                 <InputLabel className="label">
-                  Tracked Activity 1
-                </InputLabel>
+                <InputLabel className="label">Tracked Activity 1</InputLabel>
               </Grid>
               <Grid size={isMobile ? 11 : 7.5}>
                 <Autocomplete
-                className="textField"
+                  className="textField"
                   freeSolo
                   disabled
                   options={[]}
@@ -464,18 +460,18 @@ export default function SenatorTermSection({
                       variant="outlined"
                       fullWidth
                       sx={{
-                                      "& .MuiOutlinedInput-root": {
-                                        height: "40px",
-                                        background: "#fff",
-                                        cursor: "pointer",
-                                        "& input": {
-                                          cursor: "pointer",
-                                        },
-                                        "& fieldset": {
-                                          border: "none", // remove border
-                                        },
-                                      },
-                                    }}
+                        "& .MuiOutlinedInput-root": {
+                          height: "40px",
+                          background: "#fff",
+                          cursor: "pointer",
+                          "& input": {
+                            cursor: "pointer",
+                          },
+                          "& fieldset": {
+                            border: "none",
+                          },
+                        },
+                      }}
                     />
                   )}
                 />
@@ -521,9 +517,9 @@ export default function SenatorTermSection({
                 <Grid
                   size={12}
                   display="flex"
-                   flexDirection={isMobile ? "column" : "row"}
-                   alignItems={isMobile ? "flex-start" : "center"}
-                   gap={isMobile ? 1 : 0}
+                  flexDirection={isMobile ? "column" : "row"}
+                  alignItems={isMobile ? "flex-start" : "center"}
+                  gap={isMobile ? 1 : 0}
                   columnGap={"15px"}
                 >
                   <Grid size={isMobile ? 12 : 2}>
@@ -533,7 +529,7 @@ export default function SenatorTermSection({
                   </Grid>
                   <Grid size={isMobile ? 11 : 7.5}>
                     <Autocomplete
-                    className="textField"
+                      className="textField"
                       options={allVotes}
                       getOptionLabel={(option) => option.title || ""}
                       value={
@@ -587,7 +583,7 @@ export default function SenatorTermSection({
                   </Grid>
                   <Grid size={1}>
                     <DeleteForeverIcon
-                    className="paddingLeft"
+                      className="paddingLeft"
                       onClick={() => handleRemovePastVote(termIndex, voteIndex)}
                     />
                   </Grid>
@@ -601,48 +597,44 @@ export default function SenatorTermSection({
               size={12}
               display="flex"
               flexDirection={isMobile ? "column" : "row"}
-            alignItems={isMobile ? "flex-start" : "center"}
-            gap={isMobile ? 1 : 0}
+              alignItems={isMobile ? "flex-start" : "center"}
+              gap={isMobile ? 1 : 0}
               columnGap={"15px"}
             >
               <Grid size={isMobile ? 12 : 2}>
-                <InputLabel
-                  className="label"
-                >
-                  Important Past Vote 1
-                </InputLabel>
+                <InputLabel className="label">Important Past Vote 1</InputLabel>
               </Grid>
               <Grid size={isMobile ? 11 : 7.5}>
                 <Autocomplete
-                            className="textField"
-                              freeSolo
-                              disabled
-                              options={[]}
-                              popupIcon={null}
-                              clearIcon={null}
-                              sx={{
-                                "& .MuiOutlinedInput-root": {
-                                  background: "#fff",
-                                },
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  placeholder="Select a term first"
-                                  variant="outlined"
-                                  fullWidth
-                                  sx={{
-                            "& .MuiOutlinedInput-root": {
-                              height: "40px",
-                              background: "#fff",
-                              cursor: "pointer",
-                              "& input": { cursor: "pointer" },
-                              "& fieldset": { border: "none" },
-                            },
-                          }}
-                                />
-                              )}
-                            />
+                  className="textField"
+                  freeSolo
+                  disabled
+                  options={[]}
+                  popupIcon={null}
+                  clearIcon={null}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      background: "#fff",
+                    },
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Select a term first"
+                      variant="outlined"
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          height: "40px",
+                          background: "#fff",
+                          cursor: "pointer",
+                          "& input": { cursor: "pointer" },
+                          "& fieldset": { border: "none" },
+                        },
+                      }}
+                    />
+                  )}
+                />
               </Grid>
               <Grid size={isMobile ? 5 : 1.6}>
                 <FormControl fullWidth className="paddingLeft">
@@ -654,7 +646,10 @@ export default function SenatorTermSection({
                 </FormControl>
               </Grid>
               <Grid size={1}>
-                <DeleteForeverIcon className="paddingLeft" sx={{ opacity: 0.5 }} />
+                <DeleteForeverIcon
+                  className="paddingLeft"
+                  sx={{ opacity: 0.5 }}
+                />
               </Grid>
             </Grid>
           </Grid>

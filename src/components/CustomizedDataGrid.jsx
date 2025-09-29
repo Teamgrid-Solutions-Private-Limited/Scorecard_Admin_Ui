@@ -27,20 +27,15 @@ export default function CustomizedDataGrid({
   loading,
   onEdit,
   onDelete,
-  onToggleStatus,
-  handleToggleStatusAct,
   isSelectable = false,
   onSelectionChange,
   selectedItems = [],
-  handleToggleStatusSenator,
-  handleToggleStatusHouse,
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
   const { houseData } = useSelector((state) => state.houseData);
   const [mergedRows, setMergedRows] = useState([]);
   const token = localStorage.getItem("token");
-  // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
   const { terms } = useSelector((state) => state.term);
@@ -144,7 +139,6 @@ export default function CustomizedDataGrid({
 
         setMergedRows(merged);
       } else {
-        // For bills/activities or if data isn't loaded yet
         setMergedRows(
           rows.map((row) => ({
             ...row,
@@ -162,8 +156,6 @@ export default function CustomizedDataGrid({
     if (lowerParty === "democrat") return "blue";
     return "gray";
   };
-
-  // Function to get status color based on status value
   const getStatusColor = (status) => {
     if (!status) return "default";
 
@@ -444,7 +436,6 @@ export default function CustomizedDataGrid({
             headerName: "Action",
             minWidth: 140,
             headerAlign: "center",
-            // align: "right",
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
                 {params.colDef.headerName}
@@ -453,12 +444,6 @@ export default function CustomizedDataGrid({
             renderCell: (params) => (
               <div
                 style={{
-                  // display: "flex",
-                  // justifyContent: "flex-end",
-                  // height: "100%",
-                  // alignItems: "center",
-                  // paddingRight: "32px",
-                  // columnGap: "10px",
                   display: "flex",
                   justifyContent: "center",
                   height: "100%",
@@ -714,7 +699,6 @@ export default function CustomizedDataGrid({
           },
           {
             field: "rating",
-            // flex: 0.7,
             headerName: "Rating",
             minHeight: 200,
             minWidth: 140,
@@ -732,7 +716,6 @@ export default function CustomizedDataGrid({
                 {
                   field: "publishStatus",
                   headerName: "Status",
-                  // flex: 1,
                   minWidth: 140,
                   renderHeader: (params) => (
                     <Typography sx={{ fontWeight: "bold" }}>
@@ -801,11 +784,9 @@ export default function CustomizedDataGrid({
 
           {
             field: "action",
-            // flex: 0.7,
             headerName: "Action",
             minWidth: 140,
             headerAlign: "center",
-            // align: "right",
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
                 {params.colDef.headerName}
@@ -814,13 +795,6 @@ export default function CustomizedDataGrid({
             renderCell: (params) => (
               <Box
                 sx={{
-                  //     display: "flex",
-                  //     flexDirection: "row",
-                  //     alignItems: "center",
-                  //  paddingRight: "32px",
-                  //     justifyContent: "flex-end",
-                  //     columnGap: "10px",
-                  //     height: "100%",
                   display: "flex",
                   justifyContent: "center",
                   height: "100%",

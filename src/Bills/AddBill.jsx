@@ -57,6 +57,7 @@ export default function AddBill(props) {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
+
   const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",

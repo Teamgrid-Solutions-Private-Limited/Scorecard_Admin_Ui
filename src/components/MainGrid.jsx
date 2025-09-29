@@ -1,13 +1,11 @@
 import * as React from "react";
-import { Box, Typography, Grid } from "@mui/material";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
+import { Box, Grid } from "@mui/material";
 import CustomizedDataGrid from "./CustomizedDataGrid";
 import Footer from "./Footer";
 
 export default function MainGrid({
   type,
   data,
-  loading,
   onEdit,
   onDelete,
   onToggleStatus ,
