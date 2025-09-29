@@ -28,7 +28,6 @@ import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
 import {
   InputAdornment,
-  CircularProgress,
   FormLabel,
   RadioGroup,
   FormControlLabel,
@@ -52,6 +51,7 @@ import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
 import Footer from "../components/Footer";
 import DialogBox from "../components/DialogBox";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function AddBill(props) {
   const { id } = useParams();
@@ -616,9 +616,7 @@ return () => {
   return (
     <AppTheme>
         {(loading || isDataFetching) && (
-      <Box className="circularLoader">
-        <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-      </Box>
+   <LoadingOverlay />
     )}
       <Snackbar
         open={openSnackbar}

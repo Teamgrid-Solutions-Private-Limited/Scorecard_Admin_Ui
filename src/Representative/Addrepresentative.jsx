@@ -13,7 +13,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
-import CircularProgress from "@mui/material/CircularProgress";
 import {
   Autocomplete,
   Box,
@@ -28,9 +27,7 @@ import {
   Button,
   Switch,
 } from "@mui/material";
-import {
-  getAllVotes,
-} from "../redux/reducer/voteSlice";
+import { getAllVotes } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { discardHouseChanges } from "../redux/reducer/houseSlice";
 import {
@@ -47,7 +44,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
-import { deleteHouseData } from "../redux/reducer/houseTermSlice"; 
+import { deleteHouseData } from "../redux/reducer/houseTermSlice";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
@@ -76,11 +73,11 @@ export default function Addrepresentative(props) {
   const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
-   const [selectionError, setSelectionError] = useState({
-      show: false,
-      message: "",
-      type: "",
-    });
+  const [selectionError, setSelectionError] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
 
   const navigate = useNavigate();
 
@@ -128,7 +125,6 @@ export default function Addrepresentative(props) {
     publishStatus: "",
   });
 
-
   const [houseTermData, setHouseTermData] = useState([
     {
       houseId: id,
@@ -140,7 +136,6 @@ export default function Addrepresentative(props) {
       termId: null,
     },
   ]);
-
 
   const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
@@ -171,8 +166,8 @@ export default function Addrepresentative(props) {
 
           let votesScore = [];
           let activitiesScore = [];
-          let summary = ""; 
-          let rating = ""; 
+          let summary = "";
+          let rating = "";
           let currentTerm = false;
 
           if (existingTermData) {
@@ -182,14 +177,12 @@ export default function Addrepresentative(props) {
                 score: vote.score || "",
               })) || [];
 
-
             activitiesScore =
               existingTermData.activitiesScore?.map((activity) => ({
                 activityId:
                   activity.activityId?._id || activity.activityId || "",
                 score: activity.score || "",
               })) || [];
-
 
             summary = existingTermData.summary || "";
             rating = existingTermData.rating || "";
@@ -200,7 +193,7 @@ export default function Addrepresentative(props) {
           } else {
             // Filter votes to keep only those that belong to the new term's congresses
             votesScore = term.votesScore.filter((vote) => {
-              if (!vote.voteId || vote.voteId === "") return true; 
+              if (!vote.voteId || vote.voteId === "") return true;
 
               const voteItem = votes.find((v) => v._id === vote.voteId);
               if (!voteItem) return false;
@@ -239,9 +232,9 @@ export default function Addrepresentative(props) {
             [name]: value,
             votesScore: finalVotesScore,
             activitiesScore: finalActivitiesScore,
-            summary, 
-            rating, 
-            currentTerm, 
+            summary,
+            rating,
+            currentTerm,
           };
         }
 
@@ -285,7 +278,6 @@ export default function Addrepresentative(props) {
     });
   };
 
-
   const handleAddVote = (termIndex) => {
     setHouseTermData((prev) =>
       prev.map((term, index) =>
@@ -309,7 +301,6 @@ export default function Addrepresentative(props) {
             }
           : term
       );
-
 
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
@@ -381,7 +372,6 @@ export default function Addrepresentative(props) {
           : term
       );
 
-
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -430,8 +420,6 @@ export default function Addrepresentative(props) {
     });
   };
 
-  
-
   const handleEditorChange = useCallback((content, termIndex) => {
     const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
 
@@ -453,9 +441,9 @@ export default function Addrepresentative(props) {
         activitiesScore: [{ activityId: "", score: "" }],
         currentTerm: false,
         termId: null,
-        editedFields: [], 
-        fieldEditors: {}, 
-        isNew: true, 
+        editedFields: [],
+        fieldEditors: {},
+        isNew: true,
       },
     ]);
   };
@@ -468,7 +456,6 @@ export default function Addrepresentative(props) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
       }
 
-
       setLocalChanges((prevChanges) =>
         prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
       );
@@ -476,7 +463,6 @@ export default function Addrepresentative(props) {
       return prev.filter((_, index) => index !== termIndex);
     });
   };
-
 
   const compareValues = (newVal, oldVal) => {
     if (newVal == null || oldVal == null) return newVal !== oldVal;
@@ -533,9 +519,8 @@ export default function Addrepresentative(props) {
                   _id: vote._id || undefined,
                 };
               })
-            : [{ voteId: "", score: "" }]; 
+            : [{ voteId: "", score: "" }];
 
-     
         if (
           votesScore.length === 0 ||
           votesScore.every((v) => v.voteId == null)
@@ -551,7 +536,7 @@ export default function Addrepresentative(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          isNew: false, 
+          isNew: false,
           votesScore,
 
           activitiesScore:
@@ -581,7 +566,7 @@ export default function Addrepresentative(props) {
           termId: null,
           editedFields: [],
           fieldEditors: {},
-          isNew: true, 
+          isNew: true,
         },
       ];
 
@@ -602,11 +587,9 @@ export default function Addrepresentative(props) {
     }
   }, [formData, originalFormData]);
 
-  
   useEffect(() => {
     if (originalFormData && formData && originalTermData && houseTermData) {
       const changes = [];
-
 
       Object.keys(formData).forEach((key) => {
         if (key === "editedFields" || key === "fieldEditors") return;
@@ -615,7 +598,6 @@ export default function Addrepresentative(props) {
         }
       });
 
-     
       houseTermData.forEach((term, termIndex) => {
         // For new terms, track all fields that have values
         if (term.isNew) {
@@ -682,11 +664,11 @@ export default function Addrepresentative(props) {
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-useEffect(() => {
-  if (!isDataFetching && id && houseData) {
-    termPreFill();
-  }
-}, [id, houseData, isDataFetching]);
+  useEffect(() => {
+    if (!isDataFetching && id && houseData) {
+      termPreFill();
+    }
+  }, [id, houseData, isDataFetching]);
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -711,20 +693,20 @@ useEffect(() => {
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       setIsDataFetching(true);
       try {
         if (id) {
           await Promise.all([
             dispatch(getHouseById(id)),
-            dispatch(getHouseDataByHouseId(id))
+            dispatch(getHouseDataByHouseId(id)),
           ]);
         }
         await Promise.all([
           dispatch(getAllTerms()),
           dispatch(getAllVotes()),
-          dispatch(getAllActivity())
+          dispatch(getAllActivity()),
         ]);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -735,22 +717,20 @@ useEffect(() => {
         setIsDataFetching(false);
       }
     };
-  
+
     fetchData();
-  
+
     return () => {
       dispatch(clearHouseState());
       dispatch(clearHouseDataState());
     };
   }, [id, dispatch]);
 
-useEffect(() => {
-  if (!isDataFetching && house) {
-    preFillForm();
-  }
-}, [house, terms, isDataFetching]);
-
-
+  useEffect(() => {
+    if (!isDataFetching && house) {
+      preFillForm();
+    }
+  }, [house, terms, isDataFetching]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -778,7 +758,7 @@ useEffect(() => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    const fieldName = "Photo"; 
+    const fieldName = "Photo";
 
     if (!localChanges.includes(fieldName)) {
       setLocalChanges((prev) => [...prev, fieldName]);
@@ -792,9 +772,9 @@ useEffect(() => {
 
     const sanitizeKey = (str) => {
       return str
-        .replace(/[^a-zA-Z0-9_]/g, "_") 
-        .replace(/_+/g, "_") 
-        .replace(/^_+|_+$/g, ""); 
+        .replace(/[^a-zA-Z0-9_]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
     };
 
     try {
@@ -1008,7 +988,6 @@ useEffect(() => {
           const newValue = term[field];
           const oldValue = originalTerm[field];
 
-     
           if (
             !isEqual(newValue, oldValue) &&
             hasNonDefaultValue(field, newValue)
@@ -1070,7 +1049,7 @@ useEffect(() => {
               changedFieldsInThisSession.add(editorKey);
             }
           }
-          return; 
+          return;
         }
 
         // Handle activities: termX_TrackedActivity_Y
@@ -1089,7 +1068,7 @@ useEffect(() => {
               changedFieldsInThisSession.add(editorKey);
             }
           }
-          return; 
+          return;
         }
 
         // Term-level or simple fields
@@ -1098,7 +1077,6 @@ useEffect(() => {
         changedFieldsInThisSession.add(editorKey);
       });
 
-      
       processedChanges.forEach((change) => {
         if (!changedFieldsInThisSession.has(change.uniqueId)) {
           // preserve existing editor if any
@@ -1107,7 +1085,6 @@ useEffect(() => {
         }
       });
 
-     
       const representativeUpdate = {
         ...formData,
         editedFields: allChanges,
@@ -1169,7 +1146,7 @@ useEffect(() => {
           isNew: false,
           houseId: id,
           editedFields: termSpecificChanges,
-          fieldEditors: updatedFieldEditors, 
+          fieldEditors: updatedFieldEditors,
         };
         return term._id
           ? dispatch(
@@ -1202,18 +1179,18 @@ useEffect(() => {
   };
 
   const getFilteredVotes = (termIndex) => {
-  const term = houseTermData[termIndex];
-  if (!term || !term.termId) return votes || [];
+    const term = houseTermData[termIndex];
+    if (!term || !term.termId) return votes || [];
 
-  const selectedTerm = terms.find((t) => t._id === term.termId);
-  if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+    const selectedTerm = terms.find((t) => t._id === term.termId);
+    if (!selectedTerm || !selectedTerm.congresses) return votes || [];
 
-  return (votes || []).filter(
-    (vote) =>
-      vote.type?.toLowerCase().includes("house") &&
-      selectedTerm.congresses.includes(Number(vote.congress))
-  );
-};
+    return (votes || []).filter(
+      (vote) =>
+        vote.type?.toLowerCase().includes("house") &&
+        selectedTerm.congresses.includes(Number(vote.congress))
+    );
+  };
   // Helper function to get filtered activities based on selected term
   const getFilteredActivities = (termIndex) => {
     const term = houseTermData[termIndex];
@@ -1241,9 +1218,8 @@ useEffect(() => {
 
   const editorRef = useRef(null);
 
-
   const handleStatusChange = (status) => {
-    const fieldName = "status"; 
+    const fieldName = "status";
 
     setFormData((prev) => {
       const newData = { ...prev, status };
@@ -1310,7 +1286,6 @@ useEffect(() => {
         titleColor: "#5D4037",
         descColor: "#795548",
       },
-
     };
 
     return configs[currentStatus];
@@ -1365,11 +1340,7 @@ useEffect(() => {
 
   return (
     <AppTheme key={componentKey}>
-       {(loading || isDataFetching) && (
-            <Box className="circularLoader">
-              <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-            </Box>
-          )}
+      <LoadingOverlay loading={loading || isDataFetching} />
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -1387,26 +1358,35 @@ useEffect(() => {
           <MobileHeader />
 
           <Stack
-             spacing={isMobile ? 1 : 2}
+            spacing={isMobile ? 1 : 2}
             sx={{
               alignItems: "center",
-              mx: {xs: 2, md: 3},
+              mx: { xs: 2, md: 3 },
               mt: { xs: 2, md: 2.8 },
               gap: 1,
             }}
           >
-            <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
-           <StatusDisplay 
-           userRole={userRole}
-           formData={formData}
-           localChanges={localChanges}
-           statusData={statusData}
-           termData={houseTermData}
-           mode="representative"
-           />
+            <ActionButtons
+              onDiscard={handleDiscard}
+              onSave={handleSave}
+              userRole={userRole}
+            />
+            <StatusDisplay
+              userRole={userRole}
+              formData={formData}
+              localChanges={localChanges}
+              statusData={statusData}
+              termData={houseTermData}
+              mode="representative"
+            />
 
             <Paper className="customPaper">
-              <DialogBox userRole={userRole} openDiscardDialog={openDiscardDialog} setOpenDiscardDialog={setOpenDiscardDialog} handleConfirmDiscard={handleConfirmDiscard}/>
+              <DialogBox
+                userRole={userRole}
+                openDiscardDialog={openDiscardDialog}
+                setOpenDiscardDialog={setOpenDiscardDialog}
+                handleConfirmDiscard={handleConfirmDiscard}
+              />
 
               <BasicInfo
                 formData={formData}
@@ -1468,11 +1448,11 @@ useEffect(() => {
                                   t.startYear &&
                                   t.endYear &&
                                   t.endYear - t.startYear === 1 &&
-                                  t.startYear % 2 === 1 && 
-                                  t.endYear % 2 === 0 && 
-                                  t.startYear >= 2015 && 
+                                  t.startYear % 2 === 1 &&
+                                  t.endYear % 2 === 0 &&
+                                  t.startYear >= 2015 &&
                                   t.endYear >= 2015
-                              ) 
+                              )
                               .filter(
                                 (t) =>
                                   Array.isArray(t.congresses) &&
@@ -1623,7 +1603,7 @@ useEffect(() => {
                           <Grid
                             size={12}
                             display="flex"
-                            flexDirection={isMobile? "column":"row"}
+                            flexDirection={isMobile ? "column" : "row"}
                             gap={isMobile ? 1 : 0}
                             alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
@@ -1635,7 +1615,7 @@ useEffect(() => {
                             </Grid>
                             <Grid size={isMobile ? 11 : 7.5}>
                               <Autocomplete
-                              className="textField"
+                                className="textField"
                                 options={getFilteredVotes(termIndex)}
                                 getOptionLabel={(option) => option.title || ""}
                                 value={
@@ -1665,7 +1645,7 @@ useEffect(() => {
                                           cursor: "pointer",
                                         },
                                         "& fieldset": {
-                                          border: "none", 
+                                          border: "none",
                                         },
                                       },
                                     }}
@@ -1695,13 +1675,12 @@ useEffect(() => {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-                                 
                                 </Select>
                               </FormControl>
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
-                              className="paddingLeft"
+                                className="paddingLeft"
                                 onClick={() =>
                                   handleRemoveVote(termIndex, voteIndex)
                                 }
@@ -1738,7 +1717,7 @@ useEffect(() => {
                           <Grid
                             size={12}
                             display="flex"
-                            flexDirection={isMobile? "column":"row"}
+                            flexDirection={isMobile ? "column" : "row"}
                             gap={isMobile ? 1 : 0}
                             alignItems={isMobile ? "flex-start" : "center"}
                             columnGap={"15px"}
@@ -1750,7 +1729,7 @@ useEffect(() => {
                             </Grid>
                             <Grid size={isMobile ? 11 : 7.5}>
                               <Autocomplete
-                              className="textField"
+                                className="textField"
                                 value={
                                   getFilteredActivities(termIndex).find(
                                     (a) => a._id === activity.activityId
@@ -1765,7 +1744,7 @@ useEffect(() => {
                                   )
                                 }
                                 options={getFilteredActivities(termIndex)}
-                                getOptionLabel={(option) => option.title ||""}
+                                getOptionLabel={(option) => option.title || ""}
                                 renderInput={(params) => (
                                   <TextField
                                     {...params}
@@ -1780,7 +1759,7 @@ useEffect(() => {
                                           cursor: "pointer",
                                         },
                                         "& fieldset": {
-                                          border: "none", 
+                                          border: "none",
                                         },
                                       },
                                     }}
@@ -1813,15 +1792,14 @@ useEffect(() => {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-                                  
                                 </Select>
                               </FormControl>
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
-                              className="paddingLeft"
+                                className="paddingLeft"
                                 onClick={() =>
-                                  handleRemoveActivity(termIndex,activityIndex)
+                                  handleRemoveActivity(termIndex, activityIndex)
                                 }
                               />
                             </Grid>
@@ -1839,7 +1817,7 @@ useEffect(() => {
                         startIcon={<AddIcon />}
                         onClick={() => handleAddActivity(termIndex)}
                       >
-                        Add Activity 
+                        Add Activity
                       </Button>
                     </Grid>
                     <Grid size={1}></Grid>
@@ -1858,16 +1836,16 @@ useEffect(() => {
               Add Another Term
             </Button>
 
-                        <SnackbarComponent
-                          open={openSnackbar}
-                          onClose={() => {
-                            handleSnackbarClose();
-                            setSelectionError({ show: false, message: "", type: "" });
-                          }}
-                          message={snackbarMessage}
-                          severity={snackbarSeverity}
-                          selectionError={selectionError}
-                        />
+            <SnackbarComponent
+              open={openSnackbar}
+              onClose={() => {
+                handleSnackbarClose();
+                setSelectionError({ show: false, message: "", type: "" });
+              }}
+              message={snackbarMessage}
+              severity={snackbarSeverity}
+              selectionError={selectionError}
+            />
           </Stack>
           <Box sx={{ mb: "40px", mx: "15px" }}>
             <Footer />

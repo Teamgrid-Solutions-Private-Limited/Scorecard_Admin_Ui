@@ -11,7 +11,6 @@ import {
   Stack,
   Typography,
   Button,
-  CircularProgress,
   TextField,
   Snackbar,
   Alert,
@@ -56,6 +55,7 @@ import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function Representative(props) {
   const navigate = useNavigate();
@@ -509,11 +509,7 @@ export default function Representative(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      {(loading || fetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || fetching} />
       <Box className="container">
         <SideMenu />
         <Box className={`contentBox ${fetching ? "fetching" : "notFetching"}`}>
@@ -839,7 +835,10 @@ export default function Representative(props) {
                                   placeholder="Search Congress..."
                                   value={searchTerms.congress}
                                   onChange={(e) =>
-                                    handleSearchChange("congress", e.target.value)
+                                    handleSearchChange(
+                                      "congress",
+                                      e.target.value
+                                    )
                                   }
                                   InputProps={{
                                     startAdornment: (
@@ -855,7 +854,9 @@ export default function Representative(props) {
                                   filteredCongressOptions.map((congress) => (
                                     <Box
                                       key={congress}
-                                      onClick={() => handleCongressFilter(congress)}
+                                      onClick={() =>
+                                        handleCongressFilter(congress)
+                                      }
                                       className="filter-option"
                                     >
                                       {congressFilter.includes(congress) ? (
@@ -871,8 +872,17 @@ export default function Representative(props) {
                                         sx={{ ml: 1 }}
                                       >
                                         {congressYearMap[congress]
-                                          ? `${getOrdinalSuffix(congress)} Congress (${congressYearMap[congress].startYear}-${congressYearMap[congress].endYear})`
-                                          : `${getOrdinalSuffix(congress)} Congress`}
+                                          ? `${getOrdinalSuffix(
+                                              congress
+                                            )} Congress (${
+                                              congressYearMap[congress]
+                                                .startYear
+                                            }-${
+                                              congressYearMap[congress].endYear
+                                            })`
+                                          : `${getOrdinalSuffix(
+                                              congress
+                                            )} Congress`}
                                       </Typography>
                                     </Box>
                                   ))
@@ -1086,12 +1096,10 @@ export default function Representative(props) {
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}
           PaperProps={{
-            sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
+            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
           }}
         >
-          <DialogTitle className="dialogBox">
-            Confirm Deletion
-          </DialogTitle>
+          <DialogTitle className="dialogBox">Confirm Deletion</DialogTitle>
 
           <DialogContent>
             <DialogContentText className="dialogTitle">

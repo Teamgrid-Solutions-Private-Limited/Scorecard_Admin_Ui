@@ -12,7 +12,6 @@ import {
   Stack,
   Typography,
   Button,
-  CircularProgress,
   Snackbar,
   Alert,
   TextField,
@@ -56,6 +55,7 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import { useTheme } from "@mui/material/styles";
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function Senator(props) {
   const navigate = useNavigate();
@@ -418,11 +418,7 @@ export default function Senator(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      {(loading || fetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || fetching} />
       <Box className="container">
         <SideMenu />
 

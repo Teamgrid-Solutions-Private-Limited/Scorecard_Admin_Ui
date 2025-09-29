@@ -28,7 +28,7 @@ import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
 import Copyright from "../../src/Dashboard/internals/components/Copyright";
-import { InputAdornment, CircularProgress } from "@mui/material";
+import { InputAdornment } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -52,6 +52,7 @@ import MobileHeader from "../components/MobileHeader";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import DialogBox from "../components/DialogBox";
+import LoadingOverlay from "../components/LoadingOverlay";
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...alertProps} />;
@@ -568,11 +569,7 @@ export default function AddActivity(props) {
   ]);
   return (
     <AppTheme>
-      {(loading || isDataFetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || isDataFetching} />
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}

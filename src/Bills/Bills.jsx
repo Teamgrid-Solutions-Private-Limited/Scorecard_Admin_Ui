@@ -53,6 +53,7 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -207,11 +208,7 @@ export default function Bills(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      {(loading || fetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || fetching} />
       <Box className="container">
         <SideMenu />
         <Box className={`contentBox ${fetching ? "fetching" : "notFetching"}`}>
