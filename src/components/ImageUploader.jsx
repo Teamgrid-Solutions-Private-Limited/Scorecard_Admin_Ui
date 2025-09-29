@@ -6,11 +6,11 @@ const ImageUploader = () => {
   const [imagePreview, setImagePreview] = useState(null);
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files[0]; 
     if (file) {
-      setImagePreview(URL.createObjectURL(file));
+      setImagePreview(URL.createObjectURL(file)); 
     } else {
-      setImagePreview(null);
+      setImagePreview(null); 
     }
   };
 

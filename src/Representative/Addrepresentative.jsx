@@ -13,7 +13,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
-import CircularProgress from "@mui/material/CircularProgress";
 import {
   Autocomplete,
   Box,
@@ -84,6 +83,7 @@ export default function Addrepresentative(props) {
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
+
   const fieldLabels = {
     name: "Representative Name",
     status: "Status",
@@ -99,13 +99,11 @@ export default function Addrepresentative(props) {
     currentTerm: "Current Term",
     termId: "Term",
   };
-
   const getFieldDisplayName = (field) => {
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${
-        fieldLabels[actualField] || actualField
-      }`;
+      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
+        }`;
     }
     return fieldLabels[field] || field;
   };
@@ -187,6 +185,7 @@ export default function Addrepresentative(props) {
 
               return termCongressStrings.includes(voteItem.congress);
             });
+
             activitiesScore = term.activitiesScore.filter((activity) => {
               if (!activity.activityId || activity.activityId === "")
                 return true;
@@ -225,7 +224,6 @@ export default function Addrepresentative(props) {
 
         return { ...term, [name]: value };
       });
-
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
@@ -265,9 +263,9 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: [...term.votesScore, { voteId: "", score: "" }],
-            }
+            ...term,
+            votesScore: [...term.votesScore, { voteId: "", score: "" }],
+          }
           : term
       )
     );
@@ -278,9 +276,9 @@ export default function Addrepresentative(props) {
       const updatedTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-            }
+            ...term,
+            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
+          }
           : term
       );
 
@@ -302,13 +300,14 @@ export default function Addrepresentative(props) {
       const newTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              votesScore: term.votesScore.map((vote, i) =>
-                i === voteIndex ? { ...vote, [field]: value } : vote
-              ),
-            }
+            ...term,
+            votesScore: term.votesScore.map((vote, i) =>
+              i === voteIndex ? { ...vote, [field]: value } : vote
+            ),
+          }
           : term
       );
+
       const originalTerm = originalTermData[termIndex] || {};
       const originalVote = originalTerm.votesScore?.[voteIndex] || {};
       const isActualChange = compareValues(value, originalVote[field]);
@@ -328,12 +327,12 @@ export default function Addrepresentative(props) {
       prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: [
-                ...term.activitiesScore,
-                { activityId: "", score: "" },
-              ],
-            }
+            ...term,
+            activitiesScore: [
+              ...term.activitiesScore,
+              { activityId: "", score: "" },
+            ],
+          }
           : term
       )
     );
@@ -344,11 +343,11 @@ export default function Addrepresentative(props) {
       const updatedTerms = prev.map((term, index) =>
         index === termIndex
           ? {
-              ...term,
-              activitiesScore: term.activitiesScore.filter(
-                (_, i) => i !== activityIndex
-              ),
-            }
+            ...term,
+            activitiesScore: term.activitiesScore.filter(
+              (_, i) => i !== activityIndex
+            ),
+          }
           : term
       );
 
@@ -366,9 +365,8 @@ export default function Addrepresentative(props) {
   };
 
   const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    const activityChangeId = `term${termIndex}_TrackedActivity_${
-      activityIndex + 1
-    }`;
+    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
+      }`;
 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, idx) => {
@@ -380,6 +378,7 @@ export default function Addrepresentative(props) {
 
         return { ...term, activitiesScore: newActivities };
       });
+
       const originalTerm = originalTermData[termIndex] || {};
       const originalActivity =
         originalTerm.activitiesScore?.[activityIndex] || {};
@@ -414,22 +413,33 @@ export default function Addrepresentative(props) {
         isNew: true,
       },
     ]);
+    
   };
 
-  const handleRemoveTerm = (termIndex) => {
-    setHouseTermData((prev) => {
-      const removed = prev[termIndex];
+const handleRemoveTerm = (termIndex) => {
+  setHouseTermData((prev) => {
+    const removed = prev[termIndex];
+    const removalId = `Term_${termIndex + 1} Removed`;
+        if (!removed.isNew) {
       if (removed && removed._id) {
         setDeletedTermIds((ids) => [...ids, removed._id]);
+        if (!localChanges.includes(removalId)) {
+          setLocalChanges((prev) => [...prev, removalId]);
+        }
+      } else {
+        if (!localChanges.includes(removalId)) {
+          setLocalChanges((prev) => [...prev, removalId]);
+        }
       }
-
-      setLocalChanges((prevChanges) =>
-        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
-      );
-
-      return prev.filter((_, index) => index !== termIndex);
-    });
-  };
+    }
+    
+    setLocalChanges((prevChanges) =>
+      prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+    );
+    
+    return prev.filter((_, index) => index !== termIndex);
+  });
+};
 
   const compareValues = (newVal, oldVal) => {
     if (newVal == null || oldVal == null) return newVal !== oldVal;
@@ -439,6 +449,7 @@ export default function Addrepresentative(props) {
 
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
+
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => {
           if (
@@ -447,9 +458,11 @@ export default function Addrepresentative(props) {
             term.termId.name
           ) {
             return t.name === term.termId.name;
-          } else if (typeof term.termId === "string") {
+          }
+          else if (typeof term.termId === "string") {
             return t.name === term.termId;
-          } else if (
+          }
+          else if (
             term.termId &&
             mongoose.Types.ObjectId.isValid(term.termId)
           ) {
@@ -460,26 +473,27 @@ export default function Addrepresentative(props) {
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
             ? term.votesScore.map((vote) => {
-                let scoreValue = "";
-                const dbScore = vote.score?.toLowerCase();
-                if (dbScore?.includes("yea")) {
-                  scoreValue = "yea";
-                } else if (dbScore?.includes("nay")) {
-                  scoreValue = "nay";
-                } else if (dbScore?.includes("other")) {
-                  scoreValue = "other";
-                } else {
-                  scoreValue = vote.score || "";
-                }
+              let scoreValue = "";
+              const dbScore = vote.score?.toLowerCase();
+              if (dbScore?.includes("yea")) {
+                scoreValue = "yea";
+              } else if (dbScore?.includes("nay")) {
+                scoreValue = "nay";
+              } else if (dbScore?.includes("other")) {
+                scoreValue = "other";
+              } else {
+                scoreValue = vote.score || "";
+              }
 
-                return {
-                  voteId: vote.voteId?._id || vote.voteId || "",
-                  score: scoreValue,
-                  title: vote.voteId?.title || vote.title || "",
-                  _id: vote._id || undefined,
-                };
-              })
+              return {
+                voteId: vote.voteId?._id || vote.voteId || "",
+                score: scoreValue,
+                title: vote.voteId?.title || vote.title || "",
+                _id: vote._id || undefined,
+              };
+            })
             : [{ voteId: "", score: "" }];
+
 
         if (
           votesScore.length === 0 ||
@@ -502,12 +516,12 @@ export default function Addrepresentative(props) {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                  activityId:
-                    activity.activityId?._id || activity.activityId || null,
-                  score: activity.score || "",
-                  title: activity.activityId?.title || activity.title || "",
-                  _id: activity._id || undefined,
-                }))
+                activityId:
+                  activity.activityId?._id || activity.activityId || null,
+                score: activity.score || "",
+                title: activity.activityId?.title || activity.title || "",
+                _id: activity._id || undefined,
+              }))
               : [{ activityId: "", score: "" }],
         };
       });
@@ -547,6 +561,7 @@ export default function Addrepresentative(props) {
     }
   }, [formData, originalFormData]);
 
+
   useEffect(() => {
     if (originalFormData && formData && originalTermData && houseTermData) {
       const changes = [];
@@ -557,6 +572,7 @@ export default function Addrepresentative(props) {
           changes.push(key);
         }
       });
+
 
       houseTermData.forEach((term, termIndex) => {
         if (term.isNew) {
@@ -690,6 +706,8 @@ export default function Addrepresentative(props) {
     }
   }, [house, terms, isDataFetching]);
 
+
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -776,13 +794,11 @@ export default function Addrepresentative(props) {
         deletedTermIds.length > 0 ||
         (formData?.fieldEditors &&
           Object.keys(formData.fieldEditors).length > 0);
-      d;
       if (userRole === "editor" && !hasLocalChanges) {
         setLoading(false);
         handleSnackbarOpen("No changes detected. Nothing to update.", "info");
         return;
       }
-
       const decodedToken = jwtDecode(token);
       const currentEditor = {
         editorId: decodedToken.userId,
@@ -796,7 +812,6 @@ export default function Addrepresentative(props) {
         );
         setDeletedTermIds([]);
       }
-
       const existingEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
         : [];
@@ -820,8 +835,8 @@ export default function Addrepresentative(props) {
         }
         existingFieldsMap.set(fieldKey, { ...field });
       });
+
       const processedChanges = [];
-      ed;
       const hasVoteChanged = (termIndex, voteIndex, vote) => {
         const originalTerm = originalTermData[termIndex] || {};
         const originalVote = originalTerm.votesScore?.[voteIndex] || {};
@@ -852,9 +867,8 @@ export default function Addrepresentative(props) {
                 const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Scored Vote ${
-                    voteIndex + 1
-                  }`,
+                  displayName: `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1
+                    }`,
                   field: ["votesScore"],
                   name: voteItem.title,
                   termIndex,
@@ -864,6 +878,7 @@ export default function Addrepresentative(props) {
             }
           }
         });
+
         term.activitiesScore.forEach((activity, activityIndex) => {
           if (
             activity.activityId &&
@@ -879,9 +894,8 @@ export default function Addrepresentative(props) {
                 )}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Tracked Activity ${
-                    activityIndex + 1
-                  }`,
+                  displayName: `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1
+                    }`,
                   field: ["activitiesScore"],
                   name: activityItem.title,
                   termIndex,
@@ -906,6 +920,7 @@ export default function Addrepresentative(props) {
           });
         }
       });
+
       const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       const hasNonDefaultValue = (field, value) => {
         if (value === null || value === undefined) return false;
@@ -913,6 +928,7 @@ export default function Addrepresentative(props) {
         if (field === "currentTerm" && value === false) return false;
         return true;
       };
+
       houseTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
         const termFields = ["summary", "rating", "currentTerm", "termId"];
@@ -921,6 +937,7 @@ export default function Addrepresentative(props) {
           const newValue = term[field];
           const oldValue = originalTerm[field];
 
+
           if (
             !isEqual(newValue, oldValue) &&
             hasNonDefaultValue(field, newValue)
@@ -928,9 +945,8 @@ export default function Addrepresentative(props) {
             const fieldName = `term${termIndex}_${field}`;
             processedChanges.push({
               uniqueId: fieldName,
-              displayName: `Term ${termIndex + 1}: ${
-                fieldLabels[field] || field
-              }`,
+              displayName: `Term ${termIndex + 1}: ${fieldLabels[field] || field
+                }`,
               field: [fieldName],
               name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
             });
@@ -958,6 +974,7 @@ export default function Addrepresentative(props) {
       const allChanges = Array.from(existingFieldsMap.values());
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
       const changedFieldsInThisSession = new Set();
+
       localChanges.forEach((change) => {
         let editorKey;
 
@@ -1000,6 +1017,7 @@ export default function Addrepresentative(props) {
         changedFieldsInThisSession.add(editorKey);
       });
 
+
       processedChanges.forEach((change) => {
         if (!changedFieldsInThisSession.has(change.uniqueId)) {
           updatedFieldEditors[change.uniqueId] =
@@ -1007,10 +1025,11 @@ export default function Addrepresentative(props) {
         }
       });
 
+
       const representativeUpdate = {
         ...formData,
         editedFields: allChanges,
-        fieldEditors: updatedFieldEditors,
+        fieldEditors: updatedFieldEditors, 
         publishStatus: userRole === "admin" ? "published" : "under review",
       };
 
@@ -1056,8 +1075,8 @@ export default function Addrepresentative(props) {
             typeof f === "string"
               ? f
               : Array.isArray(f.field)
-              ? f.field[0]
-              : f.field;
+                ? f.field[0]
+                : f.field;
           return fieldName.startsWith(`term${index}_`);
         });
         const termUpdate = {
@@ -1071,8 +1090,8 @@ export default function Addrepresentative(props) {
         };
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
-            ).unwrap()
+            updateHouseData({ id: term._id, data: termUpdate })
+          ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
 
@@ -1084,13 +1103,14 @@ export default function Addrepresentative(props) {
       setOriginalFormData(JSON.parse(JSON.stringify(formData)));
       setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
       setLocalChanges([]);
+       setDeletedTermIds([]);
 
       userRole === "admin"
         ? handleSnackbarOpen("Changes published successfully!", "success")
         : handleSnackbarOpen(
-            'Status changed to "Under Review" for admin to moderate.',
-            "info"
-          );
+          'Status changed to "Under Review" for admin to moderate.',
+          "info"
+        );
     } catch (error) {
       console.error("Save failed:", error);
       handleSnackbarOpen(`Failed to save: ${error.message}`, "error");
@@ -1105,6 +1125,7 @@ export default function Addrepresentative(props) {
 
     const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return votes || [];
+  
 
     return (votes || []).filter(
       (vote) =>
@@ -1112,7 +1133,6 @@ export default function Addrepresentative(props) {
         selectedTerm.congresses.includes(Number(vote.congress))
     );
   };
-
   const getFilteredActivities = (termIndex) => {
     const term = houseTermData[termIndex];
     if (!term || !term.termId) return houseActivities || [];
@@ -1144,9 +1164,11 @@ export default function Addrepresentative(props) {
 
     setFormData((prev) => {
       const newData = { ...prev, status };
+
       const isActualChange = originalFormData
         ? status !== originalFormData.status
         : true;
+
       setLocalChanges((prevChanges) => {
         if (isActualChange && !prevChanges.includes(fieldName)) {
           return [...prevChanges, fieldName];
@@ -1257,11 +1279,7 @@ export default function Addrepresentative(props) {
 
   return (
     <AppTheme key={componentKey}>
-      {(loading || isDataFetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || isDataFetching} />
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -1476,7 +1494,7 @@ export default function Addrepresentative(props) {
                             return prev;
                           });
                         }}
-                        onBlur={() => {}}
+                        onBlur={() => { }}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,
@@ -1511,7 +1529,7 @@ export default function Addrepresentative(props) {
                     </Grid>
 
                     {term.votesScore.map((vote, voteIndex) =>
-                      vote.voteId != null ? (
+                      vote.voteId != null ? ( 
                         <Grid
                           rowSpacing={2}
                           sx={{ width: "100%" }}
@@ -1520,6 +1538,7 @@ export default function Addrepresentative(props) {
                           <Grid
                             size={12}
                             display="flex"
+                            flexDirection={isMobile ? "column" : "row"}
                             flexDirection={isMobile ? "column" : "row"}
                             gap={isMobile ? 1 : 0}
                             alignItems={isMobile ? "flex-start" : "center"}
@@ -1592,6 +1611,7 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
+
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1707,6 +1727,7 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
+
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1722,7 +1743,6 @@ export default function Addrepresentative(props) {
                         </Grid>
                       ) : null
                     )}
-
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
                       <Button
@@ -1739,7 +1759,6 @@ export default function Addrepresentative(props) {
                 </Box>
               </Paper>
             ))}
-
             <Button
               variant="outlined"
               startIcon={<AddIcon />}

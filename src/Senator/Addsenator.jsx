@@ -36,7 +36,6 @@ import BasicInfo from "../components/BasicInfo";
 import SenatorTermSection from "../components/senatorService/SenatorTermSection";
 import StatusDisplay from "../components/StatusDisplay";
 import SnackbarComponent from "../components/SnackbarComponent";
-import LoadingOverlay from "../components/LoadingOverlay";
 import ActionButtons from "../components/ActionButtons";
 
 // Redux Slices
@@ -2334,7 +2333,15 @@ useEffect(() => {
             {senatorTermData.map((term, termIndex) => (
               <Paper
                 key={termIndex}
-                className="termData-paper"
+                sx={{
+                  width: "100%",
+                  marginBottom: "50px",
+                  position: "relative",
+                  bgcolor: "#fff",
+                  borderRadius: 0.8,
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
               >
                 <SenatorTermSection
                   term={term}

@@ -2,8 +2,8 @@ import * as React from "react";
 import Grid from "@mui/material/Grid2";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Copyright from "./internals/components/Copyright";  // Adjust this path based on your project structure
-import CustomizedDataGrid from "./Datagridbills";  // Changed to match the actual file name
+import Copyright from "./internals/components/Copyright"; 
+import CustomizedDataGrid from "./Datagridbills";  
 
 export default function MainGrid() {
 	return (

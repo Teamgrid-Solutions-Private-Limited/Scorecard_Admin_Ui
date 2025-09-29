@@ -28,6 +28,7 @@ import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function SearchBill(params) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -167,11 +168,7 @@ export default function SearchBill(params) {
 
   return (
     <AppTheme>
-      {loading && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading} />
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

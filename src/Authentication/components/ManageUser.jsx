@@ -42,6 +42,7 @@ import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom"; 
 import MobileHeader from "../../components/MobileHeader";
 import Footer from "../../components/Footer";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -192,19 +193,18 @@ export default function ManageUser(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      <Box sx={{ display: "flex",bgcolor:'#f6f6f6ff', }}>
+      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff" }}>
         <SideMenu />
-        <Box sx={{ flexGrow: 1, width: "80%",  }}>
+        <Box sx={{ flexGrow: 1, width: "80%" }}>
           <FixedHeader />
-          <MobileHeader/>
-          <Box sx={{ maxWidth: "100%", mt: 2,mx:3, }}>
+          <MobileHeader />
+          <Box sx={{ maxWidth: "100%", mt: 2, mx: 3 }}>
             <Stack
               direction="row"
               justifyContent="flex-end"
               alignItems="center"
               mb={2}
             >
-             
               <Button
                 startIcon={<PersonAddAltRoundedIcon />}
                 onClick={handleAddUserOpen}
@@ -228,11 +228,7 @@ export default function ManageUser(props) {
               </Alert>
             ) : (
               <>
-                {loading && (
-                  <Box className="circularLoader" >
-                    <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-                  </Box>
-                )}
+                <LoadingOverlay loading={loading} />
                 {error && <Alert severity="error">{error}</Alert>}
                 <MainGrid
                   type="user"
@@ -259,7 +255,7 @@ export default function ManageUser(props) {
               >
                 Edit User
               </DialogTitle>
-              <DialogContent sx={{mt:2}}>
+              <DialogContent sx={{ mt: 2 }}>
                 <FormLabel
                   sx={{
                     color: "#656D9A",
@@ -278,7 +274,7 @@ export default function ManageUser(props) {
                   fullWidth
                   error={!!editErrors.fullName}
                   helperText={editErrors.fullName}
-                  sx={{mb:2}}
+                  sx={{ mb: 2 }}
                 />
                 <FormLabel
                   sx={{
@@ -298,7 +294,7 @@ export default function ManageUser(props) {
                   fullWidth
                   error={!!editErrors.email}
                   helperText={editErrors.email}
-                  sx={{mb:2}}
+                  sx={{ mb: 2 }}
                 />
                 <FormLabel
                   sx={{
@@ -354,17 +350,20 @@ export default function ManageUser(props) {
               </DialogActions>
             </Dialog>
 
-             {/* Delete Confirmation Dialog */}
+            {/* Delete Confirmation Dialog */}
             <Dialog
               open={openDeleteDialog}
               onClose={() => setOpenDeleteDialog(false)}
               PaperProps={{
-                sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
+                sx: {
+                  borderRadius: 3,
+                  padding: 2,
+                  width: "90%",
+                  maxWidth: 420,
+                },
               }}
             >
-              <DialogTitle className="dialogBox">
-                Confirm Deletion
-              </DialogTitle>
+              <DialogTitle className="dialogBox">Confirm Deletion</DialogTitle>
               <DialogContent>
                 <DialogContentText className="dialogTitle">
                   Are you sure you want to delete{" "}
@@ -375,7 +374,11 @@ export default function ManageUser(props) {
                 <Stack
                   direction="row"
                   spacing={2}
-                  sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+                  sx={{
+                    width: "100%",
+                    justifyContent: "center",
+                    paddingBottom: 2,
+                  }}
                 >
                   <Button
                     onClick={() => setOpenDeleteDialog(false)}
@@ -404,7 +407,7 @@ export default function ManageUser(props) {
                 setSnackbarMessage("User added successfully");
                 setSnackbarSeverity("success");
                 setOpenSnackbar(true);
-                dispatch(getAllUsers()); 
+                dispatch(getAllUsers());
               }}
               onError={(error) => {
                 setSnackbarMessage(error);
@@ -431,44 +434,42 @@ export default function ManageUser(props) {
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 }
-                 sx={{
-      border: "none",
-      boxShadow:"none",
-      width: "100%",
-      bgcolor:
-        snackbarMessage === `User deleted successfully`
-          ? "#fde8e4"
-          : undefined,
+                sx={{
+                  border: "none",
+                  boxShadow: "none",
+                  width: "100%",
+                  bgcolor:
+                    snackbarMessage === `User deleted successfully`
+                      ? "#fde8e4"
+                      : undefined,
 
+                  "& .MuiAlert-icon": {
+                    color:
+                      snackbarMessage === `User deleted successfully`
+                        ? "#cc563d"
+                        : undefined,
+                  },
 
-      "& .MuiAlert-icon": {
-        color:
-          snackbarMessage === `User deleted successfully`
-            ? "#cc563d"
-            : undefined,
-      },
-
-
-      "& .MuiAlert-message": {
-        color:
-          snackbarMessage === `User deleted successfully`
-            ? "#cc563d"
-            : undefined,
-      },
-      "& .MuiAlert-action": {
-            display: "flex",
-            alignItems: "center",
-            paddingTop: 0,
-            paddingBottom: 0,
-          },
-    }}
+                  "& .MuiAlert-message": {
+                    color:
+                      snackbarMessage === `User deleted successfully`
+                        ? "#cc563d"
+                        : undefined,
+                  },
+                  "& .MuiAlert-action": {
+                    display: "flex",
+                    alignItems: "center",
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                  },
+                }}
               >
                 {snackbarMessage}
               </Alert>
             </Snackbar>
             <Box sx={{ mb: "40px" }}>
-            <Footer />
-          </Box>
+              <Footer />
+            </Box>
           </Box>
         </Box>
       </Box>

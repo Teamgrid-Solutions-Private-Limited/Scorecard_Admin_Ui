@@ -253,10 +253,7 @@ const senatorSlice = createSlice({
       })
       .addCase(updateSenator.fulfilled, (state, action) => {
         state.loading = false;
-        // const index = state.senators.findIndex((s) => s.id === action.payload.id);
-        // if (index !== -1) {
-        //   state.senators[index] = action.payload;
-        // }
+        
       })
       .addCase(updateSenator.rejected, (state, action) => {
         state.loading = false;
