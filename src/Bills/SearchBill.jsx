@@ -238,7 +238,7 @@ export default function SearchBill(params) {
                       display: "flex",
                       alignItems: "center",
                       flexDirection: { xs: "column", md: "row" },
-                      gap: { xs: 2, md: 3 },
+                      gap: { xs: 2, md: 1 },
                       width: "100%",
                       mt: 5,
                     }}
@@ -284,6 +284,22 @@ export default function SearchBill(params) {
                       }}
                     >
                       Search
+                    </Button>
+                    <Button
+                      onClick={() => navigate("/add-bill")}
+                      sx={{
+                        width: { xs: "100%", md: "auto" },
+                        minWidth: "130px",
+                        backgroundColor: "#173A5E !important",
+                        color: "white !important",
+                        padding: "0.5rem 1rem",
+                        "&:hover": {
+                          backgroundColor: "#1E4C80 !important",
+                        },
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      Add Manually
                     </Button>
                   </Grid>
                 </Grid>
