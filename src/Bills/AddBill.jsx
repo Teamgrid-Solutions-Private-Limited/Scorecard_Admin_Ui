@@ -688,19 +688,22 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button
+              {
+                id && ( <Button
                 variant="outlined"
                 onClick={handleDiscard}
                 className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
+              </Button>)}
+              
+             
               <Button
                 variant="outlined"
                 onClick={handleSubmit}
                 className="publishBtn"
               >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
+                {id ? userRole === "admin" ? "Publish" : "Save Changes" : "Create"}
               </Button>
             </Stack>
             {userRole &&
@@ -1376,7 +1379,7 @@ export default function AddBill(props) {
                         onChange={handleChange}
                       >
                         <FormControlLabel
-                          value="Yes"
+                          value="yes"
                           control={
                             <Radio
                               icon={
@@ -1390,7 +1393,7 @@ export default function AddBill(props) {
                           label="Yes"
                         />
                         <FormControlLabel
-                          value="No"
+                          value="no"
                           control={
                             <Radio
                               icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}
