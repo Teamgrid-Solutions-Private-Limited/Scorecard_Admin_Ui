@@ -48,7 +48,7 @@ export default function App() {
         <Route path="/edit-activity/:id" element={<PrivateRoute element={<AddActivity />} />} />
         <Route path="/add-user" element={<PrivateRoute element={<AddUser />} />} />
         <Route path="/manage-user" element={<PrivateRoute element={<ManageUser />} />} />
-        <Route path="/activate-account" element={<PrivateRoute element={<ActivateAccount />} />} />
+        <Route path="/activate-account" element={<ActivateAccount />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
