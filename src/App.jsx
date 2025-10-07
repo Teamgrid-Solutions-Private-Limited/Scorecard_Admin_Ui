@@ -20,6 +20,7 @@ import AddActivity from '../src/Activity/AddActivity';
 import AddUser from "../src/Authentication/components/AddUser";
 import ManageUser from "../src/Authentication/components/ManageUser";
 import LoginPage from './Authentication/components/LoginPage';
+import ActivateAccount from './Authentication/components/ActivateAccount';
 
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/edit-activity/:id" element={<PrivateRoute element={<AddActivity />} />} />
         <Route path="/add-user" element={<PrivateRoute element={<AddUser />} />} />
         <Route path="/manage-user" element={<PrivateRoute element={<ManageUser />} />} />
+        <Route path="/activate-account" element={<PrivateRoute element={<ActivateAccount />} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
