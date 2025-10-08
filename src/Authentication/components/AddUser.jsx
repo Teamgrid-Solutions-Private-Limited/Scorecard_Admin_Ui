@@ -58,13 +58,12 @@ function AddUser({ open = false, onClose }) {
     fullName: "",
     nickName: "",
     email: "",
-    password: "",
     role: "admin",
   });
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [showPassword, setShowPassword] = useState(false);
+ 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
@@ -74,11 +73,8 @@ function AddUser({ open = false, onClose }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
-
+ 
+  
   // Validation function
   const validate = () => {
     const newErrors = {};
@@ -90,9 +86,7 @@ function AddUser({ open = false, onClose }) {
     } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(form.email)) {
       newErrors.email = "Invalid email address";
     }
-    if (!form.password || form.password.length < 6) {
-      newErrors.password = "Password is required (min 6 characters)";
-    }
+    
     if (!form.role || !["admin", "editor", "contributor"].includes(form.role)) {
       newErrors.role = "Role is required";
     }
@@ -301,53 +295,8 @@ function AddUser({ open = false, onClose }) {
             />
           </FormControl>
           <FormControl>
-            <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Password</FormLabel>
-            <TextField
-              name="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              fullWidth
-              variant="outlined"
-              error={!!errors.password}
-              helperText={errors.password}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "6px",
-                  height: "37px",
-                  overflow: "hidden",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#bdbdbd",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "gray !important",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#CC9A3A !important",
-                  },
-                },
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      edge="end"
-                      size="small"
-                      sx={{border:'none'}}
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
+           
+          
           </FormControl>
           <FormControl>
             <FormLabel sx={{ color: '#656D9A', pb: 0, fontSize: 13, fontWeight: 'bold' }}>Role</FormLabel>
