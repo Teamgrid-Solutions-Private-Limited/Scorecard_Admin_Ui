@@ -721,6 +721,87 @@ h6 {
   border: 1px dashed rgba(0, 0, 0, 0.12);
 }
 
+/* Add User Page css */
+
+/* Snackbar */
+.snackbar-alert {
+  width: 100%;
+  color: #000;
+}
+
+.snackbar-success {
+  background-color: #90ee90 !important;
+}
+
+/* Dialog */
+.dialog-title {
+  padding: 0 !important;
+  position: relative;
+}
+
+.dialog-header {
+  background-color: #173a5e !important;
+  position: relative;
+}
+
+.dialog-title-text {
+  font-weight: 400 !important;
+  color: white !important;
+  font-size: 18px !important;
+}
+
+.dialog-subtitle {
+  color: white !important;
+  font-weight: 300 !important;
+  margin-bottom: 8px !important;
+  font-size: 15px !important;
+}
+
+.dialog-close-btn {
+  position: absolute !important;
+  top: 8px;
+  right: 8px;
+  color: white !important;
+}
+
+.dialog-close-btn:hover {
+  background-color: #173a5e !important;
+}
+
+/* Form */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 24px 24px 24px;
+  background-color: #f6f6f6ff;
+}
+
+.form-label {
+  color: #656d9a !important;
+  padding-bottom: 0;
+  font-size: 13px !important;
+  font-weight: bold !important;
+}
+
+.form-input .MuiOutlinedInput-root {
+  border-radius: 6px !important;
+  height: 37px !important;
+  overflow: hidden;
+}
+
+.form-input .MuiOutlinedInput-notchedOutline {
+  border-color: #bdbdbd !important;
+}
+
+.form-input:hover .MuiOutlinedInput-notchedOutline {
+  border-color: gray !important;
+}
+
+.form-input.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #cc9a3a !important;
+}
+
 @media (max-width: 768px) {
   
   .textField {
