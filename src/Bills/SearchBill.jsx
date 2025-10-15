@@ -285,22 +285,6 @@ export default function SearchBill(params) {
                     >
                       Search
                     </Button>
-                    <Button
-                      onClick={() => navigate("/add-bill")}
-                      sx={{
-                        width: { xs: "100%", md: "auto" },
-                        minWidth: "130px",
-                        backgroundColor: "#173A5E !important",
-                        color: "white !important",
-                        padding: "0.5rem 1rem",
-                        "&:hover": {
-                          backgroundColor: "#1E4C80 !important",
-                        },
-                        transition: "all 0.3s ease",
-                      }}
-                    >
-                      Add Manually
-                    </Button>
                   </Grid>
                 </Grid>
               </Box>
@@ -389,8 +373,26 @@ export default function SearchBill(params) {
                   searchResults.length === 0 && (
                     <Box sx={{ width: "100%", textAlign: "center", mt: 4 }}>
                       <Typography variant="body1" color="text.secondary">
-                        No bills found for your search.
+                        No bills found in quroum for your search.
                       </Typography>
+                      <Button
+                        onClick={() => navigate("/add-bill")}
+                        sx={{
+                          width: { xs: "100%", md: "auto" },
+                          minWidth: "130px",
+                          backgroundColor: "#173A5E !important",
+                          color: "white !important",
+                          marginTop: 2,
+                          marginBottom: 2,
+                          padding: "0.5rem 1rem",
+                          "&:hover": {
+                            backgroundColor: "#1E4C80 !important",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        Add Bill Manually
+                      </Button>
                     </Box>
                   )}
               </Box>
