@@ -1,0 +1,262 @@
+/* --- General Layout --- */
+.activate-account-container {
+    height: 100vh;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* --- Card Wrapper --- */
+.activate-account-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 440px;
+    border: 1px solid #e9ecef;
+    box-sizing: border-box;
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+/* --- Header --- */
+.activate-header {
+    background: #173a5e;
+    color: white;
+    padding: 24px 30px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 32px;
+}
+
+.activate-header-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.activate-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 8px;
+}
+
+.activate-user-info {
+    opacity: 0.9;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* --- Messages --- */
+.activate-error,
+.activate-success {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.activate-error {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #d93025;
+}
+
+.activate-success {
+    background: #e8f5e8;
+    border: 1px solid #c8e6c9;
+    color: #2e7d32;
+}
+
+/* --- Form --- */
+.activate-form label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.activate-form input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.activate-form input:focus {
+    border-color: #6a11cb;
+    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+    outline: none;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 65%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 36px;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: #173a5e;
+}
+
+/* --- Button --- */
+.activate-btn {
+    width: 100%;
+    background: #cc9a3a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 16px;
+}
+
+.activate-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* --- Terms Text --- */
+.activate-terms {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* --- Footer --- */
+.activate-footer {
+    border-top: 1px solid #e9ecef;
+    padding-top: 24px;
+    margin-top: 24px;
+    text-align: center;
+}
+
+.activate-footer p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.activate-footer button {
+    background: none;
+    border: none;
+    color: #6a11cb;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.activate-footer button:hover {
+    color: #2575fc;
+}
+
+/* --- Spinner --- */
+.spinner-wrapper {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #6a11cb;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* --- Responsive (Mobile) --- */
+@media (max-width: 600px) {
+    .activate-account-container {
+        height: auto;
+        min-height: 100vh;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .activate-account-card {
+        padding: 24px;
+        border-radius: 10px;
+        max-height: none;
+        box-shadow: none;
+        border: 1px solid #eee;
+    }
+
+    .activate-header {
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .activate-header h1 {
+        font-size: 20px;
+    }
+
+    .activate-user-info {
+        font-size: 14px;
+    }
+
+    .activate-form input {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+
+    .activate-btn {
+        font-size: 15px;
+        padding: 12px 14px;
+    }
+
+    .activate-footer p {
+        font-size: 13px;
+    }
+
+    .activate-terms {
+        font-size: 11px;
+    }
+}
