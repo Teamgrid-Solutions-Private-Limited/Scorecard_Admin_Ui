@@ -14,10 +14,13 @@ import {
   DialogTitle,
   CircularProgress,
   IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useDispatch } from "react-redux";
 import { addUser, getAllUsers } from "../../redux/reducer/loginSlice";
 
@@ -49,8 +52,12 @@ function AddUser({ open = false, onClose }) {
     fullName: "",
     nickName: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     role: "admin",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -73,6 +80,16 @@ function AddUser({ open = false, onClose }) {
     } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(form.email)) {
       newErrors.email = "Invalid email address";
     }
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    } else if (form.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
     if (!form.role || !["admin", "editor", "contributor"].includes(form.role)) {
       newErrors.role = "Role is required";
     }
@@ -87,13 +104,13 @@ function AddUser({ open = false, onClose }) {
 
     try {
       await dispatch(addUser(form)).unwrap();
-      setSnackbarMessage("Invite sent successfully!");
+      setSnackbarMessage("User created successfully!");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
       dispatch(getAllUsers());
       if (onClose) onClose();
     } catch (error) {
-      let message = "Failed to send invite. Please try again.";
+      let message = "Failed to create user. Please try again.";
       if (typeof error === "string") {
         message = error;
       } else if (error && error.message) {
@@ -213,7 +230,75 @@ function AddUser({ open = false, onClose }) {
               className="form-input"
             />
           </FormControl>
+          <FormControl>
+            <FormLabel className="form-label">Password</FormLabel>
+            <TextField
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              fullWidth
+              variant="outlined"
+              error={!!errors.password}
+              helperText={errors.password}
+              className="form-input"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </FormControl>
 
+          <FormControl>
+            <FormLabel className="form-label">Confirm Password</FormLabel>
+            <TextField
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              required
+              fullWidth
+              variant="outlined"
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword}
+              className="form-input"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle confirm password visibility"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      edge="end"
+                    >
+                      {showConfirmPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </FormControl>
           <FormControl>
             <FormLabel className="form-label">Role</FormLabel>
             <Select
