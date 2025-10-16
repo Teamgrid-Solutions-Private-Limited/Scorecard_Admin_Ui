@@ -132,7 +132,7 @@ export default function SearchBill(params) {
 
       const voteId = response.data.data[0]._id;
       if (voteId) {
-        navigate(`/bills/edit-bill/${voteId}`);
+        navigate(`/edit-bill/${voteId}`);
       } else {
         console.error("voteId (_id) is missing in the API response.");
       }
