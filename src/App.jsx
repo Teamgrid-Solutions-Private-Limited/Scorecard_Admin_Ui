@@ -40,7 +40,7 @@ export default function App() {
         <Route path="edit-representative/:id" element={<PrivateRoute element={<SaveRepresentative />} />} />
         <Route path="bills" element={<PrivateRoute element={<Bill />} />} />
         <Route path="/add-bill" element={<PrivateRoute element={<AddBill />} />} />
-        <Route path="bills/edit-bill/:id" element={<PrivateRoute element={<AddBill />} />} />
+        <Route path="/edit-bill/:id" element={<PrivateRoute element={<AddBill />} />} />
         <Route path="/search-bills" element={<PrivateRoute element={<SearchBill />} />} />
         <Route path="/manage-term" element={<PrivateRoute element={<ManageTerm />} />} />
         <Route path="/activities" element={<PrivateRoute element={<Activity />} />} />
