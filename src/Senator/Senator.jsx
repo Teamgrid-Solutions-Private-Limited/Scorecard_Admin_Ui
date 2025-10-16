@@ -12,7 +12,6 @@ import {
   Stack,
   Typography,
   Button,
-  CircularProgress,
   Snackbar,
   Alert,
   TextField,
@@ -56,13 +55,12 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import { useTheme } from "@mui/material/styles";
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function Senator(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const token = localStorage.getItem("token");
-  // Fetch senators from Redux store
-  // const { senators, loading } = useSelector((state) => state.senator);
   const { senatorData } = useSelector((state) => state.senatorData);
   const {
     senators = [],
@@ -125,7 +123,6 @@ export default function Senator(props) {
 
  useEffect(() => {
   if (senatorData && senators && terms) {
-    // Group senator data by senateId to handle multiple terms
     const senatorDataBySenateId = {};
     senatorData.forEach((data) => {
       if (!senatorDataBySenateId[data.senateId]) {
@@ -134,26 +131,23 @@ export default function Senator(props) {
       senatorDataBySenateId[data.senateId].push(data);
     });
 
-    // Merge senators with their data
     const merged = senators.map((senator) => {
       const dataEntries = senatorDataBySenateId[senator._id] || [];
       
-      // Check if any term has past votes data
+
       const hasPastVotesData = dataEntries.some(
         (data) => data.pastVotesScore && data.pastVotesScore.length > 0
       );
       
-      // Get all ratings from all terms
       const allRatings = dataEntries
         .map(data => data.rating)
         .filter(rating => rating && rating !== "N/A");
       
-      // Get the most recent rating for display
       const displayRating = allRatings.length > 0 
         ? allRatings[allRatings.length - 1] 
         : "N/A";
       
-      // Get all terms for this senator
+
       const senatorTerms = dataEntries.map(data => {
         const termObj = terms.find((t) => t._id === data.termId);
         return {
@@ -166,18 +160,16 @@ export default function Senator(props) {
         };
       });
       
-      // Check if any term is current
+
       const hasCurrentTerm = dataEntries.some(data => data.currentTerm === true);
       
       return {
         ...senator,
         rating: displayRating,
-        // Store all data for filtering
         allDataEntries: dataEntries,
         allTerms: senatorTerms,
         hasPastVotesData: hasPastVotesData,
         hasCurrentTerm: hasCurrentTerm,
-        // For backward compatibility
         termId: dataEntries.length > 0 ? dataEntries[0].termId : senator.termId,
         votesScore: dataEntries.length > 0 ? dataEntries[0].votesScore : [],
         pastVotesScore: dataEntries.length > 0 ? dataEntries[0].pastVotesScore : [],
@@ -188,7 +180,6 @@ export default function Senator(props) {
   }
 }, [senators, senatorData, terms]);
 
-  // Build list of years from 2015 to current year
   const currentYear = new Date().getFullYear();
   const years = [];
   for (let y = currentYear; y >= 2015; y--) {
@@ -222,8 +213,8 @@ export default function Senator(props) {
     navigate(`/edit-senator/${row._id}`);
   };
   const handleDeleteClick = (row) => {
-    setSelectedSenator(row); // Store senator data
-    setOpenDeleteDialog(true); // Open dialog
+    setSelectedSenator(row); 
+    setOpenDeleteDialog(true); 
   };
   const handleConfirmDelete = async () => {
     setOpenDeleteDialog(false);
@@ -258,10 +249,10 @@ export default function Senator(props) {
 
   const fetchSenatorsFromQuorum = async () => {
     setFetching(true);
-    setProgress(0); // Reset progress
+    setProgress(0); 
     const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 25)); // Increase progress in steps
-    }, 1000); // Change progress every second
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 25)); 
+    }, 1000); 
     try {
       const response = await axios.post(
         `${API_URL}/fetch-quorum/store-data`,
@@ -352,7 +343,7 @@ export default function Senator(props) {
     if (senator.hasCurrentTerm) return false;
   }
   
-  // Year filter - check all terms
+
   if (selectedYears.length > 0) {
     const hasMatchingYear = senator.allTerms.some(term => {
       if (term.termName && term.termName.includes("-")) {
@@ -427,11 +418,7 @@ export default function Senator(props) {
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      {(loading || fetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || fetching} />
       <Box className="container">
         <SideMenu />
 
@@ -1020,7 +1007,7 @@ export default function Senator(props) {
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}
           PaperProps={{
-            sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+            sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
           }}
         >
           <DialogTitle className="dialogBox">

@@ -1,7 +1,5 @@
-import * as React from "react";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -21,10 +19,6 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
-import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
-import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AddIcon from "@mui/icons-material/Add";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 
@@ -39,21 +33,24 @@ const getRole = () => {
     return null;
   }
 };
-
+const clearPaginationStorage = () => {
+  localStorage.removeItem("dataGridPagination_representative");
+  localStorage.removeItem("dataGridPagination_senator");
+};
 const mainListItems = [
-  { text: "Senators", icon: <GavelRoundedIcon sx={{ fontSize: 40 }}/>, link: "/" },
+  { text: "Senators", icon: <GavelRoundedIcon sx={{ fontSize: 40 }} />, link: "/" },
   {
     text: "Representatives",
     icon: <GroupsRoundedIcon sx={{ fontSize: 40 }} />,
     link: "/representative",
   },
-  { text: "Votes We Scored", icon: <DescriptionRoundedIcon sx={{ fontSize: 40 }}/>, link: "/bills" },
+  { text: "Votes We Scored", icon: <DescriptionRoundedIcon sx={{ fontSize: 40 }} />, link: "/bills" },
   {
     text: "Activities We Track",
-    icon: <CalendarTodayRoundedIcon sx={{ fontSize: 40 }}/>,
+    icon: <CalendarTodayRoundedIcon sx={{ fontSize: 40 }} />,
     link: "/activities",
   },
-  { text: "Manage Terms", icon: <AddIcon sx={{ fontSize: 40 }}/>, link: "/manage-term" },
+  { text: "Manage Terms", icon: <AddIcon sx={{ fontSize: 40 }} />, link: "/manage-term" },
 ];
 
 export default function MenuContent() {
@@ -62,17 +59,17 @@ export default function MenuContent() {
   const menuItems =
     role === "admin"
       ? [
-          ...mainListItems,
-          {
-            text: "Manage Users",
-            icon: <PersonAddAltRoundedIcon />,
-            link: "/manage-user",
-          },
-        ]
+        ...mainListItems,
+        {
+          text: "Manage Users",
+          icon: <PersonAddAltRoundedIcon />,
+          link: "/manage-user",
+        },
+      ]
       : mainListItems;
 
   const handleLogoutClick = (event) => {
-    event.stopPropagation(); // Prevent event bubbling
+    event.stopPropagation();
     setOpenLogoutDialog(true);
   };
 
@@ -95,22 +92,21 @@ export default function MenuContent() {
             disablePadding
             sx={{
               display: "block",
-              mt: index === 0 ? 1 : 0, // Reduced top margin for the first item
-
-              mb: index < menuItems.length - 1 ? 1 : 0, // Reduced bottom margin for all items except the last
+              mt: index === 0 ? 1 : 0, 
+              mb: index < menuItems.length - 1 ? 1 : 0, 
             }}
           >
             <ListItemButton
               component={NavLink}
               to={item.link}
+               onClick={clearPaginationStorage} 
               sx={{
-              
-     "& .MuiListItemText-primary": {
-      // fontSize: "1px",      
-     fontWeight: "300 !important",
-     lineHeight: "2.2 !important",
-    },
-   
+
+                "& .MuiListItemText-primary": {
+                  fontWeight: "300 !important",
+                  lineHeight: "2.2 !important",
+                },
+
                 "&:hover": {
                   color: "#CC9A3A !important",
                   "& .MuiListItemIcon-root": {
@@ -119,7 +115,7 @@ export default function MenuContent() {
                   "& .MuiSvgIcon-root": {
                     color: "#CC9A3A !important",
                   },
-                  backgroundColor: "rgba(240, 240, 240, 0.2)", // Even lighter gray background on hover
+                  backgroundColor: "rgba(240, 240, 240, 0.2)", 
                 },
                 "&.active": {
                   color: "#CC9A3A !important",
@@ -129,18 +125,18 @@ export default function MenuContent() {
                   "& .MuiSvgIcon-root": {
                     color: "#CC9A3A !important",
                   },
-                  backgroundColor: "rgba(240, 240, 240, 0.2)", // Even lighter gray background for active
+                  backgroundColor: "rgba(240, 240, 240, 0.2)", 
                 },
               }}
             >
               <ListItemIcon sx={{
-    "& .MuiSvgIcon-root": {
-      fontSize: "23px !important",   
-      width: "23px !important",      
-      height: "23px !important",     
-    },
-  }}>{item.icon}</ListItemIcon>
-              <ListItemText  primary={item.text} />
+                "& .MuiSvgIcon-root": {
+                  fontSize: "23px !important",
+                  width: "23px !important",
+                  height: "23px !important",
+                },
+              }}>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -168,12 +164,12 @@ export default function MenuContent() {
         </ListItem>
       </List>
 
-        <Dialog
-          open={openLogoutDialog}
-          onClose={handleCancelLogout}
-          PaperProps={{
-            sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 400 },
-          }}
+      <Dialog
+        open={openLogoutDialog}
+        onClose={handleCancelLogout}
+        PaperProps={{
+          sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
+        }}
       >
         <DialogTitle
           sx={{
@@ -213,7 +209,7 @@ export default function MenuContent() {
               onClick={handleConfirmLogout}
               variant="contained"
               color="error"
-              sx={{ borderRadius: 2, paddingX: 3,"&:hover":{backgroundColor:"#f22727ff"} }}
+              sx={{ borderRadius: 2, paddingX: 3, "&:hover": { backgroundColor: "#f22727ff" } }}
             >
               Logout
             </Button>

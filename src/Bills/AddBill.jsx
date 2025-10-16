@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useRef } from "react";
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -11,14 +10,6 @@ import {
   discardVoteChanges,
 } from "../redux/reducer/voteSlice";
 import { API_URL } from "../redux/API";
-import {
-  Alert,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -35,33 +26,39 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
-import { InputAdornment, CircularProgress } from "@mui/material";
+import {
+  InputAdornment,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Chip,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
-import { List, ListItem, ListItemText } from "@mui/material";
-import CircleIcon from "@mui/icons-material/Circle";
-import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
 import Footer from "../components/Footer";
-import CheckCircle from "@mui/icons-material/CheckCircle";
+import DialogBox from "../components/DialogBox";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function AddBill(props) {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
-  const { terms } = useSelector((state) => state.term);
+
+  const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -157,7 +154,7 @@ export default function AddBill(props) {
 
   // When selectedVote changes, set editedFields from backend
   useEffect(() => {
-    if (selectedVote) {
+    if (selectedVote && !isDataFetching) {
       preFillForm();
       setEditedFields(
         Array.isArray(selectedVote.editedFields)
@@ -165,7 +162,7 @@ export default function AddBill(props) {
           : []
       );
     }
-  }, [selectedVote]);
+  }, [selectedVote, isDataFetching]);
 
   // When formData changes, update editedFields (track all changes)
   useEffect(() => {
@@ -181,14 +178,30 @@ export default function AddBill(props) {
   }, [formData, originalFormData]);
 
   useEffect(() => {
-    if (id) {
-      dispatch(getVoteById(id));
-    }
-    dispatch(getAllTerms());
-
-    return () => {
-      dispatch(clearVoteState());
+    const fetchData = async () => {
+      setIsDataFetching(true); // optional loading state
+      try {
+        if (id) {
+          // Fetch id-dependent data concurrently
+          await Promise.all([
+            dispatch(getVoteById(id)).unwrap(),
+            dispatch(getAllTerms()).unwrap(),
+          ]);
+        }
+        return () => {
+          dispatch(clearVoteState());
+        };
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setSnackbarMessage("Error loading data. Please try again.");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      } finally {
+        setIsDataFetching(false);
+      }
     };
+
+    fetchData();
   }, [id, dispatch]);
 
   const editorRef = useRef(null);
@@ -386,15 +399,15 @@ export default function AddBill(props) {
           updateVote({ id, updatedData: formDataToSend })
         ).unwrap();
         if (readMoreType === "url") {
-                  setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
-                  setReadMoreType("url"); // force back to URL mode
-                } else if (readMoreType === "file" && selectedFile) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
-                  }));
-                  setReadMoreType("file"); // stay in file mode
-                }
+          setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
+          setReadMoreType("url"); // force back to URL mode
+        } else if (readMoreType === "file" && selectedFile) {
+          setFormData((prev) => ({
+            ...prev,
+            readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
+          }));
+          setReadMoreType("file"); // stay in file mode
+        }
         await dispatch(getVoteById(id)).unwrap();
 
         setSnackbarMessage(
@@ -599,11 +612,8 @@ export default function AddBill(props) {
 
   return (
     <AppTheme>
-      {loading && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || isDataFetching} />
+
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
@@ -656,6 +666,7 @@ export default function AddBill(props) {
               ? `rgba(${theme.vars.palette.background} / 1)`
               : alpha(theme.palette.background.default, 1),
           })}
+          className={`${isDataFetching ? "fetching" : "notFetching"}`}
         >
           <FixedHeader />
           <MobileHeader />
@@ -663,9 +674,9 @@ export default function AddBill(props) {
             spacing={2}
             sx={{
               alignItems: "center",
-              mx: 3,
+              mx: { xs: 2, md: 3 },
               // pb: 5,
-              mt: { xs: 8, md: 2 },
+              mt: 2,
             }}
           >
             <Stack
@@ -677,19 +688,22 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              <Button
+              {
+                id && ( <Button
                 variant="outlined"
                 onClick={handleDiscard}
                 className="discardBtn"
               >
                 {userRole === "admin" ? "Discard" : "Undo"}
-              </Button>
+              </Button>)}
+              
+             
               <Button
                 variant="outlined"
                 onClick={handleSubmit}
                 className="publishBtn"
               >
-                {userRole === "admin" ? "Publish" : "Save Changes"}
+                {id ? userRole === "admin" ? "Publish" : "Save Changes" : "Create"}
               </Button>
             </Stack>
             {userRole &&
@@ -697,7 +711,7 @@ export default function AddBill(props) {
               (currentStatus !== "published" || hasAnyChanges) && (
                 <Box
                   sx={{
-                    width: "97%",
+                    width: { xs: "90%", sm: "97%" },
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
@@ -755,22 +769,6 @@ export default function AddBill(props) {
                         >
                           {statusData.title}
                         </Typography>
-
-                        {/* {userRole === "admin" && (
-                          <Chip
-                            label={`${
-                              (Array.isArray(selectedVote?.editedFields)
-                                ? selectedVote.editedFields.length
-                                : 0) +
-                              (Array.isArray(editedFields)
-                                ? editedFields.length
-                                : 0)
-                            } pending changes`}
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                          />
-                        )} */}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -944,12 +942,6 @@ export default function AddBill(props) {
                                               </Typography>
                                             </Box>
                                           }
-                                          // secondary={
-                                          //   <Typography variant="caption" color="text.secondary">
-                                          //     Edited just now
-                                          //   </Typography>
-                                          // }
-                                          // sx={{ my: 0 }}
                                         />
                                       </ListItem>
                                     ))}
@@ -966,69 +958,12 @@ export default function AddBill(props) {
               )}
 
             <Paper className="customPaper">
-              <Dialog
-                open={openDiscardDialog}
-                onClose={() => setOpenDiscardDialog(false)}
-                PaperProps={{
-                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
-                }}
-              >
-                <DialogTitle
-                  sx={{
-                    fontSize: "1.4rem",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    color: "warning.main",
-                  }}
-                >
-                  {userRole === "admin" ? "Discard" : "Undo"} Changes?
-                </DialogTitle>
-
-                <DialogContent>
-                  <DialogContentText
-                    sx={{
-                      textAlign: "center",
-                      fontSize: "1rem",
-                      color: "text.secondary",
-                    }}
-                  >
-                    Are you sure you want to{" "}
-                    {userRole === "admin" ? "discard" : "undo"} all changes?{" "}
-                    <br />
-                    <strong>This action cannot be undone.</strong>
-                  </DialogContentText>
-                </DialogContent>
-
-                <DialogActions>
-                  <Stack
-                    direction="row"
-                    spacing={2}
-                    sx={{
-                      width: "100%",
-                      justifyContent: "center",
-                      paddingBottom: 2,
-                    }}
-                  >
-                    <Button
-                      onClick={() => setOpenDiscardDialog(false)}
-                      variant="outlined"
-                      color="secondary"
-                      sx={{ borderRadius: 2, paddingX: 3 }}
-                    >
-                      Cancel
-                    </Button>
-
-                    <Button
-                      onClick={handleConfirmDiscard}
-                      variant="contained"
-                      color="warning"
-                      sx={{ borderRadius: 2, paddingX: 3 }}
-                    >
-                      {userRole === "admin" ? "Discard" : "Undo"}
-                    </Button>
-                  </Stack>
-                </DialogActions>
-              </Dialog>
+              <DialogBox
+                userRole={userRole}
+                openDiscardDialog={openDiscardDialog}
+                setOpenDiscardDialog={setOpenDiscardDialog}
+                handleConfirmDiscard={handleConfirmDiscard}
+              />
               <Box sx={{ padding: 0 }}>
                 <Typography className="customTypography">
                   Bill's Information
@@ -1039,12 +974,12 @@ export default function AddBill(props) {
                   columnSpacing={2}
                   alignItems={"center"}
                   py={3}
-                  pr={7}
+                  pr={isMobile ? 3 : 7}
                 >
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Type</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <Select
                         value={formData.type}
@@ -1058,10 +993,10 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Title</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1078,11 +1013,9 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="label">
-                      Short Description
-                    </InputLabel>
+                    <InputLabel className="label">Short Description</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1126,11 +1059,9 @@ export default function AddBill(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="label">
-                      Long Description
-                    </InputLabel>
+                    <InputLabel className="label">Long Description</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
                       tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
                       licenseKey="gpl"
@@ -1171,10 +1102,10 @@ export default function AddBill(props) {
                     />
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Date</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         type="date"
@@ -1191,10 +1122,10 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={isMobile ? 6 : 2}>
+                  <Grid size={isMobile ? 4 : 2}>
                     <InputLabel className="label">Congress</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 6 : 10}>
+                  <Grid size={isMobile ? 8 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         required
@@ -1210,10 +1141,10 @@ export default function AddBill(props) {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={2}>
+                  <Grid size={isMobile ? 3 : 2}>
                     <InputLabel className="label">Term</InputLabel>
                   </Grid>
-                  <Grid size={10}>
+                  <Grid size={isMobile ? 9 : 10}>
                     <FormControl fullWidth>
                       <TextField
                         value={formData.termId || ""}
@@ -1225,30 +1156,15 @@ export default function AddBill(props) {
                         autoComplete="off"
                         variant="outlined"
                         //sx={{ background: "#fff" }}
-                      >
-                        {/* <MenuItem value="" disabled>
-                          Select an option
-                        </MenuItem>
-                        {terms && terms.length > 0 ? (
-                          terms.map((term) => (
-                            <MenuItem key={term._id} value={term._id}>
-                              {term.name}
-                            </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem value="" disabled>
-                            No terms available
-                          </MenuItem>
-                        )} */}
-                      </TextField>
+                      ></TextField>
                     </FormControl>
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">Roll Call</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
-                    <FormControl fullWidth>
+                  <Grid size={isMobile ? 11 : 10}>
+                    <FormControl fullWidth className="paddingLeft">
                       <TextField
                         className="customTextField"
                         fullWidth
@@ -1278,8 +1194,8 @@ export default function AddBill(props) {
                   <Grid size={isMobile ? 12 : 2}>
                     <InputLabel className="label">Read More</InputLabel>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 10}>
-                    <FormControl fullWidth>
+                  <Grid size={isMobile ? 11 : 10}>
+                    <FormControl fullWidth className="paddingLeft">
                       <Box
                         sx={{
                           display: "flex",
@@ -1441,11 +1357,11 @@ export default function AddBill(props) {
                       </Box>
                     </FormControl>
                   </Grid>
-                  <Grid size={isMobile ? 12 : 2}>
+                  <Grid size={isMobile ? 5 : 2}>
                     <InputLabel className="label">SBA Position</InputLabel>
                   </Grid>
 
-                  <Grid size={isMobile ? 12 : 10}>
+                  <Grid size={isMobile ? 7 : 10}>
                     <FormControl
                       fullWidth
                       sx={{
@@ -1463,7 +1379,7 @@ export default function AddBill(props) {
                         onChange={handleChange}
                       >
                         <FormControlLabel
-                          value="Yes"
+                          value="yes"
                           control={
                             <Radio
                               icon={
@@ -1477,7 +1393,7 @@ export default function AddBill(props) {
                           label="Yes"
                         />
                         <FormControlLabel
-                          value="No"
+                          value="no"
                           control={
                             <Radio
                               icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}

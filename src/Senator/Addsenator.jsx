@@ -3,8 +3,6 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-
-// MUI Core
 import {
   alpha,
   styled,
@@ -15,64 +13,30 @@ import {
   Box,
   Paper,
   Stack,
-  Typography,
-  TextField,
-  Grid,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  Select,
   Button,
-  ButtonGroup,
-  Switch,
-  Chip,
-  Autocomplete,
-  List,
-  ListItem,
-  ListItemText,
-  Snackbar,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
 } from "@mui/material";
-
-// MUI Components
-import MuiAlert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-
-// MUI Icons
 import {
   CloudUpload as CloudUploadIcon,
   DeleteForever as DeleteForeverIcon,
   Add as AddIcon,
   HourglassTop,
-  Verified,
   Drafts,
-  CheckCircle,
   Circle as CircleIcon,
-  HourglassEmpty,
 } from "@mui/icons-material";
-
-// External
-import { Editor } from "@tinymce/tinymce-react";
 
 // Shared Theme & Layout
 import AppTheme from "../../src/shared-theme/AppTheme";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
 
 // Custom Components
 import SideMenu from "../components/SideMenu";
-import SenatorBasicInfo from "../components/senatorService/SenatorBasicInfo";
+import BasicInfo from "../components/BasicInfo";
 import SenatorTermSection from "../components/senatorService/SenatorTermSection";
-import StatusDisplay from "../components/senatorService/StatusDisplay";
-import SnackbarComponent from "../components/senatorService/SnackbarComponent";
-import LoadingOverlay from "../components/senatorService/LoadingOverlay";
-import ActionButtons from "../components/senatorService/ActionButtons";
+import StatusDisplay from "../components/StatusDisplay";
+import SnackbarComponent from "../components/SnackbarComponent";
+import ActionButtons from "../components/ActionButtons";
 
 // Redux Slices
 import {
@@ -98,7 +62,8 @@ import {
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
-import { rating } from "../../src/Dashboard/global/common";
+import DialogBox from "../components/DialogBox";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function AddSenator(props) {
   const { id } = useParams();
@@ -108,6 +73,7 @@ export default function AddSenator(props) {
   const { votes } = useSelector((state) => state.vote);
   const { activities } = useSelector((state) => state.activity);
   const senatorData = useSelector((state) => state.senatorData);
+  const loadingg = useSelector((state) => state.senatorData.loading);
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [originalTermData, setOriginalTermData] = useState([]);
@@ -115,6 +81,9 @@ export default function AddSenator(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
+
+    const [loading, setLoading] = useState(loadingg);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -124,7 +93,7 @@ export default function AddSenator(props) {
     message: "",
     type: "",
   });
-  const [billSearch, setBillSearch] = useState("");
+
   const validateVoteInTermRange = (voteId, termId) => {
     if (!voteId || !termId)
       return { isValid: false, message: "Invalid selection" };
@@ -205,32 +174,18 @@ export default function AddSenator(props) {
 
   const allActivities = useSelector((state) => state.activity.activities);
 
-  const startYear = senatorData?.currentSenator?.[0]?.termId?.startYear;
-
   const termStart = new Date(
     `${senatorData?.currentSenator?.[0]?.termId?.startYear}-01-03`
   );
   const termEnd = new Date(
     `${senatorData?.currentSenator?.[0]?.termId?.endYear}-01-02`
   );
-  const filteredVotes = allVotes.filter((vote) => {
-    const voteDate = new Date(vote.date);
-    return (
-      voteDate >= termStart &&
-      voteDate <= termEnd &&
-      senatorData?.currentSenator?.[0]?.termId?.congresses.includes(
-        Number(vote.congress)
-      )
-    );
-  });
-
-
+ 
   const senatorr = senatorData?.currentSenator?.[0];
   const senatorVotes = senatorr?.votesScore || [];
 
   const participatedVotes = allVotes.filter((vote) => {
     const voteDate = new Date(vote.date);
-
 
     const inTerm =
       voteDate >= termStart &&
@@ -238,8 +193,6 @@ export default function AddSenator(props) {
       senatorr?.termId?.congresses.includes(Number(vote.congress));
 
     if (!inTerm) return false;
-
-
     return senatorVotes.some((v) => {
       if (!v?.score || v.score.trim() === "") return false;
 
@@ -253,16 +206,7 @@ export default function AddSenator(props) {
     });
   });
 
-  const filteredActivities = allActivities.filter((activity) => {
-    const activityDate = new Date(activity.date);
-    return (
-      activityDate >= termStart &&
-      activityDate <= termEnd &&
-      senatorData?.currentSenator?.[0]?.termId?.congresses.includes(
-        Number(activity.congress)
-      )
-    );
-  });
+
   // Helper function to check if a vote belongs to a term
   const doesVoteBelongToTerm = (voteData, term) => {
     if (!voteData || !term) return false;
@@ -298,34 +242,6 @@ export default function AddSenator(props) {
   };
 
   const senatorActivities = senatorr?.activitiesScore || [];
-
-  const participatedActivities = allActivities.filter((activity) => {
-    const activityDate = new Date(activity.date);
-
-    const inTerm =
-      activityDate >= termStart &&
-      activityDate <= termEnd &&
-      senatorr?.termId?.congresses.includes(Number(activity.congress));
-
-    if (!inTerm) return false;
-
-
-    return senatorActivities.some((a) => {
-      if (!a?.score || a.score.trim() === "") return false;
-
-      const aId =
-        typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
-
-      return (
-        aId === activity._id ||
-        (a.actionId && activity.actionId && a.actionId === activity.actionId) ||
-        (a.billNumber &&
-          activity.billNumber &&
-          a.billNumber === activity.billNumber)
-      );
-    });
-  });
-
 
   const fieldLabels = {
     // Senator fields
@@ -384,13 +300,11 @@ export default function AddSenator(props) {
 
     return terms?.filter((term) => !selectedTermIds.includes(term._id)) || [];
   };
+
   // Helper function to get display name
   const getFieldDisplayName = (field) => {
-    // Handle term fields (term0_fieldName)
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
       return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
         }`;
     }
@@ -410,7 +324,6 @@ export default function AddSenator(props) {
     {
       senateId: id,
       summary: "",
-      // summaries: [{ content: "" }],
       rating: "",
       votesScore: [{ voteId: "", score: "" }], //
       activitiesScore: [{ activityId: "", score: "" }],
@@ -429,19 +342,16 @@ export default function AddSenator(props) {
 
         let updatedTerm = { ...term, [name]: value };
 
-        // SPECIAL HANDLING: If termId is being changed, update filtered votes
         if (name === "termId" && value) {
           const selectedTerm = terms?.find((t) => t._id === value);
 
           if (selectedTerm) {
-            // Recalculate filtered votes based on new term - only show votes senator participated in
             const newTermStart = new Date(`${selectedTerm.startYear}-01-03`);
             const newTermEnd = new Date(`${selectedTerm.endYear}-01-02`);
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
 
-              // Must be inside the term range
               const inTerm =
                 voteDate >= newTermStart &&
                 voteDate <= newTermEnd &&
@@ -471,7 +381,6 @@ export default function AddSenator(props) {
 
             // Create new votesScore array with senator's actual scores
             updatedTerm.votesScore = newFilteredVotes.map((vote) => {
-              // Find the senator's actual score for this vote
               const senatorVote = senatorVotes.find((v) => {
                 const vId =
                   typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
@@ -674,7 +583,6 @@ export default function AddSenator(props) {
     );
   };
 
-
   const handleDiscard = () => {
     if (!id) {
       setSnackbarMessage("No house selected");
@@ -727,7 +635,6 @@ export default function AddSenator(props) {
           : term
       );
 
-
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
           (change) =>
@@ -738,7 +645,6 @@ export default function AddSenator(props) {
       return updatedTerms;
     });
   };
-
 
   const handleVoteChange = (termIndex, voteIndex, field, value) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
@@ -799,7 +705,6 @@ export default function AddSenator(props) {
     );
   };
 
-
   const handleRemoveActivity = (termIndex, activityIndex) => {
     setSenatorTermData((prev) => {
       const updatedTerms = prev.map((term, index) =>
@@ -812,7 +717,6 @@ export default function AddSenator(props) {
           }
           : term
       );
-
 
       setLocalChanges((prevChanges) =>
         prevChanges.filter(
@@ -938,36 +842,7 @@ export default function AddSenator(props) {
     });
   };
 
-
   const contentRefs = useRef([]);
-  const handleEditorChange = useCallback((content, termIndex) => {
-    const fieldName = `term${termIndex}_summary`; // Fixed field name for editor content
-
-
-    setLocalChanges((prev) => {
-      return prev.includes(fieldName) ? prev : [...prev, fieldName];
-    });
-
-
-    if (!contentRefs.current[termIndex]) {
-      contentRefs.current[termIndex] = {};
-    }
-    contentRefs.current[termIndex].content = content;
-  }, []);
-
-  const handleBlur = useCallback((termIndex) => {
-    setSenatorTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-            ...term,
-            summary: contentRefs.current[termIndex]?.content || "",
-          }
-          : term
-      )
-    );
-  }, []);
-
 
   const handleAddTerm = () => {
     setSenatorTermData((prev) => [
@@ -975,15 +850,14 @@ export default function AddSenator(props) {
       {
         senateId: id,
         summary: "",
-        // summaries: [{ content: "" }],
         rating: "",
-        votesScore: [{ voteId: "", score: "" }], // Start with empty, will be populated when term is selected
+        votesScore: [{ voteId: "", score: "" }], 
         activitiesScore: [{ activityId: "", score: "" }],
         pastVotesScore: [{ voteId: "", score: "" }],
         currentTerm: false,
         termId: null,
-        editedFields: [], // Initialize empty
-        fieldEditors: {}, // Initialize empty
+        editedFields: [], 
+        fieldEditors: {}, 
         isNew: true,
       },
     ]);
@@ -1235,8 +1109,6 @@ export default function AddSenator(props) {
           // Get current fieldEditors from formData or initialize empty object
           const currentFieldEditors = { ...(formData?.fieldEditors || {}) };
 
-          // Add orphan votes to editedFields and fieldEditors
-          // Add orphan votes to editedFields and fieldEditors
           orphanVotes.forEach((orphanVote) => {
             if (orphanVote.voteId && orphanVote.voteId !== "") {
               const voteData = allVotes.find(v => v._id === orphanVote.voteId);
@@ -1325,6 +1197,7 @@ export default function AddSenator(props) {
                     }
                   }
                 }
+
               }
             }
           });
@@ -1335,14 +1208,7 @@ export default function AddSenator(props) {
             editedFields: currentEditedFields,
             fieldEditors: currentFieldEditors
           }));
-
-
-          // Update formData with the new editedFields and fieldEditors
-          setFormData(prev => ({
-            ...prev,
-            editedFields: currentEditedFields,
-            fieldEditors: currentFieldEditors
-          }));
+          
 
         } else if (
           Array.isArray(term.pastVotesScore) &&
@@ -1380,7 +1246,51 @@ export default function AddSenator(props) {
           pastVotesScore = [{ voteId: "", score: "" }];
         }
 
+// Collect DB pastVotes if present
+let dbPastVotes = [];
+if (
+  Array.isArray(term.pastVotesScore) &&
+  term.pastVotesScore.length > 0 &&
+  term.pastVotesScore.some((vote) => vote.voteId && vote.voteId !== "")
+) {
+  dbPastVotes = term.pastVotesScore
+    .filter((vote) => {
+      const voteId = vote.voteId?._id || vote.voteId;
+      return voteId && voteId.toString().trim() !== "";
+    })
+    .map((vote) => {
+      let scoreValue = "";
+      const dbScore = vote.score?.toLowerCase();
+      if (dbScore?.includes("yea")) scoreValue = "yea";
+      else if (dbScore?.includes("nay")) scoreValue = "nay";
+      else if (dbScore?.includes("other")) scoreValue = "other";
+      else scoreValue = vote.score || "";
 
+      const voteData = allVotes.find(
+        (v) => v._id === (vote.voteId?._id || vote.voteId)
+      );
+
+      return {
+        voteId: vote.voteId?._id || vote.voteId || "",
+        score: scoreValue,
+        title: voteData?.title || vote.voteId?.title || vote.title || "",
+        _id: vote._id || undefined,
+      };
+    });
+}
+
+// Merge orphanVotes + dbPastVotes, dedupe by voteId
+const pastVotesMap = new Map();
+[...dbPastVotes, ...orphanVotes].forEach((v) => {
+  if (v.voteId) pastVotesMap.set(v.voteId, v);
+});
+
+ pastVotesScore = Array.from(pastVotesMap.values());
+
+// Fallback if empty
+if (pastVotesScore.length === 0) {
+  pastVotesScore = [{ voteId: "", score: "" }];
+}
         const getActivityScore = (activityId) => {
           const senAct = senatorActivities.find((a) => {
             const aId =
@@ -1525,8 +1435,6 @@ export default function AddSenator(props) {
           activitiesScore = [{ activityId: "", score: "" }];
         }
 
-
-
         return {
           _id: term._id,
           summary: term.summary || "",
@@ -1653,7 +1561,6 @@ export default function AddSenator(props) {
       });
     });
 
-
     const backendEditedFields = Array.isArray(formData.editedFields)
       ? formData.editedFields
       : [];
@@ -1664,15 +1571,13 @@ export default function AddSenator(props) {
     setEditedFields(changes);
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
-  useEffect(() => {
+useEffect(() => {
+  
     termPreFill();
   }, [id, senatorData]);
-
-  const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
   const preFillForm = () => {
     if (senator) {
       const termId =
@@ -1697,23 +1602,30 @@ export default function AddSenator(props) {
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getSenatorById(id));
-      dispatch(getSenatorDataBySenetorId(id));
-    }
+useEffect(() => {
+  if (id) {
+    dispatch(getSenatorById(id));
+    dispatch(getSenatorDataBySenetorId(id));
     dispatch(getAllTerms());
     dispatch(getAllVotes());
     dispatch(getAllActivity());
-    return () => {
-      dispatch(clearSenatorState());
-      dispatch(clearSenatorDataState());
-    };
-  }, [id, dispatch]);
+  }
 
-  useEffect(() => {
+  return () => {
+    dispatch(clearSenatorState());
+    dispatch(clearSenatorDataState());
+  };
+}, [id, dispatch]);
+
+ console.log("Loading state:", loading);
+
+
+
+useEffect(() => {
+ 
     preFillForm();
-  }, [senator, terms]);
+  
+}, [senator, terms]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -1771,7 +1683,6 @@ export default function AddSenator(props) {
       return newData;
     });
   };
-
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -1854,8 +1765,6 @@ export default function AddSenator(props) {
         );
         setDeletedTermIds([]);
       }
-
-
 
       const existingEditedFields = Array.isArray(formData.editedFields)
         ? formData.editedFields
@@ -2016,7 +1925,7 @@ export default function AddSenator(props) {
 
       senatorTermData.forEach((term, termIndex) => {
         const originalTerm = originalTermData?.[termIndex] || {};
-      
+
         const termFields = ["summary", "rating", "termId"];
 
         termFields.forEach((field) => {
@@ -2132,9 +2041,6 @@ export default function AddSenator(props) {
           return;
         }
 
-
-
-
         editorKey = change;
         updatedFieldEditors[editorKey] = currentEditor;
         changedFieldsInThisSession.add(editorKey);
@@ -2240,7 +2146,6 @@ export default function AddSenator(props) {
 
       await Promise.all(termPromises);
 
-      // Reload data
       await dispatch(getSenatorDataBySenetorId(id)).unwrap();
       await dispatch(getSenatorById(id)).unwrap();
 
@@ -2361,17 +2266,16 @@ export default function AddSenator(props) {
     return termExists ? termId : "";
   };
 
-  // Add this helper function to validate activity IDs
-  const getValidVoteId = (voteId) => {
-    if (!votes || votes.length === 0) return "";
-    const voteExists = votes.some((v) => v._id === voteId);
-    return voteExists ? voteId : "";
-  };
 
+// Replace your current loading condition with this enhanced version
 
   return (
     <AppTheme key={componentKey}>
-      <LoadingOverlay loading={loading} />
+      {loadingg && (
+  <Box className="circularLoader">
+    <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+  </Box>
+)}
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -2397,667 +2301,33 @@ export default function AddSenator(props) {
             }}
           >
             <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
-            {(() => {
-              const hasSelectedTerms = () => {
-                return senatorTermData.some(
-                  (term) => term.termId && term.termId.toString().trim() !== ""
-                );
-              };
 
-              return (
-                userRole &&
-                formData.publishStatus &&
-                (formData.publishStatus !== "published" ||
-                  localChanges.length > 0) &&
-                statusData &&
-
-                !(formData.publishStatus === "under review" && !hasSelectedTerms()) &&
-                (hasSelectedTerms() ||
-                  (Array.isArray(formData?.editedFields) &&
-                    formData.editedFields.length > 0) ||
-                  localChanges.length > 0) && (
-                  <Box
-                    sx={{
-                      width: "97%",
-                      p: 2,
-                      backgroundColor: statusData.backgroundColor,
-                      borderLeft: `4px solid ${statusData.borderColor}`,
-                      borderRadius: "0 8px 8px 0",
-                      boxShadow: 1,
-                      mb: 2,
-                    }}
-                  >
-                    <Box
-                      sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}
-                    >
-                      {/* Status icon bubble (unchanged) */}
-                      <Box
-                        sx={{
-                          p: 1,
-                          borderRadius: "50%",
-                          backgroundColor: `rgba(${formData.publishStatus === "draft"
-                            ? "66, 165, 245"
-                            : formData.publishStatus === "under review"
-                              ? "230, 81, 0"
-                              : formData.publishStatus === "published"
-                                ? "76, 175, 80"
-                                : "244, 67, 54"
-                            }, 0.2)`,
-                          display: "grid",
-                          placeItems: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {statusData.icon &&
-                          React.cloneElement(statusData.icon, {
-                            sx: { color: statusData.iconColor },
-                          })}
-                      </Box>
-
-                      <Box sx={{ flex: 1 }}>
-                        {/* Header (unchanged) */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Typography
-                            variant="subtitle1"
-                            fontWeight="600"
-                            sx={{
-                              color: statusData.titleColor,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            {statusData.title}
-                          </Typography>
-
-                          {/* {userRole === "admin" && (
-                          <Chip
-                            label={`${Array.isArray(formData?.editedFields)
-                              ? formData.editedFields.length +
-                              localChanges.length
-                              : 0
-                              } pending changes`}
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                          />
-                        )} */}
-                        </Box>
-
-                        {/* Pending / New fields list */}
-                        <Box sx={{ mt: 1.5 }}>
-                          {(() => {
-                            const backendChanges = Array.isArray(
-                              formData?.editedFields
-                            )
-                              ? formData.editedFields
-                              : [];
-                            const hasChanges =
-                              backendChanges.length > 0 ||
-                              localChanges.length > 0;
-
-                            if (!hasChanges) {
-                              return (
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    color: "text.disabled",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                  }}
-                                >
-                                  {id
-                                    ? "No pending changes"
-                                    : "Fill in the form to create a new senator"}
-                                </Typography>
-                              );
-                            }
-
-                            const formatFieldName = (field, index, senatorTermData = [],) => {
-
-                              if (typeof field === "object" && field !== null) {
-
-                                if (Array.isArray(field.field) && field.field[0] === "votesScore" && field.name) {
-                                  const billTitle = field.name;
-
-
-                                  for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
-                                    const term = senatorTermData[termIndex];
-                                    const votesScore = term?.votesScore || [];
-
-                                    for (
-                                      let voteIndex = 0;
-                                      voteIndex < votesScore.length;
-                                      voteIndex++
-                                    ) {
-                                      const vote = votesScore[voteIndex];
-
-                                      if (vote) {
-
-                                        if (vote.title && vote.title === billTitle) {
-                                          return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
-                                        }
-
-
-                                        if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
-                                          return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
-                                        }
-
-
-                                        if (typeof vote.voteId === "string" && vote.voteId === field._id) {
-                                          return `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`;
-                                        }
-                                      }
-                                    }
-                                  }
-
-
-                                  return null
-                                }
-
-
-                                if (Array.isArray(field.field) && field.field[0] === "activitiesScore" && field.name) {
-                                  const activityTitle = field.name;
-
-                                  for (
-                                    let termIndex = 0;
-                                    termIndex < senatorTermData.length;
-                                    termIndex++
-                                  ) {
-                                    const term = senatorTermData[termIndex];
-                                    const activitiesScore =
-                                      term?.activitiesScore || [];
-
-                                    for (
-                                      let activityIndex = 0;
-                                      activityIndex < activitiesScore.length;
-                                      activityIndex++
-                                    ) {
-                                      const activity =
-                                        activitiesScore[activityIndex];
-                                      if (activity) {
-                                        if (
-                                          activity.title &&
-                                          activity.title === activityTitle
-                                        ) {
-                                          return `Term ${termIndex + 1
-                                            }: Tracked Activity ${activityIndex + 1
-                                            }`;
-                                        }
-                                        if (
-                                          typeof activity.activityId ===
-                                          "object" &&
-                                          activity.activityId.title ===
-                                          activityTitle
-                                        ) {
-                                          return `Term ${termIndex + 1
-                                            }: Tracked Activity ${activityIndex + 1
-                                            }`;
-                                        }
-                                        if (
-                                          typeof activity.activityId ===
-                                          "string" &&
-                                          activity.activityId === field._id
-                                        ) {
-                                          return `Term ${termIndex + 1
-                                            }: Tracked Activity ${activityIndex + 1
-                                            }`;
-                                        }
-                                      }
-                                    }
-                                  }
-                                  return null;
-                                }
-                                if (
-                                  Array.isArray(field.field) &&
-                                  field.field[0] === "pastVotesScore" &&
-                                  field.name
-                                ) {
-                                  const billTitle = field.name;
-
-                                  for (let termIndex = 0; termIndex < senatorTermData.length; termIndex++) {
-                                    const term = senatorTermData[termIndex];
-                                    const pastVotesScore = term?.pastVotesScore || [];
-
-                                    for (let voteIndex = 0; voteIndex < pastVotesScore.length; voteIndex++) {
-                                      const vote = pastVotesScore[voteIndex];
-
-                                      if (vote) {
-                                        if (vote.title && vote.title === billTitle) {
-                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-                                        }
-
-                                        if (typeof vote.voteId === "object" && vote.voteId.title === billTitle) {
-                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-                                        }
-
-                                        if (typeof vote.voteId === "string" && vote.voteId === field._id) {
-                                          return `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1}`;
-                                        }
-                                      }
-                                    }
-                                  }
-                                  return null;
-                                }
-
-
-                                const fieldId = Array.isArray(field.field) ? field.field[0] : field.field;
-
-                                if (fieldId && fieldId.startsWith("term")) {
-                                  const termMatch =
-                                    fieldId.match(/^term(\d+)_(.+)$/);
-                                  if (termMatch) {
-                                    const [, termIndex, actualField] =
-                                      termMatch;
-                                    const termNumber = parseInt(termIndex) + 1;
-
-
-                                    const fieldDisplayMap = {
-                                      currentTerm: "Current Term",
-                                      summary: "Term Summary",
-                                      rating: "SBA Rating",
-                                      termId: "Term",
-                                      votesScore: "Scored Vote",
-                                      activitiesScore: "Tracked Activity",
-                                      pastVotesScore: "Important Past Vote",
-                                    };
-
-                                    const displayName =
-                                      fieldDisplayMap[actualField] ||
-                                      actualField;
-                                    return `Term ${termNumber}: ${displayName}`;
-                                  }
-                                }
-
-                                // Handle simple fields
-                                const simpleFieldMap = {
-                                  status: "Status",
-                                  name: "Senator Name", // Changed from "Representative Name" to "Senator Name"
-                                  state: "State", // Added state field for Senators
-                                  party: "Party",
-                                  photo: "Photo",
-                                  votesScore: "Scored Vote",
-                                  activitiesScore: "Tracked Activity",
-                                };
-
-                                return (
-                                  field.name ||
-                                  simpleFieldMap[fieldId] ||
-                                  fieldId ||
-                                  "Unknown Field"
-                                );
-                              }
-
-                              // Handle string field format (legacy keys like "term0_votesScore_0_score")
-                              if (typeof field === "string") {
-                                const termArrayMatch = field.match(
-                                  /^term(\d+)_(votesScore|activitiesScore|pastVotesScore)_(\d+)_(.+)$/
-                                );
-
-                                if (termArrayMatch) {
-                                  const [, termIdx, category, itemIdx] =
-                                    termArrayMatch;
-                                  const termNumber = parseInt(termIdx) + 1;
-
-                                  if (category === "votesScore") {
-                                    const voteNumber = parseInt(itemIdx) + 1;
-                                    return `Term ${termNumber}: Scored Vote ${voteNumber}`;
-                                  }
-                                  if (category === "activitiesScore") {
-                                    const activityNumber =
-                                      parseInt(itemIdx) + 1;
-                                    return `Term ${termNumber}: Tracked Activity ${activityNumber}`;
-                                  }
-                                  if (category === "pastVotesScore") {
-                                    const voteNumber = parseInt(itemIdx) + 1;
-                                    return `Term ${termNumber}: Important Past Vote ${voteNumber}`;
-                                  }
-                                  return `Term ${termNumber}: ${category}`;
-                                }
-
-                                // Handle term fields like "term0_currentTerm", "term0_summary", etc.
-                                if (field.startsWith("term")) {
-                                  const termMatch =
-                                    field.match(/^term(\d+)_(.+)$/);
-                                  if (termMatch) {
-                                    const [, termIndex, actualField] =
-                                      termMatch;
-                                    const termNumber = parseInt(termIndex) + 1;
-
-                                    const fieldDisplayMap = {
-                                      currentTerm: "Current Term",
-                                      summary: "Term Summary",
-                                      rating: "SBA Rating",
-                                      termId: "Term",
-                                      votesScore: "Scored Vote",
-                                      activitiesScore: "Tracked Activity",
-                                    };
-
-                                    const displayName =
-                                      fieldDisplayMap[actualField] ||
-                                      actualField;
-                                    return `Term ${termNumber}: ${displayName}`;
-                                  }
-
-                                  // Fallback for any other term field
-                                  const parts = field.split("_");
-                                  const termNumber =
-                                    parseInt(parts[0].replace("term", "")) + 1;
-                                  const fieldKey = parts.slice(1).join("_");
-                                  return `Term ${termNumber}: ${fieldKey}`;
-                                }
-
-                                // Handle simple fields
-                                const simpleFieldMap = {
-                                  status: "Status",
-                                  name: "Senator Name", // Changed from "Representative Name" to "Senator Name"
-                                  state: "State", // Added state field for Senators
-                                  district: "District", // Keep district for compatibility, though Senators don't have districts
-                                  party: "Party",
-                                  photo: "Photo",
-                                  votesScore: "Scored Vote",
-                                  activitiesScore: "Tracked Activity",
-                                };
-
-                                return simpleFieldMap[field] || field;
-                              }
-
-                              return `Field ${index + 1}`;
-                            };
-                            return (
-                              <>
-                                {/* Backend pending changes */}
-                                {backendChanges.length > 0 && (
-                                  <Box
-                                    sx={{
-                                      backgroundColor: "#fff",
-                                      borderRadius: 1,
-                                      p: 1.5,
-                                      border: "1px solid",
-                                      borderColor: "divider",
-                                      mb: 2,
-                                    }}
-                                  >
-                                    <Typography
-                                      variant="overline"
-                                      sx={{ color: "text.secondary", mb: 1 }}
-                                    >
-                                      Saved Changes
-                                    </Typography>
-                                    <List dense sx={{ py: 0 }}>
-                                      {backendChanges.map((field, index) => {
-                                        const fieldLabel = formatFieldName(field, index, senatorTermData);
-                                        if (!fieldLabel) return null;
-
-                                        const sanitizeKey = (str) => {
-                                          return str
-                                            .replace(/[^a-zA-Z0-9_]/g, "_")
-                                            .replace(/_+/g, "_")
-                                            .replace(/^_+|_+$/g, "");
-                                        };
-
-
-                                        const getEditorKey = (field) => {
-                                          if (
-                                            typeof field === "object" &&
-                                            field !== null
-                                          ) {
-                                            if (
-                                              Array.isArray(field.field) &&
-                                              field.field[0] === "votesScore" &&
-                                              field.name
-                                            ) {
-                                              return `votesScore_${sanitizeKey(
-                                                field.name
-                                              )}`;
-                                            }
-                                            if (
-                                              Array.isArray(field.field) &&
-                                              field.field[0] ===
-                                              "activitiesScore" &&
-                                              field.name
-                                            ) {
-                                              return `activitiesScore_${sanitizeKey(
-                                                field.name
-                                              )}`;
-                                            }
-                                            if (
-                                              Array.isArray(field.field) &&
-                                              field.field[0] === "pastVotesScore" &&
-                                              field.name
-                                            ) {
-                                              return `pastVotesScore_${sanitizeKey(field.name)}`;
-                                            }
-                                            if (Array.isArray(field.field)) {
-                                              return field.field[0];
-                                            }
-                                            return field.field;
-                                          }
-                                          return field;
-                                        };
-
-                                        const editorKey = getEditorKey(field);
-                                        const editorInfo =
-                                          formData?.fieldEditors?.[editorKey];
-                                        const editor =
-                                          editorInfo?.editorName ||
-                                          "Unknown Editor";
-                                        const editTime = editorInfo?.editedAt
-                                          ? new Date(
-                                            editorInfo.editedAt
-                                          ).toLocaleString([], {
-                                            month: "short",
-                                            day: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                          })
-                                          : "unknown time";
-                                        const fromQuorum =
-                                          field.fromQuorum || false;
-
-                                        return (
-                                          <ListItem
-                                            key={`backend-${field.field || field
-                                              }-${index}`}
-                                            sx={{ py: 0.5, px: 1 }}
-                                          >
-                                            <ListItemText
-                                              primary={
-                                                <Box
-                                                  sx={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: 1,
-                                                  }}
-                                                >
-                                                  <Box
-                                                    sx={{
-                                                      width: 8,
-                                                      height: 8,
-                                                      borderRadius: "50%",
-                                                      backgroundColor:
-                                                        statusData.iconColor,
-                                                    }}
-                                                  />
-                                                  <Typography
-                                                    variant="body2"
-                                                    fontWeight="500"
-                                                  >
-                                                    {fieldLabel}
-                                                  </Typography>
-                                                </Box>
-                                              }
-                                              secondary={
-                                                <Typography
-                                                  variant="caption"
-                                                  color="text.secondary"
-                                                >
-                                                  {fromQuorum
-                                                    ? `Fetched from Quorum by ${editor} on ${editTime}`
-                                                    : `Updated by ${editor} on ${editTime}`}
-                                                </Typography>
-                                              }
-                                              sx={{ my: 0 }}
-                                            />
-                                          </ListItem>
-                                        );
-                                      })}
-                                    </List>
-                                  </Box>
-                                )}
-
-                                {/* Local unsaved changes */}
-                                {localChanges.length > 0 && (
-                                  <Box
-                                    sx={{
-                                      backgroundColor: "#fff",
-                                      borderRadius: 1,
-                                      p: 1.5,
-                                      border: "1px solid",
-                                      borderColor: "divider",
-                                    }}
-                                  >
-                                    <Typography
-                                      variant="overline"
-                                      sx={{ color: "text.secondary", mb: 1 }}
-                                    >
-                                      {formData.publishStatus === "published"
-                                        ? ""
-                                        : "Unsaved Changes"}
-                                    </Typography>
-                                    <List dense sx={{ py: 0 }}>
-                                      {localChanges.map((field, index) => {
-                                        const fieldLabel = formatFieldName(field, index, senatorTermData);
-                                        if (!fieldLabel) return null;
-
-                                        return (
-                                          <ListItem
-                                            key={`local-${field}-${index}`}
-                                            sx={{ py: 0, px: 1 }}
-                                          >
-                                            <ListItemText
-                                              primary={
-                                                <Box
-                                                  sx={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: 1,
-                                                  }}
-                                                >
-                                                  <Box
-                                                    sx={{
-                                                      width: 8,
-                                                      height: 8,
-                                                      borderRadius: "50%",
-                                                      backgroundColor:
-                                                        statusData.iconColor,
-                                                    }}
-                                                  />
-                                                  <Typography
-                                                    variant="body2"
-                                                    fontWeight="500"
-                                                  >
-                                                    {fieldLabel}
-                                                  </Typography>
-                                                </Box>
-                                              }
-                                            />
-                                          </ListItem>
-                                        );
-                                      })}
-                                    </List>
-                                  </Box>
-                                )}
-                              </>
-                            );
-                          })()}
-                        </Box>
-                      </Box>
-                    </Box>
-                  </Box>
-                )
-              );
-            })()}
-
-            <Paper className="customPaper">
-              <Dialog
-                open={openDiscardDialog}
-                onClose={() => setOpenDiscardDialog(false)}
-                PaperProps={{
-                  sx: { borderRadius: 3, padding: 2, minWidth: 350 },
-                }}
-              >
-                <DialogTitle
-                  sx={{
-                    fontSize: "1.4rem",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    color: "warning.main",
-                  }}
-                >
-                  {userRole === "admin" ? "Discard" : "Undo"} Changes?
-                </DialogTitle>
-
-                <DialogContent>
-                  <DialogContentText
-                    sx={{
-                      textAlign: "center",
-                      fontSize: "1rem",
-                      color: "text.secondary",
-                    }}
-                  >
-                    Are you sure you want to{" "}
-                    {userRole === "admin" ? "discard" : "undo"} all changes?{" "}
-                    <br />
-                    <strong>This action cannot be undone.</strong>
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Stack
-                    direction="row"
-                    spacing={2}
-                    sx={{
-                      width: "100%",
-                      justifyContent: "center",
-                      paddingBottom: 2,
-                    }}
-                  >
-                    <Button
-                      onClick={() => setOpenDiscardDialog(false)}
-                      variant="outlined"
-                      color="secondary"
-                      sx={{ borderRadius: 2, paddingX: 3 }}
-                    >
-                      Cancel
-                    </Button>
-
-                    <Button
-                      onClick={handleConfirmDiscard}
-                      variant="contained"
-                      color="warning"
-                      sx={{ borderRadius: 2, paddingX: 3 }}
-                    >
-                      {userRole === "admin" ? "Discard" : "Undo"}
-                    </Button>
-                  </Stack>
-                </DialogActions>
-              </Dialog>
-              <SenatorBasicInfo
+            {!(formData.publishStatus === "under review" && !hasSelectedTerms()) && (
+              <StatusDisplay
+                userRole={userRole}
                 formData={formData}
-                handleChange={handleChange}
-                handleStatusChange={handleStatusChange}
-                handleFileChange={handleFileChange}
-                isMobile={isMobile}
+                localChanges={localChanges}
+                statusData={statusData}
+                termData={senatorTermData}
+                mode="senator"
               />
-             
-            </Paper>
+            )}
+
+          <Paper className="customPaper">
+            <DialogBox
+              userRole={userRole}
+              openDiscardDialog={openDiscardDialog}
+              setOpenDiscardDialog={setOpenDiscardDialog}
+              handleConfirmDiscard={handleConfirmDiscard}
+            />
+            <BasicInfo
+              formData={formData}
+              handleChange={handleChange}
+              handleStatusChange={handleStatusChange}
+              handleFileChange={handleFileChange}
+              isMobile={isMobile}
+            />
+          </Paper>
 
             {/* Render each term in senatorTermData */}
             {senatorTermData.map((term, termIndex) => (
@@ -3101,7 +2371,7 @@ export default function AddSenator(props) {
               </Paper>
             ))}
 
-            {/* Add Term Button */}
+
             <Button
               variant="outlined"
               startIcon={<AddIcon />}

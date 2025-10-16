@@ -1,6 +1,7 @@
 import * as React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   getAllVotes,
   deleteVote,
@@ -8,10 +9,7 @@ import {
   bulkUpdateSbaPosition,
 } from "../redux/reducer/voteSlice";
 import AppTheme from "../../src/shared-theme/AppTheme";
-import { Box, Stack, Typography, Button ,InputAdornment,} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
-import { useNavigate } from "react-router-dom";
 import SideMenu from "../../src/components/SideMenu";
 import MainGrid from "../../src/components/MainGrid";
 import {
@@ -21,7 +19,6 @@ import {
   treeViewCustomizations,
 } from "../../src/Themes/customizations";
 import {
-  CircularProgress,
   Snackbar,
   Alert,
   TextField,
@@ -35,8 +32,12 @@ import {
   IconButton,
   Paper,
   ClickAwayListener,
+  Box,
+  Stack,
+  Typography,
+  Button,
+  InputAdornment,
 } from "@mui/material";
-import { useState } from "react";
 import FixedHeader from "../../src/components/FixedHeader";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -51,6 +52,7 @@ const xThemeComponents = {
 };
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function Bills(props) {
   const dispatch = useDispatch();
@@ -65,17 +67,16 @@ export default function Bills(props) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const token = localStorage.getItem("token");
-  // Decode token to get user role
+
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
-  // Filter state
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
   const statusOptions = ["published", "draft", "under review"];
-  const [selectedBills, setSelectedBills] = useState([]); // Store selected bill IDs
-  const [isBulkEditMode, setIsBulkEditMode] = useState(false); // Toggle bulk edit mode
-  const [bulkSbaPosition, setBulkSbaPosition] = useState(""); // Store bulk SBA position value
+  const [selectedBills, setSelectedBills] = useState([]);
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
+  const [bulkSbaPosition, setBulkSbaPosition] = useState("");
 
   const handleBulkUpdate = async () => {
     if (!selectedBills.length || !bulkSbaPosition) return;
@@ -85,7 +86,7 @@ export default function Bills(props) {
       await dispatch(
         bulkUpdateSbaPosition({
           ids: selectedBills,
-          sbaPosition: bulkSbaPosition, // Already capitalized from dropdown
+          sbaPosition: bulkSbaPosition,
         })
       );
 
@@ -95,7 +96,6 @@ export default function Bills(props) {
       );
       setSnackbarSeverity("success");
 
-      // Reset selection
       setSelectedBills([]);
       setBulkSbaPosition("");
       setIsBulkEditMode(false);
@@ -117,22 +117,19 @@ export default function Bills(props) {
   };
 
   const filteredVotes = votes.filter((vote) => {
-  
-  const statusMatch =
-    statusFilter.length === 0 ||
-    (vote.status && statusFilter.includes(vote.status));
+    const statusMatch =
+      statusFilter.length === 0 ||
+      (vote.status && statusFilter.includes(vote.status));
 
-  
-  const searchMatch =
-    !searchQuery ||
-    (vote.billName &&
-      vote.billName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (vote.title &&
-      vote.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    const searchMatch =
+      !searchQuery ||
+      (vote.billName &&
+        vote.billName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (vote.title &&
+        vote.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  return statusMatch && searchMatch;
-});
-
+    return statusMatch && searchMatch;
+  });
 
   const billsData = filteredVotes.map((vote, index) => ({
     _id: vote._id || index,
@@ -145,10 +142,9 @@ export default function Bills(props) {
         ? "House"
         : "Other"
       : "Other",
-    status: vote.status || "draft", // <== ADD THI
+    status: vote.status || "draft",
   }));
 
-  // Filter handlers
   const toggleFilter = () => {
     setFilterOpen(!filterOpen);
   };
@@ -171,8 +167,8 @@ export default function Bills(props) {
     navigate(`edit-bill/${row._id}`);
   };
   const handleDeleteClick = (row) => {
-    setSelectedVote(row); // Store senator data
-    setOpenDeleteDialog(true); // Open dialog
+    setSelectedVote(row);
+    setOpenDeleteDialog(true);
   };
   const handleConfirmDelete = async () => {
     setOpenDeleteDialog(false);
@@ -194,7 +190,7 @@ export default function Bills(props) {
       setFetching(false);
       setSnackbarOpen(true);
       setProgress(100);
-      setTimeout(() => setProgress(0), 500); // Re
+      setTimeout(() => setProgress(0), 500);
     }
   };
 
@@ -208,21 +204,10 @@ export default function Bills(props) {
         setSnackbarOpen(true);
       });
   };
-  // const handleDelete = async (row) => {
-  //   if (window.confirm("Are you sure you want to delete this bill?")) {
-  //     await dispatch(deleteVote(row._id));
-  //     await dispatch(getAllVotes());
-  //   }
-  // };
- 
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
-      {(loading || fetching) && (
-        <Box className="circularLoader">
-          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading || fetching} />
       <Box className="container">
         <SideMenu />
         <Box className={`contentBox ${fetching ? "fetching" : "notFetching"}`}>
@@ -230,26 +215,26 @@ export default function Bills(props) {
           <MobileHeader />
           <Stack spacing={2} className="stackBox">
             <Box className="actionsBox">
-             <Stack
+              <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
-                alignItems="center"
+                alignItems={{ xs: "flex-start", sm: "center" }}
                 sx={{ ml: "auto", width: { xs: "100%", sm: "auto" } }}
               >
                 <TextField
-                size="small"
-                variant="outlined"
-                placeholder="Search Bills"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                                    startAdornment: (
-                                      <InputAdornment position="start">
-                                        <SearchIcon className="search-icon" />
-                                      </InputAdornment>
-                                    ),
-                                  }}
-                className="custom-search"
+                  size="small"
+                  variant="outlined"
+                  placeholder="Search Bills"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon className="search-icon" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  className="custom-search"
                 />
                 <Box
                   sx={{
@@ -275,7 +260,7 @@ export default function Bills(props) {
                       Filters
                     </Button>
                   </Badge>
- 
+
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
                       <Paper className="billFilter-paper">
@@ -290,7 +275,7 @@ export default function Bills(props) {
                             </IconButton>
                           </Box>
                         </Box>
- 
+
                         {/* Status Filter */}
                         <Box className="filter-scroll">
                           {statusOptions.map((status) => (
@@ -311,7 +296,7 @@ export default function Bills(props) {
                             </Box>
                           ))}
                         </Box>
- 
+
                         {/* Clear All Button */}
                         <Box>
                           <Button
@@ -340,7 +325,7 @@ export default function Bills(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
- 
+
                 {userRole === "admin" && (
                   <Button
                     onClick={() => navigate("/search-bills")}
@@ -350,12 +335,14 @@ export default function Bills(props) {
                   </Button>
                 )}
               </Stack>
-
             </Box>
 
             {isBulkEditMode && (
               <Box className="bulkEditContainer">
-                <Typography variant="subtitle1">
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontSize: { xs: "11px", md: "14px" } }}
+                >
                   {selectedBills.length} bill(s) selected
                 </Typography>
 
@@ -366,7 +353,12 @@ export default function Bills(props) {
                     value={bulkSbaPosition}
                     onChange={(e) => setBulkSbaPosition(e.target.value)}
                     size="small"
-                    sx={{ minWidth: 160 }}
+                    sx={{ minWidth: { xs: 130, md: 160 } }}
+                    InputLabelProps={{
+                      sx: {
+                        fontSize: { xs: "0.7rem", md: "0.9rem" },
+                      },
+                    }}
                   >
                     <MenuItem value="Yes">Yes</MenuItem>
                     <MenuItem value="No">No</MenuItem>
@@ -443,20 +435,14 @@ export default function Bills(props) {
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
         PaperProps={{
-          sx: { borderRadius: 3, padding: 2, minWidth: 350 },
+          sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
         }}
       >
-        <DialogTitle className="dialogBox">
-          Confirm Deletion
-        </DialogTitle>
+        <DialogTitle className="dialogBox">Confirm Deletion</DialogTitle>
 
         <DialogContent>
           <DialogContentText className="dialogTitle">
             Are you sure you want to delete?
-            {/* {selectedVote?.bill && (
-              <> <strong>{selectedVote.bill}</strong>?</>
-            )}
-            {!selectedVote?.bill && '?'} */}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -3,13 +3,12 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import {
   Box,
   Stack,
   Typography,
   Button,
-  CircularProgress,
   TextField,
   IconButton,
   Paper,
@@ -31,14 +30,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
 } from "@mui/material";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function ManageTerm(props) {
   const dispatch = useDispatch();
   const { terms, loading } = useSelector((state) => state.term);
 
-  // New state for term inputs
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
 
@@ -49,7 +48,6 @@ export default function ManageTerm(props) {
   const [selectedTermId, setSelectedTermId] = useState(null);
 
   const token = localStorage.getItem("token");
-  // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
@@ -78,14 +76,12 @@ export default function ManageTerm(props) {
     dispatch(getAllTerms());
   }, [dispatch]);
 
-  // ✅ Create Term
   const handleCreateTerm = async () => {
     if (!startYear.trim() || !endYear.trim()) {
       handleSnackbarOpen("Start and End Year are required", "error");
       return;
     }
 
-    // Validate years
     const start = parseInt(startYear);
     const end = parseInt(endYear);
 
@@ -106,65 +102,30 @@ export default function ManageTerm(props) {
     }
   };
 
-const handleConfirmDelete = async () => {
-  try {
-    await dispatch(deleteTerm(selectedTermId)).unwrap();
-    handleSnackbarOpen("Term deleted successfully");
-    dispatch(getAllTerms());
-  } catch (error) {
-    console.error("Failed to delete term:", error);
-    handleSnackbarOpen(error.message || "Error deleting term", "error");
-  } finally {
-    handleCloseConfirm();
-  }
-};
-
+  const handleConfirmDelete = async () => {
+    try {
+      await dispatch(deleteTerm(selectedTermId)).unwrap();
+      handleSnackbarOpen("Term deleted successfully");
+      dispatch(getAllTerms());
+    } catch (error) {
+      console.error("Failed to delete term:", error);
+      handleSnackbarOpen(error.message || "Error deleting term", "error");
+    } finally {
+      handleCloseConfirm();
+    }
+  };
 
   return (
     <AppTheme {...props}>
-      {loading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <CircularProgress sx={{ color: "#CC9A3A" }} />
-        </Box>
-      )}
+      <LoadingOverlay loading={loading} />
 
-      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f6f6f6ff" }}>
+      <Box className="main-layout">
         <SideMenu />
 
-        <Box
-          sx={{
-            width: { xs: "100%", md: "80%" },
-            flexGrow: 1,
-            filter: loading ? "blur(1px)" : "none",
-            pointerEvents: loading ? "none" : "auto",
-          }}
-        >
+        <Box className={`content-wrapper ${loading ? "loading-blur" : ""}`}>
           <FixedHeader />
           <MobileHeader />
-          <Box
-            sx={{
-              mx: { xs: 2, md: 3 },
-              mt: 4,
-              // maxWidth: 1200,
-              // width: "100%",
-              pb: 5,
-              // marginInline: "auto",
-            }}
-          >
-            {/* Snackbar */}
+          <Box className="content-box">
             <Snackbar
               open={openSnackbar}
               autoHideDuration={6000}
@@ -174,38 +135,13 @@ const handleConfirmDelete = async () => {
               <MuiAlert
                 onClose={handleSnackbarClose}
                 severity={snackbarSeverity}
-                 sx={{
-      border: "none",
-      boxShadow:"none",
-      width: "100%",
-      // ✅ Background conditions
-      bgcolor:
-        snackbarMessage === `Term deleted successfully`
-          ? "#fde8e4"
-          : snackbarMessage === "Term created successfully"
-          ? "#daf4f0"
-          : undefined,
-
-      // ✅ Icon color conditions
-      "& .MuiAlert-icon": {
-        color:
-          snackbarMessage === `Term deleted successfully`
-            ? "#cc563d"
-            : snackbarMessage === "Term created successfully"
-            ? "#099885"
-            : undefined,
-      },
-
-      // ✅ Text color conditions
-      "& .MuiAlert-message": {
-        color:
-          snackbarMessage === `Term deleted successfully`
-            ? "#cc563d"
-            : snackbarMessage === "Term created successfully"
-            ? "#099885"
-            : undefined,
-      },
-    }}
+                className={`custom-snackbar ${
+                  snackbarMessage === "Term deleted successfully"
+                    ? "snackbar-delete"
+                    : snackbarMessage === "Term created successfully"
+                    ? "snackbar-create"
+                    : ""
+                }`}
                 elevation={6}
                 variant="filled"
               >
@@ -213,28 +149,20 @@ const handleConfirmDelete = async () => {
               </MuiAlert>
             </Snackbar>
 
-            {/* Add Term Section */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2, md: 3 },
-                mb: 4,
-                borderRadius: 1,
-                backgroundColor: "#fff",
-                border: "1px solid",
-                borderColor: "divider",
-                // boxShadow: "0 2px 10px rgba(23,58,94,0.06)",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: "#173A5E" }}>
+            <Paper elevation={0} className="paper-box">
+              <Box className="paper-header">
+                <Typography variant="h6" className="paper-title">
                   Manage Terms
                 </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Create a new term by entering start and end years
+                <Typography variant="body2" className="paper-subtitle">
+                  Define Term Duration (Start Year – End Year)
                 </Typography>
               </Box>
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Stack
+                direction="row-responsive"
+                spacing={2}
+                className="input-stack"
+              >
                 <TextField
                   fullWidth
                   label="Start Year"
@@ -242,12 +170,7 @@ const handleConfirmDelete = async () => {
                   type="number"
                   value={startYear}
                   onChange={(e) => setStartYear(e.target.value)}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 1,
-                      backgroundColor: "#fff",
-                    },
-                  }}
+                  className="term-input"
                 />
                 <TextField
                   fullWidth
@@ -256,45 +179,31 @@ const handleConfirmDelete = async () => {
                   type="number"
                   value={endYear}
                   onChange={(e) => setEndYear(e.target.value)}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 1,
-                      backgroundColor: "#fff",
-                      height:'40px'
-                    },
-                  }}
+                  className="term-input"
                 />
                 <Button
                   startIcon={<Add />}
                   onClick={handleCreateTerm}
-                  sx={{
-                    minWidth: 120,
-                    textTransform: "none",
-                    bgcolor: "#173A5E",
-                    color: "#fff",
-                    borderRadius: 1,
-                    "&:hover": {  bgcolor: "#1E4C80" },
-                  }}
+                  className="add-term-btn"
                 >
                   Add Term
                 </Button>
               </Stack>
             </Paper>
 
-            {/* Term List */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2, md: 3 },
-                borderRadius: 1,
-                backgroundColor: "#fff",
-                border: "1px solid",
-                borderColor: "divider",
-               
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 500, color: "#173A5E" }}>
+            <Paper elevation={0} className="terms-list-container">
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  mb: 2,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 500, color: "#173A5E" }}
+                >
                   Terms List
                 </Typography>
                 <Typography variant="body2" sx={{ color: "text.secondary" }}>
@@ -305,81 +214,42 @@ const handleConfirmDelete = async () => {
               {terms?.length ? (
                 <Stack spacing={1.5}>
                   {terms.map((term, index) => (
-                    <Paper
-                      key={term._id}
-                      elevation={0}
-                      sx={{
-                       
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 2,
-                        borderRadius: 1,
-                        backgroundColor: "#fff",
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        transition: 'box-shadow .2s ease, transform .1s ease',
-                        "&:hover": {
-                          boxShadow: "0 6px 18px rgba(23,58,94,0.12)",
-                          transform: 'translateY(-0.5px)'
-                        }
-                      }}
-                    >
+                    <Paper key={term._id} elevation={0} className="term-item">
                       <Stack direction="row" spacing={2} alignItems="center">
                         <Box>
-                          <Typography  sx={{ fontWeight: 500 }}>
+                          <Typography sx={{ fontWeight: 500 }}>
                             {term.name}
                           </Typography>
-                          
                         </Box>
 
-                        <Paper
-                          elevation={0}
-                          sx={{
-                            px: 1.25,
-                            py: 0.5,
-                            borderRadius: 1,
-                            bgcolor: "#F1F5F9",
-                            color: "#0F172A",
-                            fontSize: "0.8rem",
-                            fontWeight: 500,
-                          }}
-                        >
-                          <Typography sx={{ fontSize: '12px' }}>Congress: {term.congresses?.length ? term.congresses.join(', ') : 'N/A'}</Typography>
+                        <Paper elevation={0} className="congress-tag">
+                          <Typography sx={{ fontSize: "12px" }}>
+                            Congress:{" "}
+                            {term.congresses?.length
+                              ? term.congresses.join(", ")
+                              : "N/A"}
+                          </Typography>
                         </Paper>
                       </Stack>
 
                       {/* Delete Button */}
-                      {
-                        userRole === 'admin' &&
-                          <Tooltip title="Delete term">
-                        <IconButton
-                          color="error"
-                           onClick={() => handleOpenConfirm(term._id)}
-                          size="small"
-                          sx={{ ml: 2 }}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      }
-                    
+                      {userRole === "admin" && (
+                        <Tooltip title="Delete term">
+                          <IconButton
+                            color="error"
+                            onClick={() => handleOpenConfirm(term._id)}
+                            size="small"
+                            sx={{ ml: 2 }}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Paper>
                   ))}
                 </Stack>
               ) : (
-                <Box
-                  sx={{
-                    p: 3,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "#fff",
-                    borderRadius: 1,
-                    border: '1px dashed',
-                    borderColor: 'divider',
-                  }}
-                >
+                <Box className="terms-empty-box">
                   <Typography color="text.secondary" variant="body2">
                     No terms available. Add a new term above.
                   </Typography>
@@ -390,62 +260,55 @@ const handleConfirmDelete = async () => {
           </Box>
         </Box>
       </Box>
-<Dialog
-  open={openConfirm}
-  onClose={handleCloseConfirm}
-  aria-labelledby="confirm-dialog"
-  PaperProps={{
-    sx: { borderRadius: 3, padding: 2, minWidth: 350 },
-  }}
->
-  <DialogTitle
-    id="confirm-dialog"
-    className="dialogBox">
-    Confirm Deletion
-  </DialogTitle>
-
-  <DialogContent>
-    <DialogContentText className="dialogTitle" >
-      Are you sure you want to delete this term? <br />
-     
-    </DialogContentText>
-  </DialogContent>
-
-  <DialogActions>
-    <Stack
-      direction="row"
-      spacing={2}
-      sx={{
-        width: "100%",
-        justifyContent: "center",
-        paddingBottom: 2,
-      }}
-    >
-      <Button
-        onClick={handleCloseConfirm}
-        variant="outlined"
-        color="secondary"
-        sx={{ borderRadius: 2, paddingX: 3 }}
+      <Dialog
+        open={openConfirm}
+        onClose={handleCloseConfirm}
+        aria-labelledby="confirm-dialog"
+        PaperProps={{
+          sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
+        }}
       >
-        Cancel
-      </Button>
+        <DialogTitle id="confirm-dialog" className="dialogBox">
+          Confirm Deletion
+        </DialogTitle>
 
-      <Button
-        onClick={handleConfirmDelete}
-        variant="contained"
-        color="error"
-        sx={{ borderRadius: 2, paddingX: 3 }}
-        autoFocus
-      >
-        Delete
-      </Button>
-    </Stack>
-  </DialogActions>
-</Dialog>
+        <DialogContent>
+          <DialogContentText className="dialogTitle">
+            Are you sure you want to delete this term? <br />
+          </DialogContentText>
+        </DialogContent>
 
+        <DialogActions>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+              width: "100%",
+              justifyContent: "center",
+              paddingBottom: 2,
+            }}
+          >
+            <Button
+              onClick={handleCloseConfirm}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+            >
+              Cancel
+            </Button>
 
-
+            <Button
+              onClick={handleConfirmDelete}
+              variant="contained"
+              color="error"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+              autoFocus
+            >
+              Delete
+            </Button>
+          </Stack>
+        </DialogActions>
+      </Dialog>
     </AppTheme>
-    
   );
 }
