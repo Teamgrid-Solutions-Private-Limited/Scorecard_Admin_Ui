@@ -1279,7 +1279,7 @@ const handleRemoveTerm = (termIndex) => {
 
   return (
     <AppTheme key={componentKey}>
-      <LoadingOverlay loading={loading || isDataFetching} />
+    
       <Box className="flexContainer">
         <SideMenu />
         <Box
