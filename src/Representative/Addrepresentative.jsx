@@ -72,21 +72,12 @@ export default function Addrepresentative(props) {
   const [componentKey, setComponentKey] = useState(0);
   const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
-<<<<<<< HEAD
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
-   const [selectionError, setSelectionError] = useState({
-      show: false,
-      message: "",
-      type: "",
-    });
-=======
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectionError, setSelectionError] = useState({
     show: false,
     message: "",
     type: "",
   });
->>>>>>> dev-test
 
   const navigate = useNavigate();
 
@@ -406,17 +397,6 @@ export default function Addrepresentative(props) {
     });
   };
 
-<<<<<<< HEAD
-
-
-  const handleEditorChange = useCallback((content, termIndex) => {
-    const fieldName = `term${termIndex}_summary`; 
-    setLocalChanges((prev) =>
-      prev.includes(fieldName) ? prev : [...prev, fieldName]
-    );
-  }, []);
-=======
->>>>>>> dev-test
   const handleAddTerm = () => {
     setHouseTermData((prev) => [
       ...prev,

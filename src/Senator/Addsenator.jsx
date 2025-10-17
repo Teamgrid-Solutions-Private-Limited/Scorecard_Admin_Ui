@@ -28,7 +28,7 @@ import SenatorTermSection from "../components/senatorService/SenatorTermSection"
 import StatusDisplay from "../components/StatusDisplay";
 import SnackbarComponent from "../components/SnackbarComponent";
 import ActionButtons from "../components/ActionButtons";
-
+import Typography from "@mui/material/Typography";
 // Redux Slices
 import {
   getSenatorDataBySenetorId,
@@ -72,7 +72,14 @@ export default function AddSenator(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
+// Add comprehensive loading state
+const [isInitialLoad, setIsInitialLoad] = useState(true);
+const [dataLoaded, setDataLoaded] = useState(false);
 
+// Track individual data loading states
+const [votesLoaded, setVotesLoaded] = useState(false);
+const [activitiesLoaded, setActivitiesLoaded] = useState(false);
+const [termsLoaded, setTermsLoaded] = useState(false);
   const [loading, setLoading] = useState(loadingg);
 
   const theme = useTheme();
@@ -325,6 +332,11 @@ export default function AddSenator(props) {
       termId: null,
     },
   ]);
+useEffect(() => {
+  console.log("Updated formData:", formData);
+  console.log("Edited fields:", formData.editedFields);
+  console.log("Field editors:", formData.fieldEditors);
+}, [formData]); // This will run whenever formData changes
 
   const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
@@ -408,14 +420,10 @@ export default function AddSenator(props) {
               };
             });
 
-            // If no votes in the new term, ensure we have at least one empty entry
             if (updatedTerm.votesScore.length === 0) {
               updatedTerm.votesScore = [{ voteId: "", score: "" }];
             }
 
-            // In handleTermChange, update the activitiesScore section:
-
-            // Update activitiesScore for the new term
             const newParticipatedActivities = allActivities.filter(
               (activity) => {
                 const activityDate = new Date(activity.date);
@@ -429,8 +437,6 @@ export default function AddSenator(props) {
                   );
 
                 if (!inTerm) return false;
-
-                //  Condition 2: Must have a non-empty score
                 return senatorActivities.some((a) => {
                   if (!a?.score || a.score.trim() === "") return false;
 
@@ -444,7 +450,6 @@ export default function AddSenator(props) {
               }
             );
 
-            // Create new activitiesScore array with senator's actual scores
             updatedTerm.activitiesScore = newParticipatedActivities.map(
               (activity) => {
                 const senAct = senatorActivities.find((a) => {
@@ -472,7 +477,6 @@ export default function AddSenator(props) {
               }
             );
 
-            // If no activities in the new term, ensure we have at least one empty entry
             if (updatedTerm.activitiesScore.length === 0) {
               updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
             }
@@ -890,8 +894,31 @@ export default function AddSenator(props) {
     }
     return newVal !== oldVal;
   };
-
+const isDataReady = () => {
+  return (
+    !isInitialLoad &&
+    dataLoaded &&
+    termsLoaded &&
+    votesLoaded &&
+    activitiesLoaded &&
+    terms?.length > 0 &&
+    allVotes?.length > 0 &&
+    allActivities?.length > 0
+  );
+};
+  useEffect(() => {
+    if (isDataReady()) {
+      console.log('All data ready, prefilling forms...');
+      termPreFill();
+      preFillForm();
+    }
+  }, [dataLoaded, termsLoaded, votesLoaded, activitiesLoaded, senatorData]);
+  
   const termPreFill = () => {
+     if (!terms?.length || !allVotes?.length || !allActivities?.length) {
+      console.log('Waiting for data to load...');
+      return;
+    }
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
@@ -911,7 +938,6 @@ export default function AddSenator(props) {
           };
         }
 
-        // Helper to get senator's actual vote score for a given voteId
         const getVoteScore = (voteId) => {
           const senatorVote = senatorVotes.find(
             (v) =>
@@ -1071,10 +1097,8 @@ export default function AddSenator(props) {
             }
           }
         });
-        // NEW: Collect all votes that don't belong to any term
         let orphanVotes = [];
 
-        // Check original term votes that don't belong to this term
         if (Array.isArray(term.votesScore) && term.votesScore.length > 0) {
           term.votesScore.forEach((vote) => {
             const voteId = vote.voteId?._id || vote.voteId;
@@ -1083,7 +1107,6 @@ export default function AddSenator(props) {
             const voteData = allVotes.find((v) => v._id === voteId);
             if (!voteData) return;
 
-            // Check if this vote doesn't belong to ANY term
             const belongsToAnyTerm = senatorData.currentSenator.some(
               (otherTerm) => {
                 const otherMatchedTerm = terms?.find(
@@ -1113,20 +1136,17 @@ export default function AddSenator(props) {
           });
         }
 
-        // Ensure arrays are not empty
         if (!Array.isArray(votesScore) || votesScore.length === 0) {
           votesScore = [{ voteId: "", score: "" }];
         }
 
         let pastVotesScore;
         if (orphanVotes.length > 0) {
-          // Use orphan votes as pastVotesScore
           pastVotesScore = orphanVotes;
           const currentEditedFields = Array.isArray(formData?.editedFields)
             ? [...formData.editedFields]
             : [];
 
-          // Get current fieldEditors from formData or initialize empty object
           const currentFieldEditors = { ...(formData?.fieldEditors || {}) };
 
           orphanVotes.forEach((orphanVote) => {
@@ -1246,12 +1266,34 @@ export default function AddSenator(props) {
             }
           });
 
-          // Update formData with the new editedFields and fieldEditors
-          setFormData((prev) => ({
-            ...prev,
-            editedFields: currentEditedFields,
-            fieldEditors: currentFieldEditors,
-          }));
+          // Merge into formData.editedFields/fieldEditors without losing prior entries
+          setFormData((prev) => {
+            const prevEdited = Array.isArray(prev?.editedFields)
+              ? prev.editedFields
+              : [];
+            const mergedEdited = [...prevEdited, ...currentEditedFields];
+
+            // Dedupe by field key + name
+            const seen = new Set();
+            const dedupEdited = mergedEdited.filter((item) => {
+              const key = Array.isArray(item.field) ? item.field[0] : item.field;
+              const sig = `${key}::${item.name || ""}`;
+              if (seen.has(sig)) return false;
+              seen.add(sig);
+              return true;
+            });
+
+            const mergedEditors = {
+              ...(prev?.fieldEditors || {}),
+              ...currentFieldEditors,
+            };
+
+            return {
+              ...prev,
+              editedFields: dedupEdited,
+              fieldEditors: mergedEditors,
+            };
+          });
         } else if (
           Array.isArray(term.pastVotesScore) &&
           term.pastVotesScore.length > 0 &&
@@ -1520,6 +1562,7 @@ export default function AddSenator(props) {
       });
       setSenatorTermData(termsData);
       setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
+      console.log("Prefilled senatorTermData:", termsData);
     } else {
       const defaultTerm = [
         {
@@ -1639,9 +1682,9 @@ export default function AddSenator(props) {
     setEditedFields(changes);
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
-  useEffect(() => {
-    termPreFill();
-  }, [id, senatorData]);
+  // useEffect(() => {
+  //   termPreFill();
+  // }, [id, senatorData]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -1664,47 +1707,91 @@ export default function AddSenator(props) {
         fieldEditors: senator.fieldEditors || {},
       };
 
-      setFormData(newFormData);
+      setFormData((prev) => {
+        const prevEdited = Array.isArray(prev?.editedFields) ? prev.editedFields : [];
+        const incomingEdited = Array.isArray(newFormData.editedFields) ? newFormData.editedFields : [];
+        const mergedEdited = [...prevEdited, ...incomingEdited];
+
+        const seen = new Set();
+        const dedupEdited = mergedEdited.filter((item) => {
+          const key = Array.isArray(item.field) ? item.field[0] : item.field;
+          const sig = `${key}::${item.name || ""}`;
+          if (seen.has(sig)) return false;
+          seen.add(sig);
+          return true;
+        });
+
+        const mergedEditors = {
+          ...(prev?.fieldEditors || {}),
+          ...(newFormData.fieldEditors || {}),
+        };
+
+        return {
+          ...prev,
+          ...newFormData,
+          editedFields: dedupEdited,
+          fieldEditors: mergedEditors,
+        };
+      });
       setOriginalFormData(JSON.parse(JSON.stringify(newFormData)));
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getSenatorById(id));
-      dispatch(getSenatorDataBySenetorId(id));
-      dispatch(getAllTerms());
-      dispatch(getAllVotes());
-      dispatch(getAllActivity());
-    }
-
-    return () => {
-      dispatch(clearSenatorState());
-      dispatch(clearSenatorDataState());
+ useEffect(() => {
+  if (id) {
+    const loadData = async () => {
+      try {
+        setIsInitialLoad(true);
+        
+        await dispatch(getAllTerms()).unwrap();
+        setTermsLoaded(true);
+        
+        await dispatch(getAllVotes()).unwrap();
+        setVotesLoaded(true);
+        
+        await dispatch(getAllActivity()).unwrap();
+        setActivitiesLoaded(true);
+        
+        await Promise.all([
+          dispatch(getSenatorById(id)).unwrap(),
+          dispatch(getSenatorDataBySenetorId(id)).unwrap()
+        ]);
+        
+        setDataLoaded(true);
+      } catch (error) {
+        console.error('Data loading failed:', error);
+      } finally {
+        setIsInitialLoad(false);
+      }
     };
-  }, [id, dispatch]);
+
+    loadData();
+  }
+
+  return () => {
+    dispatch(clearSenatorState());
+    dispatch(clearSenatorDataState());
+  };
+}, [id, dispatch]);
 
   console.log("Loading state:", loading);
 
-  useEffect(() => {
-    preFillForm();
-  }, [senator, terms]);
+  // useEffect(() => {
+  //   preFillForm();
+  // }, [senator, terms]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
-      // Compare with original data to determine if this is an actual change
       const isActualChange = originalFormData
         ? compareValues(newData[name], originalFormData[name])
         : true;
 
-      // Update local changes only if it's a real change
       if (isActualChange && !localChanges.includes(name)) {
         setLocalChanges((prev) => [...prev, name]);
       } else if (!isActualChange && localChanges.includes(name)) {
-        // If it's reverted to original, remove from changes
         setLocalChanges((prev) => prev.filter((field) => field !== name));
       }
 
@@ -1724,7 +1811,7 @@ export default function AddSenator(props) {
   };
 
   const handleStatusChange = (status) => {
-    const fieldName = "status"; // The field being changed
+    const fieldName = "status"; 
     setFormData((prev) => {
       const newData = { ...prev, status };
 
@@ -1749,7 +1836,6 @@ export default function AddSenator(props) {
     e.preventDefault();
     setLoading(true);
 
-    // Helper: sanitize keys for MongoDB
     const sanitizeKey = (str) => {
       return str
         .replace(/[^a-zA-Z0-9_]/g, "_")
@@ -1883,7 +1969,6 @@ export default function AddSenator(props) {
       };
 
       senatorTermData.forEach((term, termIndex) => {
-        // votesScore - only process changed votes
         term.votesScore.forEach((vote, voteIndex) => {
           if (vote.voteId && vote.voteId.toString().trim() !== "") {
             if (hasVoteChanged(termIndex, voteIndex, vote)) {
@@ -2005,7 +2090,6 @@ export default function AddSenator(props) {
             });
           }
         });
-        // Handle currentTerm separately, skip false→undefined case
         if (
           !(
             originalTerm.currentTerm === undefined && term.currentTerm === false
@@ -2122,7 +2206,6 @@ export default function AddSenator(props) {
         senatorUpdate.fieldEditors = {};
       }
 
-      //  Update senator
       if (id) {
         const formDataToSend = new FormData();
         Object.entries(senatorUpdate).forEach(([key, value]) => {
@@ -2139,7 +2222,6 @@ export default function AddSenator(props) {
         ).unwrap();
       }
 
-      //  Update terms
       const termPromises = senatorTermData.map((term, index) => {
         const cleanVotesScore = term.votesScore
           .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
@@ -2263,7 +2345,6 @@ export default function AddSenator(props) {
     width: 1,
   });
   const label = { inputProps: { "aria-label": "Color switch demo" } };
-  // Update your status config
   const getStatusConfig = (editedFields, currentStatus) => {
     const configs = {
       draft: {
@@ -2321,10 +2402,13 @@ export default function AddSenator(props) {
     return termExists ? termId : "";
   };
 
-  // Replace your current loading condition with this enhanced version
-
   return (
     <AppTheme key={componentKey}>
+      {(loadingg || isInitialLoad || !dataLoaded) && (
+        <Box className="circularLoader">
+          <CircularProgress sx={{ color: "#CC9A3A !important" }} />
+        </Box>
+      )}
       <Box className="flexContainer">
         <SideMenu />
         <Box
