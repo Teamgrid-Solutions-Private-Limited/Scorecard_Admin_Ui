@@ -25,7 +25,6 @@ import {
   ClickAwayListener,
   Paper,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import SideMenu from "../../src/components/SideMenu";
@@ -67,11 +66,9 @@ export default function Representative(props) {
   const { houses, loading } = useSelector((state) => state.house);
   const [fetching, setFetching] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [progressStep, setProgressStep] = useState(0);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRepresentative, setSelectedRepresentative] = useState(null);
   const token = localStorage.getItem("token");
-  // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
@@ -112,34 +109,62 @@ export default function Representative(props) {
     }
   };
 
-  // Build congress options from available houseData terms
-
   useEffect(() => {
     dispatch(getAllHouses());
     dispatch(getAllHouseData());
     dispatch(getAllTerms());
   }, [dispatch]);
 
- useEffect(() => {
-  if (houses && houseData && terms) {
-    const merged = houses.map((house) => {
-      const houseRecords = houseData.filter((data) => data.houseId === house._id);
-      const currentTermData = houseRecords.find((rec) => rec.currentTerm === true);
+  useEffect(() => {
+    if (houses && houseData && terms) {
+      const merged = houses.map((house) => {
+        const houseRecords = houseData.filter(
+          (data) => data.houseId === house._id
+        );
+        const currentTermData = houseRecords.find(
+          (rec) => rec.currentTerm === true
+        );
 
-      let termId;
-      let rating = "N/A";
-      let termName = "";
-      let currentTerm = false;
+        let termId;
+        let rating = "N/A";
+        let termName = "";
+        let currentTerm = false;
 
-      if (currentTermData) {
-        termId = currentTermData.termId;
-        rating = currentTermData.rating !== undefined && currentTermData.rating !== null 
-          ? currentTermData.rating 
-          : "N/A";
-        currentTerm = true;
+        if (currentTermData) {
+          termId = currentTermData.termId;
+          rating =
+            currentTermData.rating !== undefined &&
+            currentTermData.rating !== null
+              ? currentTermData.rating
+              : "N/A";
+          currentTerm = true;
 
-        if (currentTermData.rating === "") {
-          const fallbackRecords = houseRecords
+          if (currentTermData.rating === "") {
+            const fallbackRecords = houseRecords
+              .map((rec) => {
+                const termObj = terms.find((t) => t._id === rec.termId);
+                return termObj ? { ...rec, termObj } : null;
+              })
+              .filter(Boolean)
+              .sort((a, b) => {
+                const aYear = parseInt(a.termObj.endYear, 10) || 0;
+                const bYear = parseInt(b.termObj.endYear, 10) || 0;
+                return bYear - aYear;
+              });
+
+            const valid = fallbackRecords.find(
+              (rec) => rec.rating && rec.rating.trim() !== ""
+            );
+            if (valid) {
+              rating = valid.rating;
+              termId = valid.termId;
+            }
+          }
+
+          const termObj = terms.find((t) => t._id === termId);
+          termName = termObj ? termObj.name : "";
+        } else {
+          const validRecords = houseRecords
             .map((rec) => {
               const termObj = terms.find((t) => t._id === rec.termId);
               return termObj ? { ...rec, termObj } : null;
@@ -151,83 +176,62 @@ export default function Representative(props) {
               return bYear - aYear;
             });
 
-          const valid = fallbackRecords.find((rec) => rec.rating && rec.rating.trim() !== "");
-          if (valid) {
-            rating = valid.rating;
-            termId = valid.termId;
+          if (validRecords.length > 0) {
+            const latest = validRecords.find(
+              (rec) => rec.rating && rec.rating.trim() !== ""
+            );
+            if (latest) {
+              termId = latest.termId;
+              rating = latest.rating;
+              termName = latest.termObj.name;
+            } else {
+              const mostRecent = validRecords[0];
+              termId = mostRecent.termId;
+              rating = mostRecent.rating || "N/A";
+              termName = mostRecent.termObj.name;
+            }
+          } else {
+            termId = house.termId;
+            const termObj = terms.find((t) => t._id === termId);
+            termName = termObj ? termObj.name : "";
+            rating = "N/A";
           }
         }
-        
-        const termObj = terms.find((t) => t._id === termId);
-        termName = termObj ? termObj.name : "";
-        
-      } else {
-        const validRecords = houseRecords
+        const allTerms = houseRecords
           .map((rec) => {
             const termObj = terms.find((t) => t._id === rec.termId);
-            return termObj ? { ...rec, termObj } : null;
+            return termObj
+              ? {
+                  termId: rec.termId,
+                  termName: termObj.name || "",
+                  currentTerm: rec.currentTerm || false,
+                  rating: rec.rating,
+                  congresses: Array.isArray(termObj.congresses)
+                    ? termObj.congresses
+                    : [],
+                }
+              : null;
           })
-          .filter(Boolean)
-          .sort((a, b) => {
-            const aYear = parseInt(a.termObj.endYear, 10) || 0;
-            const bYear = parseInt(b.termObj.endYear, 10) || 0;
-            return bYear - aYear;
-          });
+          .filter(Boolean);
 
-        if (validRecords.length > 0) {
-          const latest = validRecords.find((rec) => rec.rating && rec.rating.trim() !== "");
-          if (latest) {
-            termId = latest.termId;
-            rating = latest.rating;
-            termName = latest.termObj.name;
-          } else {
-            const mostRecent = validRecords[0];
-            termId = mostRecent.termId;
-            rating = mostRecent.rating || "N/A";
-            termName = mostRecent.termObj.name;
-          }
-        } else {
-          termId = house.termId;
-          const termObj = terms.find((t) => t._id === termId);
-          termName = termObj ? termObj.name : "";
-          rating = "N/A";
-        }
-      }
+        return {
+          ...house,
+          rating,
+          termId,
+          termName,
+          currentTerm,
+          allTerms,
+        };
+      });
 
-      // Collect all term entries for this representative for filtering (congress)
-      const allTerms = houseRecords
-        .map((rec) => {
-          const termObj = terms.find((t) => t._id === rec.termId);
-          return termObj
-            ? {
-                termId: rec.termId,
-                termName: termObj.name || "",
-                currentTerm: rec.currentTerm || false,
-                rating: rec.rating,
-                congresses: Array.isArray(termObj.congresses) ? termObj.congresses : [],
-              }
-            : null;
-        })
-        .filter(Boolean);
-
-      return {
-        ...house,
-        rating,
-        termId,
-        termName,
-        currentTerm,
-        allTerms,
-      };
-    });
-
-    setMergedHouses(merged);
-  }
-}, [houses, houseData, terms]);
+      setMergedHouses(merged);
+    }
+  }, [houses, houseData, terms]);
 
   const transformedHouses = mergedHouses.map((house) => ({
     ...house,
     district: house.district?.split(", ").pop() || "Unknown",
-    currentTerm: house.currentTerm || false, // Ensure currentTerm exists
+    currentTerm: house.currentTerm || false,
   }));
 
   const partyOptions = [
@@ -249,7 +253,6 @@ export default function Representative(props) {
     rating.toLowerCase().includes(searchTerms.rating)
   );
 
-  // Build Congress options and map each congress to a year range using only terms with a single congress value
   const congressYearMap = (() => {
     const map = {};
     (terms || []).forEach((t) => {
@@ -270,49 +273,50 @@ export default function Representative(props) {
 
   const filteredCongressOptions = congressOptions.filter((c) => {
     const yr = congressYearMap[c];
-    const label = yr ? `Congress ${c} (${yr.startYear}-${yr.endYear})` : `Congress ${c}`;
+    const label = yr
+      ? `Congress ${c} (${yr.startYear}-${yr.endYear})`
+      : `Congress ${c}`;
     return label.toLowerCase().includes(searchTerms.congress);
   });
 
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
-      // Term filter logic - now properly checking currentTerm field
       if (termFilter === "current") {
         if (transformedHouse.currentTerm !== true) return false;
       } else if (termFilter === "past") {
         if (transformedHouse.currentTerm === true) return false;
       }
-      // Congress filter: match if any of representative's term congress numbers intersect selection
       if (congressFilter.length > 0) {
-        const houseTerms = mergedHouses.find((h) => h._id === transformedHouse._id)?.allTerms || [];
-        const matchesCongress = houseTerms.some((t) => Array.isArray(t.congresses) && t.congresses.some((num) => congressFilter.includes(num)));
+        const houseTerms =
+          mergedHouses.find((h) => h._id === transformedHouse._id)?.allTerms ||
+          [];
+        const matchesCongress = houseTerms.some(
+          (t) =>
+            Array.isArray(t.congresses) &&
+            t.congresses.some((num) => congressFilter.includes(num))
+        );
         if (!matchesCongress) return false;
       }
 
-      // Name search filter
       const nameMatch = searchQuery
         .toLowerCase()
         .split(/\s+/)
         .filter(Boolean)
         .every((word) => transformedHouse.name.toLowerCase().includes(word));
 
-      // Rating filter
       const ratingMatch =
         ratingFilter.length === 0 ||
         (transformedHouse.rating &&
           ratingFilter.includes(transformedHouse.rating));
 
-      // Party filter
       const partyMatch =
         partyFilter.length === 0 ||
         partyFilter.includes(transformedHouse.party);
 
-      // District filter
       const districtMatch =
         districtFilter.length === 0 ||
         districtFilter.includes(transformedHouse.district);
 
-      // Status filter
       const statusMatch =
         statusFilter.length === 0 ||
         (transformedHouse.publishStatus &&
@@ -324,7 +328,6 @@ export default function Representative(props) {
     }
   );
 
-  // Filter handlers
   const toggleFilter = () => {
     setFilterOpen(!filterOpen);
     if (!filterOpen) {
@@ -370,11 +373,6 @@ export default function Representative(props) {
       prev.includes(rating)
         ? prev.filter((r) => r !== rating)
         : [...prev, rating]
-    );
-  };
-  const handleYearFilter = (year) => {
-    setYearFilter((prev) =>
-      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
     );
   };
 
@@ -484,12 +482,6 @@ export default function Representative(props) {
         updateRepresentativeStatus({ id: house._id, publishStatus: newStatus })
       ).unwrap();
 
-      // Optimistically update local UI without waiting for getAllHouses
-      const updated = houses.map((h) =>
-        h._id === house._id ? { ...h, publishStatus: newStatus } : h
-      );
-      // You may set local state with setHouses(updated) if you're maintaining local state
-      // Or let redux update on re-fetch:
       dispatch(getAllHouses());
     } catch (error) {
       console.error("Failed to update status:", error);
@@ -547,7 +539,6 @@ export default function Representative(props) {
                     ),
                   }}
                   sx={{
-                    //  marginLeft: { xs: 0, sm: "0.5rem" },
                     width: { xs: "50%", sm: "235px" },
                     "& .MuiOutlinedInput-root": {
                       backgroundColor: "#fff",
@@ -614,7 +605,6 @@ export default function Representative(props) {
                           </Box>
                         </Box>
 
-                        {/* Party Filter */}
                         <Box
                           className={`filter-section ${
                             expandedFilter === "party" ? "active" : ""
@@ -671,8 +661,6 @@ export default function Representative(props) {
                             </Box>
                           )}
                         </Box>
-
-                        {/* District Filter */}
                         <Box
                           className={`filter-section ${
                             expandedFilter === "district" ? "active" : ""
@@ -751,8 +739,6 @@ export default function Representative(props) {
                             </Box>
                           )}
                         </Box>
-
-                        {/* Rating Filter */}
                         <Box
                           className={`filter-section ${
                             expandedFilter === "rating" ? "active" : ""
@@ -808,8 +794,6 @@ export default function Representative(props) {
                             </Box>
                           )}
                         </Box>
-
-                        {/* Congress Filter */}
                         <Box
                           className={`filter-section ${
                             expandedFilter === "congress" ? "active" : ""
@@ -899,8 +883,6 @@ export default function Representative(props) {
                             </Box>
                           )}
                         </Box>
-
-                        {/* Term Filter */}
                         <Box
                           className={`filter-section ${
                             expandedFilter === "term" ? "active" : ""
@@ -920,7 +902,7 @@ export default function Representative(props) {
                           {expandedFilter === "term" && (
                             <Box sx={{ py: 1, pt: 0 }}>
                               <Box className="filter-scroll">
-                                {["current" /*, "past"*/].map((term) => (
+                                {["current"].map((term) => (
                                   <Box
                                     key={term}
                                     onClick={() => handleTermFilter(term)}
@@ -946,7 +928,6 @@ export default function Representative(props) {
                           )}
                         </Box>
 
-                        {/* Status Filter */}
                         <Box
                           className={`filter-section ${
                             expandedFilter === "status" ? "active" : ""
@@ -991,7 +972,6 @@ export default function Representative(props) {
                           )}
                         </Box>
 
-                        {/* Clear All Button */}
                         <Box>
                           <Button
                             fullWidth
@@ -1025,7 +1005,7 @@ export default function Representative(props) {
                 )}
               </Stack>
             </Box>
-            {/* Representative Table */}
+
             <MainGrid
               type="representative"
               data={filteredRepresentative || []}

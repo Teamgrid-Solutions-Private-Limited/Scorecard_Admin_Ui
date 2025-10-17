@@ -72,12 +72,21 @@ export default function Addrepresentative(props) {
   const [componentKey, setComponentKey] = useState(0);
   const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
+<<<<<<< HEAD
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
    const [selectionError, setSelectionError] = useState({
       show: false,
       message: "",
       type: "",
     });
+=======
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [selectionError, setSelectionError] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
+>>>>>>> dev-test
 
   const navigate = useNavigate();
 
@@ -397,6 +406,7 @@ export default function Addrepresentative(props) {
     });
   };
 
+<<<<<<< HEAD
 
 
   const handleEditorChange = useCallback((content, termIndex) => {
@@ -405,6 +415,8 @@ export default function Addrepresentative(props) {
       prev.includes(fieldName) ? prev : [...prev, fieldName]
     );
   }, []);
+=======
+>>>>>>> dev-test
   const handleAddTerm = () => {
     setHouseTermData((prev) => [
       ...prev,
@@ -1287,7 +1299,7 @@ const handleRemoveTerm = (termIndex) => {
 
   return (
     <AppTheme key={componentKey}>
-      <LoadingOverlay loading={loading || isDataFetching} />
+    
       <Box className="flexContainer">
         <SideMenu />
         <Box
@@ -1336,7 +1348,6 @@ const handleRemoveTerm = (termIndex) => {
               />
             </Paper>
 
-            {/* Render each term in houseTermData */}
             {houseTermData.map((term, termIndex) => (
               <Paper key={termIndex} className="termData-paper">
                 <Box sx={{ padding: 0 }}>

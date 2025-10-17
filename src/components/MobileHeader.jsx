@@ -20,7 +20,6 @@ const MobileHeader = () => {
 
   return (
     <>
-      {/* Mobile Header */}
       <AppBar
         position="sticky"
         elevation={0}
@@ -29,7 +28,6 @@ const MobileHeader = () => {
           display: { xs: "flex", md: "none" },
           backgroundColor: "#fff",
           color: "#363837",
-          // borderBottom: "4px solid rgba(0,0,0,0.05)",
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -51,8 +49,6 @@ const MobileHeader = () => {
           </IconButton>
         </Toolbar>
       </AppBar>
-
-      {/* Drawer for Menu */}
       <Drawer
         anchor="left"
         open={open}

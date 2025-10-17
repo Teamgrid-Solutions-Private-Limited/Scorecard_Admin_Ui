@@ -113,11 +113,15 @@ export const addUser = createAsyncThunk(
       if (userRole !== "admin") {
         return rejectWithValue("You are not authorized to add users.");
       }
-      const response = await axios.post(`${API_URL}/api/invite`, userData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        `${API_URL}/user/users/create`,
+        userData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -193,7 +197,6 @@ const authSlice = createSlice({
       .addCase(updateUser.pending, (state) => {
         state.loading = true;
         state.error = null;
-
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
@@ -219,9 +222,9 @@ const authSlice = createSlice({
         state.users = state.users.filter((user) => user._id !== action.payload);
       })
       .addCase(deleteUser.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-      })
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

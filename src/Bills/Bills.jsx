@@ -19,7 +19,6 @@ import {
   treeViewCustomizations,
 } from "../../src/Themes/customizations";
 import {
-  CircularProgress,
   Snackbar,
   Alert,
   TextField,
@@ -165,7 +164,7 @@ export default function Bills(props) {
   const activeFilterCount = statusFilter.length;
 
   const handleEdit = (row) => {
-    navigate(`edit-bill/${row._id}`);
+    navigate(`/edit-bill/${row._id}`);
   };
   const handleDeleteClick = (row) => {
     setSelectedVote(row);

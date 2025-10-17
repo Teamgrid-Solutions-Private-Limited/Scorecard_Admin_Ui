@@ -91,9 +91,6 @@ function TransitionComponent(props) {
 }
 
 TransitionComponent.propTypes = {
-  /**
-   * Show the component; triggers the enter or exit states
-   */
   in: PropTypes.bool,
 };
 

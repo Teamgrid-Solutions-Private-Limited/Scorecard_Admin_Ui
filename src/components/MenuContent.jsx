@@ -1,7 +1,5 @@
-import * as React from "react";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -21,10 +19,6 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
-import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
-import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AddIcon from "@mui/icons-material/Add";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 

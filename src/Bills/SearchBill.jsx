@@ -1,7 +1,4 @@
-import * as React from "react";
-import { useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import {
   Table,
   TableBody,
@@ -10,16 +7,8 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import {
-  getVoteById,
-  clearVoteState,
-  updateVote,
-  createVote,
-  getAllVotes,
-} from "../redux/reducer/voteSlice"; // Import clearVoteState
-import { getAllTerms } from "../redux/reducer/termSlice";
+import { getAllVotes } from "../redux/reducer/voteSlice";
 import { useState } from "react";
-import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
@@ -41,12 +30,11 @@ import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-export default function SearchBill(props) {
+export default function SearchBill(params) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchAttempted, setSearchAttempted] = useState(false); // Track if search was attempted
-  const [draftBills, setDraftBills] = useState([]);
+  const [searchAttempted, setSearchAttempted] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -99,8 +87,6 @@ export default function SearchBill(props) {
         }
       );
 
-      // setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
-
       setSearchResults(
         (Array.isArray(response.data?.data) ? response.data.data : []).filter(
           (item) => {
@@ -123,31 +109,6 @@ export default function SearchBill(props) {
       setLoading(false);
     }
   };
-  // const handleSearch = async () => {
-  //   setLoading(true);
-  //   setSearchAttempted(true); // Mark that a search was attempted
-  //   try {
-  //     if(!searchQuery){
-  //       setSnackbarMessage("Fill the Field!")
-  //       setSnackbarSeverity("warning")
-  //       setSnackbarOpen(true)
-  //       setLoading(false)
-  //       return
-  //     }
-  //     const response = await axios.post(`${API_URL}/fetch-quorum/store-data`, {
-  //       type: "bills",
-  //       additionalParams: {
-  //         title: searchQuery,
-  //       },
-  //     });
-  //     setSearchResults(Array.isArray(response.data?.data) ? response.data.data : []);
-  //   } catch (error) {
-  //     console.error("Error searching bills:", error);
-  //     setSearchResults([]); // Defensive: clear results on error
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleAddBill = async (bill) => {
     setLoading(true);
@@ -169,11 +130,9 @@ export default function SearchBill(props) {
         editorInfo: editorInfo,
       });
 
-      // alert("Bill saved successfully");
-
       const voteId = response.data.data[0]._id;
       if (voteId) {
-        navigate(`/bills/edit-bill/${voteId}`);
+        navigate(`/edit-bill/${voteId}`);
       } else {
         console.error("voteId (_id) is missing in the API response.");
       }
@@ -207,8 +166,6 @@ export default function SearchBill(props) {
     }
   };
 
-  const label = { inputProps: { "aria-label": "Color switch demo" } };
-
   return (
     <AppTheme>
       <LoadingOverlay loading={loading} />
@@ -235,10 +192,8 @@ export default function SearchBill(props) {
           component="main"
           sx={(theme) => ({
             flexGrow: 1,
-            // minHeight: "80vh",
             display: "flex",
             flexDirection: "column",
-            // backgroundColor: "#f6f6f6ff",
           })}
         >
           <FixedHeader />
@@ -283,23 +238,11 @@ export default function SearchBill(props) {
                       display: "flex",
                       alignItems: "center",
                       flexDirection: { xs: "column", md: "row" },
-                      gap: { xs: 2, md: 3 },
+                      gap: { xs: 2, md: 1 },
                       width: "100%",
                       mt: 5,
-                      // marginLeft: { xs: "0px", lg: "20px" },
                     }}
                   >
-                    {/* <Typography
-                      sx={{
-                        minWidth: "120px",
-                        textAlign: { xs: "center", md: "right" },
-                        fontWeight: 500,
-                        color: "#656D9A",
-                      }}
-                    >
-                      Search Bills 
-                    </Typography> */}
-
                     <TextField
                       placeholder="Look for Bills in Quorum"
                       variant="outlined"
@@ -318,7 +261,6 @@ export default function SearchBill(props) {
                         },
                         "& .MuiInputBase-root": {
                           "&.Mui-focused": {
-                            // borderColor: "#CC9A3A !important",
                             boxShadow: "none !important",
                             outline: "none !important",
                           },
@@ -354,9 +296,7 @@ export default function SearchBill(props) {
                       justifyContent: "center",
                       marginTop: 2,
                     }}
-                  >
-                    {/* <CircularProgress /> */}
-                  </Box>
+                  ></Box>
                 ) : (
                   Array.isArray(searchResults) &&
                   searchResults.length > 0 && (
@@ -427,15 +367,32 @@ export default function SearchBill(props) {
                     </TableContainer>
                   )
                 )}
-                {/* Show 'No results found' message if search was attempted, not loading, and no results */}
                 {searchAttempted &&
                   !loading &&
                   Array.isArray(searchResults) &&
                   searchResults.length === 0 && (
                     <Box sx={{ width: "100%", textAlign: "center", mt: 4 }}>
                       <Typography variant="body1" color="text.secondary">
-                        No bills found for your search.
+                        No bills found in quroum for your search.
                       </Typography>
+                      <Button
+                        onClick={() => navigate("/add-bill")}
+                        sx={{
+                          width: { xs: "100%", md: "auto" },
+                          minWidth: "130px",
+                          backgroundColor: "#173A5E !important",
+                          color: "white !important",
+                          marginTop: 2,
+                          marginBottom: 2,
+                          padding: "0.5rem 1rem",
+                          "&:hover": {
+                            backgroundColor: "#1E4C80 !important",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        Add Bill Manually
+                      </Button>
                     </Box>
                   )}
               </Box>
