@@ -36,6 +36,9 @@ const getRole = () => {
 const clearPaginationStorage = () => {
   localStorage.removeItem("dataGridPagination_representative");
   localStorage.removeItem("dataGridPagination_senator");
+  localStorage.removeItem("dataGridPagination_activities");
+  localStorage.removeItem("dataGridPagination_bills");
+ 
 };
 const mainListItems = [
   { text: "Senators", icon: <GavelRoundedIcon sx={{ fontSize: 40 }} />, link: "/" },
