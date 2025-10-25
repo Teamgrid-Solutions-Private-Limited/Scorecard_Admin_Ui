@@ -1020,17 +1020,48 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid size={isMobile ? 8 : 10}>
                     <FormControl fullWidth>
-                      <TextField
+                      <Select
                         required
                         id="congress"
                         name="congress"
-                        value={formData.congress}
+                        value={formData.congress || ""}
                         onChange={handleChange}
-                        fullWidth
                         size="small"
-                        autoComplete="off"
-                        variant="outlined"
-                      />
+                        sx={{ background: "#fff" }}
+                      >
+                        <MenuItem value="" disabled>
+                          Select congress
+                        </MenuItem>
+                        {Array.isArray(terms) && terms.length > 0 ? (
+                          terms
+                            .filter((t) => {
+                              const s = Number(t.startYear);
+                              const e = Number(t.endYear);
+                              return (
+                                s &&
+                                e &&
+                                e - s === 1 &&
+                                s % 2 === 1 &&
+                                Array.isArray(t.congresses) &&
+                                t.congresses.length > 0
+                              );
+                            })
+                            .sort((a, b) => a.congresses[0] - b.congresses[0])
+                            .map((t) => (
+                              <MenuItem
+                                key={t._id}
+                                value={String(t.congresses[0])}
+                                sx={{ py: 1.25 }}
+                              >
+                                {`${t.congresses[0]}`}
+                              </MenuItem>
+                            ))
+                        ) : (
+                          <MenuItem value="" disabled>
+                            No terms available
+                          </MenuItem>
+                        )}
+                      </Select>
                     </FormControl>
                   </Grid>
 

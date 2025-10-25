@@ -287,7 +287,20 @@ export default function AddBill(props) {
     }
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
-
+ if (name === "termId") {
+   const selectedTerm = terms.find(
+     (t) => String(t._id ?? t.id ?? t.termId ?? t.value ?? "") === String(value)
+   );
+   if (
+     selectedTerm &&
+     Array.isArray(selectedTerm.congresses) &&
+     selectedTerm.congresses.length > 0
+   ) {
+     newData.congress = String(selectedTerm.congresses[0]);
+   } else {
+     newData.congress = "";
+   }
+ }
       if (originalFormData) {
         const changes = Object.keys(newData).filter((key) =>
           compareValues(newData[key], originalFormData[key])
@@ -1237,6 +1250,15 @@ export default function AddBill(props) {
                               Number(term.endYear) - Number(term.startYear) ===
                                 1
                           )
+                          .sort((a, b) => {
+                            const ca = Array.isArray(a.congresses)
+                              ? a.congresses[0]
+                              : 0;
+                            const cb = Array.isArray(b.congresses)
+                              ? b.congresses[0]
+                              : 0;
+                            return ca - cb;
+                          })
                           .map((term, idx) => {
                             const rawValue =
                               term._id ??
@@ -1252,8 +1274,8 @@ export default function AddBill(props) {
                               term.name ??
                               term.title ??
                               (term.startYear || term.endYear
-                                ? `${term.startYear || ""}${
-                                    term.endYear ? " - " + term.endYear : ""
+                                ? `${term.startYear || ""} - ${
+                                    term.endYear || ""
                                   }`
                                 : value);
 
