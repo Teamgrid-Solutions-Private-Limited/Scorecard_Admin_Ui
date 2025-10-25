@@ -1529,7 +1529,7 @@ const handleRemoveTerm = (termIndex) => {
                     </Grid>
 
                     {term.votesScore.map((vote, voteIndex) =>
-                      vote.voteId != null ? ( 
+                      vote.voteId != null ? (
                         <Grid
                           rowSpacing={2}
                           sx={{ width: "100%" }}
@@ -1610,7 +1610,6 @@ const handleRemoveTerm = (termIndex) => {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1726,7 +1725,6 @@ const handleRemoveTerm = (termIndex) => {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-
                                 </Select>
                               </FormControl>
                             </Grid>
