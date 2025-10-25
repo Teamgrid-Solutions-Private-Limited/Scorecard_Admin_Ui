@@ -373,7 +373,7 @@ export default function SearchBill(params) {
                   searchResults.length === 0 && (
                     <Box sx={{ width: "100%", textAlign: "center", mt: 4 }}>
                       <Typography variant="body1" color="text.secondary">
-                        No bills found in quroum for your search.
+                        No matching bills found in Quorum.
                       </Typography>
                       <Button
                         onClick={() => navigate("/add-bill")}
