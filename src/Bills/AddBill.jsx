@@ -128,82 +128,83 @@ export default function AddBill(props) {
     setOpenSnackbar(false);
   };
 
-  const preFillForm = () => {
-    if (selectedVote) {
-      const termIdRaw = selectedVote.termId ?? "";
-      const termIdStr =
-        termIdRaw !== null && termIdRaw !== undefined ? String(termIdRaw) : "";
-      let resolvedTermId = "";
-      let congressValue = selectedVote.congress || "";
+ const preFillForm = () => {
+   if (selectedVote) {
+     const termIdRaw = selectedVote.termId ?? "";
+     const termIdStr =
+       termIdRaw !== null && termIdRaw !== undefined ? String(termIdRaw) : "";
+     let resolvedTermName = "";
+     let congressValue = selectedVote.congress || "";
 
-      const termIds = terms.map((t) =>
-        String(t._id ?? t.id ?? t.termId ?? t.value ?? "")
-      );
+     const termIds = terms.map((t) =>
+       String(t._id ?? t.id ?? t.termId ?? t.value ?? "")
+     );
 
-      if (termIdStr && termIds.includes(termIdStr)) {
-        resolvedTermId = termIdStr;
-        const selectedTerm = terms.find(
-          (term) =>
-            String(term._id ?? term.id ?? term.termId ?? term.value ?? "") ===
-            termIdStr
-        );
-        if (
-          selectedTerm &&
-          selectedTerm.congresses &&
-          selectedTerm.congresses.length > 0
-        ) {
-          congressValue = String(selectedTerm.congresses[0]);
-        }
-      } else if (termIdStr) {
-        const found = terms.find((t) => {
-          const name = (t.name ?? t.title ?? "").toString();
-          const yearRange =
-            t.startYear && t.endYear
-              ? `${t.startYear}-${t.endYear}`
-              : t.startYear || t.endYear
-              ? `${t.startYear || ""}${t.endYear ? "-" + t.endYear : ""}`
-              : "";
-          return (
-            name === termIdStr ||
-            yearRange === termIdStr ||
-            name.trim() === termIdStr.trim() ||
-            yearRange.trim() === termIdStr.trim()
-          );
-        });
-        if (found) {
-          resolvedTermId = String(
-            found._id ?? found.id ?? found.termId ?? found.value ?? ""
-          );
-          if (found.congresses && found.congresses.length > 0) {
-            congressValue = String(found.congresses[0]);
-          }
-        } else {
-          resolvedTermId = termIdStr;
-        }
-      }
+     if (termIdStr && termIds.includes(termIdStr)) {
+       // backend provided an id -> find that term and use its name
+       const selectedTerm = terms.find(
+         (term) =>
+           String(term._id ?? term.id ?? term.termId ?? term.value ?? "") ===
+           termIdStr
+       );
+       if (selectedTerm) {
+         resolvedTermName = selectedTerm.name ?? "";
+         if (selectedTerm.congresses && selectedTerm.congresses.length > 0) {
+           congressValue = String(selectedTerm.congresses[0]);
+         }
+       } else {
+         // fallback to the raw string
+         resolvedTermName = termIdStr;
+       }
+     } else if (termIdStr) {
+       // backend provided a string (name or year-range) -> try to match by name/title/year-range
+       const found = terms.find((t) => {
+         const name = (t.name ?? t.title ?? "").toString();
+         const yearRange =
+           t.startYear && t.endYear
+             ? `${t.startYear}-${t.endYear}`
+             : t.startYear || t.endYear
+             ? `${t.startYear || ""}${t.endYear ? "-" + t.endYear : ""}`
+             : "";
+         return (
+           name === termIdStr ||
+           yearRange === termIdStr ||
+           name.trim() === termIdStr.trim() ||
+           yearRange.trim() === termIdStr.trim()
+         );
+       });
+       if (found) {
+         resolvedTermName = found.name ?? "";
+         if (found.congresses && found.congresses.length > 0) {
+           congressValue = String(found.congresses[0]);
+         }
+       } else {
+         resolvedTermName = termIdStr;
+       }
+     }
 
-      const newFormData = {
-        type: selectedVote.type?.includes("senate")
-          ? "senate_bill"
-          : selectedVote.type?.includes("house")
-          ? "house_bill"
-          : "",
-        title: selectedVote.title || "",
-        shortDesc: selectedVote.shortDesc || "",
-        longDesc: selectedVote.longDesc || "",
-        date: selectedVote.date ? selectedVote.date.split("T")[0] : "",
-        congress: congressValue,
-        termId: resolvedTermId,
-        rollCall: selectedVote.rollCall || "",
-        readMore: selectedVote.readMore || "",
-        sbaPosition: selectedVote.sbaPosition || "",
-        status: selectedVote.status || "",
-      };
+     const newFormData = {
+       type: selectedVote.type?.includes("senate")
+         ? "senate_bill"
+         : selectedVote.type?.includes("house")
+         ? "house_bill"
+         : "",
+       title: selectedVote.title || "",
+       shortDesc: selectedVote.shortDesc || "",
+       longDesc: selectedVote.longDesc || "",
+       date: selectedVote.date ? selectedVote.date.split("T")[0] : "",
+       congress: congressValue,
+       termId: resolvedTermName,
+       rollCall: selectedVote.rollCall || "",
+       readMore: selectedVote.readMore || "",
+       sbaPosition: selectedVote.sbaPosition || "",
+       status: selectedVote.status || "",
+     };
 
-      setFormData(newFormData);
-      setOriginalFormData(newFormData);
-    }
-  };
+     setFormData(newFormData);
+     setOriginalFormData(newFormData);
+   }
+ };
 
   // When selectedVote changes, set editedFields from backend
   useEffect(() => {
@@ -288,8 +289,11 @@ export default function AddBill(props) {
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
  if (name === "termId") {
+   // value is term.name now (not id)
    const selectedTerm = terms.find(
-     (t) => String(t._id ?? t.id ?? t.termId ?? t.value ?? "") === String(value)
+     (t) =>
+       (t.name ?? "").toString() === String(value) ||
+       String(t._id ?? t.id ?? t.termId ?? "") === String(value)
    );
    if (
      selectedTerm &&
@@ -297,8 +301,10 @@ export default function AddBill(props) {
      selectedTerm.congresses.length > 0
    ) {
      newData.congress = String(selectedTerm.congresses[0]);
+     newData.termId = selectedTerm.name ?? String(value); // ensure termId stores the name
    } else {
      newData.congress = "";
+     newData.termId = String(value);
    }
  }
       if (originalFormData) {
@@ -1260,16 +1266,10 @@ export default function AddBill(props) {
                             return ca - cb;
                           })
                           .map((term, idx) => {
-                            const rawValue =
-                              term._id ??
-                              term.id ??
-                              term.termId ??
-                              term.value ??
-                              idx;
                             const value =
-                              rawValue !== null && rawValue !== undefined
-                                ? String(rawValue)
-                                : "";
+                              term.name ??
+                              `${term.startYear || ""}-${term.endYear || ""}` ??
+                              idx;
                             const label =
                               term.name ??
                               term.title ??

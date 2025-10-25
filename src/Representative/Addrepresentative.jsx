@@ -1615,7 +1615,7 @@ const handleRemoveTerm = (termIndex) => {
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
-                                className="paddingLeft"
+                                className="paddingLeft deleteforevericon"
                                 onClick={() =>
                                   handleRemoveVote(termIndex, voteIndex)
                                 }
@@ -1730,7 +1730,7 @@ const handleRemoveTerm = (termIndex) => {
                             </Grid>
                             <Grid size={1}>
                               <DeleteForeverIcon
-                                className="paddingLeft"
+                                className="paddingLeft deleteforevericon"
                                 onClick={() =>
                                   handleRemoveActivity(termIndex, activityIndex)
                                 }

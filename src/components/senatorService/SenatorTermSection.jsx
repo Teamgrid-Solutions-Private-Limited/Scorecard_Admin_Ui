@@ -253,7 +253,7 @@ export default function SenatorTermSection({
                   </Grid>
                   <Grid size={1}>
                     <DeleteForeverIcon
-                      className="paddingLeft"
+                      className="paddingLeft deleteforevericon"
                       onClick={() => handleRemoveVote(termIndex, voteIndex)}
                     />
                   </Grid>
@@ -316,7 +316,7 @@ export default function SenatorTermSection({
               </Grid>
               <Grid size={1}>
                 <DeleteForeverIcon
-                  className="paddingLeft"
+                  className="paddingLeft deleteforevericon"
                   sx={{ opacity: 0.5 }}
                 />
               </Grid>
@@ -422,7 +422,7 @@ export default function SenatorTermSection({
                   </Grid>
                   <Grid size={1}>
                     <DeleteForeverIcon
-                      className="paddingLeft"
+                      className="paddingLeft deleteforevericon"
                       onClick={() =>
                         handleRemoveActivity(termIndex, activityIndex)
                       }
@@ -486,7 +486,10 @@ export default function SenatorTermSection({
                 </FormControl>
               </Grid>
               <Grid size={1}>
-                <DeleteForeverIcon sx={{ opacity: 0.5 }} />
+                <DeleteForeverIcon
+                  sx={{ opacity: 0.5 }}
+                  className="deleteforevericon"
+                />
               </Grid>
             </Grid>
           </Grid>
@@ -583,7 +586,7 @@ export default function SenatorTermSection({
                   </Grid>
                   <Grid size={1}>
                     <DeleteForeverIcon
-                      className="paddingLeft"
+                      className="paddingLeft deleteforevericon"
                       onClick={() => handleRemovePastVote(termIndex, voteIndex)}
                     />
                   </Grid>
@@ -647,7 +650,7 @@ export default function SenatorTermSection({
               </Grid>
               <Grid size={1}>
                 <DeleteForeverIcon
-                  className="paddingLeft"
+                  className="paddingLeft deleteforevericon"
                   sx={{ opacity: 0.5 }}
                 />
               </Grid>
