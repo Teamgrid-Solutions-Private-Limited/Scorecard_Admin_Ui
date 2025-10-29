@@ -360,7 +360,6 @@ export default function SenatorTermSection({
                       className="textField"
                       options={allActivities.filter(
                         (a) =>
-                          a.type === "senate" &&
                           validateActivityInTermRange(a._id, term.termId)
                             .isValid
                       )}
