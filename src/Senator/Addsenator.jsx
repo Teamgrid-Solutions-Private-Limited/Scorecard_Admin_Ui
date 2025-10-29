@@ -15,13 +15,11 @@ import {
   Circle as CircleIcon,
 } from "@mui/icons-material";
 
-// Shared Theme & Layout
 import AppTheme from "../../src/shared-theme/AppTheme";
 import FixedHeader from "../components/FixedHeader";
 import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
 
-// Custom Components
 import SideMenu from "../components/SideMenu";
 import BasicInfo from "../components/BasicInfo";
 import SenatorTermSection from "../components/senatorService/SenatorTermSection";
@@ -29,7 +27,10 @@ import StatusDisplay from "../components/StatusDisplay";
 import SnackbarComponent from "../components/SnackbarComponent";
 import ActionButtons from "../components/ActionButtons";
 import Typography from "@mui/material/Typography";
+<<<<<<< HEAD
 // Redux Slices
+=======
+>>>>>>> dev-test
 import {
   getSenatorDataBySenetorId,
   createSenatorData,
@@ -72,6 +73,7 @@ export default function AddSenator(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
+<<<<<<< HEAD
 // Add comprehensive loading state
 const [isInitialLoad, setIsInitialLoad] = useState(true);
 const [dataLoaded, setDataLoaded] = useState(false);
@@ -80,6 +82,14 @@ const [dataLoaded, setDataLoaded] = useState(false);
 const [votesLoaded, setVotesLoaded] = useState(false);
 const [activitiesLoaded, setActivitiesLoaded] = useState(false);
 const [termsLoaded, setTermsLoaded] = useState(false);
+=======
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  const [votesLoaded, setVotesLoaded] = useState(false);
+  const [activitiesLoaded, setActivitiesLoaded] = useState(false);
+  const [termsLoaded, setTermsLoaded] = useState(false);
+>>>>>>> dev-test
   const [loading, setLoading] = useState(loadingg);
 
   const theme = useTheme();
@@ -204,7 +214,6 @@ const [termsLoaded, setTermsLoaded] = useState(false);
     });
   });
 
-  // Helper function to check if a vote belongs to a term
   const doesVoteBelongToTerm = (voteData, term) => {
     if (!voteData || !term) return false;
 
@@ -212,16 +221,13 @@ const [termsLoaded, setTermsLoaded] = useState(false);
     const termStart = new Date(`${term.startYear}-01-03`);
     const termEnd = new Date(`${term.endYear}-01-02`);
 
-    // Check date range
     const inDateRange = voteDate >= termStart && voteDate <= termEnd;
 
-    // Check congress
     const inCongress = term.congresses.includes(Number(voteData.congress));
 
     return inDateRange && inCongress;
   };
 
-  // Helper function to check if an activity belongs to a term
   const doesActivityBelongToTerm = (activityData, term) => {
     if (!activityData || !term) return false;
 
@@ -229,10 +235,8 @@ const [termsLoaded, setTermsLoaded] = useState(false);
     const termStart = new Date(`${term.startYear}-01-03`);
     const termEnd = new Date(`${term.endYear}-01-02`);
 
-    // Check date range
     const inDateRange = activityDate >= termStart && activityDate <= termEnd;
 
-    // Check congress (if available)
     const inCongress =
       !activityData.congress ||
       term.congresses.includes(Number(activityData.congress || 0));
@@ -243,7 +247,6 @@ const [termsLoaded, setTermsLoaded] = useState(false);
   const senatorActivities = senatorr?.activitiesScore || [];
 
   const fieldLabels = {
-    // Senator fields
     name: "Senator Name",
     status: "Status",
     state: "State",
@@ -252,7 +255,6 @@ const [termsLoaded, setTermsLoaded] = useState(false);
     term: "Term",
     publishStatus: "Publish Status",
 
-    // Term fields (will be prefixed with termX_)
     senateId: "Senate ID",
     summary: "Term Summary",
     rating: "SBA Rating",
@@ -262,7 +264,6 @@ const [termsLoaded, setTermsLoaded] = useState(false);
     termId: "Term",
   };
   const token = localStorage.getItem("token");
-  // Decode token to get user role
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
 
@@ -287,11 +288,9 @@ const [termsLoaded, setTermsLoaded] = useState(false);
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
   };
-  // Add this function near the top of your component
   const getAvailableTerms = (currentTermIndex) => {
     const selectedTermIds = senatorTermData
       .map((term, index) => {
-        // Don't exclude the current term being edited
         if (index === currentTermIndex) return null;
         return term.termId?._id || term.termId;
       })
@@ -300,7 +299,6 @@ const [termsLoaded, setTermsLoaded] = useState(false);
     return terms?.filter((term) => !selectedTermIds.includes(term._id)) || [];
   };
 
-  // Helper function to get display name
   const getFieldDisplayName = (field) => {
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
@@ -317,7 +315,7 @@ const [termsLoaded, setTermsLoaded] = useState(false);
     party: "",
     photo: null,
     term: "",
-    publishStatus: "", // Default status
+    publishStatus: "",
   });
 
   const [senatorTermData, setSenatorTermData] = useState([
@@ -325,7 +323,7 @@ const [termsLoaded, setTermsLoaded] = useState(false);
       senateId: id,
       summary: "",
       rating: "",
-      votesScore: [{ voteId: "", score: "" }], //
+      votesScore: [{ voteId: "", score: "" }],
       activitiesScore: [{ activityId: "", score: "" }],
       pastVotesScore: [{ voteId: "", score: "" }],
       currentTerm: false,
@@ -363,8 +361,6 @@ useEffect(() => {
                 selectedTerm.congresses.includes(Number(vote.congress));
 
               if (!inTerm) return false;
-
-              // Senator must have participated (have a score) for this vote
               return senatorVotes.some((v) => {
                 if (!v?.score || v.score.trim() === "") return false;
 
@@ -381,10 +377,8 @@ useEffect(() => {
               });
             });
 
-            // Preserve existing scores for votes that are in both the old and new term
             const existingVoteScores = term.votesScore || [];
 
-            // Create new votesScore array with senator's actual scores
             updatedTerm.votesScore = newFilteredVotes.map((vote) => {
               const senatorVote = senatorVotes.find((v) => {
                 const vId =
@@ -398,7 +392,6 @@ useEffect(() => {
                 );
               });
 
-              // Map the score to the standardized format
               let scoreValue = "";
               if (senatorVote?.score) {
                 const voteScore = senatorVote.score.toLowerCase();
@@ -428,7 +421,6 @@ useEffect(() => {
               (activity) => {
                 const activityDate = new Date(activity.date);
 
-                //  Condition 1: Must be inside the senator's term range
                 const inTerm =
                   activityDate >= newTermStart &&
                   activityDate <= newTermEnd &&
@@ -507,8 +499,6 @@ useEffect(() => {
 
         return updatedTerm;
       });
-
-      // Compare with original data
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
@@ -543,7 +533,6 @@ useEffect(() => {
       return newTerms;
     });
   };
-  // Add this near your other helper functions
   const hasSelectedTerms = () => {
     return senatorTermData.some(
       (term) => term.termId && term.termId.toString().trim() !== ""
@@ -894,6 +883,7 @@ useEffect(() => {
     }
     return newVal !== oldVal;
   };
+<<<<<<< HEAD
 const isDataReady = () => {
   return (
     !isInitialLoad &&
@@ -909,14 +899,36 @@ const isDataReady = () => {
   useEffect(() => {
     if (isDataReady()) {
       console.log('All data ready, prefilling forms...');
+=======
+  const isDataReady = () => {
+    return (
+      !isInitialLoad &&
+      dataLoaded &&
+      termsLoaded &&
+      votesLoaded &&
+      activitiesLoaded &&
+      terms?.length > 0 &&
+      allVotes?.length > 0 &&
+      allActivities?.length > 0
+    );
+  };
+  useEffect(() => {
+    if (isDataReady()) {
+>>>>>>> dev-test
       termPreFill();
       preFillForm();
     }
   }, [dataLoaded, termsLoaded, votesLoaded, activitiesLoaded, senatorData]);
+<<<<<<< HEAD
   
   const termPreFill = () => {
      if (!terms?.length || !allVotes?.length || !allActivities?.length) {
       console.log('Waiting for data to load...');
+=======
+
+  const termPreFill = () => {
+    if (!terms?.length || !allVotes?.length || !allActivities?.length) {
+>>>>>>> dev-test
       return;
     }
     if (senatorData?.currentSenator?.length > 0) {
@@ -1044,7 +1056,6 @@ const isDataReady = () => {
                 matchedTerm &&
                 doesVoteBelongToTerm(voteData, matchedTerm)
               ) {
-                // This vote from another term actually belongs to this term
                 const alreadyIncluded = votesScore.some(
                   (v) => v.voteId === voteId
                 );
@@ -1169,7 +1180,6 @@ const isDataReady = () => {
                   voteData.title
                 )}`;
 
-                // Check if this orphan vote already exists in editedFields
                 const existingPastVoteField = currentEditedFields.find(
                   (field) =>
                     field.name === voteData.title &&
@@ -1177,7 +1187,6 @@ const isDataReady = () => {
                     field.field[0] === "pastVotesScore"
                 );
 
-                // Check if this vote exists as a regular vote in senator's editedFields
                 const existingRegularVoteField = currentEditedFields.find(
                   (field) =>
                     field.name === voteData.title &&
@@ -1186,7 +1195,6 @@ const isDataReady = () => {
                 );
 
                 if (!existingPastVoteField) {
-                  // Add to editedFields
                   currentEditedFields.push({
                     field: ["pastVotesScore"],
                     name: voteData.title,
@@ -1194,19 +1202,15 @@ const isDataReady = () => {
                     _id: orphanVote._id || `pastVote_${orphanVote.voteId}`,
                   });
 
-                  // Add to fieldEditors - FIRST check if there's existing editor info for this vote
                   if (!currentFieldEditors[pastVoteEditorKey]) {
-                    // Check if this vote has existing editor info as a regular vote
                     if (
                       existingRegularVoteField &&
                       currentFieldEditors[regularVoteEditorKey]
                     ) {
-                      // Inherit editor info from the regular vote
                       currentFieldEditors[pastVoteEditorKey] = {
                         ...currentFieldEditors[regularVoteEditorKey],
                       };
                     } else {
-                      // Check if there's any existing editor info for this vote title in any form
                       const existingEditorKey = Object.keys(
                         currentFieldEditors
                       ).find((key) =>
@@ -1217,12 +1221,10 @@ const isDataReady = () => {
                         existingEditorKey &&
                         currentFieldEditors[existingEditorKey]
                       ) {
-                        // Use existing editor info
                         currentFieldEditors[pastVoteEditorKey] = {
                           ...currentFieldEditors[existingEditorKey],
                         };
                       } else {
-                        // Create new editor entry as fallback
                         currentFieldEditors[pastVoteEditorKey] = {
                           editorName: "System",
                           editedAt: new Date().toISOString(),
@@ -1234,7 +1236,6 @@ const isDataReady = () => {
                   existingPastVoteField &&
                   !currentFieldEditors[pastVoteEditorKey]
                 ) {
-                  // Field exists but no editor entry - try to find existing editor info
                   if (
                     existingRegularVoteField &&
                     currentFieldEditors[regularVoteEditorKey]
@@ -1266,17 +1267,28 @@ const isDataReady = () => {
             }
           });
 
+<<<<<<< HEAD
           // Merge into formData.editedFields/fieldEditors without losing prior entries
+=======
+>>>>>>> dev-test
           setFormData((prev) => {
             const prevEdited = Array.isArray(prev?.editedFields)
               ? prev.editedFields
               : [];
             const mergedEdited = [...prevEdited, ...currentEditedFields];
 
+<<<<<<< HEAD
             // Dedupe by field key + name
             const seen = new Set();
             const dedupEdited = mergedEdited.filter((item) => {
               const key = Array.isArray(item.field) ? item.field[0] : item.field;
+=======
+            const seen = new Set();
+            const dedupEdited = mergedEdited.filter((item) => {
+              const key = Array.isArray(item.field)
+                ? item.field[0]
+                : item.field;
+>>>>>>> dev-test
               const sig = `${key}::${item.name || ""}`;
               if (seen.has(sig)) return false;
               seen.add(sig);
@@ -1367,7 +1379,6 @@ const isDataReady = () => {
             });
         }
 
-        // Merge orphanVotes + dbPastVotes, dedupe by voteId
         const pastVotesMap = new Map();
         [...dbPastVotes, ...orphanVotes].forEach((v) => {
           if (v.voteId) pastVotesMap.set(v.voteId, v);
@@ -1375,7 +1386,6 @@ const isDataReady = () => {
 
         pastVotesScore = Array.from(pastVotesMap.values());
 
-        // Fallback if empty
         if (pastVotesScore.length === 0) {
           pastVotesScore = [{ voteId: "", score: "" }];
         }
@@ -1463,7 +1473,6 @@ const isDataReady = () => {
               };
             });
 
-          // Extra merge for missing but matching activities with score
           const extraActivities = allActivities
             .filter((activity) => {
               const activityDate = new Date(activity.date);
@@ -1516,7 +1525,6 @@ const isDataReady = () => {
                 matchedTerm &&
                 doesActivityBelongToTerm(activityData, matchedTerm)
               ) {
-                // This activity from another term actually belongs to this term
                 const alreadyIncluded = activitiesScore.some(
                   (a) => a.activityId === activityId
                 );
@@ -1708,8 +1716,17 @@ const isDataReady = () => {
       };
 
       setFormData((prev) => {
+<<<<<<< HEAD
         const prevEdited = Array.isArray(prev?.editedFields) ? prev.editedFields : [];
         const incomingEdited = Array.isArray(newFormData.editedFields) ? newFormData.editedFields : [];
+=======
+        const prevEdited = Array.isArray(prev?.editedFields)
+          ? prev.editedFields
+          : [];
+        const incomingEdited = Array.isArray(newFormData.editedFields)
+          ? newFormData.editedFields
+          : [];
+>>>>>>> dev-test
         const mergedEdited = [...prevEdited, ...incomingEdited];
 
         const seen = new Set();
@@ -1737,6 +1754,7 @@ const isDataReady = () => {
     }
   };
 
+<<<<<<< HEAD
  useEffect(() => {
   if (id) {
     const loadData = async () => {
@@ -1763,6 +1781,43 @@ const isDataReady = () => {
       } finally {
         setIsInitialLoad(false);
       }
+=======
+  useEffect(() => {
+    if (id) {
+      const loadData = async () => {
+        try {
+          setIsInitialLoad(true);
+
+          await dispatch(getAllTerms()).unwrap();
+          setTermsLoaded(true);
+
+          await dispatch(getAllVotes()).unwrap();
+          setVotesLoaded(true);
+
+          await dispatch(getAllActivity()).unwrap();
+          setActivitiesLoaded(true);
+
+          await Promise.all([
+            dispatch(getSenatorById(id)).unwrap(),
+            dispatch(getSenatorDataBySenetorId(id)).unwrap(),
+          ]);
+
+          setDataLoaded(true);
+        } catch (error) {
+          setDataLoaded(true);
+          //console.error('Data loading failed:', error);
+        } finally {
+          setIsInitialLoad(false);
+        }
+      };
+
+      loadData();
+    }
+
+    return () => {
+      dispatch(clearSenatorState());
+      dispatch(clearSenatorDataState());
+>>>>>>> dev-test
     };
 
     loadData();
@@ -1774,11 +1829,17 @@ const isDataReady = () => {
   };
 }, [id, dispatch]);
 
+<<<<<<< HEAD
   console.log("Loading state:", loading);
 
   // useEffect(() => {
   //   preFillForm();
   // }, [senator, terms]);
+=======
+  useEffect(() => {
+    preFillForm();
+  }, [senator, terms]);
+>>>>>>> dev-test
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -1811,7 +1872,7 @@ const isDataReady = () => {
   };
 
   const handleStatusChange = (status) => {
-    const fieldName = "status"; 
+    const fieldName = "status";
     setFormData((prev) => {
       const newData = { ...prev, status };
 

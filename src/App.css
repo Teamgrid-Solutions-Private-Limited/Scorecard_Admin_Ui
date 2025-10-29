@@ -1,39 +1,39 @@
 body {
-	margin: 0;
+  margin: 0;
 }
 h6 {
-	font-size: 500px;
+  font-size: 500px;
 }
 
 .logo-sm {
-	height: 38px
+  height: 38px;
 }
 
 .logo-lg {
-	height: 38px;
-	-webkit-transition: .3s;
-	transition: .3s;
-	margin-left: 0px
+  height: 38px;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+  margin-left: 0px;
 }
 
 .spacer {
-	height: 25px;
+  height: 25px;
 }
 .circularLoader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
 }
 .container {
   background-color: #f6f6f6ff;
-  display: block; 
+  display: block;
 }
 
 @media (min-width: 900px) {
@@ -43,14 +43,13 @@ h6 {
 }
 .contentBox {
   flex-grow: 1;
-  width: 100%;              
+  width: 100%;
   min-height: 100vh;
 }
 
-
 @media (min-width: 600px) {
   .contentBox {
-    padding-left: 16px;   
+    padding-left: 16px;
     padding-right: 16px;
   }
 }
@@ -58,9 +57,9 @@ h6 {
 @media (min-width: 900px) {
   .contentBox {
     width: 80%;
-    padding-left: 0;     
+    padding-left: 0;
     padding-right: 0;
-    padding-top: 0;     
+    padding-top: 0;
   }
 }
 
@@ -74,31 +73,30 @@ h6 {
   pointer-events: auto;
 }
 .stackBox {
-  align-items: stretch;     
-  margin-left: 15px;           
+  align-items: stretch;
+  margin-left: 15px;
   margin-right: 15px;
-  padding-bottom: 16px;     
-  margin-top: 16px;         
+  padding-bottom: 16px;
+  margin-top: 16px;
 }
-
 
 @media (min-width: 900px) {
   .stackBox {
-    align-items: center;   
-    margin-left: 24px;      
+    align-items: center;
+    margin-left: 24px;
     margin-right: 24px;
-    padding-bottom: 40px;  
-    margin-top: 32px;      
+    padding-bottom: 40px;
+    margin-top: 32px;
   }
 }
 .actionsBox {
   width: 100%;
   display: flex;
-  flex-direction: column;     
+  flex-direction: column;
   justify-content: flex-end;
-  align-items: stretch;       
-  margin-top: 16px;   
-  gap: 8px;                 
+  align-items: stretch;
+  margin-top: 16px;
+  gap: 8px;
 }
 @media (min-width: 600px) {
   .actionsBox {
@@ -109,12 +107,12 @@ h6 {
 
 .adminBox {
   width: 70%;
-  display: block;          
+  display: block;
 }
 
 @media (min-width: 600px) {
   .adminBox {
-    display: none;            
+    display: none;
   }
 }
 .fetchBtn {
@@ -134,7 +132,7 @@ h6 {
 
 @media (min-width: 600px) {
   .custom-search {
-    width: 220px !important; 
+    width: 220px !important;
   }
 }
 
@@ -153,7 +151,7 @@ h6 {
 }
 
 .custom-search .MuiOutlinedInput-root.Mui-focused fieldset {
-  border-color: #173A5E;
+  border-color: #173a5e;
   border-width: 2px;
 }
 
@@ -162,25 +160,25 @@ h6 {
   color: #9ca3af;
 }
 .search-icon {
-  color: #173A5E;
+  color: #173a5e;
   font-size: 20px !important;
 }
 
 .filter-badge .MuiBadge-badge {
   top: 6px !important;
   right: 6px !important;
-  background-color: #E24042 !important;
+  background-color: #e24042 !important;
 }
 
 .filter-button {
   min-width: 120px !important;
   color: #fff !important;
-  background-color: #497BB2 !important;
+  background-color: #497bb2 !important;
   text-transform: none !important;
 }
 
 .filter-button:hover {
-  background-color: #3B6799 !important;
+  background-color: #3b6799 !important;
 }
 
 @media (max-width: 600px) {
@@ -199,8 +197,8 @@ h6 {
   width: 300px;
   height: auto;
   z-index: 1;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-  border: 1px solid ;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid;
   border-color: #e5e7eb;
   border-radius: 8px;
   overflow: hidden;
@@ -235,8 +233,6 @@ h6 {
   cursor: pointer;
 }
 
-
-
 .filter-scroll {
   max-height: 200px;
   overflow: auto;
@@ -263,7 +259,7 @@ h6 {
 
 /* fetch from quorum button  */
 .fetch-btn {
-  background-color: #173A5E !important;
+  background-color: #173a5e !important;
   color: #fff !important;
   margin-left: 0.5rem;
 }
@@ -271,12 +267,12 @@ h6 {
 @media (max-width: 600px) {
   .fetch-btn {
     margin-left: 0 !important;
-    margin-top: 0.25rem !important; 
-    display: none !important; 
+    margin-top: 0.25rem !important;
+    display: none !important;
   }
 }
 .fetch-btn:hover {
-  background-color: #1E4C80 !important;
+  background-color: #1e4c80 !important;
 }
 
 /* addSenator and addRepresentatibe page css start here */
@@ -289,7 +285,6 @@ h6 {
   background-color: #e24042 !important;
   color: white !important;
   padding: 0.5rem 1.5rem !important;
-  
 }
 
 .discardBtn:hover {
@@ -300,7 +295,6 @@ h6 {
   background-color: #173a5e !important;
   color: white !important;
   padding: 0.5rem 1.5rem !important;
- 
 }
 
 .publishBtn:hover {
@@ -309,19 +303,19 @@ h6 {
 .customPaper {
   width: 100%;
   background-color: #fff !important;
-  border-radius: 0.8rem; 
-  border: 1px solid #e5e7eb !important; 
+  border-radius: 0.8rem;
+  border: 1px solid #e5e7eb !important;
 }
 .customTypography {
   font-size: 1rem !important;
   font-weight: 500 !important;
-  border-bottom: 1px solid var(--mui-palette-divider, #e5e7eb); 
+  border-bottom: 1px solid var(--mui-palette-divider, #e5e7eb);
   padding: 12px;
   padding-left: 24px;
-  padding-right: 24px ;
+  padding-right: 24px;
 }
 
-.label{
+.label {
   display: flex !important;
   justify-content: flex-end;
   align-items: center !important;
@@ -329,7 +323,6 @@ h6 {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
-
 
 .customButtonGroup .MuiButton-outlined {
   height: 36px;
@@ -353,7 +346,6 @@ h6 {
   border-color: #4caf50 !important;
 }
 
-
 .statusBtn.active {
   background-color: #4caf50 !important;
   color: #fff !important;
@@ -372,21 +364,21 @@ h6 {
 .uploadBtn:hover {
   background-color: #1e4c80 !important;
 }
-.termData-paper{
+.termData-paper {
   width: 100%;
   position: relative !important;
   background-color: #fff !important;
-  border-radius: 0.8rem; 
-  border: 1px solid #e5e7eb !important; 
+  border-radius: 0.8rem;
+  border: 1px solid #e5e7eb !important;
 }
-.termData-header{
+.termData-header {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
   padding: 12px 24px !important;
   border-bottom: 1px solid var(--mui-palette-divider, #e5e7eb) !important;
 }
-.addVoteActivity-btn{
+.addVoteActivity-btn {
   background-color: #173a5e !important;
   color: #fff !important;
   padding: 0.3rem 1rem !important;
@@ -395,7 +387,7 @@ h6 {
 .addVote-btn:hover {
   background-color: #1e4c80 !important;
 }
-.addTerm-btn{
+.addTerm-btn {
   background-color: #173a5e !important;
   color: #fff !important;
   padding: 0.5rem 1rem !important;
@@ -410,7 +402,6 @@ h6 {
   background-color: #173a5e !important;
   color: white !important;
   padding: 0.5rem 1rem !important;
-
 }
 
 .bulkEditBtn:hover {
@@ -425,12 +416,10 @@ h6 {
   background-color: #b38935;
 }
 
-
 .addBillsBtn {
   background-color: #173a5e !important;
   color: white !important;
   padding: 0.5rem 1rem !important;
-
 }
 
 .addBillsBtn:hover {
@@ -441,12 +430,11 @@ h6 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px; 
-  background-color: var(--mui-palette-action-hover, #f5f5f5); 
-  border-radius: 8px; 
-  margin-bottom: 16px; 
+  padding: 16px;
+  background-color: var(--mui-palette-action-hover, #f5f5f5);
+  border-radius: 8px;
+  margin-bottom: 16px;
 }
-
 
 .bulkSelect {
   min-width: 150px;
@@ -460,28 +448,27 @@ h6 {
 .applyBtn:hover {
   background-color: #1e4c80 !important;
 }
-.billFilter-paper{
+.billFilter-paper {
   position: absolute;
   left: 0;
   top: 100%;
   margin-top: 4px;
   width: 180px;
   z-index: 1;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-  border: 1px solid ;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid;
   border-color: #e5e7eb;
   border-radius: 8px;
   overflow: hidden;
 }
 
 .customTextField {
-  font-family: 'Be Vietnam Pro', sans-serif !important;
+  font-family: "Be Vietnam Pro", sans-serif !important;
   height: 38px;
 }
 
-
 .customTextField .MuiOutlinedInput-root {
-  font-family: 'Be Vietnam Pro', sans-serif !important;
+  font-family: "Be Vietnam Pro", sans-serif !important;
   font-size: 13px;
   height: 38px;
   padding: 4px 8px;
@@ -489,18 +476,17 @@ h6 {
   align-items: center;
 }
 
-
 .customTextField .MuiOutlinedInput-notchedOutline {
   border-color: #d3d3d3 !important;
 }
-
 
 .customTextField .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
   border-color: #d3d3d3 !important;
 }
 
-
-.customTextField .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+.customTextField
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline {
   border-color: #cc9a3a !important;
   border-width: 1px;
 }
@@ -512,15 +498,10 @@ h6 {
 .upload-btn {
   height: 38px !important;
   min-width: auto !important;
-  padding-left: 16px;   
-  padding-right: 16px; 
+  padding-left: 16px;
+  padding-right: 16px;
   border-color: #cc9a3a !important;
   color: #cc9a3a !important;
-}
-
-.uploadBtn:hover {
-  border-color: #b8860b !important;
-  background-color: rgba(204, 154, 58, 0.04) !important;
 }
 
 /* dialog box css stats here */
@@ -622,7 +603,6 @@ h6 {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
-
 
 /* ---- Paper container ---- */
 .paper-box {
@@ -802,8 +782,11 @@ h6 {
   border-color: #cc9a3a !important;
 }
 
+.deleteforevericon {
+  cursor: pointer;
+}
+
 @media (max-width: 768px) {
-  
   .textField {
     padding-left: 24px !important;
   }
@@ -814,25 +797,16 @@ h6 {
   .customButtonGroup {
     padding-left: 24px !important;
   }
-  .uploadBtn{
+  .uploadBtn {
     font-size: 12px !important;
   }
-  .paddingLeft{
+  .paddingLeft {
     padding-left: 24px !important;
   }
 }
 
-@media (min-width:768px) {
-  .bulkEditContainer{
+@media (min-width: 768px) {
+  .bulkEditContainer {
     width: 100%;
-  } 
+  }
 }
-
-
-
-
-
-
-
-
-

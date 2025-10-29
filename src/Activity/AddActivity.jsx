@@ -180,14 +180,11 @@ export default function AddActivity(props) {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsDataFetching(true); // optional loading state
+      setIsDataFetching(true);
       try {
+        await dispatch(getAllTerms()).unwrap();
         if (id) {
-          // Fetch id-dependent data concurrently
-          await Promise.all([
-            dispatch(getActivityById(id)).unwrap(),
-            dispatch(getAllTerms()).unwrap(),
-          ]);
+          await Promise.all([dispatch(getActivityById(id)).unwrap()]);
         }
         return () => {
           dispatch(clearActivityState());
@@ -228,7 +225,6 @@ export default function AddActivity(props) {
     }));
   };
 
-  // Update your handleChange and handleEditorChange to properly track changes
   const handleChange = (event) => {
     const { name, value } = event.target;
     if (!hasLocalChanges) {
@@ -273,13 +269,12 @@ export default function AddActivity(props) {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-      // Set the file path in the readMore field
+
       setFormData((prev) => ({
         ...prev,
         readMore: file.name,
       }));
 
-      // Update editedFields if this is a change
       if (originalFormData && file.name !== originalFormData.readMore) {
         const changes = Object.keys(formData).filter((key) => {
           if (key === "readMore") {
@@ -303,14 +298,11 @@ export default function AddActivity(props) {
     setOpenSnackbar(false);
   };
 
-  // 4. In handleSubmit, only clear editedFields if status is published
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Create FormData for file upload
       const formDataToSend = new FormData();
 
-      // Add all form fields EXCEPT status (we'll add it separately)
       Object.keys(formData).forEach((key) => {
         if (key === "readMore") {
           if (readMoreType === "file" && selectedFile) {
@@ -322,7 +314,7 @@ export default function AddActivity(props) {
           formDataToSend.append(key, formData[key]);
         }
       });
-      // Merge backend's editedFields with current session's changes
+
       const backendEditedFields = Array.isArray(selectedActivity?.editedFields)
         ? selectedActivity.editedFields
         : [];
@@ -399,7 +391,6 @@ export default function AddActivity(props) {
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
-          // setOriginalFormData({ ...formData, status: "under review" }); // Keep tracking changes
         } else {
           // Only clear locally if status is published
           if (finalStatus === "published") {
@@ -438,10 +429,9 @@ export default function AddActivity(props) {
           console.error("Activity (_id) is missing in the API response.");
         }
 
-        // Reset editedFields after successful creation
         setHasLocalChanges(false); // Reset after save
         setEditedFields([]);
-        // Update originalFormData to current form data
+
         setOriginalFormData({ ...formData, status: finalStatus });
       }
 
@@ -1020,17 +1010,48 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid size={isMobile ? 8 : 10}>
                     <FormControl fullWidth>
-                      <TextField
+                      <Select
                         required
                         id="congress"
                         name="congress"
-                        value={formData.congress}
+                        value={formData.congress || ""}
                         onChange={handleChange}
-                        fullWidth
                         size="small"
-                        autoComplete="off"
-                        variant="outlined"
-                      />
+                        sx={{ background: "#fff" }}
+                      >
+                        <MenuItem value="" disabled>
+                          Select congress
+                        </MenuItem>
+                        {Array.isArray(terms) && terms.length > 0 ? (
+                          terms
+                            .filter((t) => {
+                              const s = Number(t.startYear);
+                              const e = Number(t.endYear);
+                              return (
+                                s &&
+                                e &&
+                                e - s === 1 &&
+                                s % 2 === 1 &&
+                                Array.isArray(t.congresses) &&
+                                t.congresses.length > 0
+                              );
+                            })
+                            .sort((a, b) => a.congresses[0] - b.congresses[0])
+                            .map((t) => (
+                              <MenuItem
+                                key={t._id}
+                                value={String(t.congresses[0])}
+                                sx={{ py: 1.25 }}
+                              >
+                                {`${t.congresses[0]}`}
+                              </MenuItem>
+                            ))
+                        ) : (
+                          <MenuItem value="" disabled>
+                            No terms available
+                          </MenuItem>
+                        )}
+                      </Select>
                     </FormControl>
                   </Grid>
 
