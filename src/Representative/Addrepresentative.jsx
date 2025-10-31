@@ -276,10 +276,6 @@ export default function Addrepresentative(props) {
   const removedFieldKey = `term${termIndex}_ScoredVote_${voteIndex + 1}_removed`;
   const addedFieldKey = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
   
-  console.log('=== handleRemoveVote ===');
-  console.log('Current localChanges before removal:', localChanges);
-  console.log('Removing vote with key:', removedFieldKey);
-  console.log('Vote to remove:', voteToRemove);
   
   // Check if this was a newly added empty vote (no voteId and no score)
   const isNewEmptyVote = !voteToRemove?.voteId && (!voteToRemove?.score || voteToRemove.score === "");
@@ -291,9 +287,6 @@ export default function Addrepresentative(props) {
   const existedInOriginal = originalVoteAtIndex && 
                            (originalVoteAtIndex.voteId || originalVoteAtIndex.score);
   
-  console.log('Is new empty vote:', isNewEmptyVote);
-  console.log('Existed in original:', existedInOriginal);
-  console.log('Original votes at index:', originalVoteAtIndex);
 
   // If the vote has an ID and is being removed, track it (only if it existed in original)
   if (voteToRemove?.voteId && voteToRemove.voteId.toString().trim() !== "" && existedInOriginal) {
@@ -329,7 +322,7 @@ export default function Addrepresentative(props) {
           change !== addedFieldKey &&
           change !== removedFieldKey
       );
-      console.log('Removing newly added empty vote that never existed, cleaned changes:', cleanedChanges);
+      
     } else if (existedInOriginal) {
       // For votes that existed in original data, clean up the addition marker and add removal marker
       cleanedChanges = prev.filter(
@@ -340,14 +333,14 @@ export default function Addrepresentative(props) {
       if (!cleanedChanges.includes(removedFieldKey)) {
         cleanedChanges = [...cleanedChanges, removedFieldKey];
       }
-      console.log('Removing existing vote from original data, cleaned changes:', cleanedChanges);
+   
     } else {
       // For other cases, just clean up the addition marker
       cleanedChanges = prev.filter(
         (change) =>
           change !== addedFieldKey
       );
-      console.log('Default cleanup, cleaned changes:', cleanedChanges);
+      ('Default cleanup, cleaned changes:', cleanedChanges);
     }
     
     return cleanedChanges;
@@ -415,10 +408,10 @@ export default function Addrepresentative(props) {
   const removedFieldKey = `term${termIndex}_TrackedActivity_${activityIndex + 1}_removed`;
   const addedFieldKey = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
   
-  console.log('=== handleRemoveActivity ===');
-  console.log('Current localChanges before removal:', localChanges);
-  console.log('Removing activity with key:', removedFieldKey);
-  console.log('Activity to remove:', activityToRemove);
+  ('=== handleRemoveActivity ===');
+  ('Current localChanges before removal:', localChanges);
+  ('Removing activity with key:', removedFieldKey);
+  ('Activity to remove:', activityToRemove);
   
   // Check if this was a newly added empty activity (no activityId and no score)
   const isNewEmptyActivity = !activityToRemove?.activityId && (!activityToRemove?.score || activityToRemove.score === "");
@@ -430,8 +423,8 @@ export default function Addrepresentative(props) {
   const existedInOriginal = originalActivityAtIndex && 
                            (originalActivityAtIndex.activityId || originalActivityAtIndex.score);
   
-  console.log('Is new empty activity:', isNewEmptyActivity);
-  console.log('Existed in original:', existedInOriginal);
+  ('Is new empty activity:', isNewEmptyActivity);
+  ('Existed in original:', existedInOriginal);
 
   // If the activity has an ID and is being removed, track it (only if it existed in original)
   if (activityToRemove?.activityId && activityToRemove.activityId.toString().trim() !== "" && existedInOriginal) {
@@ -465,7 +458,7 @@ export default function Addrepresentative(props) {
           change !== addedFieldKey &&
           change !== removedFieldKey
       );
-      console.log('Removing newly added empty activity that never existed, cleaned changes:', cleanedChanges);
+      ('Removing newly added empty activity that never existed, cleaned changes:', cleanedChanges);
     } else if (existedInOriginal) {
       // For activities that existed in original data, clean up the addition marker and add removal marker
       cleanedChanges = prev.filter(
@@ -476,14 +469,14 @@ export default function Addrepresentative(props) {
       if (!cleanedChanges.includes(removedFieldKey)) {
         cleanedChanges = [...cleanedChanges, removedFieldKey];
       }
-      console.log('Removing existing activity from original data, cleaned changes:', cleanedChanges);
+      ('Removing existing activity from original data, cleaned changes:', cleanedChanges);
     } else {
       // For other cases, just clean up the addition marker
       cleanedChanges = prev.filter(
         (change) =>
           change !== addedFieldKey
       );
-      console.log('Default cleanup, cleaned changes:', cleanedChanges);
+      ('Default cleanup, cleaned changes:', cleanedChanges);
     }
     
     return cleanedChanges;
