@@ -27,7 +27,7 @@ export const getAllActivity = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/api/v1/admin/activities/`, {
-        headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
       });
       return response.data;
     } catch (error) {
@@ -42,7 +42,7 @@ export const getActivityById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/api/v1/activities/${id}`, {
-        headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
       });
 
       return response.data;
@@ -130,7 +130,7 @@ export const bulkUpdateTrackActivities = createAsyncThunk(
         {
           headers: {
             "Content-Type": "application/json",
-            "x-protected-key": "MySuperSecretApiKey123", // Add if needed
+            "x-protected-key": "2oUtwJx8m1?0hx/JN7", // Add if needed
           },
         }
       );

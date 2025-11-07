@@ -24,7 +24,7 @@ export const getAllHouseData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/api/v1/admin/house-data/`, {
-        headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
       });
       return response.data;
     } catch (error) {
@@ -40,7 +40,7 @@ export const getHouseDataById = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/api/v1/admin/house-data/viewID/${id}`,
         {
-          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
         }
       );
       return response.data;
@@ -57,7 +57,7 @@ export const getHouseDataByHouseId = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/api/v1/admin/house-data/viewbyhouse/${id}`,
         {
-          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
         }
       );
 

@@ -33,7 +33,7 @@ export const getAllSenators = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/api/v1/admin/senators/`, {
-        headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
       });
 
       if (!response.data) {
@@ -67,7 +67,7 @@ export const getSenatorById = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/api/v1/admin/senators/${id}`,
         {
-          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
         }
       );
       return response.data;
