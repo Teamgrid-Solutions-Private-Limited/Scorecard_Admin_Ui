@@ -11,7 +11,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { styled } from "@mui/material/styles";
-
+import { API_URL } from "../redux/API";
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -45,7 +45,7 @@ export default function SenatorBasicInfo({
         columnSpacing={2}
         alignItems={"center"}
         py={3}
-        pl={{xs:0, sm: mode === "representative" ? 9 : 0}}
+        pl={{ xs: 0, sm: mode === "representative" ? 9 : 0 }}
       >
         <Grid
           size={isMobile ? 12 : 2}
@@ -84,8 +84,8 @@ export default function SenatorBasicInfo({
               variant={"outlined"}
               onClick={() => handleStatusChange("Active")}
               className={`statusBtn ${
-                          formData.status === "Active" ? "active" : ""
-                        }`}
+                formData.status === "Active" ? "active" : ""
+              }`}
             >
               Active
             </Button>
@@ -93,8 +93,8 @@ export default function SenatorBasicInfo({
               variant={"outlined"}
               onClick={() => handleStatusChange("Former")}
               className={`statusBtn ${
-                          formData.status === "Former" ? "active" : ""
-                        }`}
+                formData.status === "Former" ? "active" : ""
+              }`}
             >
               Former
             </Button>
@@ -103,9 +103,7 @@ export default function SenatorBasicInfo({
         {mode === "senator" ? (
           <>
             <Grid size={isMobile ? 12 : 2}>
-              <InputLabel className="label">
-                State
-              </InputLabel>
+              <InputLabel className="label">State</InputLabel>
             </Grid>
             <Grid size={isMobile ? 10 : 4}>
               <TextField
@@ -124,11 +122,7 @@ export default function SenatorBasicInfo({
         ) : (
           <>
             <Grid size={isMobile ? 12 : 2} sx={{ minWidth: 165 }}>
-              <InputLabel
-                className="label"
-              >
-                District
-              </InputLabel>
+              <InputLabel className="label">District</InputLabel>
             </Grid>
             <Grid size={isMobile ? 10 : 4}>
               <TextField
@@ -146,11 +140,7 @@ export default function SenatorBasicInfo({
           </>
         )}
         <Grid size={isMobile ? 12 : 1} sx={{ alignContent: "center" }}>
-          <InputLabel
-            className="label"
-          >
-            Party
-          </InputLabel>
+          <InputLabel className="label">Party</InputLabel>
         </Grid>
         <Grid size={isMobile ? 10 : 4}>
           <FormControl fullWidth className="paddingLeft ">
@@ -176,21 +166,36 @@ export default function SenatorBasicInfo({
               : "Senator's Photo"}
           </InputLabel>
         </Grid>
-        <Grid size={isMobile?10:8}>
-          <Box className="paddingLeft" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Grid size={isMobile ? 10 : 8}>
+          <Box
+            className="paddingLeft"
+            sx={{ display: "flex", alignItems: "center", gap: 2 }}
+          >
             {formData.photo ? (
               <img
                 src={
-                  typeof formData.photo === "string"
-                    ? formData.photo
-                    : URL.createObjectURL(formData.photo)
+                  formData?.photo
+                    ? typeof formData.photo === "string"
+                      ? formData.photo.startsWith("http")
+                        ? formData.photo
+                        : `${API_URL}${
+                            formData.photo.startsWith("/") ? "" : "/"
+                          }images/${
+                            mode === "representative" ? "house" : "senator"
+                          }/${formData.photo}`
+                      : URL.createObjectURL(formData.photo)
+                    : "/default-avatar.png"
                 }
-                alt="Senator's Photo"
+                alt={
+                  mode === "representative"
+                    ? "House Member's Photo"
+                    : "Senator's Photo"
+                }
                 style={{
-                  width: "100px",
-                  height: "100px",
+                  width: 100,
+                  height: 100,
                   objectFit: "cover",
-                  borderRadius: "8px",
+                  borderRadius: 8,
                 }}
               />
             ) : (

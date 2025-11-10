@@ -56,6 +56,7 @@ import { useTheme } from "@mui/material/styles";
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { get } from "lodash";
 
 export default function Senator(props) {
   const navigate = useNavigate();

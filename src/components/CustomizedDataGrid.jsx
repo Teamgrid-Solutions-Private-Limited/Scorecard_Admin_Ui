@@ -13,6 +13,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
 import { useTheme, useMediaQuery, Chip } from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { get } from "lodash";
+import { API_URL } from "../redux/API";
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
     <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
@@ -169,7 +171,7 @@ export default function CustomizedDataGrid({
 
   const navigate = useNavigate();
 
-    const storageKey = `dataGridPagination_${type}`;
+  const storageKey = `dataGridPagination_${type}`;
   const [paginationModel, setPaginationModel] = useState(() => {
     const saved = localStorage.getItem(storageKey);
     return saved ? JSON.parse(saved) : { page: 0, pageSize: 20 };
@@ -499,158 +501,165 @@ export default function CustomizedDataGrid({
               </Typography>
             ),
 
-              renderCell: (params) => {
-                const nickName = params.value || "";
-                return (
-                  <Typography sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
-                    {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
-                  </Typography>
-                );
-              }
-            },
-            {
-              field: "email",
-              flex: 2,
-              headerName: "Email",
-              minWidth: 180,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-            },
-            {
-              field: "role",
-              flex: 1,
-              headerName: "Role",
-              minWidth: 110,
-              renderHeader: (params) => (
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-              valueGetter: (params) =>
-                params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
-            },
-            {
-              field: "action",
-              flex: 1,
-              headerName: "Action",
-              minWidth: isMobile?130:60,
-              headerAlign:isMobile?"center":"right",
-              align: "right",
-              renderHeader: (params) => (
-                <Typography sx={{ paddingRight: "32px", fontWeight: "bold" }}>
-                  {params.colDef.headerName}
-                </Typography>
-              ),
-              renderCell: (params) => (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: isMobile? "center":"flex-end",
-                    paddingRight: isMobile?"0px":"32px",
-                    columnGap: "10px",
-                    height: "100%",
-                  }}
-                >
-                  <EditIcon
-                    onClick={() => onEdit && onEdit(params.row)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-                  />
-                  {userRole === "admin" && (
-                    <DeleteForeverIcon
-                      onClick={() => onDelete && onDelete(params.row._id)}
-                      sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                    />
-                  )}
-                </div>
-              ),
-            },
-          ]
-          : [
-            {
-              field: "name",
-              flex: 2,
-              headerName: type === "senator" ? "Senator" : "Representative",
-              minWidth: isMobile ? 180 : 150,
-              maxWidth: isMobile ? 200 : undefined,
-              minHeight: 200,
-              headerAlign: "left",
-              align: "left",
-              renderHeader: (params) => (
+            renderCell: (params) => {
+              const nickName = params.value || "";
+              return (
                 <Typography
-                  sx={{
-                    paddingLeft: isMobile ? "12px" : "32px",
-                    fontWeight: "bold",
-                  }}
+                  sx={{ height: "100%", display: "flex", alignItems: "center" }}
                 >
-                  {params.colDef.headerName}
+                  {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
                 </Typography>
-              ),
-              renderCell: (params) => (
+              );
+            },
+          },
+          {
+            field: "email",
+            flex: 2,
+            headerName: "Email",
+            minWidth: 180,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+          },
+          {
+            field: "role",
+            flex: 1,
+            headerName: "Role",
+            minWidth: 110,
+            renderHeader: (params) => (
+              <Typography sx={{ fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            valueGetter: (params) =>
+              params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
+          },
+          {
+            field: "action",
+            flex: 1,
+            headerName: "Action",
+            minWidth: isMobile ? 130 : 60,
+            headerAlign: isMobile ? "center" : "right",
+            align: "right",
+            renderHeader: (params) => (
+              <Typography sx={{ paddingRight: "32px", fontWeight: "bold" }}>
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: isMobile ? "center" : "flex-end",
+                  paddingRight: isMobile ? "0px" : "32px",
+                  columnGap: "10px",
+                  height: "100%",
+                }}
+              >
+                <EditIcon
+                  onClick={() => onEdit && onEdit(params.row)}
+                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                />
+                {userRole === "admin" && (
+                  <DeleteForeverIcon
+                    onClick={() => onDelete && onDelete(params.row._id)}
+                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                  />
+                )}
+              </div>
+            ),
+          },
+        ]
+      : [
+          {
+            field: "name",
+            flex: 2,
+            headerName: type === "senator" ? "Senator" : "Representative",
+            minWidth: isMobile ? 180 : 150,
+            maxWidth: isMobile ? 200 : undefined,
+            minHeight: 200,
+            headerAlign: "left",
+            align: "left",
+            renderHeader: (params) => (
+              <Typography
+                sx={{
+                  paddingLeft: isMobile ? "12px" : "32px",
+                  fontWeight: "bold",
+                }}
+              >
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  columnGap: "10px",
+                  width: "fit-content",
+                  height: "100%",
+                  paddingLeft: isMobile ? "12px" : "32px",
+                  "&:hover": {
+                    cursor: "pointer",
+                  },
+                }}
+                onClick={() => {
+                  if (type === "senator" && params.row._id) {
+                    navigate(`edit-senator/${params.row._id}`);
+                  } else {
+                    navigate(`/edit-representative/${params.row._id}`);
+                  }
+                }}
+              >
                 <Box
                   sx={{
+                    width: isMobile ? 36 : 50,
+                    height: isMobile ? 36 : 50,
+                    borderRadius: "50%",
                     display: "flex",
-                    flexDirection: "row",
                     alignItems: "center",
-                    columnGap: "10px",
-                    width: "fit-content",
-                    height: "100%",
-                    paddingLeft: isMobile ? "12px" : "32px",
-                    "&:hover": {
-                      cursor: "pointer",
-                    },
-                  }}
-                  onClick={() => {
-                    if (type === "senator" && params.row._id) {
-                      navigate(`edit-senator/${params.row._id}`);
-                    } else {
-                      navigate(`/edit-representative/${params.row._id}`);
-                    }
+                    justifyContent: "center",
+                    border: `2px solid ${getBorderColor(params.row.party)}`,
                   }}
                 >
-                  <Box
-                    sx={{
-                      width: isMobile ? 36 : 50,
-                      height: isMobile ? 36 : 50,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: `2px solid ${getBorderColor(params.row.party)}`,
-                    }}
-                  >
-                    <Avatar
-                      src={params.row.photo}
-                      sx={{
-                        width: isMobile ? 32 : 45,
-                        height: isMobile ? 32 : 45,
-                      }}
-                    />
-                  </Box>
-                  <Typography
-                    sx={{
-                      transition: "color 0.3s ease-in-out",
-                      "&:hover": {
-                        color: getBorderColor(params.row.party),
-                      },
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      maxWidth: isMobile ? "90px" : undefined,
-                      minWidth: isMobile ? "40px" : undefined,
-                    }}
-                  >
-                    {params.row.name}
-                  </Typography>
+                <Avatar
+  src={
+    params.row.photo
+      ? `${API_URL}/images/${type === "senator" ? "senator" : "house"}/${params.row.photo}`
+      : "/default-avatar.png"
+  }
+  sx={{
+    width: isMobile ? 32 : 45,
+    height: isMobile ? 32 : 45,
+  }}
+/>
+
                 </Box>
-              ),
-            },
-            ...(type === "representative"
-              ? [
+                <Typography
+                  sx={{
+                    transition: "color 0.3s ease-in-out",
+                    "&:hover": {
+                      color: getBorderColor(params.row.party),
+                    },
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: isMobile ? "90px" : undefined,
+                    minWidth: isMobile ? "40px" : undefined,
+                  }}
+                >
+                  {params.row.name}
+                </Typography>
+              </Box>
+            ),
+          },
+          ...(type === "representative"
+            ? [
                 {
                   field: "district",
                   flex: 1,
@@ -825,7 +834,7 @@ export default function CustomizedDataGrid({
         loading={loading}
         getRowId={(row) => row._id}
         paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel} 
+        onPaginationModelChange={setPaginationModel}
         pageSizeOptions={[10, 20, 50]}
         disableColumnFilter
         disableColumnSelector
