@@ -253,6 +253,35 @@ export default function CustomizedDataGrid({
             ),
           },
           {
+            field: "congress",
+            flex: 1,
+            headerName: "Congress",
+            minWidth: 160,
+            renderHeader: (params) => (
+              <Typography
+                sx={{ fontWeight: "bold", textAlign: "center", width: "100%" }}
+              >
+                {params.colDef.headerName}
+              </Typography>
+            ),
+            renderCell: (params) => (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "left",
+                  alignItems: "center",
+                  pl: 3,
+                  width: "100%",
+                  height: "100%",
+                  textAlign: "center",
+                }}
+              >
+                <Typography>{params.value}</Typography>
+              </Box>
+            ),
+          },
+          
+          {
             field: "status",
             headerName: "Status",
             flex: 1,
@@ -627,18 +656,19 @@ export default function CustomizedDataGrid({
                     border: `2px solid ${getBorderColor(params.row.party)}`,
                   }}
                 >
-                <Avatar
-  src={
-    params.row.photo
-      ? `${API_URL}/images/${type === "senator" ? "senator" : "house"}/${params.row.photo}`
-      : "/default-avatar.png"
-  }
-  sx={{
-    width: isMobile ? 32 : 45,
-    height: isMobile ? 32 : 45,
-  }}
-/>
-
+                  <Avatar
+                    src={
+                      params.row.photo
+                        ? `${API_URL}/images/${
+                            type === "senator" ? "senator" : "house"
+                          }/${params.row.photo}`
+                        : "/default-avatar.png"
+                    }
+                    sx={{
+                      width: isMobile ? 32 : 45,
+                      height: isMobile ? 32 : 45,
+                    }}
+                  />
                 </Box>
                 <Typography
                   sx={{
