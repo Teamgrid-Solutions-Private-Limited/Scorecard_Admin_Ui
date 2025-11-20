@@ -220,7 +220,7 @@ export default function SearchBill(params) {
                     px: 3,
                   }}
                 >
-                  Search For Bills In Quorum
+                  Search For Votes In Quorum
                 </Typography>
                 <Grid
                   container
@@ -244,7 +244,7 @@ export default function SearchBill(params) {
                     }}
                   >
                     <TextField
-                      placeholder="Look for Bills in Quorum"
+                      placeholder="Look for Votes in Quorum"
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -373,7 +373,7 @@ export default function SearchBill(params) {
                   searchResults.length === 0 && (
                     <Box sx={{ width: "100%", textAlign: "center", mt: 4 }}>
                       <Typography variant="body1" color="text.secondary">
-                        No bills found in quroum for your search.
+                        No matching bills found in Quorum.
                       </Typography>
                       <Button
                         onClick={() => navigate("/add-bill")}
@@ -391,7 +391,7 @@ export default function SearchBill(params) {
                           transition: "all 0.3s ease",
                         }}
                       >
-                        Add Bill Manually
+                        Add Vote Manually
                       </Button>
                     </Box>
                   )}

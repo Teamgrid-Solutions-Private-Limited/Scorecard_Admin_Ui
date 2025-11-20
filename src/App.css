@@ -782,6 +782,10 @@ h6 {
   border-color: #cc9a3a !important;
 }
 
+.deleteforevericon {
+  cursor: pointer;
+}
+
 @media (max-width: 768px) {
   .textField {
     padding-left: 24px !important;

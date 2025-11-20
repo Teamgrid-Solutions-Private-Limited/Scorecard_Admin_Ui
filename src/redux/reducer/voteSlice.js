@@ -32,7 +32,7 @@ export const getAllVotes = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/api/v1/admin/votes/`, {
-        headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
       });
       return response.data;
     } catch (error) {
@@ -47,7 +47,7 @@ export const getVoteById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/api/v1/votes/${id}`, {
-        headers: { "x-protected-key": "MySuperSecretApiKey123" },
+        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
       });
       return response.data;
     } catch (error) {
@@ -149,7 +149,7 @@ export const bulkUpdateSbaPosition = createAsyncThunk(
         {
           headers: {
             "Content-Type": "application/json",
-            "x-protected-key": "MySuperSecretApiKey123",
+            "x-protected-key": "2oUtwJx8m1?0hx/JN7",
           },
         }
       );

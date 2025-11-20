@@ -26,7 +26,7 @@ export const getAllSenatorData = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/api/v1/admin/senator-data/`,
         {
-          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
         }
       );
       return response.data;
@@ -43,7 +43,7 @@ export const getSenatorDataById = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/api/v1/admin/senator-data/viewID/${id}`,
         {
-          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
         }
       );
       return response.data;
@@ -60,7 +60,7 @@ export const getSenatorDataBySenetorId = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/api/v1/admin/senator-data/viewbysenator/${id}`,
         {
-          headers: { "x-protected-key": "MySuperSecretApiKey123" },
+          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
         }
       );
       return response.data.info;
