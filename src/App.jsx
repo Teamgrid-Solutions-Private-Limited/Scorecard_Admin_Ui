@@ -21,7 +21,7 @@ import AddUser from "../src/Authentication/components/AddUser";
 import ManageUser from "../src/Authentication/components/ManageUser";
 import LoginPage from './Authentication/components/LoginPage';
 import ActivateAccount from './Authentication/components/ActivateAccount';
-
+import SearchActivity from "../src/Activity/SearchActivity";
 const PrivateRoute = ({ element }) => {
   const token = localStorage.getItem('token');
   return token ? element : <Navigate to="/login" />;
@@ -33,21 +33,67 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />
-        <Route path="add-senator" element={<PrivateRoute element={<SaveSenetors />} />} />
-        <Route path="edit-senator/:id" element={<PrivateRoute element={<SaveSenetors />} />} />
-        <Route path="representative" element={<PrivateRoute element={<Representative />} />} />
-        <Route path="add-representative" element={<PrivateRoute element={<SaveRepresentative />} />} />
-        <Route path="edit-representative/:id" element={<PrivateRoute element={<SaveRepresentative />} />} />
+        <Route
+          path="add-senator"
+          element={<PrivateRoute element={<SaveSenetors />} />}
+        />
+        <Route
+          path="edit-senator/:id"
+          element={<PrivateRoute element={<SaveSenetors />} />}
+        />
+        <Route
+          path="representative"
+          element={<PrivateRoute element={<Representative />} />}
+        />
+        <Route
+          path="add-representative"
+          element={<PrivateRoute element={<SaveRepresentative />} />}
+        />
+        <Route
+          path="edit-representative/:id"
+          element={<PrivateRoute element={<SaveRepresentative />} />}
+        />
         <Route path="bills" element={<PrivateRoute element={<Bill />} />} />
-        <Route path="/add-bill" element={<PrivateRoute element={<AddBill />} />} />
-        <Route path="/edit-bill/:id" element={<PrivateRoute element={<AddBill />} />} />
-        <Route path="/search-bills" element={<PrivateRoute element={<SearchBill />} />} />
-        <Route path="/manage-term" element={<PrivateRoute element={<ManageTerm />} />} />
-        <Route path="/activities" element={<PrivateRoute element={<Activity />} />} />
-        <Route path="/add-activity" element={<PrivateRoute element={<AddActivity />} />} />
-        <Route path="/edit-activity/:id" element={<PrivateRoute element={<AddActivity />} />} />
-        <Route path="/add-user" element={<PrivateRoute element={<AddUser />} />} />
-        <Route path="/manage-user" element={<PrivateRoute element={<ManageUser />} />} />
+        <Route
+          path="/add-bill"
+          element={<PrivateRoute element={<AddBill />} />}
+        />
+        <Route
+          path="/edit-bill/:id"
+          element={<PrivateRoute element={<AddBill />} />}
+        />
+        <Route
+          path="/search-bills"
+          element={<PrivateRoute element={<SearchBill />} />}
+        />
+        <Route
+          path="/manage-term"
+          element={<PrivateRoute element={<ManageTerm />} />}
+        />
+        <Route
+          path="/activities"
+          element={<PrivateRoute element={<Activity />} />}
+        />
+        <Route
+          path="/add-activity"
+          element={<PrivateRoute element={<AddActivity />} />}
+        />
+        <Route
+          path="/search-activities"
+          element={<PrivateRoute element={<SearchActivity />} />}
+        />
+        <Route
+          path="/edit-activity/:id"
+          element={<PrivateRoute element={<AddActivity />} />}
+        />
+        <Route
+          path="/add-user"
+          element={<PrivateRoute element={<AddUser />} />}
+        />
+        <Route
+          path="/manage-user"
+          element={<PrivateRoute element={<ManageUser />} />}
+        />
         <Route path="/activate-account" element={<ActivateAccount />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
