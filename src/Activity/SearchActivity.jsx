@@ -110,56 +110,108 @@ export default function SearchActivity() {
 
   // ADD ACTIVITY
  
-  const handleAddActivity = async (activity) => {
-    setLoading(true);
-    try {
-      const editorInfo = getEditorInfo();
+  // const handleAddActivity = async (activity) => {
+  //   setLoading(true);
+  //   try {
+  //     const editorInfo = getEditorInfo();
 
-      // Convert Quorum format to backend format
-      const activityData = {
-        billId: String(activity.quorumId), 
-        title: activity.title,
-        introduced: activity.date, 
-        congress: getCongressFromDate(activity.date),
-        editorInfo,
-      };
-
-    
-
-      const response = await axios.post(
-        `${API_URL}/api/v1/activities/save`,
-        activityData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+  //     // Convert Quorum format to backend format
+  //     const activityData = {
+  //       billId: String(activity.quorumId), 
+  //       title: activity.title,
+  //       introduced: activity.date, 
+  //       congress: getCongressFromDate(activity.date),
+  //       editorInfo,
+  //     };
 
     
-      if (response.data.exists) {
-        // Show already exists message
-        setSnackbarMessage("Activity already exists");
-        setSnackbarSeverity("warning");
-        setSnackbarOpen(true);
 
-        // Navigate to activities page
-        return;
-      }
+  //     const response = await axios.post(
+  //       `${API_URL}/api/v1/activities/save`,
+  //       activityData,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
 
-      if (response.data.savedCount > 0) {
-        navigate("/activities");
+    
+  //     if (response.data.exists) {
+  //       // Show already exists message
+  //       setSnackbarMessage("Activity already exists");
+  //       setSnackbarSeverity("warning");
+  //       setSnackbarOpen(true);
+
+  //       // Navigate to activities page
+  //       return;
+  //     }
+
+  //     if (response.data.savedCount > 0) {
+  //       navigate("/activities");
+  //     }
+  //   } catch (err) {
+  //     console.error("Save error:", err.response?.data || err);
+  //     setSnackbarMessage(
+  //       err.response?.data?.message || "Failed to save activity"
+  //     );
+  //     setSnackbarSeverity("error");
+  //     setSnackbarOpen(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const handleAddActivity = async (activity) => {
+  setLoading(true);
+  try {
+    const editorInfo = getEditorInfo();
+    const activityData = {
+      billId: String(activity.quorumId),
+      title: activity.title,
+      introduced: activity.date,
+      congress: getCongressFromDate(activity.date),
+      editorInfo,
+    };
+
+    console.log("Sending:", activityData);
+
+    const response = await axios.post(
+      `${API_URL}/api/v1/activities/save`,
+      activityData,
+      {
+        headers: { Authorization: `Bearer ${token}` },
       }
-    } catch (err) {
-      console.error("Save error:", err.response?.data || err);
-      setSnackbarMessage(
-        err.response?.data?.message || "Failed to save activity"
-      );
-      setSnackbarSeverity("error");
+    );
+
+    console.log("Saved:", response.data);
+
+    if (response.data.exists) {
+      setSnackbarMessage("Activity already exists");
+      setSnackbarSeverity("warning");
       setSnackbarOpen(true);
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
 
+    // Show success message and navigate to edit page
+    setSnackbarMessage(
+      "Activity added successfully! Legislators are being assigned in the background."
+    );
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+
+    // Navigate to edit activity page with the new activity ID
+    if (response.data.activityId) {
+      navigate(`/edit-activity/${response.data.activityId}`);
+    }
+  } catch (err) {
+    console.error("Save error:", err.response?.data || err);
+    setSnackbarMessage(
+      err.response?.data?.message || "Failed to save activity"
+    );
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  } finally {
+    setLoading(false);
+  }
+};
   // Helper function to determine congress from date
   const getCongressFromDate = (dateString) => {
     if (!dateString) return "118"; // Default to current congress
