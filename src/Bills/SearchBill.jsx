@@ -75,14 +75,24 @@ export default function SearchBill(params) {
 
       const searchTerm = searchQuery.trim();
       let response;
-   
-      // -----------------------------------------
-      // 1️⃣ ROLL CALL SEARCH (S190 / H90)
-      // -----------------------------------------
-      const rollCallMatch = searchTerm.match(/^([SH])(\d+)$/i);
 
-      if (rollCallMatch) {
-        const numberOnly = rollCallMatch[2];
+      // -----------------------------------------
+      // 1️⃣ ROLL CALL SEARCH (S190 / H90 / 144)
+      // -----------------------------------------
+      // Match both "S144/H144" format and just numbers "144"
+      const rollCallMatchWithChamber = searchTerm.match(/^([SH])(\d+)$/i);
+      const rollCallMatchNumberOnly = searchTerm.match(/^(\d+)$/);
+
+      if (rollCallMatchWithChamber || rollCallMatchNumberOnly) {
+        let numberOnly;
+
+        if (rollCallMatchWithChamber) {
+          // Specific chamber: S144 or H144
+          numberOnly = rollCallMatchWithChamber[2];
+        } else {
+          // Just number: 144 - search both chambers
+          numberOnly = rollCallMatchNumberOnly[1];
+        }
 
         response = await axios.post(
           `${API_URL}/fetch-quorum/store-data`,
@@ -446,7 +456,7 @@ export default function SearchBill(params) {
                     </TableContainer>
                   )
                 )}
-                
+
                 {searchAttempted &&
                   !loading &&
                   Array.isArray(searchResults) &&
