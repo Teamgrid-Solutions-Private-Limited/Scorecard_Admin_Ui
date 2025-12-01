@@ -201,7 +201,7 @@ export default function CustomizedDataGrid({
           {
             field: "bill",
             flex: 3,
-            headerName: "Bill",
+            headerName: "Vote",
             minWidth: 150,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
