@@ -326,7 +326,7 @@ export default function Bills(props) {
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}
-                                    onClick={() => handleStatusFilter(status)}
+                                    onClick={() => toggleStatusFilter(status)}
                                     className="filter-option"
                                   >
                                     {statusFilter.includes(status) ? (
