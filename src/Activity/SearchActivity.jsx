@@ -7,7 +7,6 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { getAllVotes } from "../redux/reducer/voteSlice";
 import { useState } from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -21,7 +20,6 @@ import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/API";
 import axios from "axios";
-import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import FixedHeader from "../components/FixedHeader";
@@ -30,12 +28,12 @@ import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-export default function SearchBill(params) {
+export default function SearchActivity() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false);
-  const dispatch = useDispatch();
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const user = localStorage.getItem("user");
@@ -44,12 +42,11 @@ export default function SearchBill(params) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setSnackbarOpen(false);
-  };
+  const handleSnackbarClose = () => setSnackbarOpen(false);
+
+  // ---------------------------
+  // SEARCH HANDLER
+  // ---------------------------
   const handleSearch = async () => {
     setLoading(true);
     setSearchAttempted(true);
@@ -110,54 +107,139 @@ export default function SearchBill(params) {
     }
   };
 
-  const handleAddBill = async (bill) => {
-    setLoading(true);
-    try {
-      const allVotes = await dispatch(getAllVotes()).unwrap();
-      const isDuplicate = allVotes.some(
-        (vote) => String(vote.quorumId) === String(bill.quorumId)
-      );
-      if (isDuplicate) {
-        setSnackbarMessage("Bill already exists");
-        setSnackbarSeverity("info");
-        setSnackbarOpen(true);
-        setLoading(false);
-        return;
-      }
-      const editorInfo = getEditorInfo();
-      const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
-        bills: [bill],
-        editorInfo: editorInfo,
-      });
 
-      const voteId = response.data.data[0]._id;
-      if (voteId) {
-        navigate(`/edit-bill/${voteId}`);
-      } else {
-        console.error("voteId (_id) is missing in the API response.");
+  // ADD ACTIVITY
+ 
+  // const handleAddActivity = async (activity) => {
+  //   setLoading(true);
+  //   try {
+  //     const editorInfo = getEditorInfo();
+
+  //     // Convert Quorum format to backend format
+  //     const activityData = {
+  //       billId: String(activity.quorumId), 
+  //       title: activity.title,
+  //       introduced: activity.date, 
+  //       congress: getCongressFromDate(activity.date),
+  //       editorInfo,
+  //     };
+
+    
+
+  //     const response = await axios.post(
+  //       `${API_URL}/api/v1/activities/save`,
+  //       activityData,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+
+    
+  //     if (response.data.exists) {
+  //       // Show already exists message
+  //       setSnackbarMessage("Activity already exists");
+  //       setSnackbarSeverity("warning");
+  //       setSnackbarOpen(true);
+
+  //       // Navigate to activities page
+  //       return;
+  //     }
+
+  //     if (response.data.savedCount > 0) {
+  //       navigate("/activities");
+  //     }
+  //   } catch (err) {
+  //     console.error("Save error:", err.response?.data || err);
+  //     setSnackbarMessage(
+  //       err.response?.data?.message || "Failed to save activity"
+  //     );
+  //     setSnackbarSeverity("error");
+  //     setSnackbarOpen(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const handleAddActivity = async (activity) => {
+  setLoading(true);
+  try {
+    const editorInfo = getEditorInfo();
+    const activityData = {
+      billId: String(activity.quorumId),
+      title: activity.title,
+      introduced: activity.date,
+      congress: getCongressFromDate(activity.date),
+      editorInfo,
+    };
+
+    console.log("Sending:", activityData);
+
+    const response = await axios.post(
+      `${API_URL}/api/v1/activities/save`,
+      activityData,
+      {
+        headers: { Authorization: `Bearer ${token}` },
       }
-    } catch (error) {
-      console.error("Error saving bill:", error);
-    } finally {
-      setLoading(false);
+    );
+
+    console.log("Saved:", response.data);
+
+    if (response.data.exists) {
+      setSnackbarMessage("Activity already exists");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      return;
     }
+
+    // Show success message and navigate to edit page
+    setSnackbarMessage(
+      "Activity added successfully! Legislators are being assigned in the background."
+    );
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+
+    // Navigate to edit activity page with the new activity ID
+    if (response.data.activityId) {
+      navigate(`/edit-activity/${response.data.activityId}`);
+    }
+  } catch (err) {
+    console.error("Save error:", err.response?.data || err);
+    setSnackbarMessage(
+      err.response?.data?.message || "Failed to save activity"
+    );
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  } finally {
+    setLoading(false);
+  }
+};
+  // Helper function to determine congress from date
+  const getCongressFromDate = (dateString) => {
+    if (!dateString) return "118"; // Default to current congress
+
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+
+    // Simple congress calculation (each congress is 2 years, starting from 1789)
+    const baseYear = 1789;
+    const congress = Math.floor((year - baseYear) / 2) + 1;
+
+    return congress.toString();
   };
+
+  // ---------------------------
+  // EDITOR INFO
+  // ---------------------------
   const getEditorInfo = () => {
     try {
       if (!token) return null;
-
-      const decodedToken = jwtDecode(token);
-
+      const decoded = jwtDecode(token);
       return {
-        editorId: decodedToken.userId || decodedToken.id || "unknown",
+        editorId: decoded.userId || decoded.id || "unknown",
         editorName:
-          user ||
-          decodedToken.name ||
-          decodedToken.username ||
-          "Unknown Editor",
+          user || decoded.name || decoded.username || "Unknown Editor",
         editedAt: new Date().toISOString(),
       };
-    } catch (error) {
+    } catch {
       return {
         editorId: "unknown",
         editorName: "Unknown Editor",
@@ -166,9 +248,18 @@ export default function SearchBill(params) {
     }
   };
 
+  const formatDate = (d) => {
+    try {
+      return d ? new Date(d).toLocaleDateString() : "Unknown";
+    } catch {
+      return "Invalid Date";
+    }
+  };
+
   return (
     <AppTheme>
       <LoadingOverlay loading={loading} />
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
@@ -178,32 +269,27 @@ export default function SearchBill(params) {
         <MuiAlert
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
-          sx={{ width: "100%" }}
-          elevation={6}
           variant="filled"
         >
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
 
-      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ", minHeight: "100vh" }}>
+      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff", minHeight: "100vh" }}>
         <SideMenu />
+
         <Box
           component="main"
-          sx={(theme) => ({
-            flexGrow: 1,
-            display: "flex",
-            flexDirection: "column",
-          })}
+          sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
         >
           <FixedHeader />
           <MobileHeader />
+
           <Stack
             spacing={2}
             sx={{
               alignItems: "center",
               mx: 3,
-              pb: 0,
               mt: { xs: 8, md: 4 },
               flex: 1,
             }}
@@ -211,7 +297,7 @@ export default function SearchBill(params) {
             <Paper elevation={2} sx={{ width: "100%", bgcolor: "#fff" }}>
               <Box sx={{ padding: 0, pb: 5 }}>
                 <Typography
-                  fontSize={"1rem"}
+                  fontSize="1rem"
                   fontWeight={500}
                   sx={{
                     borderBottom: "1px solid",
@@ -220,13 +306,14 @@ export default function SearchBill(params) {
                     px: 3,
                   }}
                 >
-                  Search For Bills In Quorum
+                  Search For Activities In Quorum
                 </Typography>
+
+                {/* Search Bar */}
                 <Grid
                   container
                   rowSpacing={2}
                   columnSpacing={2}
-                  alignItems="center"
                   justifyContent="center"
                   pt={3}
                 >
@@ -236,51 +323,27 @@ export default function SearchBill(params) {
                     md={8}
                     sx={{
                       display: "flex",
-                      alignItems: "center",
                       flexDirection: { xs: "column", md: "row" },
                       gap: { xs: 2, md: 1 },
-                      width: "100%",
                       mt: 5,
                     }}
                   >
                     <TextField
-                      placeholder="Look for Bills in Quorum"
+                      placeholder="Search by Bill title"
                       variant="outlined"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSearch();
-                      }}
                       fullWidth
-                      sx={{
-                        maxWidth: { xs: "100%", md: "800px" },
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "gray !important",
-                          },
-                        },
-                        "& .MuiInputBase-root": {
-                          "&.Mui-focused": {
-                            boxShadow: "none !important",
-                            outline: "none !important",
-                          },
-                        },
-                      }}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
 
                     <Button
                       onClick={handleSearch}
                       sx={{
-                        width: { xs: "100%", md: "auto" },
                         minWidth: "110px",
                         backgroundColor: "#173A5E !important",
                         color: "white !important",
-                        padding: "0.5rem 1rem",
-                        marginLeft: "0.5rem",
-                        "&:hover": {
-                          backgroundColor: "#1E4C80 !important",
-                        },
-                        transition: "all 0.3s ease",
+                        "&:hover": { backgroundColor: "#1E4C80 !important" },
                       }}
                     >
                       Search
@@ -288,6 +351,8 @@ export default function SearchBill(params) {
                   </Grid>
                 </Grid>
               </Box>
+
+              {/* Results Table */}
               <Box sx={{ p: 3 }}>
                 {loading ? (
                   <Box
@@ -296,7 +361,9 @@ export default function SearchBill(params) {
                       justifyContent: "center",
                       marginTop: 2,
                     }}
-                  ></Box>
+                  >
+                    {/* Loading spinner can be added here if needed */}
+                  </Box>
                 ) : (
                   Array.isArray(searchResults) &&
                   searchResults.length > 0 && (
@@ -306,14 +373,22 @@ export default function SearchBill(params) {
                     >
                       <Table size="large">
                         <TableHead>
-                          <TableRow sx={{}}>
+                          <TableRow>
                             <TableCell
                               sx={{
                                 fontWeight: "bold",
                                 borderBottom: "1px solid #ddd",
                               }}
                             >
-                              Title
+                              Activity Title / Bill Name
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontWeight: "bold",
+                                borderBottom: "1px solid #ddd",
+                              }}
+                            >
+                              Date
                             </TableCell>
                             <TableCell
                               sx={{
@@ -328,15 +403,23 @@ export default function SearchBill(params) {
                         </TableHead>
 
                         <TableBody>
-                          {searchResults.map((bill) => (
-                            <TableRow key={bill.id}>
+                          {searchResults.map((activity) => (
+                            <TableRow key={activity.quorumId || activity.id}>
                               <TableCell
                                 sx={{
                                   borderBottom: "1px solid #ddd",
                                   fontSize: "13px",
                                 }}
                               >
-                                {bill.title}
+                                {activity.title}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  borderBottom: "1px solid #ddd",
+                                  fontSize: "13px",
+                                }}
+                              >
+                                {formatDate(activity.date)}
                               </TableCell>
                               <TableCell
                                 sx={{
@@ -346,11 +429,10 @@ export default function SearchBill(params) {
                               >
                                 <Button
                                   variant="outlined"
-                                  onClick={() => handleAddBill(bill)}
+                                  onClick={() => handleAddActivity(activity)}
                                   sx={{
                                     backgroundColor: "#173A5E !important",
                                     color: "white !important",
-
                                     "&:hover": {
                                       backgroundColor: "#1E4C80 !important",
                                     },
@@ -367,38 +449,31 @@ export default function SearchBill(params) {
                     </TableContainer>
                   )
                 )}
-                {searchAttempted &&
-                  !loading &&
-                  Array.isArray(searchResults) &&
-                  searchResults.length === 0 && (
-                    <Box sx={{ width: "100%", textAlign: "center", mt: 4 }}>
-                      <Typography variant="body1" color="text.secondary">
-                        No matching bills found in Quorum.
-                      </Typography>
-                      <Button
-                        onClick={() => navigate("/add-bill")}
-                        sx={{
-                          width: { xs: "100%", md: "auto" },
-                          minWidth: "130px",
-                          backgroundColor: "#173A5E !important",
-                          color: "white !important",
-                          marginTop: 2,
-                          marginBottom: 2,
-                          padding: "0.5rem 1rem",
-                          "&:hover": {
-                            backgroundColor: "#1E4C80 !important",
-                          },
-                          transition: "all 0.3s ease",
-                        }}
-                      >
-                        Add Bill Manually
-                      </Button>
-                    </Box>
-                  )}
+
+                {/* No Results */}
+                {searchAttempted && !loading && searchResults.length === 0 && (
+                  <Box sx={{ textAlign: "center", mt: 4 }}>
+                    <Typography color="text.secondary">
+                      No matching activities found in Quorum.
+                    </Typography>
+
+                    <Button
+                      onClick={() => navigate("/add-activity")}
+                      sx={{
+                        mt: 2,
+                        backgroundColor: "#173A5E !important",
+                        color: "white !important",
+                      }}
+                    >
+                      Add Activity Manually
+                    </Button>
+                  </Box>
+                )}
               </Box>
             </Paper>
           </Stack>
-          <Box sx={{ mx: "15px", py: 5 }}>
+
+          <Box sx={{ mx: 3, py: 5 }}>
             <Footer />
           </Box>
         </Box>

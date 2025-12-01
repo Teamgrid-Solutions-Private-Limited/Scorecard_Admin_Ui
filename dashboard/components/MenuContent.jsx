@@ -24,7 +24,7 @@ const mainListItems = [
   //   icon: <AnalyticsRoundedIcon />,
   //   link: "/add-representative",
   // },
-  { text: "Bill We Track", icon: <PeopleRoundedIcon />, link: "/bills" },
+  { text: "Bill We Track", icon: <PeopleRoundedIcon />, link: "/votes" },
 ];
 
 export default function MenuContent() {

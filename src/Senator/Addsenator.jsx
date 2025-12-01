@@ -604,10 +604,10 @@ const handleRemoveVote = (termIndex, voteIndex) => {
   const removedFieldKey = `term${termIndex}_ScoredVote_${voteIndex + 1}_removed`;
   const addedFieldKey = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
   
-  console.log('=== handleRemoveVote ===');
-  console.log('Current localChanges before removal:', localChanges);
-  console.log('Removing vote with key:', removedFieldKey);
-  console.log('Vote to remove:', voteToRemove);
+  // console.log('=== handleRemoveVote ===');
+  // console.log('Current localChanges before removal:', localChanges);
+  // console.log('Removing vote with key:', removedFieldKey);
+  // console.log('Vote to remove:', voteToRemove);
   
   // Check if this was a newly added empty vote (no voteId and no score)
   const isNewEmptyVote = !voteToRemove?.voteId && (!voteToRemove?.score || voteToRemove.score === "");
@@ -619,9 +619,9 @@ const handleRemoveVote = (termIndex, voteIndex) => {
   const existedInOriginal = originalVoteAtIndex && 
                            (originalVoteAtIndex.voteId || originalVoteAtIndex.score);
   
-  console.log('Is new empty vote:', isNewEmptyVote);
-  console.log('Existed in original:', existedInOriginal);
-  console.log('Original votes at index:', originalVoteAtIndex);
+  // console.log('Is new empty vote:', isNewEmptyVote);
+  // console.log('Existed in original:', existedInOriginal);
+  // console.log('Original votes at index:', originalVoteAtIndex);
 
   // If the vote has an ID and is being removed, track it (only if it existed in original)
   if (voteToRemove?.voteId && voteToRemove.voteId.toString().trim() !== "" && existedInOriginal) {
@@ -666,7 +666,7 @@ const handleRemoveVote = (termIndex, voteIndex) => {
           change !== addedFieldKey &&
           change !== removedFieldKey
       );
-      console.log('Removing newly added empty vote that never existed, cleaned changes:', cleanedChanges);
+      // console.log('Removing newly added empty vote that never existed, cleaned changes:', cleanedChanges);
     } else if (existedInOriginal) {
       // For votes that existed in original data, clean up the addition marker and add removal marker
       cleanedChanges = prev.filter(
@@ -677,14 +677,14 @@ const handleRemoveVote = (termIndex, voteIndex) => {
       if (!cleanedChanges.includes(removedFieldKey)) {
         cleanedChanges = [...cleanedChanges, removedFieldKey];
       }
-      console.log('Removing existing vote from original data, cleaned changes:', cleanedChanges);
+      // console.log('Removing existing vote from original data, cleaned changes:', cleanedChanges);
     } else {
       // For other cases, just clean up the addition marker
       cleanedChanges = prev.filter(
         (change) =>
           change !== addedFieldKey
       );
-      console.log('Default cleanup, cleaned changes:', cleanedChanges);
+      // console.log('Default cleanup, cleaned changes:', cleanedChanges);
     }
     
     return cleanedChanges;
@@ -765,10 +765,10 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
   const removedFieldKey = `term${termIndex}_TrackedActivity_${activityIndex + 1}_removed`;
   const addedFieldKey = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
   
-  console.log('=== handleRemoveActivity ===');
-  console.log('Current localChanges before removal:', localChanges);
-  console.log('Removing activity with key:', removedFieldKey);
-  console.log('Activity to remove:', activityToRemove);
+  // console.log('=== handleRemoveActivity ===');
+  // console.log('Current localChanges before removal:', localChanges);
+  // console.log('Removing activity with key:', removedFieldKey);
+  // console.log('Activity to remove:', activityToRemove);
   
   // Check if this was a newly added empty activity (no activityId and no score)
   const isNewEmptyActivity = !activityToRemove?.activityId && (!activityToRemove?.score || activityToRemove.score === "");
@@ -780,8 +780,8 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
   const existedInOriginal = originalActivityAtIndex && 
                            (originalActivityAtIndex.activityId || originalActivityAtIndex.score);
   
-  console.log('Is new empty activity:', isNewEmptyActivity);
-  console.log('Existed in original:', existedInOriginal);
+  // console.log('Is new empty activity:', isNewEmptyActivity);
+  // console.log('Existed in original:', existedInOriginal);
 
   // If the activity has an ID and is being removed, track it (only if it existed in original)
   if (activityToRemove?.activityId && activityToRemove.activityId.toString().trim() !== "" && existedInOriginal) {
@@ -826,7 +826,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
           change !== addedFieldKey &&
           change !== removedFieldKey
       );
-      console.log('Removing newly added empty activity that never existed, cleaned changes:', cleanedChanges);
+      // console.log('Removing newly added empty activity that never existed, cleaned changes:', cleanedChanges);
     } else if (existedInOriginal) {
       // For activities that existed in original data, clean up the addition marker and add removal marker
       cleanedChanges = prev.filter(
@@ -837,14 +837,14 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
       if (!cleanedChanges.includes(removedFieldKey)) {
         cleanedChanges = [...cleanedChanges, removedFieldKey];
       }
-      console.log('Removing existing activity from original data, cleaned changes:', cleanedChanges);
+      // console.log('Removing existing activity from original data, cleaned changes:', cleanedChanges);
     } else {
       // For other cases, just clean up the addition marker
       cleanedChanges = prev.filter(
         (change) =>
           change !== addedFieldKey
       );
-      console.log('Default cleanup, cleaned changes:', cleanedChanges);
+      // console.log('Default cleanup, cleaned changes:', cleanedChanges);
     }
     
     return cleanedChanges;
@@ -932,10 +932,10 @@ const handleRemovePastVote = (termIndex, voteIndex) => {
   const removedFieldKey = `term${termIndex}_pastVotesScore_${voteIndex + 1}_removed`;
   const addedFieldKey = `term${termIndex}_pastVotesScore_${voteIndex + 1}`;
   
-  console.log('=== handleRemovePastVote ===');
-  console.log('Current localChanges before removal:', localChanges);
-  console.log('Removing past vote with key:', removedFieldKey);
-  console.log('Past vote to remove:', voteToRemove);
+  // console.log('=== handleRemovePastVote ===');
+  // console.log('Current localChanges before removal:', localChanges);
+  // console.log('Removing past vote with key:', removedFieldKey);
+  // console.log('Past vote to remove:', voteToRemove);
   
   // Check if this was a newly added empty past vote (no voteId and no score)
   const isNewEmptyVote = !voteToRemove?.voteId && (!voteToRemove?.score || voteToRemove.score === "");
@@ -947,9 +947,9 @@ const handleRemovePastVote = (termIndex, voteIndex) => {
   const existedInOriginal = originalPastVoteAtIndex && 
                            (originalPastVoteAtIndex.voteId || originalPastVoteAtIndex.score);
   
-  console.log('Is new empty past vote:', isNewEmptyVote);
-  console.log('Existed in original:', existedInOriginal);
-  console.log('Original past votes at index:', originalPastVoteAtIndex);
+  // console.log('Is new empty past vote:', isNewEmptyVote);
+  // console.log('Existed in original:', existedInOriginal);
+  // console.log('Original past votes at index:', originalPastVoteAtIndex);
 
   // If the past vote has an ID and is being removed, track it (only if it existed in original)
   if (voteToRemove?.voteId && voteToRemove.voteId.toString().trim() !== "" && existedInOriginal) {
@@ -994,7 +994,7 @@ const handleRemovePastVote = (termIndex, voteIndex) => {
           change !== addedFieldKey &&
           change !== removedFieldKey
       );
-      console.log('Removing newly added empty past vote that never existed, cleaned changes:', cleanedChanges);
+      // console.log('Removing newly added empty past vote that never existed, cleaned changes:', cleanedChanges);
     } else if (existedInOriginal) {
       // For past votes that existed in original data, clean up the addition marker and add removal marker
       cleanedChanges = prev.filter(
@@ -1005,14 +1005,14 @@ const handleRemovePastVote = (termIndex, voteIndex) => {
       if (!cleanedChanges.includes(removedFieldKey)) {
         cleanedChanges = [...cleanedChanges, removedFieldKey];
       }
-      console.log('Removing existing past vote from original data, cleaned changes:', cleanedChanges);
+      // console.log('Removing existing past vote from original data, cleaned changes:', cleanedChanges);
     } else {
       // For other cases, just clean up the addition marker
       cleanedChanges = prev.filter(
         (change) =>
           change !== addedFieldKey
       );
-      console.log('Default cleanup, cleaned changes:', cleanedChanges);
+      // console.log('Default cleanup, cleaned changes:', cleanedChanges);
     }
     
     return cleanedChanges;
@@ -1063,7 +1063,7 @@ const handleRemovePastVote = (termIndex, voteIndex) => {
 
   const contentRefs = useRef([]);
 useEffect(() => {
-  console.log('=== localChanges state updated ===', localChanges);
+  // console.log('=== localChanges state updated ===', localChanges);
 }, [localChanges]);
   const handleAddTerm = () => {
     setSenatorTermData((prev) => [

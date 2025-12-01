@@ -344,7 +344,7 @@ export default function Activity(props) {
                 </Button>
                 {userRole === "admin" && (
                   <Button
-                    onClick={() => navigate("/add-activity")}
+                    onClick={() => navigate("/search-activities")}
                     className="addBillsBtn"
                 >
                   Add Activity

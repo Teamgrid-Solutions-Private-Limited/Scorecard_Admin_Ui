@@ -8,16 +8,16 @@ import {
   updateVoteStatus,
   bulkUpdateSbaPosition,
 } from "../redux/reducer/voteSlice";
-import AppTheme from "../../src/shared-theme/AppTheme";
+import AppTheme from "../shared-theme/AppTheme";
 import SearchIcon from "@mui/icons-material/Search";
-import SideMenu from "../../src/components/SideMenu";
-import MainGrid from "../../src/components/MainGrid";
+import SideMenu from "../components/SideMenu";
+import MainGrid from "../components/MainGrid";
 import {
   chartsCustomizations,
   dataGridCustomizations,
   datePickersCustomizations,
   treeViewCustomizations,
-} from "../../src/Themes/customizations";
+} from "../Themes/customizations";
 import {
   Snackbar,
   Alert,
@@ -38,7 +38,7 @@ import {
   Button,
   InputAdornment,
 } from "@mui/material";
-import FixedHeader from "../../src/components/FixedHeader";
+import FixedHeader from "../components/FixedHeader";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -73,32 +73,40 @@ export default function Bills(props) {
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
+  const [congressFilter, setCongressFilter] = useState([]);
   const statusOptions = ["published", "draft", "under review"];
   const [selectedBills, setSelectedBills] = useState([]);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
   const [bulkSbaPosition, setBulkSbaPosition] = useState("");
+  const [expandedFilter, setExpandedFilter] = useState(null);
 
   const handleBulkUpdate = async () => {
     if (!selectedBills.length || !bulkSbaPosition) return;
 
     setFetching(true);
     try {
-      await dispatch(
+      const result = await dispatch(
         bulkUpdateSbaPosition({
           ids: selectedBills,
           sbaPosition: bulkSbaPosition,
         })
       );
 
-      await dispatch(getAllVotes());
-      setSnackbarMessage(
-        `Updated SBA position for ${selectedBills.length} bill(s)`
-      );
-      setSnackbarSeverity("success");
+      if (result.payload) {
+        await dispatch(getAllVotes());
+        setSnackbarMessage(
+          `Updated SBA position for ${selectedBills.length} bill(s)`
+        );
+        setSnackbarSeverity("success");
 
-      setSelectedBills([]);
-      setBulkSbaPosition("");
-      setIsBulkEditMode(false);
+        setSelectedBills([]);
+        setBulkSbaPosition("");
+        setIsBulkEditMode(false);
+      } else if (result.payload === undefined) {
+        // Handle rejection
+        setSnackbarMessage("Failed to update bills");
+        setSnackbarSeverity("error");
+      }
     } catch (error) {
       setSnackbarMessage("Failed to update bills");
       setSnackbarSeverity("error");
@@ -121,6 +129,10 @@ export default function Bills(props) {
       statusFilter.length === 0 ||
       (vote.status && statusFilter.includes(vote.status));
 
+    const congressMatch =
+      congressFilter.length === 0 ||
+      (vote.congress && congressFilter.includes(String(vote.congress)));
+
     const searchMatch =
       !searchQuery ||
       (vote.billName &&
@@ -128,13 +140,20 @@ export default function Bills(props) {
       (vote.title &&
         vote.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    return statusMatch && searchMatch;
+    return statusMatch && congressMatch && searchMatch;
   });
+
+  const congressOptions = [
+    ...new Set(
+      votes.filter((vote) => vote.congress).map((vote) => String(vote.congress))
+    ),
+  ].sort((a, b) => parseInt(b) - parseInt(a));
 
   const billsData = filteredVotes.map((vote, index) => ({
     _id: vote._id || index,
     date: formatDate(vote.date),
     bill: vote.billName || vote.title,
+    congress: vote.congress || "N/A",
     billsType: vote.type
       ? vote.type.toLowerCase().includes("senate")
         ? "Senate"
@@ -143,13 +162,19 @@ export default function Bills(props) {
         : "Other"
       : "Other",
     status: vote.status || "draft",
+    sbaPosition: vote.sbaPosition || "N/A",
   }));
 
   const toggleFilter = () => {
     setFilterOpen(!filterOpen);
+    setExpandedFilter(null);
   };
 
-  const handleStatusFilter = (status) => {
+  const toggleFilterSection = (section) => {
+    setExpandedFilter(expandedFilter === section ? null : section);
+  };
+
+  const toggleStatusFilter = (status) => {
     setStatusFilter((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
@@ -157,14 +182,23 @@ export default function Bills(props) {
     );
   };
 
-  const clearAllFilters = () => {
-    setStatusFilter([]);
+  const handleCongressFilter = (congress) => {
+    setCongressFilter((prev) =>
+      prev.includes(congress)
+        ? prev.filter((c) => c !== congress)
+        : [...prev, congress]
+    );
   };
 
-  const activeFilterCount = statusFilter.length;
+  const clearAllFilters = () => {
+    setStatusFilter([]);
+    setCongressFilter([]);
+  };
+
+  const activeFilterCount = statusFilter.length + congressFilter.length;
 
   const handleEdit = (row) => {
-    navigate(`/edit-bill/${row._id}`);
+    navigate(`/edit-vote/${row._id}`);
   };
   const handleDeleteClick = (row) => {
     setSelectedVote(row);
@@ -277,25 +311,100 @@ export default function Bills(props) {
                         </Box>
 
                         {/* Status Filter */}
-                        <Box className="filter-scroll">
-                          {statusOptions.map((status) => (
-                            <Box
-                              key={status}
-                              onClick={() => handleStatusFilter(status)}
-                              className="filter-option"
-                            >
-                              {statusFilter.includes(status) ? (
-                                <CheckIcon color="primary" fontSize="small" />
-                              ) : (
-                                <Box sx={{ width: 24, height: 24 }} />
-                              )}
-                              <Typography variant="body2" sx={{ ml: 1 }}>
-                                {status.charAt(0).toUpperCase() +
-                                  status.slice(1)}
-                              </Typography>
+                        <Box
+                          className={`filter-section ${
+                            expandedFilter === "status" ? "active" : ""
+                          }`}
+                        >
+                          <Box
+                            className="filter-title"
+                            onClick={() => toggleFilterSection("status")}
+                          >
+                            <Typography variant="body1">Status</Typography>
+                            {expandedFilter === "status" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "status" && (
+                            <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
+                                {statusOptions.map((status) => (
+                                  <Box
+                                    key={status}
+                                    onClick={() => toggleStatusFilter(status)}
+                                    className="filter-option"
+                                  >
+                                    {statusFilter.includes(status) ? (
+                                      <CheckIcon
+                                        color="primary"
+                                        fontSize="small"
+                                      />
+                                    ) : (
+                                      <Box sx={{ width: 24, height: 24 }} />
+                                    )}
+                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                      {status.charAt(0).toUpperCase() +
+                                        status.slice(1)}
+                                    </Typography>
+                                  </Box>
+                                ))}
+                              </Box>
                             </Box>
-                          ))}
+                          )}
                         </Box>
+
+                        {/* Congress Filter */}
+                        {congressOptions.length > 0 && (
+                          <Box
+                            className={`filter-section ${
+                              expandedFilter === "congress" ? "active" : ""
+                            }`}
+                          >
+                            <Box
+                              className="filter-title"
+                              onClick={() => toggleFilterSection("congress")}
+                            >
+                              <Typography variant="body1">Congress</Typography>
+                              {expandedFilter === "congress" ? (
+                                <ExpandLessIcon />
+                              ) : (
+                                <ExpandMoreIcon />
+                              )}
+                            </Box>
+                            {expandedFilter === "congress" && (
+                              <Box sx={{ py: 1, pt: 0 }}>
+                                <Box className="filter-scroll">
+                                  {congressOptions.map((congress) => (
+                                    <Box
+                                      key={congress}
+                                      onClick={() =>
+                                        handleCongressFilter(congress)
+                                      }
+                                      className="filter-option"
+                                    >
+                                      {congressFilter.includes(congress) ? (
+                                        <CheckIcon
+                                          color="primary"
+                                          fontSize="small"
+                                        />
+                                      ) : (
+                                        <Box sx={{ width: 24, height: 24 }} />
+                                      )}
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ ml: 1 }}
+                                      >
+                                        {congress}
+                                      </Typography>
+                                    </Box>
+                                  ))}
+                                </Box>
+                              </Box>
+                            )}
+                          </Box>
+                        )}
 
                         {/* Clear All Button */}
                         <Box>
@@ -310,7 +419,9 @@ export default function Bills(props) {
                               pl: 5,
                             }}
                             onClick={clearAllFilters}
-                            disabled={!statusFilter.length}
+                            disabled={
+                              !statusFilter.length && !congressFilter.length
+                            }
                           >
                             Clear Filters
                           </Button>
@@ -328,10 +439,10 @@ export default function Bills(props) {
 
                 {userRole === "admin" && (
                   <Button
-                    onClick={() => navigate("/search-bills")}
+                    onClick={() => navigate("/search-votes")}
                     className="addBillsBtn"
                   >
-                    Add Bills
+                    Add Votes
                   </Button>
                 )}
               </Stack>
