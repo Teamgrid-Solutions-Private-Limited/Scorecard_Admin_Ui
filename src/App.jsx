@@ -10,10 +10,10 @@ import SaveSenetors from '../src/Senator/Addsenator';
 import Senator from '../src/Senator/Senator';
 import Representative from '../src/Representative/Representative';
 import SaveRepresentative from '../src/Representative/Addrepresentative';
-import Bill from '../src/Bills/Bills';
+import Bill from './votes/Votes';
 import SignIn from '../src/Authentication/components/SignIn';
-import AddBill from '../src/Bills/AddBill';
-import SearchBill from '../src/Bills/SearchBill';
+import AddBill from './votes/AddVote';
+import SearchBill from './votes/SearchVotes';
 import ManageTerm from "../src/Manageterm/ManageTerm";
 import Activity from '../src/Activity/Activity';
 import AddActivity from '../src/Activity/AddActivity';
@@ -53,17 +53,17 @@ export default function App() {
           path="edit-representative/:id"
           element={<PrivateRoute element={<SaveRepresentative />} />}
         />
-        <Route path="bills" element={<PrivateRoute element={<Bill />} />} />
+        <Route path="votes" element={<PrivateRoute element={<Bill />} />} />
         <Route
-          path="/add-bill"
+          path="/add-vote"
           element={<PrivateRoute element={<AddBill />} />}
         />
         <Route
-          path="/edit-bill/:id"
+          path="/edit-vote/:id"
           element={<PrivateRoute element={<AddBill />} />}
         />
         <Route
-          path="/search-bills"
+          path="/search-votes"
           element={<PrivateRoute element={<SearchBill />} />}
         />
         <Route

@@ -13,7 +13,7 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import SideMenu from "../components/SideMenu";
-import AppTheme from "../../src/shared-theme/AppTheme";
+import AppTheme from "../shared-theme/AppTheme";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
