@@ -596,7 +596,7 @@ const StatusDisplay = ({
 
                     const editorKey = getEditorKey(field);
                     const editorInfo = formData?.fieldEditors?.[editorKey];
-                    const editor = editorInfo?.editorName || "Unknown Editor";
+                    const editor = editorInfo?.editorName || "SBA Editor";
                     const editTime = editorInfo?.editedAt
                       ? new Date(editorInfo.editedAt).toLocaleString([], {
                           month: "short",
@@ -604,7 +604,13 @@ const StatusDisplay = ({
                           hour: "2-digit",
                           minute: "2-digit",
                         })
-                      : "unknown time";
+                      : new Date().toLocaleString([], {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        });
+ 
                     const fromQuorum = field.fromQuorum || false;
 
                     return (
