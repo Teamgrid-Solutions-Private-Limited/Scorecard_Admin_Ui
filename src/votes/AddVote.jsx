@@ -16,7 +16,7 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import SideMenu from "../components/SideMenu";
-import AppTheme from "../../src/shared-theme/AppTheme";
+import AppTheme from "../shared-theme/AppTheme";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid2";
@@ -537,10 +537,10 @@ export default function AddBill(props) {
         setSnackbarSeverity("success");
         if (newVoteId) {
           setTimeout(() => {
-            navigate(`/edit-bill/${newVoteId}`);
+            navigate(`/edit-vote/${newVoteId}`);
           }, 1500);
         } else {
-          console.error("Bill (_id) is missing in the API response.");
+          console.error("Vote (_id) is missing in the API response.");
         }
       }
 
@@ -1507,7 +1507,7 @@ export default function AddBill(props) {
                         onChange={handleChange}
                       >
                         <FormControlLabel
-                          value="yes"
+                          value="Yes"
                           control={
                             <Radio
                               icon={
@@ -1521,7 +1521,7 @@ export default function AddBill(props) {
                           label="Yes"
                         />
                         <FormControlLabel
-                          value="no"
+                          value="No"
                           control={
                             <Radio
                               icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}

@@ -47,7 +47,7 @@ const mainListItems = [
     icon: <GroupsRoundedIcon sx={{ fontSize: 40 }} />,
     link: "/representative",
   },
-  { text: "Votes We Scored", icon: <DescriptionRoundedIcon sx={{ fontSize: 40 }} />, link: "/bills" },
+  { text: "Votes We Scored", icon: <DescriptionRoundedIcon sx={{ fontSize: 40 }} />, link: "/votes" },
   {
     text: "Activities We Track",
     icon: <CalendarTodayRoundedIcon sx={{ fontSize: 40 }} />,

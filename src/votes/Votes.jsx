@@ -8,16 +8,16 @@ import {
   updateVoteStatus,
   bulkUpdateSbaPosition,
 } from "../redux/reducer/voteSlice";
-import AppTheme from "../../src/shared-theme/AppTheme";
+import AppTheme from "../shared-theme/AppTheme";
 import SearchIcon from "@mui/icons-material/Search";
-import SideMenu from "../../src/components/SideMenu";
-import MainGrid from "../../src/components/MainGrid";
+import SideMenu from "../components/SideMenu";
+import MainGrid from "../components/MainGrid";
 import {
   chartsCustomizations,
   dataGridCustomizations,
   datePickersCustomizations,
   treeViewCustomizations,
-} from "../../src/Themes/customizations";
+} from "../Themes/customizations";
 import {
   Snackbar,
   Alert,
@@ -38,7 +38,7 @@ import {
   Button,
   InputAdornment,
 } from "@mui/material";
-import FixedHeader from "../../src/components/FixedHeader";
+import FixedHeader from "../components/FixedHeader";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -85,22 +85,28 @@ export default function Bills(props) {
 
     setFetching(true);
     try {
-      await dispatch(
+      const result = await dispatch(
         bulkUpdateSbaPosition({
           ids: selectedBills,
           sbaPosition: bulkSbaPosition,
         })
       );
 
-      await dispatch(getAllVotes());
-      setSnackbarMessage(
-        `Updated SBA position for ${selectedBills.length} bill(s)`
-      );
-      setSnackbarSeverity("success");
+      if (result.payload) {
+        await dispatch(getAllVotes());
+        setSnackbarMessage(
+          `Updated SBA position for ${selectedBills.length} bill(s)`
+        );
+        setSnackbarSeverity("success");
 
-      setSelectedBills([]);
-      setBulkSbaPosition("");
-      setIsBulkEditMode(false);
+        setSelectedBills([]);
+        setBulkSbaPosition("");
+        setIsBulkEditMode(false);
+      } else if (result.payload === undefined) {
+        // Handle rejection
+        setSnackbarMessage("Failed to update bills");
+        setSnackbarSeverity("error");
+      }
     } catch (error) {
       setSnackbarMessage("Failed to update bills");
       setSnackbarSeverity("error");
@@ -156,6 +162,7 @@ export default function Bills(props) {
         : "Other"
       : "Other",
     status: vote.status || "draft",
+    sbaPosition: vote.sbaPosition || "N/A",
   }));
 
   const toggleFilter = () => {
@@ -191,7 +198,7 @@ export default function Bills(props) {
   const activeFilterCount = statusFilter.length + congressFilter.length;
 
   const handleEdit = (row) => {
-    navigate(`/edit-bill/${row._id}`);
+    navigate(`/edit-vote/${row._id}`);
   };
   const handleDeleteClick = (row) => {
     setSelectedVote(row);
@@ -326,7 +333,7 @@ export default function Bills(props) {
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}
-                                    onClick={() => handleStatusFilter(status)}
+                                    onClick={() => toggleStatusFilter(status)}
                                     className="filter-option"
                                   >
                                     {statusFilter.includes(status) ? (
@@ -432,10 +439,10 @@ export default function Bills(props) {
 
                 {userRole === "admin" && (
                   <Button
-                    onClick={() => navigate("/search-bills")}
+                    onClick={() => navigate("/search-votes")}
                     className="addBillsBtn"
                   >
-                    Add Bills
+                    Add Votes
                   </Button>
                 )}
               </Stack>
