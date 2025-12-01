@@ -1507,7 +1507,7 @@ export default function AddBill(props) {
                         onChange={handleChange}
                       >
                         <FormControlLabel
-                          value="yes"
+                          value="Yes"
                           control={
                             <Radio
                               icon={
@@ -1521,7 +1521,7 @@ export default function AddBill(props) {
                           label="Yes"
                         />
                         <FormControlLabel
-                          value="no"
+                          value="No"
                           control={
                             <Radio
                               icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}

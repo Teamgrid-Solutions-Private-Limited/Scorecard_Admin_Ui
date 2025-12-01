@@ -85,22 +85,28 @@ export default function Bills(props) {
 
     setFetching(true);
     try {
-      await dispatch(
+      const result = await dispatch(
         bulkUpdateSbaPosition({
           ids: selectedBills,
           sbaPosition: bulkSbaPosition,
         })
       );
 
-      await dispatch(getAllVotes());
-      setSnackbarMessage(
-        `Updated SBA position for ${selectedBills.length} bill(s)`
-      );
-      setSnackbarSeverity("success");
+      if (result.payload) {
+        await dispatch(getAllVotes());
+        setSnackbarMessage(
+          `Updated SBA position for ${selectedBills.length} bill(s)`
+        );
+        setSnackbarSeverity("success");
 
-      setSelectedBills([]);
-      setBulkSbaPosition("");
-      setIsBulkEditMode(false);
+        setSelectedBills([]);
+        setBulkSbaPosition("");
+        setIsBulkEditMode(false);
+      } else if (result.payload === undefined) {
+        // Handle rejection
+        setSnackbarMessage("Failed to update bills");
+        setSnackbarSeverity("error");
+      }
     } catch (error) {
       setSnackbarMessage("Failed to update bills");
       setSnackbarSeverity("error");
@@ -156,6 +162,7 @@ export default function Bills(props) {
         : "Other"
       : "Other",
     status: vote.status || "draft",
+    sbaPosition: vote.sbaPosition || "N/A",
   }));
 
   const toggleFilter = () => {
