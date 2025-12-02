@@ -30,7 +30,7 @@ import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-export default function SearchBill(params) {
+export default function SearchVotes(params) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -155,13 +155,14 @@ export default function SearchBill(params) {
       setLoading(false);
     }
   };
-  const handleAddBill = async (bill) => {
+  const handleAddVote = async (vote) => {
     setLoading(true);
     try {
       const allVotes = await dispatch(getAllVotes()).unwrap();
       const isDuplicate = allVotes.some(
-        (vote) => String(vote.quorumId) === String(bill.quorumId || bill.voteId)
+        (existingVote) => String(existingVote.quorumId) === String(vote.quorumId || vote.voteId)
       );
+      console.log("isDuplicate:", isDuplicate); 
       if (isDuplicate) {
         setSnackbarMessage("Vote already exists");
         setSnackbarSeverity("info");
@@ -171,34 +172,33 @@ export default function SearchBill(params) {
       }
       const editorInfo = getEditorInfo();
 
-      // Convert vote data to bill format if needed
-      const billData = bill.quorumId
-        ? bill
+      // Convert vote data to vote format if needed
+      const voteData = vote.quorumId
+        ? vote
         : {
-            quorumId: bill.voteId,
-            title: bill.question,
+            quorumId: vote.voteId,
+            title: vote.question,
             type: "vote",
-            date: bill.date,
-            rollCallNumber: bill.rollCallNumber,
-            chamber: bill.chamber,
-            result: bill.result,
-            voteType: bill.voteType,
-            relatedBill: bill.relatedBill,
+            date: vote.date,
+            rollCallNumber: vote.rollCallNumber,
+            chamber: vote.chamber,
+            result: vote.result,
+            relatedBill: vote.relatedBill,
           };
 
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
-        bills: [billData],
+        bills: [voteData],
         editorInfo: editorInfo,
       });
 
       const voteId = response.data.data[0]._id;
       if (voteId) {
-        navigate(`/edit-bill/${voteId}`);
+        navigate(`/edit-vote/${voteId}`);
       } else {
         console.error("voteId (_id) is missing in the API response.");
       }
     } catch (error) {
-      console.error("Error saving bill:", error);
+      console.error("Error saving vote:", error);
       setSnackbarMessage("Failed to save vote");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -436,7 +436,7 @@ export default function SearchBill(params) {
                               >
                                 <Button
                                   variant="outlined"
-                                  onClick={() => handleAddBill(vote)}
+                                  onClick={() => handleAddVote(vote)}
                                   sx={{
                                     backgroundColor: "#173A5E !important",
                                     color: "white !important",
@@ -466,7 +466,7 @@ export default function SearchBill(params) {
                         No matching votes found in Quorum.
                       </Typography>
                       <Button
-                        onClick={() => navigate("/add-bill")}
+                        onClick={() => navigate("/add-vote")}
                         sx={{
                           width: { xs: "100%", md: "auto" },
                           minWidth: "130px",
