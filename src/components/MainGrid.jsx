@@ -17,8 +17,8 @@ export default function MainGrid({
   selectedItems = []
 }) {
   const title =
-    type === "bills"
-      ? "All Bills"
+    type === "votes"
+      ? "All Votes"
       : type === "senator"
       ? "All Senators"
       : "All Representatives";

@@ -185,7 +185,7 @@ export default function CustomizedDataGrid({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const columns =
-    type === "bills"
+    type === "votes"
       ? [
           {
             field: "date",
@@ -199,9 +199,9 @@ export default function CustomizedDataGrid({
             ),
           },
           {
-            field: "bill",
+            field: "vote",
             flex: 3,
-            headerName: "Bill",
+            headerName: "Vote",
             minWidth: 150,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
@@ -233,14 +233,14 @@ export default function CustomizedDataGrid({
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {params.row.bill}
+                  {params.row.vote}
                 </Typography>
               </Box>
             ),
           },
 
           {
-            field: "billsType",
+            field: "VotesType",
             flex: 2,
             headerName: "Type",
             minWidth: 150,

@@ -185,9 +185,9 @@ export default function AddBill(props) {
 
       const newFormData = {
         type: selectedVote.type?.includes("senate")
-          ? "senate_bill"
+          ? "senate_vote"
           : selectedVote.type?.includes("house")
-          ? "house_bill"
+          ? "house_vote"
           : "",
         title: selectedVote.title || "",
         shortDesc: selectedVote.shortDesc || "",
@@ -886,7 +886,7 @@ export default function AddBill(props) {
                               >
                                 {id
                                   ? "No pending changes"
-                                  : "Fill in the form to create a new bill"}
+                                  : "Fill in the form to create a new vote"}
                               </Typography>
                             );
                           }
@@ -1074,8 +1074,8 @@ export default function AddBill(props) {
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
-                        <MenuItem value="senate_bill">Senate</MenuItem>
-                        <MenuItem value="house_bill">House</MenuItem>
+                        <MenuItem value="senate_vote">Senate</MenuItem>
+                        <MenuItem value="house_vote">House</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
