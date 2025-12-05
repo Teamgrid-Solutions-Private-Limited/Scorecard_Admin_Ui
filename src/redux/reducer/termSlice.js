@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { API_URL } from "../API";
+import { API_URL, API_PROTECTED_KEY } from "../API";
 
 // Create a term
 export const createTerm = createAsyncThunk(
@@ -25,7 +25,7 @@ export const getAllTerms = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/term/terms/viewAll/`, {
-        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
+        headers: { "x-protected-key": API_PROTECTED_KEY },
       });
       return response.data;
     } catch (error) {
@@ -40,7 +40,7 @@ export const getTermById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/term/terms/viewId/${id}`, {
-        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
+        headers: { "x-protected-key": API_PROTECTED_KEY },
       });
 
       return response.data;

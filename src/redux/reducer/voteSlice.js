@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { API_URL } from "../API";
+import { API_URL, API_PROTECTED_KEY } from "../API";
 import { jwtDecode } from "jwt-decode";
 
 // Create a vote with file upload
@@ -32,7 +32,7 @@ export const getAllVotes = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/api/v1/admin/votes/`, {
-        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
+        headers: { "x-protected-key": API_PROTECTED_KEY },
       });
       return response.data;
     } catch (error) {
@@ -47,7 +47,7 @@ export const getVoteById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/api/v1/votes/${id}`, {
-        headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
+        headers: { "x-protected-key": API_PROTECTED_KEY },
       });
       return response.data;
     } catch (error) {
@@ -149,7 +149,7 @@ export const bulkUpdateSbaPosition = createAsyncThunk(
         {
           headers: {
             "Content-Type": "application/json",
-            "x-protected-key": "2oUtwJx8m1?0hx/JN7",
+            "x-protected-key": API_PROTECTED_KEY,
           },
         }
       );
