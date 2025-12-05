@@ -5,8 +5,8 @@ import {
   deleteSenator,
   getAllSenators,
   updateSenatorStatus,
-} from "../redux/reducer/senetorSlice";
-import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
+} from "../redux/reducer/senatorSlice";
+import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
 import {
   Box,
   Stack,

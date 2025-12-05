@@ -53,8 +53,8 @@ export const getSenatorDataById = createAsyncThunk(
   }
 );
 
-export const getSenatorDataBySenetorId = createAsyncThunk(
-  "senatorData/getSenatorDataBySenetorId",
+export const getSenatorDataBySenatorId = createAsyncThunk(
+  "senatorData/getSenatorDataBySenatorId",
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
@@ -161,15 +161,15 @@ const senatorDataSlice = createSlice({
         state.error = action.payload;
       })
 
-      .addCase(getSenatorDataBySenetorId.pending, (state) => {
+      .addCase(getSenatorDataBySenatorId.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getSenatorDataBySenetorId.fulfilled, (state, action) => {
+      .addCase(getSenatorDataBySenatorId.fulfilled, (state, action) => {
         state.loading = false;
         state.currentSenator = action.payload;
       })
-      .addCase(getSenatorDataBySenetorId.rejected, (state, action) => {
+      .addCase(getSenatorDataBySenatorId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -202,3 +202,4 @@ const senatorDataSlice = createSlice({
 
 export default senatorDataSlice.reducer;
 export const { clearSenatorDataState } = senatorDataSlice.actions;
+

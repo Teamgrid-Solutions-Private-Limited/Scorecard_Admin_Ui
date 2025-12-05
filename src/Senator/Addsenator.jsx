@@ -28,19 +28,19 @@ import SnackbarComponent from "../components/SnackbarComponent";
 import ActionButtons from "../components/ActionButtons";
 import Typography from "@mui/material/Typography";
 import {
-  getSenatorDataBySenetorId,
+  getSenatorDataBySenatorId,
   createSenatorData,
   updateSenatorData,
   clearSenatorDataState,
   deleteSenatorData,
-} from "../redux/reducer/senetorTermSlice";
+} from "../redux/reducer/senatorTermSlice";
 import {
   getSenatorById,
   updateSenator,
   clearSenatorState,
   updateSenatorStatus,
   discardSenatorChanges,
-} from "../redux/reducer/senetorSlice";
+} from "../redux/reducer/senatorSlice";
 import {
   getVoteById,
   clearVoteState,
@@ -578,7 +578,7 @@ const [removedItems, setRemovedItems] = useState({
       navigate(0);
 
       await dispatch(getSenatorById(id));
-      await dispatch(getSenatorDataBySenetorId(id));
+      await dispatch(getSenatorDataBySenatorId(id));
       setSnackbarMessage(
         `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
       );
@@ -1953,7 +1953,7 @@ useEffect(() => {
 
           await Promise.all([
             dispatch(getSenatorById(id)).unwrap(),
-            dispatch(getSenatorDataBySenetorId(id)).unwrap(),
+            dispatch(getSenatorDataBySenatorId(id)).unwrap(),
           ]);
 
           setDataLoaded(true);
@@ -2540,7 +2540,7 @@ useEffect(() => {
 
     await Promise.all(termPromises);
 
-    await dispatch(getSenatorDataBySenetorId(id)).unwrap();
+    await dispatch(getSenatorDataBySenatorId(id)).unwrap();
     await dispatch(getSenatorById(id)).unwrap();
 
     setOriginalFormData(JSON.parse(JSON.stringify(formData)));

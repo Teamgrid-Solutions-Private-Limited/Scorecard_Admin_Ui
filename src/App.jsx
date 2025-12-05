@@ -6,7 +6,7 @@ import {
   Navigate,
 } from 'react-router-dom';
 
-import SaveSenetors from '../src/Senator/Addsenator';
+import SaveSenators from '../src/Senator/Addsenator';
 import Senator from '../src/Senator/Senator';
 import Representative from '../src/Representative/Representative';
 import SaveRepresentative from '../src/Representative/Addrepresentative';
@@ -35,11 +35,11 @@ export default function App() {
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />
         <Route
           path="add-senator"
-          element={<PrivateRoute element={<SaveSenetors />} />}
+          element={<PrivateRoute element={<SaveSenators />} />}
         />
         <Route
           path="edit-senator/:id"
-          element={<PrivateRoute element={<SaveSenetors />} />}
+          element={<PrivateRoute element={<SaveSenators />} />}
         />
         <Route
           path="representative"

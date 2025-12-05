@@ -6,7 +6,7 @@ import { Avatar, Box } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
 import { GridOverlay } from "@mui/x-data-grid";
-import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
+import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
 import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";

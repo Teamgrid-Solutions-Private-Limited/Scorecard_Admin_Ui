@@ -324,3 +324,4 @@ const senatorSlice = createSlice({
 export default senatorSlice.reducer;
 
 export const { clearSenatorState } = senatorSlice.actions;
+
