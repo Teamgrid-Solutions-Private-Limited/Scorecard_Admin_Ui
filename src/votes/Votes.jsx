@@ -54,7 +54,7 @@ import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 
-export default function Bills(props) {
+export default function Votes(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { votes, loading } = useSelector((state) => state.vote);
@@ -75,19 +75,19 @@ export default function Bills(props) {
   const [statusFilter, setStatusFilter] = useState([]);
   const [congressFilter, setCongressFilter] = useState([]);
   const statusOptions = ["published", "draft", "under review"];
-  const [selectedBills, setSelectedBills] = useState([]);
+  const [selectedVotes, setSelectedVotes] = useState([]);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
   const [bulkSbaPosition, setBulkSbaPosition] = useState("");
   const [expandedFilter, setExpandedFilter] = useState(null);
 
   const handleBulkUpdate = async () => {
-    if (!selectedBills.length || !bulkSbaPosition) return;
+    if (!selectedVotes.length || !bulkSbaPosition) return;
 
     setFetching(true);
     try {
       const result = await dispatch(
         bulkUpdateSbaPosition({
-          ids: selectedBills,
+          ids: selectedVotes,
           sbaPosition: bulkSbaPosition,
         })
       );
@@ -95,20 +95,20 @@ export default function Bills(props) {
       if (result.payload) {
         await dispatch(getAllVotes());
         setSnackbarMessage(
-          `Updated SBA position for ${selectedBills.length} bill(s)`
+          `Updated SBA position for ${selectedVotes.length} vote(s)`
         );
         setSnackbarSeverity("success");
 
-        setSelectedBills([]);
+        setSelectedVotes([]);
         setBulkSbaPosition("");
         setIsBulkEditMode(false);
       } else if (result.payload === undefined) {
         // Handle rejection
-        setSnackbarMessage("Failed to update bills");
+        setSnackbarMessage("Failed to update votes");
         setSnackbarSeverity("error");
       }
     } catch (error) {
-      setSnackbarMessage("Failed to update bills");
+      setSnackbarMessage("Failed to update votes");
       setSnackbarSeverity("error");
     } finally {
       setFetching(false);
@@ -135,8 +135,8 @@ export default function Bills(props) {
 
     const searchMatch =
       !searchQuery ||
-      (vote.billName &&
-        vote.billName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (vote.voteName &&
+        vote.voteName.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (vote.title &&
         vote.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -149,12 +149,12 @@ export default function Bills(props) {
     ),
   ].sort((a, b) => parseInt(b) - parseInt(a));
 
-  const billsData = filteredVotes.map((vote, index) => ({
+  const votesData = filteredVotes.map((vote, index) => ({
     _id: vote._id || index,
     date: formatDate(vote.date),
-    bill: vote.billName || vote.title,
+    vote: vote.voteName || vote.title,
     congress: vote.congress || "N/A",
-    billsType: vote.type
+    VotesType: vote.type
       ? vote.type.toLowerCase().includes("senate")
         ? "Senate"
         : vote.type.toLowerCase().includes("house")
@@ -214,10 +214,10 @@ export default function Bills(props) {
     try {
       await dispatch(deleteVote(selectedVote._id));
       await dispatch(getAllVotes());
-      setSnackbarMessage(`This bill has been successfully deleted.`);
+      setSnackbarMessage(`This vote has been successfully deleted.`);
       setSnackbarSeverity("success");
     } catch (error) {
-      setSnackbarMessage("Failed to delete this bill.");
+      setSnackbarMessage("Failed to delete this vote.");
       setSnackbarSeverity("error");
     } finally {
       clearInterval(interval);
@@ -454,7 +454,7 @@ export default function Bills(props) {
                   variant="subtitle1"
                   sx={{ fontSize: { xs: "11px", md: "14px" } }}
                 >
-                  {selectedBills.length} bill(s) selected
+                  {selectedVotes.length} Vote(s) selected
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -477,7 +477,7 @@ export default function Bills(props) {
 
                   <Button
                     // variant="contained"
-                    disabled={!selectedBills.length || !bulkSbaPosition}
+                    disabled={!selectedVotes.length || !bulkSbaPosition}
                     onClick={handleBulkUpdate}
                     className="applyBtn"
                   >
@@ -488,15 +488,15 @@ export default function Bills(props) {
             )}
 
             <MainGrid
-              type="bills"
-              data={billsData}
+              type="votes"
+              data={votesData}
               loading={fetching ? false : loading}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               onToggleStatus={handleToggleStatus}
               isSelectable={isBulkEditMode}
-              onSelectionChange={setSelectedBills}
-              selectedItems={selectedBills}
+              onSelectionChange={setSelectedVotes}
+              selectedItems={selectedVotes}
             />
           </Stack>
         </Box>
@@ -516,18 +516,18 @@ export default function Bills(props) {
             boxShadow: "none",
             width: "100%",
             bgcolor:
-              snackbarMessage === "This bill has been successfully deleted."
+              snackbarMessage === "This vote has been successfully deleted."
                 ? "#fde8e4"
                 : undefined,
             "& .MuiAlert-icon": {
               color:
-                snackbarMessage === "This bill has been successfully deleted."
+                snackbarMessage === "This vote has been successfully deleted."
                   ? "#cc563d"
                   : undefined,
             },
             "& .MuiAlert-message": {
               color:
-                snackbarMessage === `This bill has been successfully deleted.`
+                snackbarMessage === `This vote has been successfully deleted.`
                   ? "#cc563d"
                   : undefined,
             },
