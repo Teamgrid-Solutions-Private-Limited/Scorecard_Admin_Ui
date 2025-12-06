@@ -27,6 +27,7 @@ import {
 import MainGrid from "../../components/MainGrid";
 
 import { useDispatch, useSelector } from "react-redux";
+import { getErrorMessage } from "../../utils/errorHandler";
 import {
   getAllUsers,
   deleteUser,
@@ -151,7 +152,8 @@ export default function ManageUser(props) {
       setEditUser(null);
       dispatch(getAllUsers()); 
     } catch (error) {
-      setSnackbarMessage(error.message || "Failed to update user");
+      const errorMessage = getErrorMessage(error, "Failed to update user");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
@@ -172,7 +174,8 @@ export default function ManageUser(props) {
       setOpenSnackbar(true);
       dispatch(getAllUsers()); 
     } catch (error) {
-      setSnackbarMessage(error.message || "Failed to delete user");
+      const errorMessage = getErrorMessage(error, "Failed to delete user");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }

@@ -12,6 +12,7 @@ import {
 } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { API_URL } from "../redux/API";
+import { getErrorMessage } from "../utils/errorHandler";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -438,7 +439,8 @@ export default function AddActivity(props) {
       setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
-      setSnackbarMessage(`Operation failed: ${error.message || error}`);
+      const errorMessage = getErrorMessage(error, "Operation failed");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     } finally {
@@ -472,10 +474,7 @@ export default function AddActivity(props) {
       setSelectedFile(null);
     } catch (error) {
       console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string" ? error : "Failed to discard changes");
+      const errorMessage = getErrorMessage(error, "Failed to discard changes");
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {

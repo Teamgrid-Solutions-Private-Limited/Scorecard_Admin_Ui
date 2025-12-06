@@ -130,9 +130,9 @@ export const updateRepresentativeStatus = createAsyncThunk(
       );
       return response.data.representative;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Error updating status"
-      );
+      return rejectWithValue({
+        message: error.response?.data?.message || error.message || "Error updating status"
+      });
     }
   }
 );

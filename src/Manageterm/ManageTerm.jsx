@@ -19,6 +19,7 @@ import {
   getAllTerms,
   deleteTerm,
 } from "../redux/reducer/termSlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import { Add, Delete } from "@mui/icons-material";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import SideMenu from "../components/SideMenu";
@@ -98,7 +99,8 @@ export default function ManageTerm(props) {
       dispatch(getAllTerms());
     } catch (error) {
       console.error("Failed to create term:", error);
-      handleSnackbarOpen(error.message || "Error creating term", "error");
+      const errorMessage = getErrorMessage(error, "Error creating term");
+      handleSnackbarOpen(errorMessage, "error");
     }
   };
 
@@ -109,7 +111,8 @@ export default function ManageTerm(props) {
       dispatch(getAllTerms());
     } catch (error) {
       console.error("Failed to delete term:", error);
-      handleSnackbarOpen(error.message || "Error deleting term", "error");
+      const errorMessage = getErrorMessage(error, "Error deleting term");
+      handleSnackbarOpen(errorMessage, "error");
     } finally {
       handleCloseConfirm();
     }

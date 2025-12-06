@@ -23,6 +23,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useDispatch } from "react-redux";
 import { addUser, getAllUsers } from "../../redux/reducer/loginSlice";
+import { getErrorMessage } from "../../utils/errorHandler";
 
 const Header = styled(Box)(() => ({
   textAlign: "center",
@@ -110,15 +111,8 @@ function AddUser({ open = false, onClose }) {
       dispatch(getAllUsers());
       if (onClose) onClose();
     } catch (error) {
-      let message = "Failed to create user. Please try again.";
-      if (typeof error === "string") {
-        message = error;
-      } else if (error && error.message) {
-        message = error.message;
-      } else if (error && error.data && error.data.message) {
-        message = error.data.message;
-      }
-      setSnackbarMessage(message);
+      const errorMessage = getErrorMessage(error, "Failed to create user. Please try again.");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     } finally {

@@ -18,6 +18,7 @@ import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
+import { getErrorMessage } from "../utils/errorHandler";
 import { API_URL } from "../redux/API";
 import axios from "axios";
 import Snackbar from "@mui/material/Snackbar";
@@ -96,9 +97,8 @@ export default function SearchActivity() {
       );
     } catch (error) {
       console.error("Error searching bills:", error);
-      setSnackbarMessage(
-        error.response?.data?.message || "Failed to search bills"
-      );
+      const errorMessage = getErrorMessage(error, "Failed to search bills");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
       setSearchResults([]);

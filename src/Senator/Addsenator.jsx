@@ -34,6 +34,7 @@ import {
   clearSenatorDataState,
   deleteSenatorData,
 } from "../redux/reducer/senatorTermSlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import {
   getSenatorById,
   updateSenator,
@@ -586,12 +587,10 @@ const [removedItems, setRemovedItems] = useState({
       setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string"
-          ? error
-          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+      const errorMessage = getErrorMessage(
+        error,
+        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
+      );
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
@@ -2564,11 +2563,10 @@ useEffect(() => {
   } catch (error) {
     console.error("Save failed:", error);
 
-    let errorMessage = "Operation failed. Please try again.";
+    let errorMessage = getErrorMessage(error, "Operation failed. Please try again.");
 
-    if (error?.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error?.code === 11000) {
+    // Handle specific error codes
+    if (error?.code === 11000) {
       errorMessage = "Duplicate entry: This senator term already exists.";
     } else if (error?.config?.url?.includes("updateSenator")) {
       errorMessage = "Failed to update senator data.";

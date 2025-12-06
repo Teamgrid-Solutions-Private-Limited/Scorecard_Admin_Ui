@@ -54,7 +54,9 @@ export const getAllSenators = createAsyncThunk(
         response: error.response?.data,
         status: error.response?.status,
       });
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue({
+        message: error.response?.data?.message || error.response?.data || error.message || "Operation failed"
+      });
     }
   }
 );
@@ -145,7 +147,9 @@ export const updateSenatorStatus = createAsyncThunk(
       );
       return response.data.senator;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue({
+        message: error.response?.data?.message || error.response?.data || error.message || "Operation failed"
+      });
     }
   }
 );

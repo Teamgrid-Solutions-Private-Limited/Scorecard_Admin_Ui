@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { getAllVotes } from "../redux/reducer/voteSlice";
 import { useState } from "react";
+import { getErrorMessage } from "../utils/errorHandler";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
@@ -145,9 +146,8 @@ export default function SearchVotes(params) {
       }
     } catch (error) {
       console.error("Error searching votes:", error);
-      setSnackbarMessage(
-        error.response?.data?.message || "Failed to search votes"
-      );
+      const errorMessage = getErrorMessage(error, "Failed to search votes");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
       setSearchResults([]);

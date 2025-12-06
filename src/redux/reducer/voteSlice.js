@@ -155,7 +155,9 @@ export const bulkUpdateSbaPosition = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue({
+        message: error.response?.data?.message || error.response?.data || error.message || "Operation failed"
+      });
     }
   }
 );

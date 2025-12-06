@@ -7,6 +7,7 @@ import {
   updateActivityStatus,
   bulkUpdateTrackActivities,
 } from "../redux/reducer/activitySlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import { Box, Stack, Typography, Button ,InputAdornment,} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -211,7 +212,8 @@ export default function Activity(props) {
       dispatch(getAllActivity());
     } catch (error) {
       console.error("Bulk update failed:", error);
-      setSnackbarMessage(error.message || "Failed to update activities");
+      const errorMessage = getErrorMessage(error, "Failed to update activities");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
       setFetching(false);

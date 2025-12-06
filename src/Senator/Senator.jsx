@@ -7,6 +7,7 @@ import {
   updateSenatorStatus,
 } from "../redux/reducer/senatorSlice";
 import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import {
   Box,
   Stack,
@@ -237,7 +238,8 @@ export default function Senator(props) {
       setSnackbarMessage(`${selectedSenator.name} deleted successfully.`);
       setSnackbarSeverity("success");
     } catch (error) {
-      setSnackbarMessage(error.message || "Failed to delete senator.");
+      const errorMessage = getErrorMessage(error, "Failed to delete senator.");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
       clearInterval(interval);

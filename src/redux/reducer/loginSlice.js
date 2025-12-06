@@ -124,12 +124,9 @@ export const addUser = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-        error.response?.data ||
-        error.message ||
-        "Failed to add user"
-      );
+      return rejectWithValue({
+        message: error.response?.data?.message || error.message || "Failed to add user"
+      });
     }
   }
 );

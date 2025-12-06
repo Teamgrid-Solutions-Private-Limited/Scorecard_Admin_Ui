@@ -28,6 +28,7 @@ import {
   Switch,
 } from "@mui/material";
 import { getAllVotes } from "../redux/reducer/voteSlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { discardHouseChanges } from "../redux/reducer/houseSlice";
 import {
@@ -1267,10 +1268,8 @@ const handleRemoveTerm = (termIndex) => {
   } catch (error) {
     console.error("Save failed:", error);
     
-    let errorMessage = "Operation failed. Please try again.";
-    if (error?.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error?.code === 11000) {
+    let errorMessage = getErrorMessage(error, "Operation failed. Please try again.");
+    if (error?.code === 11000) {
       errorMessage = "Duplicate entry: This house term already exists.";
     } else if (error?.config?.url?.includes("updateHouse")) {
       errorMessage = "Failed to update house data.";
@@ -1430,12 +1429,10 @@ const handleRemoveTerm = (termIndex) => {
       setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.error ||
-        (typeof error === "string"
-          ? error
-          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+      const errorMessage = getErrorMessage(
+        error,
+        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
+      );
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {

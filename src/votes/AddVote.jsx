@@ -11,6 +11,7 @@ import {
 } from "../redux/reducer/voteSlice";
 import { API_URL } from "../redux/API";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -547,24 +548,7 @@ export default function AddBill(props) {
       setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
-
-      // Better error handling
-      let errorMessage = "Operation failed";
-
-      if (error?.payload?.message) {
-        errorMessage = error.payload.message;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      } else if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error?.response?.status === 400) {
-        errorMessage = "Bad Request: Please check your input data";
-      } else if (error?.response?.status === 500) {
-        errorMessage = "Server Error: Please try again later";
-      }
-
+      const errorMessage = getErrorMessage(error, "Operation failed");
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -597,12 +581,10 @@ export default function AddBill(props) {
       setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string"
-          ? error
-          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+      const errorMessage = getErrorMessage(
+        error,
+        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
+      );
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {
