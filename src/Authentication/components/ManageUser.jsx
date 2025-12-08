@@ -28,6 +28,7 @@ import MainGrid from "../../components/MainGrid";
 
 import { useDispatch, useSelector } from "react-redux";
 import { getErrorMessage } from "../../utils/errorHandler";
+import { validateUserForm } from "../../helpers/validationHelpers";
 import {
   getAllUsers,
   deleteUser,
@@ -121,23 +122,9 @@ export default function ManageUser(props) {
   };
 
   const validateEditForm = () => {
-    const newErrors = {};
-    if (!editForm.fullName || editForm.fullName.trim().length < 3) {
-      newErrors.fullName = "Full name is required (min 3 characters)";
-    }
-    if (!editForm.email) {
-      newErrors.email = "Email is required";
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(editForm.email)) {
-      newErrors.email = "Invalid email address";
-    }
-    if (
-      !editForm.role ||
-      !["admin", "editor", "contributor"].includes(editForm.role)
-    ) {
-      newErrors.role = "Role is required";
-    }
-    setEditErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const validation = validateUserForm(editForm, { includePassword: false });
+    setEditErrors(validation.errors);
+    return validation.isValid;
   };
 
   const handleEditUserSave = async () => {

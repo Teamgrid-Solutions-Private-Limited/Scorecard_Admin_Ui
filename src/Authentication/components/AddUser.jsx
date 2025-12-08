@@ -24,6 +24,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useDispatch } from "react-redux";
 import { addUser, getAllUsers } from "../../redux/reducer/loginSlice";
 import { getErrorMessage } from "../../utils/errorHandler";
+import { validateUserForm } from "../../helpers/validationHelpers";
 
 const Header = styled(Box)(() => ({
   textAlign: "center",
@@ -72,30 +73,9 @@ function AddUser({ open = false, onClose }) {
   };
 
   const validate = () => {
-    const newErrors = {};
-    if (!form.fullName || form.fullName.trim().length < 3) {
-      newErrors.fullName = "Full name is required (min 3 characters)";
-    }
-    if (!form.email) {
-      newErrors.email = "Email is required";
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(form.email)) {
-      newErrors.email = "Invalid email address";
-    }
-    if (!form.password) {
-      newErrors.password = "Password is required";
-    } else if (form.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    }
-    if (!form.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (form.password !== form.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-    if (!form.role || !["admin", "editor", "contributor"].includes(form.role)) {
-      newErrors.role = "Role is required";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const validation = validateUserForm(form, { includePassword: true });
+    setErrors(validation.errors);
+    return validation.isValid;
   };
 
   const handleSubmit = async (e) => {

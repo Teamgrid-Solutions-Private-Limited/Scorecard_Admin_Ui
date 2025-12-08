@@ -13,6 +13,7 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { API_URL } from "../redux/API";
 import { getErrorMessage } from "../utils/errorHandler";
+import { compareValues } from "../helpers/fieldHelpers";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -108,6 +109,7 @@ export default function AddActivity(props) {
     status: "Status",
   };
 
+  // Custom compareValues that excludes status field from comparison
   const compareValues = (newVal, oldVal, fieldName) => {
     if (fieldName === "status") return false;
     if (typeof newVal === "string" && typeof oldVal === "string") {

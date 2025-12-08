@@ -29,6 +29,8 @@ import {
 } from "@mui/material";
 import { getAllVotes } from "../redux/reducer/voteSlice";
 import { getErrorMessage } from "../utils/errorHandler";
+import { validateTermData } from "../helpers/validationHelpers";
+import { sanitizeKey } from "../helpers/fieldHelpers";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { discardHouseChanges } from "../redux/reducer/houseSlice";
 import {
@@ -574,6 +576,8 @@ const handleRemoveTerm = (termIndex) => {
   });
 };
 
+  // Note: This component uses a different compareValues that handles objects
+  // Keeping it local as it has different behavior than the centralized version
   const compareValues = (newVal, oldVal) => {
     if (newVal == null || oldVal == null) return newVal !== oldVal;
     if (typeof newVal !== "object") return newVal !== oldVal;
@@ -877,51 +881,12 @@ const handleRemoveTerm = (termIndex) => {
   e.preventDefault();
   setLoading(true);
 
-  const sanitizeKey = (str) => {
-    return str
-      .replace(/[^a-zA-Z0-9_]/g, "_")
-      .replace(/_+/g, "_")
-      .replace(/^_+|_+$/g, "");
-  };
-
   try {
-    const hasSelectedTerms = houseTermData.some(
-      (term) => term.termId && term.termId.toString().trim() !== ""
-    );
-
-    if (!hasSelectedTerms) {
+    // Validate term data using centralized validation
+    const termValidation = validateTermData(houseTermData);
+    if (!termValidation.isValid) {
       setLoading(false);
-      handleSnackbarOpen(
-        "Please select at least one term before saving.",
-        "error"
-      );
-      return;
-    }
-
-    const termIdCounts = houseTermData
-      .map((t) => t.termId)
-      .filter(Boolean)
-      .reduce((acc, id) => {
-        acc[id] = (acc[id] || 0) + 1;
-        return acc;
-      }, {});
-
-    if (Object.values(termIdCounts).some((count) => count > 1)) {
-      setLoading(false);
-      handleSnackbarOpen(
-        "Duplicate term selected. Each term can only be added once.",
-        "error"
-      );
-      return;
-    }
-
-    const currentTerms = houseTermData.filter((term) => term.currentTerm);
-    if (currentTerms.length > 1) {
-      setLoading(false);
-      handleSnackbarOpen(
-        "Only one term can be marked as current term.",
-        "error"
-      );
+      handleSnackbarOpen(termValidation.message, "error");
       return;
     }
 

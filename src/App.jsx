@@ -22,9 +22,10 @@ import ManageUser from "../src/Authentication/components/ManageUser";
 import LoginPage from './Authentication/components/LoginPage';
 import ActivateAccount from './Authentication/components/ActivateAccount';
 import SearchActivity from "../src/Activity/SearchActivity";
+import { isAuthenticated } from './utils/auth';
+
 const PrivateRoute = ({ element }) => {
-  const token = localStorage.getItem('token');
-  return token ? element : <Navigate to="/login" />;
+  return isAuthenticated() ? element : <Navigate to="/login" />;
 };
 
 export default function App() {

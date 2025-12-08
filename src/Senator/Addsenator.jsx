@@ -36,6 +36,12 @@ import {
 } from "../redux/reducer/senatorTermSlice";
 import { getErrorMessage } from "../utils/errorHandler";
 import {
+  validateVoteInTermRange,
+  validateActivityInTermRange,
+  validateTermData,
+} from "../helpers/validationHelpers";
+import { compareValues, sanitizeKey } from "../helpers/fieldHelpers";
+import {
   getSenatorById,
   updateSenator,
   clearSenatorState,
@@ -92,82 +98,13 @@ const [removedItems, setRemovedItems] = useState({
     type: "",
   });
 
-  const validateVoteInTermRange = (voteId, termId) => {
-    if (!voteId || !termId)
-      return { isValid: false, message: "Invalid selection" };
-
-    const vote = allVotes.find((v) => v._id === voteId);
-    const term = terms.find((t) => t._id === termId);
-
-    if (!vote) return { isValid: false, message: "Vote not found" };
-    if (!term) return { isValid: false, message: "Term not found" };
-
-    const voteDate = new Date(vote.date);
-    const termStart = new Date(`${term.startYear}-01-03`);
-    const termEnd = new Date(`${term.endYear}-01-02`);
-
-    const isDateInRange = voteDate >= termStart && voteDate <= termEnd;
-    const isCongressInTerm = term.congresses.includes(Number(vote.congress));
-
-    if (!isDateInRange) {
-      return {
-        isValid: false,
-        message: `Selected vote is outside the term range (${term.startYear}-${term.endYear})`,
-      };
-    }
-
-    if (!isCongressInTerm) {
-      return {
-        isValid: false,
-        message: `This vote (Congress ${
-          vote.congress
-        }) is not part of the selected term's congresses (${term.congresses.join(
-          ", "
-        )})`,
-      };
-    }
-
-    return { isValid: true, message: "" };
+  // Wrapper functions to use centralized validation with component's state
+  const validateVoteInTermRangeWrapper = (voteId, termId) => {
+    return validateVoteInTermRange(voteId, termId, allVotes, terms);
   };
 
-  const validateActivityInTermRange = (activityId, termId) => {
-    if (!activityId || !termId)
-      return { isValid: false, message: "Invalid selection" };
-
-    const activity = allActivities.find((a) => a._id === activityId);
-    const term = terms.find((t) => t._id === termId);
-
-    if (!activity) return { isValid: false, message: "Activity not found" };
-    if (!term) return { isValid: false, message: "Term not found" };
-
-    const activityDate = new Date(activity.date);
-    const termStart = new Date(`${term.startYear}-01-03`);
-    const termEnd = new Date(`${term.endYear}-01-02`);
-
-    const isDateInRange = activityDate >= termStart && activityDate <= termEnd;
-    const isCongressInTerm = term.congresses.includes(
-      Number(activity.congress || 0)
-    );
-
-    if (!isDateInRange) {
-      return {
-        isValid: false,
-        message: `Selected activity is outside the term range (${term.startYear}-${term.endYear})`,
-      };
-    }
-
-    if (!isCongressInTerm) {
-      return {
-        isValid: false,
-        message: `This activity (Congress ${
-          activity.congress
-        }) is not part of the selected term's congresses (${term.congresses.join(
-          ", "
-        )})`,
-      };
-    }
-
-    return { isValid: true, message: "" };
+  const validateActivityInTermRangeWrapper = (activityId, termId) => {
+    return validateActivityInTermRange(activityId, termId, allActivities, terms);
   };
 
   const allActivities = useSelector((state) => state.activity.activities);
@@ -705,7 +642,7 @@ const handleRemoveVote = (termIndex, voteIndex) => {
     const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
     if (field === "voteId" && value) {
       const termId = senatorTermData[termIndex].termId;
-      const validation = validateVoteInTermRange(value, termId);
+      const validation = validateVoteInTermRangeWrapper(value, termId);
 
       if (!validation.isValid) {
         setSelectionError({
@@ -870,7 +807,7 @@ const handleRemoveActivity = (termIndex, activityIndex) => {
     }`;
     if (field === "activityId" && value) {
       const termId = senatorTermData[termIndex].termId;
-      const validation = validateActivityInTermRange(value, termId);
+      const validation = validateActivityInTermRangeWrapper(value, termId);
 
       if (!validation.isValid) {
         setSelectionError({
@@ -1100,12 +1037,6 @@ useEffect(() => {
     });
   };
 
-  const compareValues = (newVal, oldVal) => {
-    if (typeof newVal === "string" && typeof oldVal === "string") {
-      return newVal.trim() !== oldVal.trim();
-    }
-    return newVal !== oldVal;
-  };
   const isDataReady = () => {
     return (
       !isInitialLoad &&
@@ -2033,51 +1964,13 @@ useEffect(() => {
   e.preventDefault();
   setLoading(true);
 
-  const sanitizeKey = (str) => {
-    return str
-      .replace(/[^a-zA-Z0-9_]/g, "_")
-      .replace(/_+/g, "_")
-      .replace(/^_+|_+$/g, "");
-  };
 
   try {
-    const hasSelectedTerms = senatorTermData.some(
-      (term) => term.termId && term.termId.toString().trim() !== ""
-    );
-
-    if (!hasSelectedTerms) {
+    // Validate term data using centralized validation
+    const termValidation = validateTermData(senatorTermData);
+    if (!termValidation.isValid) {
       setLoading(false);
-      handleSnackbarOpen(
-        "Please select at least one term before saving.",
-        "error"
-      );
-      return;
-    }
-
-    const termIdCounts = senatorTermData
-      .map((t) => t.termId)
-      .filter(Boolean)
-      .reduce((acc, id) => {
-        acc[id] = (acc[id] || 0) + 1;
-        return acc;
-      }, {});
-
-    if (Object.values(termIdCounts).some((count) => count > 1)) {
-      setLoading(false);
-      handleSnackbarOpen(
-        "Duplicate term selected. Each term can only be added once.",
-        "error"
-      );
-      return;
-    }
-
-    const currentTerms = senatorTermData.filter((term) => term.currentTerm);
-    if (currentTerms.length > 1) {
-      setLoading(false);
-      handleSnackbarOpen(
-        "Only one term can be marked as current term.",
-        "error"
-      );
+      handleSnackbarOpen(termValidation.message, "error");
       return;
     }
 
@@ -2755,12 +2648,12 @@ useEffect(() => {
                   handleSwitchChange={handleSwitchChange}
                   handleSummaryChange={handleSummaryChange}
                   allVotes={allVotes}
-                  validateVoteInTermRange={validateVoteInTermRange}
+                  validateVoteInTermRange={validateVoteInTermRangeWrapper}
                   handleVoteChange={handleVoteChange}
                   handleRemoveVote={handleRemoveVote}
                   handleAddVote={handleAddVote}
                   allActivities={allActivities}
-                  validateActivityInTermRange={validateActivityInTermRange}
+                  validateActivityInTermRange={validateActivityInTermRangeWrapper}
                   handleActivityChange={handleActivityChange}
                   handleRemoveActivity={handleRemoveActivity}
                   handleAddActivity={handleAddActivity}

@@ -12,6 +12,8 @@ import {
 import { API_URL } from "../redux/API";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { getErrorMessage } from "../utils/errorHandler";
+import { compareValues } from "../helpers/fieldHelpers";
+import { validateRequired } from "../helpers/validationHelpers";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -110,12 +112,6 @@ export default function AddBill(props) {
     userRole = "";
   }
 
-  const compareValues = (newVal, oldVal) => {
-    if (typeof newVal === "string" && typeof oldVal === "string") {
-      return newVal.trim() !== oldVal.trim();
-    }
-    return newVal !== oldVal;
-  };
 
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -387,8 +383,9 @@ export default function AddBill(props) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.termId) {
-      setSnackbarMessage("Term is required!");
+    const termValidation = validateRequired(formData.termId, "Term");
+    if (!termValidation.isValid) {
+      setSnackbarMessage(termValidation.message);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
