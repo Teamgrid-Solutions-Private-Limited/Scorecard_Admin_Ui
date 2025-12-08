@@ -34,6 +34,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUserRole } from "../utils/auth";
 
 export default function ManageTerm(props) {
   const dispatch = useDispatch();
@@ -48,9 +49,8 @@ export default function ManageTerm(props) {
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedTermId, setSelectedTermId] = useState(null);
 
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  const token = getToken();
+  const userRole = getUserRole();
 
   const handleOpenConfirm = (termId) => {
     setSelectedTermId(termId);

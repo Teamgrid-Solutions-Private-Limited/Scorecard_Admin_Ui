@@ -53,6 +53,7 @@ const xThemeComponents = {
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUserRole } from "../utils/auth";
 
 export default function Votes(props) {
   const dispatch = useDispatch();
@@ -66,10 +67,8 @@ export default function Votes(props) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
-  const token = localStorage.getItem("token");
-
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  const token = getToken();
+  const userRole = getUserRole();
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);

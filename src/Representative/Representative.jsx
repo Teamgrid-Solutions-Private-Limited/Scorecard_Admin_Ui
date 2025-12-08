@@ -55,6 +55,7 @@ import { getAllTerms } from "../redux/reducer/termSlice";
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUserRole } from "../utils/auth";
 
 export default function Representative(props) {
   const navigate = useNavigate();
@@ -68,9 +69,8 @@ export default function Representative(props) {
   const [progress, setProgress] = useState(0);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRepresentative, setSelectedRepresentative] = useState(null);
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  const token = getToken();
+  const userRole = getUserRole();
 
   const [partyFilter, setPartyFilter] = useState([]);
   const [districtFilter, setDistrictFilter] = useState([]);

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL, API_PROTECTED_KEY } from "../API";
 import { jwtDecode } from "jwt-decode";
+import { getToken } from "../../utils/auth";
 
 // Async thunks for CRUD operations
 
@@ -103,7 +104,7 @@ export const deleteSenator = createAsyncThunk(
   "senators/deleteSenator",
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         return rejectWithValue({
           message: "Authentication token not found",

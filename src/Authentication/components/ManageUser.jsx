@@ -45,6 +45,7 @@ import { useNavigate } from "react-router-dom";
 import MobileHeader from "../../components/MobileHeader";
 import Footer from "../../components/Footer";
 import LoadingOverlay from "../../components/LoadingOverlay";
+import { getToken } from "../../utils/auth";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -72,7 +73,7 @@ export default function ManageUser(props) {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   if (!token) {
     navigate("/login");
     return;

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL, API_PROTECTED_KEY } from "../API";
 import { jwtDecode } from "jwt-decode";
+import { getToken } from "../../utils/auth";
 
 // Create a vote with file upload
 export const createVote = createAsyncThunk(
@@ -82,7 +83,7 @@ export const deleteVote = createAsyncThunk(
   "votes/deleteVote",
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
 
       if (!token) {
         return rejectWithValue({

@@ -58,11 +58,12 @@ import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { get } from "lodash";
+import { getToken } from "../utils/auth";
 
 export default function Senator(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const { senatorData } = useSelector((state) => state.senatorData);
   const {
     senators = [],
@@ -227,7 +228,7 @@ export default function Senator(props) {
     }, 1000);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) throw new Error("No auth token found");
 
       const result = await dispatch(deleteSenator(selectedSenator._id));

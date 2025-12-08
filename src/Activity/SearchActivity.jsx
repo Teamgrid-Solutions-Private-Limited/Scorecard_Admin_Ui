@@ -28,6 +28,7 @@ import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUser } from "../utils/auth";
 
 export default function SearchActivity() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,8 +37,8 @@ export default function SearchActivity() {
   const [searchAttempted, setSearchAttempted] = useState(false);
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const user = localStorage.getItem("user");
+  const token = getToken();
+  const user = getUser();
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
