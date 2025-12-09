@@ -31,6 +31,7 @@ import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUser } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 export default function SearchVotes(params) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,16 +43,14 @@ export default function SearchVotes(params) {
   const token = getToken();
   const user = getUser();
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setSnackbarOpen(false);
-  };
+  // Use centralized snackbar hook
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const handleSearch = async () => {
     setLoading(true);
@@ -59,17 +58,13 @@ export default function SearchVotes(params) {
 
     try {
       if (!searchQuery.trim()) {
-        setSnackbarMessage("Please enter a search query!");
-        setSnackbarSeverity("warning");
-        setSnackbarOpen(true);
+        showSnackbar("Please enter a search query!", "warning");
         setLoading(false);
         return;
       }
 
       if (!token) {
-        setSnackbarMessage("Please log in to search votes");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Please log in to search votes", "error");
         setLoading(false);
         navigate("/login");
         return;
@@ -141,16 +136,12 @@ export default function SearchVotes(params) {
       setSearchResults(result);
 
       if (result.length === 0) {
-        setSnackbarMessage("No votes found matching your search");
-        setSnackbarSeverity("info");
-        setSnackbarOpen(true);
+        showSnackbar("No votes found matching your search", "info");
       }
     } catch (error) {
       console.error("Error searching votes:", error);
       const errorMessage = getErrorMessage(error, "Failed to search votes");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar(errorMessage, "error");
       setSearchResults([]);
     } finally {
       setLoading(false);
@@ -165,9 +156,7 @@ export default function SearchVotes(params) {
       );
       console.log("isDuplicate:", isDuplicate); 
       if (isDuplicate) {
-        setSnackbarMessage("Vote already exists");
-        setSnackbarSeverity("info");
-        setSnackbarOpen(true);
+        showSnackbar("Vote already exists", "info");
         setLoading(false);
         return;
       }
@@ -200,9 +189,7 @@ export default function SearchVotes(params) {
       }
     } catch (error) {
       console.error("Error saving vote:", error);
-      setSnackbarMessage("Failed to save vote");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar("Failed to save vote", "error");
     } finally {
       setLoading(false);
     }

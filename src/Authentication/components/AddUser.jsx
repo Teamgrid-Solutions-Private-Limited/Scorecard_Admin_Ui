@@ -25,6 +25,7 @@ import { useDispatch } from "react-redux";
 import { addUser, getAllUsers } from "../../redux/reducer/loginSlice";
 import { getErrorMessage } from "../../utils/errorHandler";
 import { validateUserForm } from "../../helpers/validationHelpers";
+import { useSnackbar } from "../../hooks";
 
 const Header = styled(Box)(() => ({
   textAlign: "center",
@@ -60,12 +61,18 @@ function AddUser({ open = false, onClose }) {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -85,25 +92,17 @@ function AddUser({ open = false, onClose }) {
 
     try {
       await dispatch(addUser(form)).unwrap();
-      setSnackbarMessage("User created successfully!");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
+      showSnackbar("User created successfully!", "success");
       dispatch(getAllUsers());
       if (onClose) onClose();
     } catch (error) {
       const errorMessage = getErrorMessage(error, "Failed to create user. Please try again.");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") return;
-    setOpenSnackbar(false);
-  };
 
   return (
     <>

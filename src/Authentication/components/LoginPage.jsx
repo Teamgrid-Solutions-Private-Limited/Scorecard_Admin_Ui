@@ -18,6 +18,7 @@ import { setToken, setUser } from "../../utils/auth";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useSnackbar } from "../../hooks";
 import "../../styles/LoginPage.css";
 
 export default function LoginPage() {
@@ -34,20 +35,14 @@ export default function LoginPage() {
     setInfo({ ...info, [e.target.name]: e.target.value });
   };
 
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarOpen = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") return;
-    setOpenSnackbar(false);
-  };
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,13 +51,13 @@ export default function LoginPage() {
       if (res.data.message === "Login successful" && res.data.token) {
         setToken(res.data.token);
         setUser(res.data.user.fullName);
-        handleSnackbarOpen("Logged in Successfully", "success");
+        showSnackbar("Logged in Successfully", "success");
         setTimeout(() => {
           nav("/");
         }, 1500);
       }
     } catch (err) {
-      handleSnackbarOpen("Invalid username or password", "warning");
+      showSnackbar("Invalid username or password", "warning");
     }
   };
 

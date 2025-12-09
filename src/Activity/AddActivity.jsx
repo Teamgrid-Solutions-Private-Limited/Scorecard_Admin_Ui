@@ -45,6 +45,7 @@ import { Drafts } from "@mui/icons-material";
 import CheckCircle from "@mui/icons-material/CheckCircle";
 import { jwtDecode } from "jwt-decode";
 import { List, ListItem, ListItemText } from "@mui/material";
+import { useSnackbar, useAuth, useFileUpload, useFormChangeTracker, useEntityData } from "../hooks";
 import CircleIcon from "@mui/icons-material/Circle";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -65,7 +66,6 @@ export default function AddActivity(props) {
   const dispatch = useDispatch();
   const { activity: selectedActivity } = useSelector((state) => state.activity);
   const { terms } = useSelector((state) => state.term);
-  const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -79,15 +79,8 @@ export default function AddActivity(props) {
   const [fieldEditors, setFieldEditors] = useState({});
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  // Defensive userRole extraction
-  const token = localStorage.getItem("token");
-  let userRole = "";
-  try {
-    const decodedToken = jwtDecode(token);
-    userRole = decodedToken.role;
-  } catch (e) {
-    userRole = "";
-  }
+  // Use centralized auth hook
+  const { token, userRole, getCurrentEditor } = useAuth();
 
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
@@ -97,6 +90,15 @@ export default function AddActivity(props) {
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const [readMoreType, setReadMoreType] = useState("file"); // 'url' or 'file'
   const navigate = useNavigate();
+
+  // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)
+  const { isDataFetching, setIsDataFetching } = useEntityData({
+    dispatch,
+    id,
+    getAllTerms,
+    getEntityById: id ? getActivityById : null,
+    clearEntityState: clearActivityState,
+  });
 
   const fieldLabels = {
     type: "Type",
@@ -181,30 +183,12 @@ export default function AddActivity(props) {
     }
   }, [formData, originalFormData]);
 
+  // Additional cleanup for selectedFile
   useEffect(() => {
-    const fetchData = async () => {
-      setIsDataFetching(true);
-      try {
-        await dispatch(getAllTerms()).unwrap();
-        if (id) {
-          await Promise.all([dispatch(getActivityById(id)).unwrap()]);
-        }
-        return () => {
-          dispatch(clearActivityState());
-          setSelectedFile(null);
-        };
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setSnackbarMessage("Error loading data. Please try again.");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      } finally {
-        setIsDataFetching(false);
-      }
+    return () => {
+      setSelectedFile(null);
     };
-
-    fetchData();
-  }, [id, dispatch]);
+  }, []);
 
   const editorRef = useRef(null);
   const isInitialLoad = useRef(true);
@@ -228,24 +212,16 @@ export default function AddActivity(props) {
     }));
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-
-      if (originalFormData) {
-        const changes = Object.keys(newData).filter((key) =>
-          compareValues(newData[key], originalFormData[key])
-        );
-        setEditedFields(changes);
-      }
-
-      return newData;
-    });
-  };
+  // Use centralized form change tracker hook
+  const { handleChange } = useFormChangeTracker({
+    originalFormData,
+    useLocalChanges: false, // Uses editedFields instead
+    formData,
+    setFormData,
+    editedFields,
+    setEditedFields,
+    compareValues,
+  });
 
   const handleEditorChange = (content, fieldName) => {
     if (!hasLocalChanges) {
@@ -265,6 +241,14 @@ export default function AddActivity(props) {
     });
   };
 
+  // Use centralized file upload hook
+  const { handleReadMoreFileUpload } = useFileUpload({
+    setFormData,
+    setEditedFields,
+    originalFormData,
+    fieldName: "readMore",
+  });
+
   const handleFileUpload = (event) => {
     if (!hasLocalChanges) {
       setHasLocalChanges(true);
@@ -272,34 +256,19 @@ export default function AddActivity(props) {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-
-      setFormData((prev) => ({
-        ...prev,
-        readMore: file.name,
-      }));
-
-      if (originalFormData && file.name !== originalFormData.readMore) {
-        const changes = Object.keys(formData).filter((key) => {
-          if (key === "readMore") {
-            return file.name !== originalFormData.readMore;
-          }
-          return compareValues(formData[key], originalFormData[key]);
-        });
-        setEditedFields(changes);
-      }
+      handleReadMoreFileUpload(event, "file");
     }
   };
   const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
+  
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -324,12 +293,7 @@ export default function AddActivity(props) {
       const mergedEditedFields = Array.from(
         new Set([...backendEditedFields, ...editedFields])
       );
-      const decodedToken = jwtDecode(token);
-      const currentEditor = {
-        editorId: decodedToken.userId,
-        editorName: localStorage.getItem("user") || "Unknown Editor",
-        editedAt: new Date(),
-      };
+      const currentEditor = getCurrentEditor();
 
       // Create updated fieldEditors map
       const updatedFieldEditors = { ...(selectedActivity?.fieldEditors || {}) };
@@ -361,11 +325,7 @@ export default function AddActivity(props) {
         if (!hasChanges) {
           setLoading(false);
 
-          setSnackbarMessage("No changes detected. Nothing to update.");
-
-          setSnackbarSeverity("info");
-
-          setOpenSnackbar(true);
+          showSnackbar("No changes detected. Nothing to update.", "info");
 
           return;
         }
@@ -385,12 +345,12 @@ export default function AddActivity(props) {
         }
         await dispatch(getActivityById(id)).unwrap();
 
-        setSnackbarMessage(
+        showSnackbar(
           userRole === "admin"
             ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
+            : 'Status changed to "Under Review" for admin to moderate.',
+          "success"
         );
-        setSnackbarSeverity("success");
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
@@ -402,11 +362,9 @@ export default function AddActivity(props) {
         }
       } else {
         if (!formData.type || !formData.title || !formData.shortDesc) {
-          setSnackbarMessage("Please fill all fields!");
-          setSnackbarSeverity("warning");
-          setOpenSnackbar(true);
-          setLoading(false);
-          return;
+        showSnackbar("Please fill all fields!", "warning");
+        setLoading(false);
+        return;
         }
 
         const result = await dispatch(createActivity(formDataToSend)).unwrap();
@@ -421,8 +379,7 @@ export default function AddActivity(props) {
           }));
           setReadMoreType("file");
         }
-        setSnackbarMessage("Activity created successfully!");
-        setSnackbarSeverity("success");
+        showSnackbar("Activity created successfully!", "success");
 
         if (newActivityId) {
           setTimeout(() => {
@@ -438,13 +395,10 @@ export default function AddActivity(props) {
         setOriginalFormData({ ...formData, status: finalStatus });
       }
 
-      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       const errorMessage = getErrorMessage(error, "Operation failed");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -452,9 +406,7 @@ export default function AddActivity(props) {
 
   const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No house selected");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar("No house selected", "error");
       return;
     }
     setOpenDiscardDialog(true);
@@ -469,18 +421,15 @@ export default function AddActivity(props) {
 
       // Refresh the data
       await dispatch(getActivityById(id));
-      setSnackbarMessage("Changes discarded successfully");
-      setSnackbarSeverity("success");
+      showSnackbar("Changes discarded successfully", "success");
 
       // Reset selectedFile state
       setSelectedFile(null);
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage = getErrorMessage(error, "Failed to discard changes");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
+      showSnackbar(errorMessage, "error");
     } finally {
-      setOpenSnackbar(true);
       setLoading(false);
     }
   };

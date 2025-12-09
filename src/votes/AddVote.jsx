@@ -49,6 +49,7 @@ import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { useSnackbar, useAuth, useFileUpload, useEntityData, useFormChangeTracker } from "../hooks";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
@@ -62,7 +63,6 @@ export default function AddBill(props) {
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
 
-  const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -88,6 +88,17 @@ export default function AddBill(props) {
   const [readMoreType, setReadMoreType] = useState("file"); // 'url' or 'file'
   const terms = useSelector((state) => state.term?.terms || []);
 
+  // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)
+  // For edit mode (with id), fetch vote and terms concurrently
+  const { isDataFetching, setIsDataFetching } = useEntityData({
+    dispatch,
+    id,
+    getAllTerms: id ? null : getAllTerms, // Skip if we have id (will fetch in additionalActions)
+    getEntityById: id ? getVoteById : null,
+    clearEntityState: clearVoteState,
+    additionalActions: id ? [getAllTerms] : [], // Fetch terms concurrently with vote when editing
+  });
+
   const fieldLabels = {
     type: "Type",
     title: "Title",
@@ -102,28 +113,19 @@ export default function AddBill(props) {
     status: "Status",
   };
 
-  // Defensive userRole extraction
-  const token = localStorage.getItem("token");
-  let userRole = "";
-  try {
-    const decodedToken = jwtDecode(token);
-    userRole = decodedToken.role;
-  } catch (e) {
-    userRole = "";
-  }
-
+  // Use centralized auth hook
+  const { token, userRole, getCurrentEditor } = useAuth();
 
   const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
+  
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const preFillForm = () => {
     if (selectedVote) {
@@ -228,35 +230,6 @@ export default function AddBill(props) {
     }
   }, [formData, originalFormData]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsDataFetching(true); // optional loading state
-      try {
-        if (id) {
-          // Fetch id-dependent data concurrently
-          await Promise.all([
-            dispatch(getVoteById(id)).unwrap(),
-            dispatch(getAllTerms()).unwrap(),
-          ]);
-        } else {
-          await dispatch(getAllTerms()).unwrap();
-        }
-        return () => {
-          dispatch(clearVoteState());
-        };
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setSnackbarMessage("Error loading data. Please try again.");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      } finally {
-        setIsDataFetching(false);
-      }
-    };
-
-    fetchData();
-  }, [id, dispatch]);
-
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -278,14 +251,25 @@ export default function AddBill(props) {
     }));
   };
 
+  // Use centralized form change tracker hook
+  const { handleChange: baseHandleChange } = useFormChangeTracker({
+    originalFormData,
+    useLocalChanges: false, // Uses editedFields instead
+    formData,
+    setFormData,
+    editedFields,
+    setEditedFields,
+    compareValues,
+  });
+
+  // Wrapper to handle special termId logic
   const handleChange = (event) => {
     const { name, value } = event.target;
-    if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-      if (name === "termId") {
+    
+    // Handle special termId logic
+    if (name === "termId") {
+      setFormData((prev) => {
+        const newData = { ...prev, [name]: value };
         // value is term.name now (not id)
         const selectedTerm = terms.find(
           (t) =>
@@ -303,16 +287,21 @@ export default function AddBill(props) {
           newData.congress = "";
           newData.termId = String(value);
         }
-      }
-      if (originalFormData) {
-        const changes = Object.keys(newData).filter((key) =>
-          compareValues(newData[key], originalFormData[key])
-        );
-        setEditedFields(changes);
-      }
-
-      return newData;
-    });
+        
+        // Update editedFields after termId change
+        if (originalFormData) {
+          const changes = Object.keys(newData).filter((key) =>
+            compareValues(newData[key], originalFormData[key])
+          );
+          setEditedFields(changes);
+        }
+        
+        return newData;
+      });
+    } else {
+      // For other fields, use the base handler
+      baseHandleChange(event);
+    }
   };
 
   const [editorsInitialized, setEditorsInitialized] = useState({
@@ -356,6 +345,14 @@ export default function AddBill(props) {
     });
   };
 
+  // Use centralized file upload hook
+  const { handleReadMoreFileUpload } = useFileUpload({
+    setFormData,
+    setEditedFields,
+    originalFormData,
+    fieldName: "readMore",
+  });
+
   const handleFileUpload = (event) => {
     if (!hasLocalChanges) {
       setHasLocalChanges(true);
@@ -363,31 +360,14 @@ export default function AddBill(props) {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-      // Set the file path in the readMore field
-      setFormData((prev) => ({
-        ...prev,
-        readMore: file.name,
-      }));
-
-      // Update editedFields if this is a change
-      if (originalFormData && file.name !== originalFormData.readMore) {
-        const changes = Object.keys(formData).filter((key) => {
-          if (key === "readMore") {
-            return file.name !== originalFormData.readMore;
-          }
-          return compareValues(formData[key], originalFormData[key]);
-        });
-        setEditedFields(changes);
-      }
+      handleReadMoreFileUpload(event, "file");
     }
   };
 
   const handleSubmit = async () => {
     const termValidation = validateRequired(formData.termId, "Term");
     if (!termValidation.isValid) {
-      setSnackbarMessage(termValidation.message);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar(termValidation.message, "error");
       return;
     }
 
@@ -458,12 +438,7 @@ export default function AddBill(props) {
         if (!hasChanges) {
           setLoading(false);
 
-          setSnackbarMessage("No changes detected. Nothing to update.");
-
-          setSnackbarSeverity("info");
-
-          setOpenSnackbar(true);
-
+          showSnackbar("No changes detected. Nothing to update.", "info");
           return;
         }
 
@@ -482,12 +457,12 @@ export default function AddBill(props) {
         }
         await dispatch(getVoteById(id)).unwrap();
 
-        setSnackbarMessage(
+        showSnackbar(
           userRole === "admin"
             ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
+            : 'Status changed to "Under Review" for admin to moderate.',
+          "success"
         );
-        setSnackbarSeverity("success");
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
@@ -507,9 +482,7 @@ export default function AddBill(props) {
           !formData.shortDesc ||
           !formData.readMore
         ) {
-          setSnackbarMessage("Please fill all required fields!");
-          setSnackbarSeverity("warning");
-          setOpenSnackbar(true);
+          showSnackbar("Please fill all required fields!", "warning");
           setLoading(false);
           return;
         }
@@ -527,12 +500,7 @@ export default function AddBill(props) {
           }));
           setReadMoreType("file");
         }
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Bill created successfully!"
-            : "Bill created successfully!"
-        );
-        setSnackbarSeverity("success");
+        showSnackbar("Bill created successfully!", "success");
         if (newVoteId) {
           setTimeout(() => {
             navigate(`/edit-vote/${newVoteId}`);
@@ -542,22 +510,17 @@ export default function AddBill(props) {
         }
       }
 
-      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
       const errorMessage = getErrorMessage(error, "Operation failed");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
   };
   const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No house selected");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar("No house selected", "error");
       return;
     }
     setOpenDiscardDialog(true);
@@ -572,20 +535,18 @@ export default function AddBill(props) {
 
       // Refresh the data
       await dispatch(getVoteById(id));
-      setSnackbarMessage(
-        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      showSnackbar(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
+        "success"
       );
-      setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
       const errorMessage = getErrorMessage(
         error,
         `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
       );
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
+      showSnackbar(errorMessage, "error");
     } finally {
-      setOpenSnackbar(true);
       setLoading(false);
     }
   };

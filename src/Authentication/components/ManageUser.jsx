@@ -46,6 +46,7 @@ import MobileHeader from "../../components/MobileHeader";
 import Footer from "../../components/Footer";
 import LoadingOverlay from "../../components/LoadingOverlay";
 import { getToken } from "../../utils/auth";
+import { useSnackbar } from "../../hooks";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -58,10 +59,16 @@ export default function ManageUser(props) {
   const dispatch = useDispatch();
   const { users, loading, error } = useSelector((state) => state.auth);
   const [openAddUser, setOpenAddUser] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [editUser, setEditUser] = useState(null);
+  
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
   const [editForm, setEditForm] = useState({
     fullName: "",
     email: "",
@@ -98,13 +105,9 @@ export default function ManageUser(props) {
   useEffect(() => {
     if (error) {
       if (error === "Access denied: Admins only") {
-        setSnackbarMessage("You do not have permission to view users.");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
+        showSnackbar("You do not have permission to view users.", "error");
       } else {
-        setSnackbarMessage(error);
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
+        showSnackbar(error, "error");
       }
     }
   }, [error]);
@@ -134,16 +137,12 @@ export default function ManageUser(props) {
       await dispatch(
         updateUser({ userId: editUser._id, userData: editForm })
       ).unwrap();
-      setSnackbarMessage("User updated successfully");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
+      showSnackbar("User updated successfully", "success");
       setEditUser(null);
       dispatch(getAllUsers()); 
     } catch (error) {
       const errorMessage = getErrorMessage(error, "Failed to update user");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar(errorMessage, "error");
     }
   };
 
@@ -170,12 +169,6 @@ export default function ManageUser(props) {
   };
 
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
 
   const roleOptions = ["admin", "editor", "contributor"];
 
@@ -401,9 +394,7 @@ export default function ManageUser(props) {
                 dispatch(getAllUsers());
               }}
               onError={(error) => {
-                setSnackbarMessage(error);
-                setSnackbarSeverity("error");
-                setOpenSnackbar(true);
+                showSnackbar(error, "error");
               }}
             />
 

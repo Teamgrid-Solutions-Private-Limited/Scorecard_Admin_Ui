@@ -35,6 +35,7 @@ import {
 } from "@mui/material";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 export default function ManageTerm(props) {
   const dispatch = useDispatch();
@@ -42,15 +43,20 @@ export default function ManageTerm(props) {
 
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
-
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedTermId, setSelectedTermId] = useState(null);
 
   const token = getToken();
   const userRole = getUserRole();
+
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const handleOpenConfirm = (termId) => {
     setSelectedTermId(termId);
@@ -62,24 +68,13 @@ export default function ManageTerm(props) {
     setSelectedTermId(null);
   };
 
-  const handleSnackbarOpen = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") return;
-    setOpenSnackbar(false);
-  };
-
   useEffect(() => {
     dispatch(getAllTerms());
   }, [dispatch]);
 
   const handleCreateTerm = async () => {
     if (!startYear.trim() || !endYear.trim()) {
-      handleSnackbarOpen("Start and End Year are required", "error");
+      showSnackbar("Start and End Year are required", "error");
       return;
     }
 
@@ -87,7 +82,7 @@ export default function ManageTerm(props) {
     const end = parseInt(endYear);
 
     if (start >= end) {
-      handleSnackbarOpen("End year must be greater than start year", "error");
+      showSnackbar("End year must be greater than start year", "error");
       return;
     }
 
@@ -95,24 +90,24 @@ export default function ManageTerm(props) {
       await dispatch(createTerm({ startYear: start, endYear: end })).unwrap();
       setStartYear("");
       setEndYear("");
-      handleSnackbarOpen("Term created successfully");
+      showSnackbar("Term created successfully", "success");
       dispatch(getAllTerms());
     } catch (error) {
       console.error("Failed to create term:", error);
       const errorMessage = getErrorMessage(error, "Error creating term");
-      handleSnackbarOpen(errorMessage, "error");
+      showSnackbar(errorMessage, "error");
     }
   };
 
   const handleConfirmDelete = async () => {
     try {
       await dispatch(deleteTerm(selectedTermId)).unwrap();
-      handleSnackbarOpen("Term deleted successfully");
+      showSnackbar("Term deleted successfully", "success");
       dispatch(getAllTerms());
     } catch (error) {
       console.error("Failed to delete term:", error);
       const errorMessage = getErrorMessage(error, "Error deleting term");
-      handleSnackbarOpen(errorMessage, "error");
+      showSnackbar(errorMessage, "error");
     } finally {
       handleCloseConfirm();
     }
