@@ -56,14 +56,13 @@ import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 export default function Representative(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const { open: snackbarOpen, message: snackbarMessage, severity: snackbarSeverity, showSnackbar, hideSnackbar } = useSnackbar();
   const { houses, loading } = useSelector((state) => state.house);
   const [fetching, setFetching] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -421,20 +420,17 @@ export default function Representative(props) {
       );
 
       if (response.status === 200) {
-        setSnackbarMessage("Success: Representatives fetched successfully!");
-        setSnackbarSeverity("success");
+        showSnackbar("Success: Representatives fetched successfully!", "success");
         await dispatch(getAllHouses());
       } else {
         throw new Error("Failed to fetch representatives from Quorum.");
       }
     } catch (error) {
       console.error("Error fetching representatives from Quorum:", error);
-      setSnackbarMessage("Error: Unable to fetch representatives.");
-      setSnackbarSeverity("error");
+      showSnackbar("Error: Unable to fetch representatives.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100);
       setTimeout(() => setProgress(0), 500);
     }
@@ -456,20 +452,16 @@ export default function Representative(props) {
     try {
       await dispatch(deleteHouse(selectedRepresentative._id));
       await dispatch(getAllHouses());
-      setSnackbarMessage(
-        `${selectedRepresentative?.name} deleted successfully.`
+      showSnackbar(
+        `${selectedRepresentative?.name} deleted successfully.`,
+        "success"
       );
-      setSnackbarSeverity("success");
     } catch (error) {
-      setSnackbarMessage("Error deleting representative.");
-      setSnackbarSeverity("error");
-      console.error("Error fetching representatives from Quorum:", error);
-      setSnackbarMessage("Error: Unable to fetch representatives.");
-      setSnackbarSeverity("error");
+      console.error("Error deleting representative:", error);
+      showSnackbar("Error: Unable to delete representative.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setOpenDeleteDialog(false);
     }
   };
@@ -485,9 +477,7 @@ export default function Representative(props) {
       dispatch(getAllHouses());
     } catch (error) {
       console.error("Failed to update status:", error);
-      setSnackbarMessage("Failed to update status.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar("Failed to update status.", "error");
     }
   };
 
@@ -1020,11 +1010,11 @@ export default function Representative(props) {
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={5000}
-          onClose={() => setSnackbarOpen(false)}
+          onClose={hideSnackbar}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
-            onClose={() => setSnackbarOpen(false)}
+            onClose={hideSnackbar}
             severity={snackbarSeverity}
             sx={{
               border: "none",
