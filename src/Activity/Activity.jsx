@@ -11,7 +11,6 @@ import { getErrorMessage } from "../utils/errorHandler";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import { Box, Stack, Typography, Button ,InputAdornment,} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import SideMenu from "../../src/components/SideMenu";
 import MainGrid from "../../src/components/MainGrid";
@@ -49,7 +48,6 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";

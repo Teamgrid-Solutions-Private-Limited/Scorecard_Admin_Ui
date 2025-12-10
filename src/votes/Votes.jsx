@@ -50,7 +50,6 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";
@@ -67,8 +66,6 @@ export default function Votes(props) {
   const [selectedVote, setSelectedVote] = useState(null);
   const token = getToken();
   const userRole = getUserRole();
-  
-  // Use centralized snackbar hook
   const {
     open: snackbarOpen,
     message: snackbarMessage,
@@ -109,7 +106,6 @@ export default function Votes(props) {
         setBulkSbaPosition("");
         setIsBulkEditMode(false);
       } else if (result.payload === undefined) {
-        // Handle rejection
         showSnackbar("Failed to update votes", "error");
       }
     } catch (error) {
@@ -161,8 +157,8 @@ export default function Votes(props) {
       ? vote.type.toLowerCase().includes("senate")
         ? "Senate"
         : vote.type.toLowerCase().includes("house")
-        ? "House"
-        : "Other"
+          ? "House"
+          : "Other"
       : "Other",
     status: vote.status || "draft",
     sbaPosition: vote.sbaPosition || "N/A",
@@ -310,9 +306,8 @@ export default function Votes(props) {
 
                         {/* Status Filter */}
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "status" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "status" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -356,9 +351,8 @@ export default function Votes(props) {
                         {/* Congress Filter */}
                         {congressOptions.length > 0 && (
                           <Box
-                            className={`filter-section ${
-                              expandedFilter === "congress" ? "active" : ""
-                            }`}
+                            className={`filter-section ${expandedFilter === "congress" ? "active" : ""
+                              }`}
                           >
                             <Box
                               className="filter-title"

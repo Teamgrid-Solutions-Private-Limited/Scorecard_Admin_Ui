@@ -88,15 +88,13 @@ export default function AddBill(props) {
   const [readMoreType, setReadMoreType] = useState("file"); // 'url' or 'file'
   const terms = useSelector((state) => state.term?.terms || []);
 
-  // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)
-  // For edit mode (with id), fetch vote and terms concurrently
   const { isDataFetching, setIsDataFetching } = useEntityData({
     dispatch,
     id,
-    getAllTerms: id ? null : getAllTerms, // Skip if we have id (will fetch in additionalActions)
+    getAllTerms: id ? null : getAllTerms, 
     getEntityById: id ? getVoteById : null,
     clearEntityState: clearVoteState,
-    additionalActions: id ? [getAllTerms] : [], // Fetch terms concurrently with vote when editing
+    additionalActions: id ? [getAllTerms] : [], 
   });
 
   const fieldLabels = {
@@ -112,13 +110,8 @@ export default function AddBill(props) {
     sbaPosition: "SBA Position",
     status: "Status",
   };
-
-  // Use centralized auth hook
   const { token, userRole, getCurrentEditor } = useAuth();
-
   const [loading, setLoading] = useState(false);
-  
-  // Use centralized snackbar hook
   const {
     open: openSnackbar,
     message: snackbarMessage,
@@ -140,7 +133,6 @@ export default function AddBill(props) {
       );
 
       if (termIdStr && termIds.includes(termIdStr)) {
-        // backend provided an id -> find that term and use its name
         const selectedTerm = terms.find(
           (term) =>
             String(term._id ?? term.id ?? term.termId ?? term.value ?? "") ===
@@ -152,11 +144,9 @@ export default function AddBill(props) {
             congressValue = String(selectedTerm.congresses[0]);
           }
         } else {
-          // fallback to the raw string
           resolvedTermName = termIdStr;
         }
       } else if (termIdStr) {
-        // backend provided a string (name or year-range) -> try to match by name/title/year-range
         const found = terms.find((t) => {
           const name = (t.name ?? t.title ?? "").toString();
           const yearRange =
@@ -205,7 +195,6 @@ export default function AddBill(props) {
     }
   };
 
-  // When selectedVote changes, set editedFields from backend
   useEffect(() => {
     if (selectedVote && !isDataFetching) {
       preFillForm();
@@ -217,7 +206,6 @@ export default function AddBill(props) {
     }
   }, [selectedVote, isDataFetching]);
 
-  // When formData changes, update editedFields (track all changes)
   useEffect(() => {
     if (originalFormData && formData) {
       const changes = [];
@@ -251,10 +239,9 @@ export default function AddBill(props) {
     }));
   };
 
-  // Use centralized form change tracker hook
   const { handleChange: baseHandleChange } = useFormChangeTracker({
     originalFormData,
-    useLocalChanges: false, // Uses editedFields instead
+    useLocalChanges: false, 
     formData,
     setFormData,
     editedFields,
@@ -262,15 +249,12 @@ export default function AddBill(props) {
     compareValues,
   });
 
-  // Wrapper to handle special termId logic
   const handleChange = (event) => {
     const { name, value } = event.target;
     
-    // Handle special termId logic
     if (name === "termId") {
       setFormData((prev) => {
         const newData = { ...prev, [name]: value };
-        // value is term.name now (not id)
         const selectedTerm = terms.find(
           (t) =>
             (t.name ?? "").toString() === String(value) ||
@@ -288,7 +272,6 @@ export default function AddBill(props) {
           newData.termId = String(value);
         }
         
-        // Update editedFields after termId change
         if (originalFormData) {
           const changes = Object.keys(newData).filter((key) =>
             compareValues(newData[key], originalFormData[key])
@@ -299,7 +282,6 @@ export default function AddBill(props) {
         return newData;
       });
     } else {
-      // For other fields, use the base handler
       baseHandleChange(event);
     }
   };
@@ -309,7 +291,6 @@ export default function AddBill(props) {
     longDesc: false,
   });
   const handleEditorChange = (content, fieldName) => {
-    // Skip initial empty content (first render)
     if (!editorsInitialized[fieldName]) {
       setEditorsInitialized((prev) => ({
         ...prev,
@@ -317,8 +298,6 @@ export default function AddBill(props) {
       }));
       return;
     }
-
-    // Check if content actually changed from current state
     if (content === formData[fieldName]) {
       return;
     }
@@ -330,8 +309,6 @@ export default function AddBill(props) {
         const changes = Object.keys(newData).filter((key) => {
           const newValue = newData[key];
           const oldValue = originalFormData[key];
-
-          // Special handling for string comparison
           if (typeof newValue === "string" && typeof oldValue === "string") {
             return newValue.trim() !== oldValue.trim();
           }
@@ -345,7 +322,6 @@ export default function AddBill(props) {
     });
   };
 
-  // Use centralized file upload hook
   const { handleReadMoreFileUpload } = useFileUpload({
     setFormData,
     setEditedFields,
@@ -373,10 +349,7 @@ export default function AddBill(props) {
 
     setLoading(true);
     try {
-      // Create FormData for file upload
       const formDataToSend = new FormData();
-
-      // Add all form fields EXCEPT status (we'll add it separately)
       Object.keys(formData).forEach((key) => {
         if (key === "readMore") {
           if (readMoreType === "file" && selectedFile) {
@@ -388,8 +361,6 @@ export default function AddBill(props) {
           formDataToSend.append(key, formData[key]);
         }
       });
-
-      // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedVote?.editedFields)
         ? selectedVote.editedFields
         : [];
@@ -408,20 +379,17 @@ export default function AddBill(props) {
         editedAt: new Date(),
       };
 
-      // Create updated fieldEditors map
       const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
       filteredEditedFields.forEach((field) => {
         updatedFieldEditors[field] = currentEditor;
       });
 
-      // Add editedFields and fieldEditors to FormData
       formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
       formDataToSend.append(
         "fieldEditors",
         JSON.stringify(updatedFieldEditors)
       );
 
-      // Add status ONLY ONCE
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
 
@@ -447,13 +415,13 @@ export default function AddBill(props) {
         ).unwrap();
         if (readMoreType === "url") {
           setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
-          setReadMoreType("url"); // force back to URL mode
+          setReadMoreType("url"); 
         } else if (readMoreType === "file" && selectedFile) {
           setFormData((prev) => ({
             ...prev,
             readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
           }));
-          setReadMoreType("file"); // stay in file mode
+          setReadMoreType("file"); 
         }
         await dispatch(getVoteById(id)).unwrap();
 
@@ -466,11 +434,8 @@ export default function AddBill(props) {
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
-          // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
-          // Remove status from editedFields after update
           setEditedFields((prev) => prev.filter((field) => field !== "status"));
         } else {
-          // Only clear locally if status is published
           if (finalStatus === "published") {
             setEditedFields([]);
           }
@@ -488,7 +453,7 @@ export default function AddBill(props) {
         }
         const result = await dispatch(createVote(formDataToSend)).unwrap();
 
-        const newVoteId = result.data?._id || null; // Get the new activity ID from the response
+        const newVoteId = result.data?._id || null; 
 
         if (readMoreType === "url") {
           setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
@@ -532,8 +497,6 @@ export default function AddBill(props) {
     try {
       setLoading(true);
       const result = await dispatch(discardVoteChanges(id)).unwrap();
-
-      // Refresh the data
       await dispatch(getVoteById(id));
       showSnackbar(
         `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
@@ -623,7 +586,6 @@ export default function AddBill(props) {
     originalFormData,
     formData,
   ]);
-  // Reset editor initialization when form data is loaded
   useEffect(() => {
     if (formData.shortDesc && formData.longDesc) {
       setEditorsInitialized({

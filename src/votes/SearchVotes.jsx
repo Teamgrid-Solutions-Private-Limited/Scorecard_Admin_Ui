@@ -22,7 +22,6 @@ import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/API";
 import axios from "axios";
-import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import FixedHeader from "../components/FixedHeader";
@@ -72,11 +71,6 @@ export default function SearchVotes(params) {
 
       const searchTerm = searchQuery.trim();
       let response;
-
-      // -----------------------------------------
-      // 1️⃣ ROLL CALL SEARCH (S190 / H90 / 144)
-      // -----------------------------------------
-      // Match both "S144/H144" format and just numbers "144"
       const rollCallMatchWithChamber = searchTerm.match(/^([SH])(\d+)$/i);
       const rollCallMatchNumberOnly = searchTerm.match(/^(\d+)$/);
 
@@ -84,13 +78,10 @@ export default function SearchVotes(params) {
         let numberOnly;
 
         if (rollCallMatchWithChamber) {
-          // Specific chamber: S144 or H144
           numberOnly = rollCallMatchWithChamber[2];
         } else {
-          // Just number: 144 - search both chambers
           numberOnly = rollCallMatchNumberOnly[1];
         }
-
         response = await axios.post(
           `${API_URL}/fetch-quorum/store-data`,
           {
@@ -107,10 +98,6 @@ export default function SearchVotes(params) {
         );
         return;
       }
-
-      // -----------------------------------------
-      // 2️⃣ TEXT SEARCH — TRY QUESTION FIRST
-      // -----------------------------------------
       const trySearch = async (fieldName) => {
         const res = await axios.post(
           `${API_URL}/fetch-quorum/store-data`,
@@ -124,17 +111,11 @@ export default function SearchVotes(params) {
         );
         return Array.isArray(res.data?.data) ? res.data.data : [];
       };
-
-      // First try: question
       let result = await trySearch("question");
-
-      // Second try: title
       if (result.length === 0) {
         result = await trySearch("title");
       }
-
       setSearchResults(result);
-
       if (result.length === 0) {
         showSnackbar("No votes found matching your search", "info");
       }
@@ -154,27 +135,25 @@ export default function SearchVotes(params) {
       const isDuplicate = allVotes.some(
         (existingVote) => String(existingVote.quorumId) === String(vote.quorumId || vote.voteId)
       );
-      console.log("isDuplicate:", isDuplicate); 
+      console.log("isDuplicate:", isDuplicate);
       if (isDuplicate) {
         showSnackbar("Vote already exists", "info");
         setLoading(false);
         return;
       }
       const editorInfo = getEditorInfo();
-
-      // Convert vote data to vote format if needed
       const voteData = vote.quorumId
         ? vote
         : {
-            quorumId: vote.voteId,
-            title: vote.question,
-            type: "vote",
-            date: vote.date,
-            rollCallNumber: vote.rollCallNumber,
-            chamber: vote.chamber,
-            result: vote.result,
-            relatedBill: vote.relatedBill,
-          };
+          quorumId: vote.voteId,
+          title: vote.question,
+          type: "vote",
+          date: vote.date,
+          rollCallNumber: vote.rollCallNumber,
+          chamber: vote.chamber,
+          result: vote.result,
+          relatedBill: vote.relatedBill,
+        };
 
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [voteData],
