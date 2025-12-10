@@ -52,7 +52,6 @@ const xThemeComponents = {
 };
 import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
-import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";
@@ -133,7 +132,7 @@ export default function Representative(props) {
           termId = currentTermData.termId;
           rating =
             currentTermData.rating !== undefined &&
-            currentTermData.rating !== null
+              currentTermData.rating !== null
               ? currentTermData.rating
               : "N/A";
           currentTerm = true;
@@ -201,14 +200,14 @@ export default function Representative(props) {
             const termObj = terms.find((t) => t._id === rec.termId);
             return termObj
               ? {
-                  termId: rec.termId,
-                  termName: termObj.name || "",
-                  currentTerm: rec.currentTerm || false,
-                  rating: rec.rating,
-                  congresses: Array.isArray(termObj.congresses)
-                    ? termObj.congresses
-                    : [],
-                }
+                termId: rec.termId,
+                termName: termObj.name || "",
+                currentTerm: rec.currentTerm || false,
+                rating: rec.rating,
+                congresses: Array.isArray(termObj.congresses)
+                  ? termObj.congresses
+                  : [],
+              }
               : null;
           })
           .filter(Boolean);
@@ -596,9 +595,8 @@ export default function Representative(props) {
                         </Box>
 
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "party" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "party" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -652,9 +650,8 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "district" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "district" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -730,9 +727,8 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "rating" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "rating" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -785,9 +781,8 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "congress" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "congress" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -847,16 +842,14 @@ export default function Representative(props) {
                                       >
                                         {congressYearMap[congress]
                                           ? `${getOrdinalSuffix(
-                                              congress
-                                            )} Congress (${
-                                              congressYearMap[congress]
-                                                .startYear
-                                            }-${
-                                              congressYearMap[congress].endYear
-                                            })`
+                                            congress
+                                          )} Congress (${congressYearMap[congress]
+                                            .startYear
+                                          }-${congressYearMap[congress].endYear
+                                          })`
                                           : `${getOrdinalSuffix(
-                                              congress
-                                            )} Congress`}
+                                            congress
+                                          )} Congress`}
                                       </Typography>
                                     </Box>
                                   ))
@@ -874,9 +867,8 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "term" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "term" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -919,9 +911,8 @@ export default function Representative(props) {
                         </Box>
 
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "status" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "status" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -1022,33 +1013,33 @@ export default function Representative(props) {
               width: "100%",
               bgcolor:
                 snackbarMessage ===
-                `${selectedRepresentative?.name} deleted successfully.`
+                  `${selectedRepresentative?.name} deleted successfully.`
                   ? "#fde8e4"
                   : snackbarMessage ===
                     "Success: Representatives fetched successfully!"
-                  ? "#daf4f0"
-                  : undefined,
+                    ? "#daf4f0"
+                    : undefined,
 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
-                  `${selectedRepresentative?.name} deleted successfully.`
+                    `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d"
                     : snackbarMessage ===
                       "Success: Representatives fetched successfully!"
-                    ? "#099885"
-                    : undefined,
+                      ? "#099885"
+                      : undefined,
               },
 
               "& .MuiAlert-message": {
                 color:
                   snackbarMessage ===
-                  `${selectedRepresentative?.name} deleted successfully.`
+                    `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d"
                     : snackbarMessage ===
                       "Success: Representatives fetched successfully!"
-                    ? "#099885"
-                    : undefined,
+                      ? "#099885"
+                      : undefined,
               },
               "& .MuiAlert-action": {
                 display: "flex",

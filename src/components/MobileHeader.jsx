@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
-  Typography,
   IconButton,
   Drawer,
   Box,
@@ -32,16 +31,16 @@ const MobileHeader = () => {
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Box
-  component="img"
-  src={logo} 
-  alt="SBA Scorecard Logo"
-  sx={{
-    height: 32, 
-    width: "auto",
-    objectFit: "contain",
-    display: "block",
-  }}
-/>
+            component="img"
+            src={logo}
+            alt="SBA Scorecard Logo"
+            sx={{
+              height: 32,
+              width: "auto",
+              objectFit: "contain",
+              display: "block",
+            }}
+          />
 
 
           <IconButton edge="end" color="inherit" onClick={toggleDrawer(true)}>
@@ -61,7 +60,7 @@ const MobileHeader = () => {
           },
         }}
       >
-      
+
         <Box role="presentation" sx={{ height: "100%" }}>
           <MenuContent />
         </Box>

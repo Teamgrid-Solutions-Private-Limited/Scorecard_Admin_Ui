@@ -12,7 +12,6 @@ import { rating } from "../Dashboard/global/common";
 import { useParams, useNavigate } from "react-router-dom";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
-import { jwtDecode } from "jwt-decode";
 import {
   Autocomplete,
   Box,
