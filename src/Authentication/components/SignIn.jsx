@@ -14,10 +14,11 @@ import LoginIcon from "@mui/icons-material/Login";
 import logo from "../../assets/image/logo-sm.png";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../../redux/API";
+import { api } from "../../utils/apiClient";
+import { setToken, setUser } from "../../utils/auth";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { useSnackbar } from "../../hooks";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -86,44 +87,30 @@ export default function SignIn() {
     setInfo({ ...info, [e.target.name]: e.target.value });
   };
 
-  
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
-  const handleSnackbarOpen = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    axios
-      .post(`${API_URL}/user/login`, info)
-      .then((res) => {
-        
-
-        if (res.data.message === "Login successful" && res.data.token) {
-          localStorage.setItem("token", res.data.token);
-          localStorage.setItem("user", JSON.stringify(res.data.user.fullName));
-          handleSnackbarOpen("logged in Successfully","success")
-          setTimeout(() => {
-            nav("/");
-          }, 1500);
-        }
-      })
-      .catch((err) => {
-       
-        handleSnackbarOpen("Invalid username or password","warning")
-      });
+    try {
+      const res = await api.post("/user/login", info);
+      if (res.data.message === "Login successful" && res.data.token) {
+        setToken(res.data.token);
+        setUser(res.data.user.fullName);
+        showSnackbar("logged in Successfully", "success");
+        setTimeout(() => {
+          nav("/");
+        }, 1500);
+      }
+    } catch (err) {
+      showSnackbar("Invalid username or password", "warning");
+    }
   };
 
   return (

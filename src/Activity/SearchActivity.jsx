@@ -18,6 +18,7 @@ import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
+import { getErrorMessage } from "../utils/errorHandler";
 import { API_URL } from "../redux/API";
 import axios from "axios";
 import Snackbar from "@mui/material/Snackbar";
@@ -27,6 +28,8 @@ import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUser } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 export default function SearchActivity() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,14 +38,17 @@ export default function SearchActivity() {
   const [searchAttempted, setSearchAttempted] = useState(false);
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const user = localStorage.getItem("user");
+  const token = getToken();
+  const user = getUser();
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarClose = () => setSnackbarOpen(false);
+  // Use centralized snackbar hook
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   // ---------------------------
   // SEARCH HANDLER
@@ -61,9 +67,7 @@ export default function SearchActivity() {
       }
 
       if (!token) {
-        setSnackbarMessage("Please log in to search bills");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Please log in to search bills", "error");
         setLoading(false);
         navigate("/login");
         return;
@@ -96,11 +100,8 @@ export default function SearchActivity() {
       );
     } catch (error) {
       console.error("Error searching bills:", error);
-      setSnackbarMessage(
-        error.response?.data?.message || "Failed to search bills"
-      );
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      const errorMessage = getErrorMessage(error, "Failed to search bills");
+      showSnackbar(errorMessage, "error");
       setSearchResults([]);
     } finally {
       setLoading(false);
@@ -184,18 +185,15 @@ const handleAddActivity = async (activity) => {
     console.log("Saved:", response.data);
 
     if (response.data.exists) {
-      setSnackbarMessage("Activity already exists");
-      setSnackbarSeverity("warning");
-      setSnackbarOpen(true);
+      showSnackbar("Activity already exists", "warning");
       return;
     }
 
     // Show success message and navigate to edit page
-    setSnackbarMessage(
-      "Activity added successfully! Legislators are being assigned in the background."
+    showSnackbar(
+      "Activity added successfully! Legislators are being assigned in the background.",
+      "success"
     );
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
 
     // Navigate to edit activity page with the new activity ID
     if (response.data.activityId) {
@@ -203,11 +201,10 @@ const handleAddActivity = async (activity) => {
     }
   } catch (err) {
     console.error("Save error:", err.response?.data || err);
-    setSnackbarMessage(
-      err.response?.data?.message || "Failed to save activity"
+    showSnackbar(
+      err.response?.data?.message || "Failed to save activity",
+      "error"
     );
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
   } finally {
     setLoading(false);
   }

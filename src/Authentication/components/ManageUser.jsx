@@ -27,6 +27,8 @@ import {
 import MainGrid from "../../components/MainGrid";
 
 import { useDispatch, useSelector } from "react-redux";
+import { getErrorMessage } from "../../utils/errorHandler";
+import { validateUserForm } from "../../helpers/validationHelpers";
 import {
   getAllUsers,
   deleteUser,
@@ -43,6 +45,8 @@ import { useNavigate } from "react-router-dom";
 import MobileHeader from "../../components/MobileHeader";
 import Footer from "../../components/Footer";
 import LoadingOverlay from "../../components/LoadingOverlay";
+import { getToken } from "../../utils/auth";
+import { useSnackbar } from "../../hooks";
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -55,10 +59,16 @@ export default function ManageUser(props) {
   const dispatch = useDispatch();
   const { users, loading, error } = useSelector((state) => state.auth);
   const [openAddUser, setOpenAddUser] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [editUser, setEditUser] = useState(null);
+  
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
   const [editForm, setEditForm] = useState({
     fullName: "",
     email: "",
@@ -70,7 +80,7 @@ export default function ManageUser(props) {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   if (!token) {
     navigate("/login");
     return;
@@ -95,13 +105,9 @@ export default function ManageUser(props) {
   useEffect(() => {
     if (error) {
       if (error === "Access denied: Admins only") {
-        setSnackbarMessage("You do not have permission to view users.");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
+        showSnackbar("You do not have permission to view users.", "error");
       } else {
-        setSnackbarMessage(error);
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
+        showSnackbar(error, "error");
       }
     }
   }, [error]);
@@ -120,23 +126,9 @@ export default function ManageUser(props) {
   };
 
   const validateEditForm = () => {
-    const newErrors = {};
-    if (!editForm.fullName || editForm.fullName.trim().length < 3) {
-      newErrors.fullName = "Full name is required (min 3 characters)";
-    }
-    if (!editForm.email) {
-      newErrors.email = "Email is required";
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(editForm.email)) {
-      newErrors.email = "Invalid email address";
-    }
-    if (
-      !editForm.role ||
-      !["admin", "editor", "contributor"].includes(editForm.role)
-    ) {
-      newErrors.role = "Role is required";
-    }
-    setEditErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const validation = validateUserForm(editForm, { includePassword: false });
+    setEditErrors(validation.errors);
+    return validation.isValid;
   };
 
   const handleEditUserSave = async () => {
@@ -145,15 +137,12 @@ export default function ManageUser(props) {
       await dispatch(
         updateUser({ userId: editUser._id, userData: editForm })
       ).unwrap();
-      setSnackbarMessage("User updated successfully");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
+      showSnackbar("User updated successfully", "success");
       setEditUser(null);
       dispatch(getAllUsers()); 
     } catch (error) {
-      setSnackbarMessage(error.message || "Failed to update user");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      const errorMessage = getErrorMessage(error, "Failed to update user");
+      showSnackbar(errorMessage, "error");
     }
   };
 
@@ -172,19 +161,14 @@ export default function ManageUser(props) {
       setOpenSnackbar(true);
       dispatch(getAllUsers()); 
     } catch (error) {
-      setSnackbarMessage(error.message || "Failed to delete user");
+      const errorMessage = getErrorMessage(error, "Failed to delete user");
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
 
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
 
   const roleOptions = ["admin", "editor", "contributor"];
 
@@ -410,9 +394,7 @@ export default function ManageUser(props) {
                 dispatch(getAllUsers());
               }}
               onError={(error) => {
-                setSnackbarMessage(error);
-                setSnackbarSeverity("error");
-                setOpenSnackbar(true);
+                showSnackbar(error, "error");
               }}
             />
 

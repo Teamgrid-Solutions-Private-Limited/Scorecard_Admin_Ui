@@ -27,7 +27,11 @@ import {
   Button,
   Switch,
 } from "@mui/material";
+import { useSnackbar, useAuth, useFileUpload, useTermItemManager, useEntityData, useFormChangeTracker } from "../hooks";
 import { getAllVotes } from "../redux/reducer/voteSlice";
+import { getErrorMessage } from "../utils/errorHandler";
+import { validateTermData } from "../helpers/validationHelpers";
+import { sanitizeKey } from "../helpers/fieldHelpers";
 import { getAllActivity } from "../redux/reducer/activitySlice";
 import { discardHouseChanges } from "../redux/reducer/houseSlice";
 import {
@@ -70,7 +74,6 @@ export default function Addrepresentative(props) {
   const [deletedTermIds, setDeletedTermIds] = useState([]);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [componentKey, setComponentKey] = useState(0);
-  const [isDataFetching, setIsDataFetching] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectionError, setSelectionError] = useState({
@@ -80,6 +83,17 @@ export default function Addrepresentative(props) {
   });
 
   const navigate = useNavigate();
+
+  // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)
+  const { isDataFetching, setIsDataFetching } = useEntityData({
+    dispatch,
+    id,
+    getAllTerms: null, // Will be in additionalActions
+    getEntityById: id ? getHouseById : null,
+    clearEntityState: clearHouseState,
+    getAdditionalData: id ? getHouseDataByHouseId : null,
+    additionalActions: [getAllTerms, getAllVotes, getAllActivity],
+  });
 
   let houseActivities =
     activities?.filter((activity) => activity.type === "house") || [];
@@ -128,6 +142,58 @@ export default function Addrepresentative(props) {
       termId: null,
     },
   ]);
+
+  const [removedItems, setRemovedItems] = useState({
+    votes: [],
+    activities: [],
+  });
+
+  // Use centralized auth hook (must be before term item managers)
+  const { token, userRole, getCurrentEditor } = useAuth();
+
+  // Use centralized term item managers for votes and activities
+  // These must be declared after all state variables (formData, houseTermData, etc.)
+  const voteManager = useTermItemManager({
+    type: 'vote',
+    dataPath: 'votesScore',
+    idField: 'voteId',
+    fieldKeyPrefix: 'ScoredVote',
+    allItems: votes,
+    removedItemsKey: 'votes',
+    termData: houseTermData,
+    setTermData: setHouseTermData,
+    originalTermData: originalTermData,
+    localChanges: localChanges,
+    setLocalChanges: setLocalChanges,
+    formData: formData,
+    setFormData: setFormData,
+    removedItems: removedItems,
+    setRemovedItems: setRemovedItems,
+    validateInTermRange: null, // Add validation if needed
+    setSelectionError: setSelectionError,
+    getCurrentEditor: getCurrentEditor,
+  });
+
+  const activityManager = useTermItemManager({
+    type: 'activity',
+    dataPath: 'activitiesScore',
+    idField: 'activityId',
+    fieldKeyPrefix: 'TrackedActivity',
+    allItems: houseActivities,
+    removedItemsKey: 'activities',
+    termData: houseTermData,
+    setTermData: setHouseTermData,
+    originalTermData: originalTermData,
+    localChanges: localChanges,
+    setLocalChanges: setLocalChanges,
+    formData: formData,
+    setFormData: setFormData,
+    removedItems: removedItems,
+    setRemovedItems: setRemovedItems,
+    validateInTermRange: null, // Add validation if needed
+    setSelectionError: setSelectionError,
+    getCurrentEditor: getCurrentEditor,
+  });
 
   const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
@@ -258,276 +324,21 @@ export default function Addrepresentative(props) {
     });
   };
 
-  const handleAddVote = (termIndex) => {
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-            ...term,
-            votesScore: [...term.votesScore, { voteId: "", score: "" }],
-          }
-          : term
-      )
-    );
-  };
+  // Use centralized vote manager
+  const handleAddVote = voteManager.handleAdd;
 
-  const handleRemoveVote = (termIndex, voteIndex) => {
-  const voteToRemove = houseTermData[termIndex].votesScore[voteIndex];
-  const removedFieldKey = `term${termIndex}_ScoredVote_${voteIndex + 1}_removed`;
-  const addedFieldKey = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
-  
-  
-  // Check if this was a newly added empty vote (no voteId and no score)
-  const isNewEmptyVote = !voteToRemove?.voteId && (!voteToRemove?.score || voteToRemove.score === "");
-  
-  // Check original data to see if this vote existed in the database
-  const originalTerm = originalTermData[termIndex] || {};
-  const originalVotes = originalTerm.votesScore || [];
-  const originalVoteAtIndex = originalVotes[voteIndex];
-  const existedInOriginal = originalVoteAtIndex && 
-                           (originalVoteAtIndex.voteId || originalVoteAtIndex.score);
-  
+  // Use centralized vote manager
+  const handleRemoveVote = voteManager.handleRemove;
+  // Use centralized vote manager
+  const handleVoteChange = voteManager.handleChange;
 
-  // If the vote has an ID and is being removed, track it (only if it existed in original)
-  if (voteToRemove?.voteId && voteToRemove.voteId.toString().trim() !== "" && existedInOriginal) {
-    const voteItem = votes.find((v) => v._id === voteToRemove.voteId);
-    if (voteItem) {
-      // Add to removed items tracking if needed
-      // Note: You might want to add removedItems state for representative too
-      const decodedToken = jwtDecode(token);
-      const currentEditor = {
-        editorId: decodedToken.userId,
-        editorName: localStorage.getItem("user") || "Unknown Editor",
-        editedAt: new Date().toISOString(),
-      };
+  // Use centralized activity manager
+  const handleAddActivity = activityManager.handleAdd;
 
-      setFormData(prev => ({
-        ...prev,
-        fieldEditors: {
-          ...prev.fieldEditors,
-          [removedFieldKey]: currentEditor
-        }
-      }));
-    }
-  }
-
-  // Single state update for localChanges
-  setLocalChanges((prev) => {
-    let cleanedChanges;
-    
-    if (isNewEmptyVote && !existedInOriginal) {
-      // If it's a newly added empty vote that didn't exist in original, completely remove both addition and removal markers
-      cleanedChanges = prev.filter(
-        (change) =>
-          change !== addedFieldKey &&
-          change !== removedFieldKey
-      );
-      
-    } else if (existedInOriginal) {
-      // For votes that existed in original data, clean up the addition marker and add removal marker
-      cleanedChanges = prev.filter(
-        (change) =>
-          change !== addedFieldKey
-      );
-      // Only add removal marker if it's not already there
-      if (!cleanedChanges.includes(removedFieldKey)) {
-        cleanedChanges = [...cleanedChanges, removedFieldKey];
-      }
-   
-    } else {
-      // For other cases, just clean up the addition marker
-      cleanedChanges = prev.filter(
-        (change) =>
-          change !== addedFieldKey
-      );
-      ('Default cleanup, cleaned changes:', cleanedChanges);
-    }
-    
-    return cleanedChanges;
-  });
-
-  // Remove the vote from the data
-  setHouseTermData((prev) => {
-    return prev.map((term, index) =>
-      index === termIndex
-        ? {
-            ...term,
-            votesScore: term.votesScore.filter((_, i) => i !== voteIndex),
-          }
-        : term
-    );
-  });
-};
-  const handleVoteChange = (termIndex, voteIndex, field, value) => {
-    const voteChangeId = `term${termIndex}_ScoredVote_${voteIndex + 1}`;
-
-    setHouseTermData((prev) => {
-      const newTerms = prev.map((term, index) =>
-        index === termIndex
-          ? {
-            ...term,
-            votesScore: term.votesScore.map((vote, i) =>
-              i === voteIndex ? { ...vote, [field]: value } : vote
-            ),
-          }
-          : term
-      );
-
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-      const isActualChange = compareValues(value, originalVote[field]);
-
-      if (isActualChange && !localChanges.includes(voteChangeId)) {
-        setLocalChanges((prev) => [...prev, voteChangeId]);
-      } else if (!isActualChange && localChanges.includes(voteChangeId)) {
-        setLocalChanges((prev) => prev.filter((f) => f !== voteChangeId));
-      }
-
-      return newTerms;
-    });
-  };
-
-  const handleAddActivity = (termIndex) => {
-    setHouseTermData((prev) =>
-      prev.map((term, index) =>
-        index === termIndex
-          ? {
-            ...term,
-            activitiesScore: [
-              ...term.activitiesScore,
-              { activityId: "", score: "" },
-            ],
-          }
-          : term
-      )
-    );
-  };
-
- const handleRemoveActivity = (termIndex, activityIndex) => {
-  const activityToRemove = houseTermData[termIndex].activitiesScore[activityIndex];
-  const removedFieldKey = `term${termIndex}_TrackedActivity_${activityIndex + 1}_removed`;
-  const addedFieldKey = `term${termIndex}_TrackedActivity_${activityIndex + 1}`;
-  
-  ('=== handleRemoveActivity ===');
-  ('Current localChanges before removal:', localChanges);
-  ('Removing activity with key:', removedFieldKey);
-  ('Activity to remove:', activityToRemove);
-  
-  // Check if this was a newly added empty activity (no activityId and no score)
-  const isNewEmptyActivity = !activityToRemove?.activityId && (!activityToRemove?.score || activityToRemove.score === "");
-  
-  // Check original data to see if this activity existed in the database
-  const originalTerm = originalTermData[termIndex] || {};
-  const originalActivities = originalTerm.activitiesScore || [];
-  const originalActivityAtIndex = originalActivities[activityIndex];
-  const existedInOriginal = originalActivityAtIndex && 
-                           (originalActivityAtIndex.activityId || originalActivityAtIndex.score);
-  
-  ('Is new empty activity:', isNewEmptyActivity);
-  ('Existed in original:', existedInOriginal);
-
-  // If the activity has an ID and is being removed, track it (only if it existed in original)
-  if (activityToRemove?.activityId && activityToRemove.activityId.toString().trim() !== "" && existedInOriginal) {
-    const activityItem = houseActivities.find((a) => a._id === activityToRemove.activityId);
-    if (activityItem) {
-      const decodedToken = jwtDecode(token);
-      const currentEditor = {
-        editorId: decodedToken.userId,
-        editorName: localStorage.getItem("user") || "Unknown Editor",
-        editedAt: new Date().toISOString(),
-      };
-
-      setFormData(prev => ({
-        ...prev,
-        fieldEditors: {
-          ...prev.fieldEditors,
-          [removedFieldKey]: currentEditor
-        }
-      }));
-    }
-  }
-
-  // Single state update for localChanges
-  setLocalChanges((prev) => {
-    let cleanedChanges;
-    
-    if (isNewEmptyActivity && !existedInOriginal) {
-      // If it's a newly added empty activity that didn't exist in original, completely remove both addition and removal markers
-      cleanedChanges = prev.filter(
-        (change) =>
-          change !== addedFieldKey &&
-          change !== removedFieldKey
-      );
-      ('Removing newly added empty activity that never existed, cleaned changes:', cleanedChanges);
-    } else if (existedInOriginal) {
-      // For activities that existed in original data, clean up the addition marker and add removal marker
-      cleanedChanges = prev.filter(
-        (change) =>
-          change !== addedFieldKey
-      );
-      // Only add removal marker if it's not already there
-      if (!cleanedChanges.includes(removedFieldKey)) {
-        cleanedChanges = [...cleanedChanges, removedFieldKey];
-      }
-      ('Removing existing activity from original data, cleaned changes:', cleanedChanges);
-    } else {
-      // For other cases, just clean up the addition marker
-      cleanedChanges = prev.filter(
-        (change) =>
-          change !== addedFieldKey
-      );
-      ('Default cleanup, cleaned changes:', cleanedChanges);
-    }
-    
-    return cleanedChanges;
-  });
-
-  // Remove the activity from the data
-  setHouseTermData((prev) => {
-    return prev.map((term, index) =>
-      index === termIndex
-        ? {
-            ...term,
-            activitiesScore: term.activitiesScore.filter(
-              (_, i) => i !== activityIndex
-            ),
-          }
-        : term
-    );
-  });
-};
-  const handleActivityChange = (termIndex, activityIndex, field, value) => {
-    const activityChangeId = `term${termIndex}_TrackedActivity_${activityIndex + 1
-      }`;
-
-    setHouseTermData((prev) => {
-      const newTerms = prev.map((term, idx) => {
-        if (idx !== termIndex) return term;
-
-        const newActivities = term.activitiesScore.map((activity, i) =>
-          i === activityIndex ? { ...activity, [field]: value } : activity
-        );
-
-        return { ...term, activitiesScore: newActivities };
-      });
-
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalActivity =
-        originalTerm.activitiesScore?.[activityIndex] || {};
-      const isActualChange = compareValues(value, originalActivity[field]);
-
-      setLocalChanges((prevChanges) => {
-        if (isActualChange && !prevChanges.includes(activityChangeId)) {
-          return [...prevChanges, activityChangeId];
-        } else if (!isActualChange && prevChanges.includes(activityChangeId)) {
-          return prevChanges.filter((f) => f !== activityChangeId);
-        }
-        return prevChanges;
-      });
-
-      return newTerms;
-    });
-  };
+  // Use centralized activity manager
+  const handleRemoveActivity = activityManager.handleRemove;
+  // Use centralized activity manager
+  const handleActivityChange = activityManager.handleChange;
 
   const handleAddTerm = () => {
     setHouseTermData((prev) => [
@@ -573,6 +384,8 @@ const handleRemoveTerm = (termIndex) => {
   });
 };
 
+  // Note: This component uses a different compareValues that handles objects
+  // Keeping it local as it has different behavior than the centralized version
   const compareValues = (newVal, oldVal) => {
     if (newVal == null || oldVal == null) return newVal !== oldVal;
     if (typeof newVal !== "object") return newVal !== oldVal;
@@ -766,10 +579,6 @@ const handleRemoveTerm = (termIndex) => {
     }
   }, [formData, originalFormData, houseTermData, originalTermData]);
 
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
-
   useEffect(() => {
     if (!isDataFetching && id && houseData) {
       termPreFill();
@@ -777,9 +586,15 @@ const handleRemoveTerm = (termIndex) => {
   }, [id, houseData, isDataFetching]);
 
   const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar: handleSnackbarOpen,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const preFillForm = () => {
     if (house) {
@@ -799,38 +614,13 @@ const handleRemoveTerm = (termIndex) => {
     }
   };
 
+
+  // Additional cleanup for house data state
   useEffect(() => {
-    const fetchData = async () => {
-      setIsDataFetching(true);
-      try {
-        if (id) {
-          await Promise.all([
-            dispatch(getHouseById(id)),
-            dispatch(getHouseDataByHouseId(id)),
-          ]);
-        }
-        await Promise.all([
-          dispatch(getAllTerms()),
-          dispatch(getAllVotes()),
-          dispatch(getAllActivity()),
-        ]);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setSnackbarMessage("Error loading data. Please try again.");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      } finally {
-        setIsDataFetching(false);
-      }
-    };
-
-    fetchData();
-
     return () => {
-      dispatch(clearHouseState());
       dispatch(clearHouseDataState());
     };
-  }, [id, dispatch]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (!isDataFetching && house) {
@@ -840,87 +630,35 @@ const handleRemoveTerm = (termIndex) => {
 
 
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  // Use centralized form change tracker hook
+  const { handleChange } = useFormChangeTracker({
+    originalFormData,
+    useLocalChanges: true,
+    formData,
+    setFormData,
+    localChanges,
+    setLocalChanges,
+    compareValues,
+  });
 
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-      if (originalFormData) {
-        const isActualChange = compareValues(value, originalFormData[name]);
-
-        setLocalChanges((prevChanges) => {
-          if (isActualChange && !prevChanges.includes(name)) {
-            return [...prevChanges, name];
-          } else if (!isActualChange && prevChanges.includes(name)) {
-            return prevChanges.filter((field) => field !== name);
-          }
-          return prevChanges;
-        });
-      }
-
-      return newData;
-    });
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    const fieldName = "Photo";
-
-    if (!localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    }
-    setFormData((prev) => ({ ...prev, photo: file }));
-  };
+  // Use centralized file upload hook
+  const { handleFileChange } = useFileUpload({
+    setFormData,
+    setLocalChanges,
+    originalFormData,
+    fieldName: "photo",
+  });
 
  const handleSave = async (e) => {
   e.preventDefault();
   setLoading(true);
 
-  const sanitizeKey = (str) => {
-    return str
-      .replace(/[^a-zA-Z0-9_]/g, "_")
-      .replace(/_+/g, "_")
-      .replace(/^_+|_+$/g, "");
-  };
-
   try {
-    const hasSelectedTerms = houseTermData.some(
-      (term) => term.termId && term.termId.toString().trim() !== ""
-    );
-
-    if (!hasSelectedTerms) {
+    // Validate term data using centralized validation
+    const termValidation = validateTermData(houseTermData);
+    if (!termValidation.isValid) {
       setLoading(false);
-      handleSnackbarOpen(
-        "Please select at least one term before saving.",
-        "error"
-      );
-      return;
-    }
-
-    const termIdCounts = houseTermData
-      .map((t) => t.termId)
-      .filter(Boolean)
-      .reduce((acc, id) => {
-        acc[id] = (acc[id] || 0) + 1;
-        return acc;
-      }, {});
-
-    if (Object.values(termIdCounts).some((count) => count > 1)) {
-      setLoading(false);
-      handleSnackbarOpen(
-        "Duplicate term selected. Each term can only be added once.",
-        "error"
-      );
-      return;
-    }
-
-    const currentTerms = houseTermData.filter((term) => term.currentTerm);
-    if (currentTerms.length > 1) {
-      setLoading(false);
-      handleSnackbarOpen(
-        "Only one term can be marked as current term.",
-        "error"
-      );
+      handleSnackbarOpen(termValidation.message, "error");
       return;
     }
 
@@ -936,12 +674,7 @@ const handleRemoveTerm = (termIndex) => {
       return;
     }
 
-    const decodedToken = jwtDecode(token);
-    const currentEditor = {
-      editorId: decodedToken.userId,
-      editorName: localStorage.getItem("user") || "Unknown Editor",
-      editedAt: new Date(),
-    };
+    const currentEditor = getCurrentEditor();
 
     // Delete removed terms first
     if (deletedTermIds.length > 0) {
@@ -1267,10 +1000,8 @@ const handleRemoveTerm = (termIndex) => {
   } catch (error) {
     console.error("Save failed:", error);
     
-    let errorMessage = "Operation failed. Please try again.";
-    if (error?.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error?.code === 11000) {
+    let errorMessage = getErrorMessage(error, "Operation failed. Please try again.");
+    if (error?.code === 11000) {
       errorMessage = "Duplicate entry: This house term already exists.";
     } else if (error?.config?.url?.includes("updateHouse")) {
       errorMessage = "Failed to update house data.";
@@ -1311,18 +1042,7 @@ const handleRemoveTerm = (termIndex) => {
       selectedTerm.congresses.includes(Number(activity.congress))
     );
   };
-  const handleSnackbarOpen = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
+  // Snackbar handlers are now provided by useSnackbar hook
 
   const editorRef = useRef(null);
 
@@ -1430,12 +1150,10 @@ const handleRemoveTerm = (termIndex) => {
       setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.error ||
-        (typeof error === "string"
-          ? error
-          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
+      const errorMessage = getErrorMessage(
+        error,
+        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
+      );
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
     } finally {

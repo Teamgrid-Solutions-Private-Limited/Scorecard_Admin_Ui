@@ -68,16 +68,31 @@ scorecard_admin_ui/
 ```
 
 ## Configuration
-The project includes environment files (.env.production, .env.development) in version control as they only contain:
 
-Public-facing backend URLs
+### Environment Variables
 
-Environment variables should be placed in `.env` file:
+**Important**: Create a `.env` file in the root directory before running the application. You can copy `.env.example` as a template:
+
+```bash
+cp .env.example .env
+```
+
+Required environment variables:
 
 ```env
-VITE_API_BASE_URL=https://api.example.com
-VITE_AUTH_ENDPOINT=/auth
+# Backend API URL
+VITE_API_URL=https://your-api-url.com
+
+# Protected API Key (x-protected-key header)
+# This key is used for authenticated API requests
+# DO NOT commit this value to version control
+VITE_API_PROTECTED_KEY=your-protected-api-key-here
 ```
+
+**Security Note**: 
+- Never commit your `.env` file to version control
+- The `.env` file is already included in `.gitignore`
+- Use different API keys for development and production environments
 
 ## Contributing
 

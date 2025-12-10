@@ -7,6 +7,7 @@ import {
   updateActivityStatus,
   bulkUpdateTrackActivities,
 } from "../redux/reducer/activitySlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import AppTheme from "../../src/shared-theme/AppTheme";
 import { Box, Stack, Typography, Button ,InputAdornment,} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -51,6 +52,8 @@ const xThemeComponents = {
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUserRole } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 
 export default function Activity(props) {
@@ -60,14 +63,19 @@ export default function Activity(props) {
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  
+  // Use centralized snackbar hook
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
   const [selectedVote, setSelectedVote] = useState(null);
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  const token = getToken();
+  const userRole = getUserRole();
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
@@ -148,15 +156,12 @@ export default function Activity(props) {
     try {
       await dispatch(deleteActivity(selectedVote._id)).unwrap();
       await dispatch(getAllActivity());
-      setSnackbarMessage(`This activity has been successfully deleted.`);
-      setSnackbarSeverity("success");
+      showSnackbar(`This activity has been successfully deleted.`, "success");
     } catch (error) {
-      setSnackbarMessage("Failed to delete this activity.");
-      setSnackbarSeverity("error");
+      showSnackbar("Failed to delete this activity.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100);
       setTimeout(() => setProgress(0), 500);
     }
@@ -171,17 +176,13 @@ export default function Activity(props) {
       })
       .catch((error) => {
         console.error("Status update failed:", error);
-        setSnackbarMessage("Failed to update status.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Failed to update status.", "error");
       });
   };
  
   const handleBulkUpdate = async () => {
     if (!selectedTrackActivity.length || !bulkTrackActivity) {
-      setSnackbarMessage("Please select activities and a status");
-      setSnackbarSeverity("warning");
-      setSnackbarOpen(true);
+      showSnackbar("Please select activities and a status", "warning");
       return;
     }
 
@@ -195,12 +196,12 @@ export default function Activity(props) {
         })
       ).unwrap(); 
 
-      setSnackbarMessage(
+      showSnackbar(
         `Successfully updated ${
           result.updatedActivities?.length || selectedTrackActivity.length
-        } activities`
+        } activities`,
+        "success"
       );
-      setSnackbarSeverity("success");
 
      
       setSelectedTrackActivity([]);
@@ -211,11 +212,10 @@ export default function Activity(props) {
       dispatch(getAllActivity());
     } catch (error) {
       console.error("Bulk update failed:", error);
-      setSnackbarMessage(error.message || "Failed to update activities");
-      setSnackbarSeverity("error");
+      const errorMessage = getErrorMessage(error, "Failed to update activities");
+      showSnackbar(errorMessage, "error");
     } finally {
       setFetching(false);
-      setSnackbarOpen(true);
     }
   };
 
@@ -404,11 +404,11 @@ export default function Activity(props) {
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={hideSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
+          onClose={hideSnackbar}
           severity={snackbarSeverity}
           sx={{
             width: "100%",

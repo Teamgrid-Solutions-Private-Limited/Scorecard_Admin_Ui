@@ -23,6 +23,9 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useDispatch } from "react-redux";
 import { addUser, getAllUsers } from "../../redux/reducer/loginSlice";
+import { getErrorMessage } from "../../utils/errorHandler";
+import { validateUserForm } from "../../helpers/validationHelpers";
+import { useSnackbar } from "../../hooks";
 
 const Header = styled(Box)(() => ({
   textAlign: "center",
@@ -58,12 +61,18 @@ function AddUser({ open = false, onClose }) {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,30 +80,9 @@ function AddUser({ open = false, onClose }) {
   };
 
   const validate = () => {
-    const newErrors = {};
-    if (!form.fullName || form.fullName.trim().length < 3) {
-      newErrors.fullName = "Full name is required (min 3 characters)";
-    }
-    if (!form.email) {
-      newErrors.email = "Email is required";
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(form.email)) {
-      newErrors.email = "Invalid email address";
-    }
-    if (!form.password) {
-      newErrors.password = "Password is required";
-    } else if (form.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    }
-    if (!form.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (form.password !== form.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-    if (!form.role || !["admin", "editor", "contributor"].includes(form.role)) {
-      newErrors.role = "Role is required";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const validation = validateUserForm(form, { includePassword: true });
+    setErrors(validation.errors);
+    return validation.isValid;
   };
 
   const handleSubmit = async (e) => {
@@ -104,32 +92,17 @@ function AddUser({ open = false, onClose }) {
 
     try {
       await dispatch(addUser(form)).unwrap();
-      setSnackbarMessage("User created successfully!");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
+      showSnackbar("User created successfully!", "success");
       dispatch(getAllUsers());
       if (onClose) onClose();
     } catch (error) {
-      let message = "Failed to create user. Please try again.";
-      if (typeof error === "string") {
-        message = error;
-      } else if (error && error.message) {
-        message = error.message;
-      } else if (error && error.data && error.data.message) {
-        message = error.data.message;
-      }
-      setSnackbarMessage(message);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      const errorMessage = getErrorMessage(error, "Failed to create user. Please try again.");
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") return;
-    setOpenSnackbar(false);
-  };
 
   return (
     <>

@@ -53,6 +53,8 @@ const xThemeComponents = {
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUserRole } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 export default function Votes(props) {
   const dispatch = useDispatch();
@@ -61,15 +63,19 @@ export default function Votes(props) {
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
-  const token = localStorage.getItem("token");
-
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  const token = getToken();
+  const userRole = getUserRole();
+  
+  // Use centralized snackbar hook
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
@@ -94,25 +100,22 @@ export default function Votes(props) {
 
       if (result.payload) {
         await dispatch(getAllVotes());
-        setSnackbarMessage(
-          `Updated SBA position for ${selectedVotes.length} vote(s)`
+        showSnackbar(
+          `Updated SBA position for ${selectedVotes.length} vote(s)`,
+          "success"
         );
-        setSnackbarSeverity("success");
 
         setSelectedVotes([]);
         setBulkSbaPosition("");
         setIsBulkEditMode(false);
       } else if (result.payload === undefined) {
         // Handle rejection
-        setSnackbarMessage("Failed to update votes");
-        setSnackbarSeverity("error");
+        showSnackbar("Failed to update votes", "error");
       }
     } catch (error) {
-      setSnackbarMessage("Failed to update votes");
-      setSnackbarSeverity("error");
+      showSnackbar("Failed to update votes", "error");
     } finally {
       setFetching(false);
-      setSnackbarOpen(true);
     }
   };
 
@@ -214,15 +217,12 @@ export default function Votes(props) {
     try {
       await dispatch(deleteVote(selectedVote._id));
       await dispatch(getAllVotes());
-      setSnackbarMessage(`This vote has been successfully deleted.`);
-      setSnackbarSeverity("success");
+      showSnackbar(`This vote has been successfully deleted.`, "success");
     } catch (error) {
-      setSnackbarMessage("Failed to delete this vote.");
-      setSnackbarSeverity("error");
+      showSnackbar("Failed to delete this vote.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100);
       setTimeout(() => setProgress(0), 500);
     }
@@ -233,9 +233,7 @@ export default function Votes(props) {
     dispatch(updateVoteStatus({ id: vote._id, status: newStatus }))
       .then(() => dispatch(getAllVotes()))
       .catch(() => {
-        setSnackbarMessage("Failed to update status.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Failed to update status.", "error");
       });
   };
 
@@ -505,11 +503,11 @@ export default function Votes(props) {
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={hideSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
+          onClose={hideSnackbar}
           severity={snackbarSeverity}
           sx={{
             border: "none",

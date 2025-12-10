@@ -5,8 +5,9 @@ import {
   deleteSenator,
   getAllSenators,
   updateSenatorStatus,
-} from "../redux/reducer/senetorSlice";
-import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
+} from "../redux/reducer/senatorSlice";
+import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import {
   Box,
   Stack,
@@ -57,11 +58,13 @@ import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { get } from "lodash";
+import { getToken } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 export default function Senator(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const { senatorData } = useSelector((state) => state.senatorData);
   const {
     senators = [],
@@ -72,9 +75,7 @@ export default function Senator(props) {
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const { open: snackbarOpen, message: snackbarMessage, severity: snackbarSeverity, showSnackbar, hideSnackbar } = useSnackbar();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedSenator, setSelectedSenator] = useState(null);
   const { terms } = useSelector((state) => state.term);
@@ -226,7 +227,7 @@ export default function Senator(props) {
     }, 1000);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) throw new Error("No auth token found");
 
       const result = await dispatch(deleteSenator(selectedSenator._id));
@@ -234,15 +235,13 @@ export default function Senator(props) {
         throw new Error(result.payload.message || "Failed to delete senator");
       }
       await dispatch(getAllSenators());
-      setSnackbarMessage(`${selectedSenator.name} deleted successfully.`);
-      setSnackbarSeverity("success");
+      showSnackbar(`${selectedSenator.name} deleted successfully.`, "success");
     } catch (error) {
-      setSnackbarMessage(error.message || "Failed to delete senator.");
-      setSnackbarSeverity("error");
+      const errorMessage = getErrorMessage(error, "Failed to delete senator.");
+      showSnackbar(errorMessage, "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100);
       setTimeout(() => setProgress(0), 500);
     }
@@ -265,8 +264,7 @@ export default function Senator(props) {
         }
       );
       if (response.status === 200) {
-        setSnackbarMessage("Success: Senators fetched successfully!");
-        setSnackbarSeverity("success");
+        showSnackbar("Success: Senators fetched successfully!", "success");
         await dispatch(getAllSenators());
         setFetching(false);
       } else {
@@ -274,12 +272,10 @@ export default function Senator(props) {
       }
     } catch (error) {
       console.error("Error fetching senators:", error);
-      setSnackbarMessage("Error: Unable to fetch senators.");
-      setSnackbarSeverity("error");
+      showSnackbar("Error: Unable to fetch senators.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100); // Ensure it completes
       setTimeout(() => setProgress(0), 500); // Re
       // setTimeout(() => setProgress(0), 500); // Re
@@ -411,9 +407,7 @@ export default function Senator(props) {
       })
       .catch((error) => {
         console.error("Status update failed:", error);
-        setSnackbarMessage("Failed to update status.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Failed to update status.", "error");
       });
   };
 
@@ -952,11 +946,11 @@ export default function Senator(props) {
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={4000}
-          onClose={() => setSnackbarOpen(false)}
+          onClose={hideSnackbar}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
-            onClose={() => setSnackbarOpen(false)}
+            onClose={hideSnackbar}
             severity={snackbarSeverity}
             sx={{
               border: "none",

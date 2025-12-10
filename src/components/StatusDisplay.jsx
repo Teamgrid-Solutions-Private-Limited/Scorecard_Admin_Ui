@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, List, ListItem, ListItemText } from "@mui/material";
+import { sanitizeKey } from "../helpers/fieldHelpers";
 
 const StatusDisplay = ({
   userRole,
@@ -414,13 +415,6 @@ const StatusDisplay = ({
   };
 
   const getEditorKey = (field) => {
-    const sanitizeKey = (str) => {
-      return str
-        .replace(/[^a-zA-Z0-9_]/g, "_")
-        .replace(/_+/g, "_")
-        .replace(/^_+|_+$/g, "");
-    };
-
     if (typeof field === "object" && field !== null) {
       if (
         Array.isArray(field.field) &&

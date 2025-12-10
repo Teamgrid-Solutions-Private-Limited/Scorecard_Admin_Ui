@@ -6,7 +6,7 @@ import {
   Navigate,
 } from 'react-router-dom';
 
-import SaveSenetors from '../src/Senator/Addsenator';
+import SaveSenators from '../src/Senator/Addsenator';
 import Senator from '../src/Senator/Senator';
 import Representative from '../src/Representative/Representative';
 import SaveRepresentative from '../src/Representative/Addrepresentative';
@@ -22,9 +22,10 @@ import ManageUser from "../src/Authentication/components/ManageUser";
 import LoginPage from './Authentication/components/LoginPage';
 import ActivateAccount from './Authentication/components/ActivateAccount';
 import SearchActivity from "../src/Activity/SearchActivity";
+import { isAuthenticated } from './utils/auth';
+
 const PrivateRoute = ({ element }) => {
-  const token = localStorage.getItem('token');
-  return token ? element : <Navigate to="/login" />;
+  return isAuthenticated() ? element : <Navigate to="/login" />;
 };
 
 export default function App() {
@@ -35,11 +36,11 @@ export default function App() {
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />
         <Route
           path="add-senator"
-          element={<PrivateRoute element={<SaveSenetors />} />}
+          element={<PrivateRoute element={<SaveSenators />} />}
         />
         <Route
           path="edit-senator/:id"
-          element={<PrivateRoute element={<SaveSenetors />} />}
+          element={<PrivateRoute element={<SaveSenators />} />}
         />
         <Route
           path="representative"
