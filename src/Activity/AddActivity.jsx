@@ -13,7 +13,6 @@ import {
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { API_URL } from "../redux/API";
 import { getErrorMessage } from "../utils/errorHandler";
-import { compareValues } from "../helpers/fieldHelpers";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -29,7 +28,6 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { InputAdornment } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
@@ -38,16 +36,10 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
-import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
-import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
-import CheckCircle from "@mui/icons-material/CheckCircle";
-import { jwtDecode } from "jwt-decode";
 import { List, ListItem, ListItemText } from "@mui/material";
 import { useSnackbar, useAuth, useFileUpload, useFormChangeTracker, useEntityData } from "../hooks";
-import CircleIcon from "@mui/icons-material/Circle";
-import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -153,7 +145,6 @@ export default function AddActivity(props) {
   useEffect(() => {
     if (selectedActivity && !isDataFetching) {
       preFillForm();
-      // Only set editedFields from backend on initial load
       // This prevents overwriting local unsaved changes
       if (isInitialLoad.current) {
         setEditedFields(
@@ -166,7 +157,6 @@ export default function AddActivity(props) {
     }
   }, [selectedActivity, isDataFetching]);
 
-  // 3. When formData changes, update editedFields (track all changes)
   useEffect(() => {
     if (originalFormData && formData) {
       const changes = [];
@@ -335,13 +325,13 @@ export default function AddActivity(props) {
         ).unwrap();
         if (readMoreType === "url") {
           setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
-          setReadMoreType("url"); // force back to URL mode
+          setReadMoreType("url"); 
         } else if (readMoreType === "file" && selectedFile) {
           setFormData((prev) => ({
             ...prev,
             readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
           }));
-          setReadMoreType("file"); // stay in file mode
+          setReadMoreType("file");
         }
         await dispatch(getActivityById(id)).unwrap();
 
@@ -355,7 +345,6 @@ export default function AddActivity(props) {
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
         } else {
-          // Only clear locally if status is published
           if (finalStatus === "published") {
             setEditedFields([]);
           }
@@ -389,7 +378,7 @@ export default function AddActivity(props) {
           console.error("Activity (_id) is missing in the API response.");
         }
 
-        setHasLocalChanges(false); // Reset after save
+        setHasLocalChanges(false); 
         setEditedFields([]);
 
         setOriginalFormData({ ...formData, status: finalStatus });
@@ -419,11 +408,9 @@ export default function AddActivity(props) {
       setLoading(true);
       await dispatch(discardActivityChanges(id)).unwrap();
 
-      // Refresh the data
       await dispatch(getActivityById(id));
       showSnackbar("Changes discarded successfully", "success");
 
-      // Reset selectedFile state
       setSelectedFile(null);
     } catch (error) {
       console.error("Discard failed:", error);
