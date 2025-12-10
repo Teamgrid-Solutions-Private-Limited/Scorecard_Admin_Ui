@@ -1530,16 +1530,12 @@ useEffect(() => {
     compareValues,
   });
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    const fieldName = "Photo";
-
-    if (!localChanges.includes(fieldName)) {
-      setLocalChanges((prev) => [...prev, fieldName]);
-    }
-
-    setFormData((prev) => ({ ...prev, photo: file }));
-  };
+  // Use centralized file upload hook
+  const { handleFileChange } = useFileUpload({
+    setFormData,
+    setLocalChanges,
+    fieldName: "photo",
+  });
 
   const handleStatusChange = (status) => {
     const fieldName = "status";

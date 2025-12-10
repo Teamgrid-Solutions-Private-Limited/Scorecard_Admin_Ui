@@ -313,12 +313,12 @@ const useFormChangeTracker = (originalFormData, compareValues) => {
 ### 5. **File Upload Handlers** (Duplicated across multiple files)
 
 **Location:**
-- `src/Senator/Addsenator.jsx` (lines 1930-1939) ⏳ **PENDING**
-- `src/Representative/Addrepresentative.jsx` (lines 870-878) ⏳ **PENDING**
-- `src/Activity/AddActivity.jsx` (lines 268-291) ✅ **REFACTORED** - Using `useFileUpload` hook
-- `src/votes/AddVote.jsx` (lines 359-383) ✅ **REFACTORED** - Using `useFileUpload` hook
+- `src/Senator/Addsenator.jsx` (lines 1533-1542) ⏳ **PENDING** - Still has custom `handleFileChange`
+- `src/Representative/Addrepresentative.jsx` (line 645) ✅ **REFACTORED** - Using `useFileUpload` hook
+- `src/Activity/AddActivity.jsx` (line 245) ✅ **REFACTORED** - Using `useFileUpload` hook
+- `src/votes/AddVote.jsx` (line 349) ✅ **REFACTORED** - Using `useFileUpload` hook
 
-**Status:** ✅ **PARTIALLY COMPLETED** - Hook created and integrated in 2/4 files
+**Status:** ⏳ **PARTIALLY COMPLETED** - Hook created and integrated in 3/4 files (Addsenator.jsx still needs refactoring)
 
 **Pattern:**
 ```javascript
@@ -412,17 +412,20 @@ const useEntityData = (entityType, id, dispatch) => {
 
 **Location:**
 - `src/Senator/Addsenator.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
-- `src/Representative/Addrepresentative.jsx` ✅ **COMPLETED**
-- `src/Activity/AddActivity.jsx` ✅ **COMPLETED**
-- `src/votes/AddVote.jsx` ✅ **COMPLETED**
-- `src/Authentication/components/AddUser.jsx` ✅ **COMPLETED**
-- `src/Authentication/components/LoginPage.jsx` ✅ **COMPLETED**
-- `src/Authentication/components/ManageUser.jsx` ❌ **PENDING**
-- `src/Authentication/components/SignIn.jsx` ✅ **COMPLETED**
-- `src/Manageterm/ManageTerm.jsx` ✅ **COMPLETED**
-- `src/Activity/SearchActivity.jsx` ❌ **PENDING**
-- `src/votes/SearchVotes.jsx` ❌ **PENDING**
-- And more...
+- `src/Representative/Addrepresentative.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/Activity/AddActivity.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/votes/AddVote.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/Authentication/components/AddUser.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/Authentication/components/LoginPage.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/Authentication/components/ManageUser.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/Authentication/components/SignIn.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/Manageterm/ManageTerm.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/Activity/SearchActivity.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/votes/SearchVotes.jsx` ✅ **REFACTORED** - Using `useSnackbar` hook
+- `src/votes/Votes.jsx` ❌ **PENDING** - Still has duplicate snackbar state (lines 65-67)
+- `src/Senator/Senator.jsx` ❌ **PENDING** - Still has duplicate snackbar state (lines 77-79)
+- `src/Representative/Representative.jsx` ❌ **PENDING** - Still has duplicate snackbar state (lines 64-66)
+- `src/Activity/Activity.jsx` ❌ **PENDING** - Still has duplicate snackbar state (lines 65-67)
 
 **Pattern:**
 ```javascript
@@ -667,9 +670,9 @@ const VisuallyHiddenInput = styled("input")({
 | Change Handlers | ~120 | 1 (Addsenator.jsx) | ✅ **COMPLETED** |
 | Add Handlers | ~36 | 1 (Addsenator.jsx) | ✅ **COMPLETED** |
 | Form Change Handlers | ~80 | 4+ | ✅ **COMPLETED** (integrated in all 4 files) |
-| File Upload Handlers | ~40 | 4+ | ✅ **COMPLETED** (integrated in AddActivity.jsx, AddVote.jsx) |
-| Data Fetching Patterns | ~120 | 4+ | ✅ **COMPLETED** (integrated in AddActivity.jsx, AddVote.jsx, Addsenator.jsx, Addrepresentative.jsx) |
-| Snackbar Management | ~165 | 11+ | ✅ **COMPLETED** (8/11+ files done) |
+| File Upload Handlers | ~40 | 4+ | ⏳ **PARTIALLY COMPLETED** (3/4 files - Addsenator.jsx pending) |
+| Data Fetching Patterns | ~120 | 4+ | ✅ **COMPLETED** (integrated in all 4 files) |
+| Snackbar Management | ~165 | 15+ | ⏳ **PARTIALLY COMPLETED** (11/15 files done, 4 list pages pending) |
 | Form Submission | ~200-500 | 4+ | ⏳ **PENDING** |
 | Editor Change Handlers | ~30 | 2 | ⏳ **PENDING** |
 | Date Range Validation | ~30 | 1 | ⏳ **PENDING** |
@@ -798,7 +801,11 @@ const { handleRemove: handleRemoveVote, handleAdd: handleAddVote } =
   - Snackbar management → `useSnackbar`
 
 ### Files Still Needing Refactoring
-- ❌ **Other files** (6+ files) - Snackbar management
+- ❌ **Addsenator.jsx** - File upload handler (line 1533) - Should use `useFileUpload` hook
+- ❌ **Votes.jsx** - Snackbar state management (lines 65-67) - Should use `useSnackbar` hook
+- ❌ **Senator.jsx** - Snackbar state management (lines 77-79) - Should use `useSnackbar` hook
+- ❌ **Representative.jsx** - Snackbar state management (lines 64-66) - Should use `useSnackbar` hook
+- ❌ **Activity.jsx** - Snackbar state management (lines 65-67) - Should use `useSnackbar` hook
 
 See `REFACTORING_STATUS.md` for detailed status.
 
@@ -807,7 +814,8 @@ See `REFACTORING_STATUS.md` for detailed status.
 *Report generated: $(date)*
 *Analyzed files: 20+ files across the codebase*
 *Last updated: $(date)*
-*Progress: 8 of 11+ files completed (~73%)*
+*Progress: 11 of 15+ files completed (~73%)*
 *Total lines removed: ~1,172+ lines of duplicate code*
-*Last major update: Form change handlers integrated in all 4 main files*
+*Remaining duplicates: 5 files (1 file upload handler, 4 snackbar state patterns)*
+*Last major update: Verified all refactored files and identified remaining duplicates*
 
