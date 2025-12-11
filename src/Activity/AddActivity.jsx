@@ -12,6 +12,7 @@ import {
 } from "../redux/reducer/activitySlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { API_URL } from "../redux/API";
+import { getErrorMessage } from "../utils/errorHandler";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -27,7 +28,6 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { Editor } from "@tinymce/tinymce-react";
-import Copyright from "../../src/Dashboard/internals/components/Copyright";
 import { InputAdornment } from "@mui/material";
 import FixedHeader from "../components/FixedHeader";
 import Snackbar from "@mui/material/Snackbar";
@@ -36,15 +36,10 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
-import { Chip } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
-import Verified from "@mui/icons-material/Verified";
 import { Drafts } from "@mui/icons-material";
-import CheckCircle from "@mui/icons-material/CheckCircle";
-import { jwtDecode } from "jwt-decode";
 import { List, ListItem, ListItemText } from "@mui/material";
-import CircleIcon from "@mui/icons-material/Circle";
-import HourglassEmpty from "@mui/icons-material/HourglassEmpty";
+import { useSnackbar, useAuth, useFileUpload, useFormChangeTracker, useEntityData } from "../hooks";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -63,7 +58,6 @@ export default function AddActivity(props) {
   const dispatch = useDispatch();
   const { activity: selectedActivity } = useSelector((state) => state.activity);
   const { terms } = useSelector((state) => state.term);
-  const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -77,15 +71,8 @@ export default function AddActivity(props) {
   const [fieldEditors, setFieldEditors] = useState({});
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  // Defensive userRole extraction
-  const token = localStorage.getItem("token");
-  let userRole = "";
-  try {
-    const decodedToken = jwtDecode(token);
-    userRole = decodedToken.role;
-  } catch (e) {
-    userRole = "";
-  }
+  // Use centralized auth hook
+  const { token, userRole, getCurrentEditor } = useAuth();
 
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
@@ -95,6 +82,15 @@ export default function AddActivity(props) {
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const [readMoreType, setReadMoreType] = useState("file"); // 'url' or 'file'
   const navigate = useNavigate();
+
+  // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)
+  const { isDataFetching, setIsDataFetching } = useEntityData({
+    dispatch,
+    id,
+    getAllTerms,
+    getEntityById: id ? getActivityById : null,
+    clearEntityState: clearActivityState,
+  });
 
   const fieldLabels = {
     type: "Type",
@@ -107,6 +103,7 @@ export default function AddActivity(props) {
     status: "Status",
   };
 
+  // Custom compareValues that excludes status field from comparison
   const compareValues = (newVal, oldVal, fieldName) => {
     if (fieldName === "status") return false;
     if (typeof newVal === "string" && typeof oldVal === "string") {
@@ -148,7 +145,6 @@ export default function AddActivity(props) {
   useEffect(() => {
     if (selectedActivity && !isDataFetching) {
       preFillForm();
-      // Only set editedFields from backend on initial load
       // This prevents overwriting local unsaved changes
       if (isInitialLoad.current) {
         setEditedFields(
@@ -161,7 +157,6 @@ export default function AddActivity(props) {
     }
   }, [selectedActivity, isDataFetching]);
 
-  // 3. When formData changes, update editedFields (track all changes)
   useEffect(() => {
     if (originalFormData && formData) {
       const changes = [];
@@ -178,30 +173,12 @@ export default function AddActivity(props) {
     }
   }, [formData, originalFormData]);
 
+  // Additional cleanup for selectedFile
   useEffect(() => {
-    const fetchData = async () => {
-      setIsDataFetching(true);
-      try {
-        await dispatch(getAllTerms()).unwrap();
-        if (id) {
-          await Promise.all([dispatch(getActivityById(id)).unwrap()]);
-        }
-        return () => {
-          dispatch(clearActivityState());
-          setSelectedFile(null);
-        };
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setSnackbarMessage("Error loading data. Please try again.");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      } finally {
-        setIsDataFetching(false);
-      }
+    return () => {
+      setSelectedFile(null);
     };
-
-    fetchData();
-  }, [id, dispatch]);
+  }, []);
 
   const editorRef = useRef(null);
   const isInitialLoad = useRef(true);
@@ -225,24 +202,16 @@ export default function AddActivity(props) {
     }));
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-
-      if (originalFormData) {
-        const changes = Object.keys(newData).filter((key) =>
-          compareValues(newData[key], originalFormData[key])
-        );
-        setEditedFields(changes);
-      }
-
-      return newData;
-    });
-  };
+  // Use centralized form change tracker hook
+  const { handleChange } = useFormChangeTracker({
+    originalFormData,
+    useLocalChanges: false, // Uses editedFields instead
+    formData,
+    setFormData,
+    editedFields,
+    setEditedFields,
+    compareValues,
+  });
 
   const handleEditorChange = (content, fieldName) => {
     if (!hasLocalChanges) {
@@ -262,6 +231,14 @@ export default function AddActivity(props) {
     });
   };
 
+  // Use centralized file upload hook
+  const { handleReadMoreFileUpload } = useFileUpload({
+    setFormData,
+    setEditedFields,
+    originalFormData,
+    fieldName: "readMore",
+  });
+
   const handleFileUpload = (event) => {
     if (!hasLocalChanges) {
       setHasLocalChanges(true);
@@ -269,34 +246,19 @@ export default function AddActivity(props) {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-
-      setFormData((prev) => ({
-        ...prev,
-        readMore: file.name,
-      }));
-
-      if (originalFormData && file.name !== originalFormData.readMore) {
-        const changes = Object.keys(formData).filter((key) => {
-          if (key === "readMore") {
-            return file.name !== originalFormData.readMore;
-          }
-          return compareValues(formData[key], originalFormData[key]);
-        });
-        setEditedFields(changes);
-      }
+      handleReadMoreFileUpload(event, "file");
     }
   };
   const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
+  
+  // Use centralized snackbar hook
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -321,12 +283,7 @@ export default function AddActivity(props) {
       const mergedEditedFields = Array.from(
         new Set([...backendEditedFields, ...editedFields])
       );
-      const decodedToken = jwtDecode(token);
-      const currentEditor = {
-        editorId: decodedToken.userId,
-        editorName: localStorage.getItem("user") || "Unknown Editor",
-        editedAt: new Date(),
-      };
+      const currentEditor = getCurrentEditor();
 
       // Create updated fieldEditors map
       const updatedFieldEditors = { ...(selectedActivity?.fieldEditors || {}) };
@@ -358,11 +315,7 @@ export default function AddActivity(props) {
         if (!hasChanges) {
           setLoading(false);
 
-          setSnackbarMessage("No changes detected. Nothing to update.");
-
-          setSnackbarSeverity("info");
-
-          setOpenSnackbar(true);
+          showSnackbar("No changes detected. Nothing to update.", "info");
 
           return;
         }
@@ -372,38 +325,35 @@ export default function AddActivity(props) {
         ).unwrap();
         if (readMoreType === "url") {
           setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
-          setReadMoreType("url"); // force back to URL mode
+          setReadMoreType("url"); 
         } else if (readMoreType === "file" && selectedFile) {
           setFormData((prev) => ({
             ...prev,
             readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
           }));
-          setReadMoreType("file"); // stay in file mode
+          setReadMoreType("file");
         }
         await dispatch(getActivityById(id)).unwrap();
 
-        setSnackbarMessage(
+        showSnackbar(
           userRole === "admin"
             ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
+            : 'Status changed to "Under Review" for admin to moderate.',
+          "success"
         );
-        setSnackbarSeverity("success");
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
         } else {
-          // Only clear locally if status is published
           if (finalStatus === "published") {
             setEditedFields([]);
           }
         }
       } else {
         if (!formData.type || !formData.title || !formData.shortDesc) {
-          setSnackbarMessage("Please fill all fields!");
-          setSnackbarSeverity("warning");
-          setOpenSnackbar(true);
-          setLoading(false);
-          return;
+        showSnackbar("Please fill all fields!", "warning");
+        setLoading(false);
+        return;
         }
 
         const result = await dispatch(createActivity(formDataToSend)).unwrap();
@@ -418,8 +368,7 @@ export default function AddActivity(props) {
           }));
           setReadMoreType("file");
         }
-        setSnackbarMessage("Activity created successfully!");
-        setSnackbarSeverity("success");
+        showSnackbar("Activity created successfully!", "success");
 
         if (newActivityId) {
           setTimeout(() => {
@@ -429,18 +378,16 @@ export default function AddActivity(props) {
           console.error("Activity (_id) is missing in the API response.");
         }
 
-        setHasLocalChanges(false); // Reset after save
+        setHasLocalChanges(false); 
         setEditedFields([]);
 
         setOriginalFormData({ ...formData, status: finalStatus });
       }
 
-      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
-      setSnackbarMessage(`Operation failed: ${error.message || error}`);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      const errorMessage = getErrorMessage(error, "Operation failed");
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -448,9 +395,7 @@ export default function AddActivity(props) {
 
   const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No house selected");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar("No house selected", "error");
       return;
     }
     setOpenDiscardDialog(true);
@@ -463,23 +408,15 @@ export default function AddActivity(props) {
       setLoading(true);
       await dispatch(discardActivityChanges(id)).unwrap();
 
-      // Refresh the data
       await dispatch(getActivityById(id));
-      setSnackbarMessage("Changes discarded successfully");
-      setSnackbarSeverity("success");
+      showSnackbar("Changes discarded successfully", "success");
 
-      // Reset selectedFile state
       setSelectedFile(null);
     } catch (error) {
       console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string" ? error : "Failed to discard changes");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
+      const errorMessage = getErrorMessage(error, "Failed to discard changes");
+      showSnackbar(errorMessage, "error");
     } finally {
-      setOpenSnackbar(true);
       setLoading(false);
     }
   };

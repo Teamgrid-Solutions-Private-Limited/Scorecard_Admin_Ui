@@ -13,18 +13,12 @@ import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 
 const mainListItems = [
   { text: "Senate", icon: <HomeRoundedIcon />, link: "/" },
-  // { text: "Add Senator", icon: <PeopleRoundedIcon />, link: "/add-senator" },
   {
     text: "Representative",
     icon: <AnalyticsRoundedIcon />,
     link: "/representative",
   },
-  // {
-  //   text: "Add Representative",
-  //   icon: <AnalyticsRoundedIcon />,
-  //   link: "/add-representative",
-  // },
-  { text: "Bill We Track", icon: <PeopleRoundedIcon />, link: "/bills" },
+  { text: "Vote We Track", icon: <PeopleRoundedIcon />, link: "/votes" },
 ];
 
 export default function MenuContent() {
@@ -37,8 +31,8 @@ export default function MenuContent() {
       <List dense>
         {mainListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: "block" }}>
-            <ListItemButton 
-              component={NavLink} 
+            <ListItemButton
+              component={NavLink}
               to={item.link}
               sx={{
                 '&:hover': {
@@ -63,25 +57,25 @@ export default function MenuContent() {
       </List>
       <List dense>
         <ListItem disablePadding sx={{ display: "block" }}>
-            <ListItemButton
-              component={NavLink}
-              to="/login"
-              onClick={handleLogout}
-              sx={{
-                '&:hover': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
-                },
-                '&.active': {
-                  color: '#CC9A3A !important',
-                  '& .MuiListItemIcon-root': {
-                    color: '#CC9A3A !important'
-                  }
+          <ListItemButton
+            component={NavLink}
+            to="/login"
+            onClick={handleLogout}
+            sx={{
+              '&:hover': {
+                color: '#CC9A3A !important',
+                '& .MuiListItemIcon-root': {
+                  color: '#CC9A3A !important'
                 }
-              }}
-            >
+              },
+              '&.active': {
+                color: '#CC9A3A !important',
+                '& .MuiListItemIcon-root': {
+                  color: '#CC9A3A !important'
+                }
+              }
+            }}
+          >
             <ListItemIcon>
               <SettingsRoundedIcon />
             </ListItemIcon>

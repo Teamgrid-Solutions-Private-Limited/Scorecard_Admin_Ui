@@ -5,8 +5,9 @@ import {
   deleteSenator,
   getAllSenators,
   updateSenatorStatus,
-} from "../redux/reducer/senetorSlice";
-import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
+} from "../redux/reducer/senatorSlice";
+import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
+import { getErrorMessage } from "../utils/errorHandler";
 import {
   Box,
   Stack,
@@ -52,16 +53,16 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 import { getAllTerms } from "../redux/reducer/termSlice";
-import { useTheme } from "@mui/material/styles";
 import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
-import { get } from "lodash";
+import { getToken } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 export default function Senator(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const { senatorData } = useSelector((state) => state.senatorData);
   const {
     senators = [],
@@ -72,9 +73,7 @@ export default function Senator(props) {
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const { open: snackbarOpen, message: snackbarMessage, severity: snackbarSeverity, showSnackbar, hideSnackbar } = useSnackbar();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedSenator, setSelectedSenator] = useState(null);
   const { terms } = useSelector((state) => state.term);
@@ -122,64 +121,64 @@ export default function Senator(props) {
     dispatch(getAllTerms());
   }, [dispatch]);
 
- useEffect(() => {
-  if (senatorData && senators && terms) {
-    const senatorDataBySenateId = {};
-    senatorData.forEach((data) => {
-      if (!senatorDataBySenateId[data.senateId]) {
-        senatorDataBySenateId[data.senateId] = [];
-      }
-      senatorDataBySenateId[data.senateId].push(data);
-    });
+  useEffect(() => {
+    if (senatorData && senators && terms) {
+      const senatorDataBySenateId = {};
+      senatorData.forEach((data) => {
+        if (!senatorDataBySenateId[data.senateId]) {
+          senatorDataBySenateId[data.senateId] = [];
+        }
+        senatorDataBySenateId[data.senateId].push(data);
+      });
 
-    const merged = senators.map((senator) => {
-      const dataEntries = senatorDataBySenateId[senator._id] || [];
-      
+      const merged = senators.map((senator) => {
+        const dataEntries = senatorDataBySenateId[senator._id] || [];
 
-      const hasPastVotesData = dataEntries.some(
-        (data) => data.pastVotesScore && data.pastVotesScore.length > 0
-      );
-      
-      const allRatings = dataEntries
-        .map(data => data.rating)
-        .filter(rating => rating && rating !== "N/A");
-      
-      const displayRating = allRatings.length > 0 
-        ? allRatings[allRatings.length - 1] 
-        : "N/A";
-      
 
-      const senatorTerms = dataEntries.map(data => {
-        const termObj = terms.find((t) => t._id === data.termId);
+        const hasPastVotesData = dataEntries.some(
+          (data) => data.pastVotesScore && data.pastVotesScore.length > 0
+        );
+
+        const allRatings = dataEntries
+          .map(data => data.rating)
+          .filter(rating => rating && rating !== "N/A");
+
+        const displayRating = allRatings.length > 0
+          ? allRatings[allRatings.length - 1]
+          : "N/A";
+
+
+        const senatorTerms = dataEntries.map(data => {
+          const termObj = terms.find((t) => t._id === data.termId);
+          return {
+            termId: data.termId,
+            termName: termObj ? termObj.name : "",
+            currentTerm: data.currentTerm,
+            rating: data.rating,
+            votesScore: data.votesScore,
+            pastVotesScore: data.pastVotesScore
+          };
+        });
+
+
+        const hasCurrentTerm = dataEntries.some(data => data.currentTerm === true);
+
         return {
-          termId: data.termId,
-          termName: termObj ? termObj.name : "",
-          currentTerm: data.currentTerm,
-          rating: data.rating,
-          votesScore: data.votesScore,
-          pastVotesScore: data.pastVotesScore
+          ...senator,
+          rating: displayRating,
+          allDataEntries: dataEntries,
+          allTerms: senatorTerms,
+          hasPastVotesData: hasPastVotesData,
+          hasCurrentTerm: hasCurrentTerm,
+          termId: dataEntries.length > 0 ? dataEntries[0].termId : senator.termId,
+          votesScore: dataEntries.length > 0 ? dataEntries[0].votesScore : [],
+          pastVotesScore: dataEntries.length > 0 ? dataEntries[0].pastVotesScore : [],
+          currentTerm: hasCurrentTerm
         };
       });
-      
-
-      const hasCurrentTerm = dataEntries.some(data => data.currentTerm === true);
-      
-      return {
-        ...senator,
-        rating: displayRating,
-        allDataEntries: dataEntries,
-        allTerms: senatorTerms,
-        hasPastVotesData: hasPastVotesData,
-        hasCurrentTerm: hasCurrentTerm,
-        termId: dataEntries.length > 0 ? dataEntries[0].termId : senator.termId,
-        votesScore: dataEntries.length > 0 ? dataEntries[0].votesScore : [],
-        pastVotesScore: dataEntries.length > 0 ? dataEntries[0].pastVotesScore : [],
-        currentTerm: hasCurrentTerm
-      };
-    });
-    setMergedSenators(merged);
-  }
-}, [senators, senatorData, terms]);
+      setMergedSenators(merged);
+    }
+  }, [senators, senatorData, terms]);
 
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -214,8 +213,8 @@ export default function Senator(props) {
     navigate(`/edit-senator/${row._id}`);
   };
   const handleDeleteClick = (row) => {
-    setSelectedSenator(row); 
-    setOpenDeleteDialog(true); 
+    setSelectedSenator(row);
+    setOpenDeleteDialog(true);
   };
   const handleConfirmDelete = async () => {
     setOpenDeleteDialog(false);
@@ -226,7 +225,7 @@ export default function Senator(props) {
     }, 1000);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) throw new Error("No auth token found");
 
       const result = await dispatch(deleteSenator(selectedSenator._id));
@@ -234,15 +233,13 @@ export default function Senator(props) {
         throw new Error(result.payload.message || "Failed to delete senator");
       }
       await dispatch(getAllSenators());
-      setSnackbarMessage(`${selectedSenator.name} deleted successfully.`);
-      setSnackbarSeverity("success");
+      showSnackbar(`${selectedSenator.name} deleted successfully.`, "success");
     } catch (error) {
-      setSnackbarMessage(error.message || "Failed to delete senator.");
-      setSnackbarSeverity("error");
+      const errorMessage = getErrorMessage(error, "Failed to delete senator.");
+      showSnackbar(errorMessage, "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100);
       setTimeout(() => setProgress(0), 500);
     }
@@ -250,10 +247,10 @@ export default function Senator(props) {
 
   const fetchSenatorsFromQuorum = async () => {
     setFetching(true);
-    setProgress(0); 
+    setProgress(0);
     const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 25)); 
-    }, 1000); 
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
+    }, 1000);
     try {
       const response = await axios.post(
         `${API_URL}/fetch-quorum/store-data`,
@@ -265,8 +262,7 @@ export default function Senator(props) {
         }
       );
       if (response.status === 200) {
-        setSnackbarMessage("Success: Senators fetched successfully!");
-        setSnackbarSeverity("success");
+        showSnackbar("Success: Senators fetched successfully!", "success");
         await dispatch(getAllSenators());
         setFetching(false);
       } else {
@@ -274,15 +270,12 @@ export default function Senator(props) {
       }
     } catch (error) {
       console.error("Error fetching senators:", error);
-      setSnackbarMessage("Error: Unable to fetch senators.");
-      setSnackbarSeverity("error");
+      showSnackbar("Error: Unable to fetch senators.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100); // Ensure it completes
       setTimeout(() => setProgress(0), 500); // Re
-      // setTimeout(() => setProgress(0), 500); // Re
     }
   };
 
@@ -298,8 +291,8 @@ export default function Senator(props) {
     );
   };
   const handlePastVotesFilter = () => {
-  setHasPastVotesFilter((prev) => !prev);
-};
+    setHasPastVotesFilter((prev) => !prev);
+  };
 
   const handleRatingFilter = (rating) => {
     setRatingFilter((prev) =>
@@ -337,61 +330,61 @@ export default function Senator(props) {
   };
 
   const filteredSenators = mergedSenators.filter((senator) => {
-  // Term filter logic - check all terms
-  if (termFilter === "current") {
-    if (!senator.hasCurrentTerm) return false;
-  } else if (termFilter === "past") {
-    if (senator.hasCurrentTerm) return false;
-  }
-  
+    // Term filter logic - check all terms
+    if (termFilter === "current") {
+      if (!senator.hasCurrentTerm) return false;
+    } else if (termFilter === "past") {
+      if (senator.hasCurrentTerm) return false;
+    }
 
-  if (selectedYears.length > 0) {
-    const hasMatchingYear = senator.allTerms.some(term => {
-      if (term.termName && term.termName.includes("-")) {
-        const [start, end] = term.termName.split("-").map(Number);
-        return selectedYears.some(year => {
-          const yearNum = Number(year);
-          return yearNum >= start && yearNum <= end;
-        });
-      }
-      return false;
-    });
-    if (!hasMatchingYear) return false;
-  }
 
-  const nameMatch = searchQuery
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean)
-    .every((word) => senator.name.toLowerCase().includes(word));
+    if (selectedYears.length > 0) {
+      const hasMatchingYear = senator.allTerms.some(term => {
+        if (term.termName && term.termName.includes("-")) {
+          const [start, end] = term.termName.split("-").map(Number);
+          return selectedYears.some(year => {
+            const yearNum = Number(year);
+            return yearNum >= start && yearNum <= end;
+          });
+        }
+        return false;
+      });
+      if (!hasMatchingYear) return false;
+    }
 
-  const partyMatch =
-    partyFilter.length === 0 || partyFilter.includes(senator.party);
+    const nameMatch = searchQuery
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .every((word) => senator.name.toLowerCase().includes(word));
 
-  // State filter
-  const stateMatch =
-    stateFilter.length === 0 || stateFilter.includes(senator.state);
+    const partyMatch =
+      partyFilter.length === 0 || partyFilter.includes(senator.party);
 
-  // Rating filter - check all terms
-  const ratingMatch =
-    ratingFilter.length === 0 ||
-    senator.allTerms.some(term => 
-      term.rating && ratingFilter.includes(term.rating)
-    );
+    // State filter
+    const stateMatch =
+      stateFilter.length === 0 || stateFilter.includes(senator.state);
 
-  // Status filter
-  const statusMatch =
-    statusFilter.length === 0 ||
-    (senator.publishStatus && statusFilter.includes(senator.publishStatus));
+    // Rating filter - check all terms
+    const ratingMatch =
+      ratingFilter.length === 0 ||
+      senator.allTerms.some(term =>
+        term.rating && ratingFilter.includes(term.rating)
+      );
 
-  // Past votes score filter - check all terms
-  const pastVotesMatch = 
-    !hasPastVotesFilter || 
-    senator.hasPastVotesData;
+    // Status filter
+    const statusMatch =
+      statusFilter.length === 0 ||
+      (senator.publishStatus && statusFilter.includes(senator.publishStatus));
 
-  return nameMatch && partyMatch && stateMatch && ratingMatch && statusMatch && pastVotesMatch;
-});
-  
+    // Past votes score filter - check all terms
+    const pastVotesMatch =
+      !hasPastVotesFilter ||
+      senator.hasPastVotesData;
+
+    return nameMatch && partyMatch && stateMatch && ratingMatch && statusMatch && pastVotesMatch;
+  });
+
   const activeFilterCount =
     partyFilter.length +
     stateFilter.length +
@@ -399,7 +392,7 @@ export default function Senator(props) {
     selectedYears.length +
     (termFilter ? 1 : 0) +
     statusFilter.length +
-     (hasPastVotesFilter ? 1 : 0);
+    (hasPastVotesFilter ? 1 : 0);
 
   const handleToggleStatusSenator = (senator) => {
     const newStatus =
@@ -411,9 +404,7 @@ export default function Senator(props) {
       })
       .catch((error) => {
         console.error("Status update failed:", error);
-        setSnackbarMessage("Failed to update status.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Failed to update status.", "error");
       });
   };
 
@@ -506,9 +497,8 @@ export default function Senator(props) {
 
                         {/* Party Filter */}
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "party" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "party" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -564,9 +554,8 @@ export default function Senator(props) {
 
                         {/* State Filter */}
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "state" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "state" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -639,9 +628,8 @@ export default function Senator(props) {
 
                         {/* Rating Filter */}
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "rating" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "rating" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -696,9 +684,8 @@ export default function Senator(props) {
 
                         {/* Year Filter */}
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "year" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "year" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -775,9 +762,8 @@ export default function Senator(props) {
 
                         {/* Term Filter */}
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "term" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "term" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -821,9 +807,8 @@ export default function Senator(props) {
 
                         {/* Status Filter */}
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "status" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "status" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -865,41 +850,40 @@ export default function Senator(props) {
                         </Box>
 
                         <Box
-  className={`filter-section ${
-    expandedFilter === "pastVotes" ? "active" : ""
-  }`}
->
-  <Box
-    className="filter-title"
-    onClick={() => toggleFilterSection("pastVotes")}
-  >
-    <Typography variant="body1">Past Votes</Typography>
-    {expandedFilter === "pastVotes" ? (
-      <ExpandLessIcon />
-    ) : (
-      <ExpandMoreIcon />
-    )}
-  </Box>
-  {expandedFilter === "pastVotes" && (
-    <Box sx={{ py: 1, pt: 0 }}>
-      <Box className="filter-scroll">
-        <Box
-          onClick={handlePastVotesFilter}
-          className="filter-option"
-        >
-          {hasPastVotesFilter ? (
-            <CheckIcon color="primary" fontSize="small" />
-          ) : (
-            <Box sx={{ width: 24, height: 24 }} />
-          )}
-          <Typography variant="body2" sx={{ ml: 1 }}>
-            Past Term Votes 
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
-  )}
-</Box>
+                          className={`filter-section ${expandedFilter === "pastVotes" ? "active" : ""
+                            }`}
+                        >
+                          <Box
+                            className="filter-title"
+                            onClick={() => toggleFilterSection("pastVotes")}
+                          >
+                            <Typography variant="body1">Past Votes</Typography>
+                            {expandedFilter === "pastVotes" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "pastVotes" && (
+                            <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
+                                <Box
+                                  onClick={handlePastVotesFilter}
+                                  className="filter-option"
+                                >
+                                  {hasPastVotesFilter ? (
+                                    <CheckIcon color="primary" fontSize="small" />
+                                  ) : (
+                                    <Box sx={{ width: 24, height: 24 }} />
+                                  )}
+                                  <Typography variant="body2" sx={{ ml: 1 }}>
+                                    Past Term Votes
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
 
                         {/* Clear All Button */}
                         <Box>
@@ -952,11 +936,11 @@ export default function Senator(props) {
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={4000}
-          onClose={() => setSnackbarOpen(false)}
+          onClose={hideSnackbar}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
-            onClose={() => setSnackbarOpen(false)}
+            onClose={hideSnackbar}
             severity={snackbarSeverity}
             sx={{
               border: "none",
@@ -964,33 +948,33 @@ export default function Senator(props) {
               width: "100%",
               bgcolor:
                 snackbarMessage ===
-                `${selectedSenator?.name} deleted successfully.`
+                  `${selectedSenator?.name} deleted successfully.`
                   ? "#fde8e4"
                   : snackbarMessage ===
                     "Success: Senators fetched successfully!"
-                  ? "#daf4f0"
-                  : undefined,
+                    ? "#daf4f0"
+                    : undefined,
 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
-                  `${selectedSenator?.name} deleted successfully.`
+                    `${selectedSenator?.name} deleted successfully.`
                     ? "#cc563d"
                     : snackbarMessage ===
                       "Success: Senators fetched successfully!"
-                    ? "#099885"
-                    : undefined,
+                      ? "#099885"
+                      : undefined,
               },
 
               "& .MuiAlert-message": {
                 color:
                   snackbarMessage ===
-                  `${selectedSenator?.name} deleted successfully.`
+                    `${selectedSenator?.name} deleted successfully.`
                     ? "#cc563d"
                     : snackbarMessage ===
                       "Success: Senators fetched successfully!"
-                    ? "#099885"
-                    : undefined,
+                      ? "#099885"
+                      : undefined,
               },
               "& .MuiAlert-action": {
                 display: "flex",

@@ -9,11 +9,12 @@ import {
 } from "@mui/material";
 import { getAllVotes } from "../redux/reducer/voteSlice";
 import { useState } from "react";
+import { getErrorMessage } from "../utils/errorHandler";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import SideMenu from "../components/SideMenu";
-import AppTheme from "../../src/shared-theme/AppTheme";
+import AppTheme from "../shared-theme/AppTheme";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
@@ -21,7 +22,6 @@ import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../redux/API";
 import axios from "axios";
-import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import FixedHeader from "../components/FixedHeader";
@@ -29,119 +29,151 @@ import Footer from "../components/Footer";
 import MobileHeader from "../components/MobileHeader";
 import { jwtDecode } from "jwt-decode";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUser } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
-export default function SearchBill(params) {
+export default function SearchVotes(params) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const user = localStorage.getItem("user");
+  const token = getToken();
+  const user = getUser();
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  // Use centralized snackbar hook
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setSnackbarOpen(false);
-  };
   const handleSearch = async () => {
     setLoading(true);
     setSearchAttempted(true);
 
     try {
-      if (!searchQuery) {
-        setSnackbarMessage("Fill the Field!");
-        setSnackbarSeverity("warning");
-        setSnackbarOpen(true);
+      if (!searchQuery.trim()) {
+        showSnackbar("Please enter a search query!", "warning");
         setLoading(false);
         return;
       }
 
       if (!token) {
-        setSnackbarMessage("Please log in to search bills");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Please log in to search votes", "error");
         setLoading(false);
         navigate("/login");
         return;
       }
 
-      const response = await axios.post(
-        `${API_URL}/fetch-quorum/store-data`,
-        {
-          type: "bills",
-          additionalParams: {
-            title: searchQuery,
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const searchTerm = searchQuery.trim();
+      let response;
+      const rollCallMatchWithChamber = searchTerm.match(/^([SH])(\d+)$/i);
+      const rollCallMatchNumberOnly = searchTerm.match(/^(\d+)$/);
 
-      setSearchResults(
-        (Array.isArray(response.data?.data) ? response.data.data : []).filter(
-          (item) => {
-            const date = new Date(item.date);
-            return (
-              date instanceof Date && !isNaN(date) && date.getFullYear() >= 2015
-            );
-          }
-        )
-      );
+      if (rollCallMatchWithChamber || rollCallMatchNumberOnly) {
+        let numberOnly;
+
+        if (rollCallMatchWithChamber) {
+          numberOnly = rollCallMatchWithChamber[2];
+        } else {
+          numberOnly = rollCallMatchNumberOnly[1];
+        }
+        response = await axios.post(
+          `${API_URL}/fetch-quorum/store-data`,
+          {
+            type: "votes",
+            additionalParams: {
+              number: numberOnly,
+            },
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setSearchResults(
+          Array.isArray(response.data?.data) ? response.data.data : []
+        );
+        return;
+      }
+      const trySearch = async (fieldName) => {
+        const res = await axios.post(
+          `${API_URL}/fetch-quorum/store-data`,
+          {
+            type: "votes",
+            additionalParams: {
+              [fieldName]: searchTerm,
+            },
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        return Array.isArray(res.data?.data) ? res.data.data : [];
+      };
+      let result = await trySearch("question");
+      if (result.length === 0) {
+        result = await trySearch("title");
+      }
+      setSearchResults(result);
+      if (result.length === 0) {
+        showSnackbar("No votes found matching your search", "info");
+      }
     } catch (error) {
-      console.error("Error searching bills:", error);
-      setSnackbarMessage(
-        error.response?.data?.message || "Failed to search bills"
-      );
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      console.error("Error searching votes:", error);
+      const errorMessage = getErrorMessage(error, "Failed to search votes");
+      showSnackbar(errorMessage, "error");
       setSearchResults([]);
     } finally {
       setLoading(false);
     }
   };
-
-  const handleAddBill = async (bill) => {
+  const handleAddVote = async (vote) => {
     setLoading(true);
     try {
       const allVotes = await dispatch(getAllVotes()).unwrap();
       const isDuplicate = allVotes.some(
-        (vote) => String(vote.quorumId) === String(bill.quorumId)
+        (existingVote) => String(existingVote.quorumId) === String(vote.quorumId || vote.voteId)
       );
+      console.log("isDuplicate:", isDuplicate);
       if (isDuplicate) {
-        setSnackbarMessage("Bill already exists");
-        setSnackbarSeverity("info");
-        setSnackbarOpen(true);
+        showSnackbar("Vote already exists", "info");
         setLoading(false);
         return;
       }
       const editorInfo = getEditorInfo();
+      const voteData = vote.quorumId
+        ? vote
+        : {
+          quorumId: vote.voteId,
+          title: vote.question,
+          type: "vote",
+          date: vote.date,
+          rollCallNumber: vote.rollCallNumber,
+          chamber: vote.chamber,
+          result: vote.result,
+          relatedBill: vote.relatedBill,
+        };
+
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
-        bills: [bill],
+        bills: [voteData],
         editorInfo: editorInfo,
       });
 
       const voteId = response.data.data[0]._id;
       if (voteId) {
-        navigate(`/edit-bill/${voteId}`);
+        navigate(`/edit-vote/${voteId}`);
       } else {
         console.error("voteId (_id) is missing in the API response.");
       }
     } catch (error) {
-      console.error("Error saving bill:", error);
+      console.error("Error saving vote:", error);
+      showSnackbar("Failed to save vote", "error");
     } finally {
       setLoading(false);
     }
   };
+
   const getEditorInfo = () => {
     try {
       if (!token) return null;
@@ -166,6 +198,15 @@ export default function SearchBill(params) {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "Unknown";
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch (error) {
+      return "Invalid Date";
+    }
+  };
+
   return (
     <AppTheme>
       <LoadingOverlay loading={loading} />
@@ -186,7 +227,7 @@ export default function SearchBill(params) {
         </MuiAlert>
       </Snackbar>
 
-      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff ", minHeight: "100vh" }}>
+      <Box sx={{ display: "flex", bgcolor: "#f6f6f6ff", minHeight: "100vh" }}>
         <SideMenu />
         <Box
           component="main"
@@ -244,7 +285,7 @@ export default function SearchBill(params) {
                     }}
                   >
                     <TextField
-                      placeholder="Look for Votes in Quorum"
+                      placeholder="Search by vote question or roll call"
                       variant="outlined"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -306,14 +347,22 @@ export default function SearchBill(params) {
                     >
                       <Table size="large">
                         <TableHead>
-                          <TableRow sx={{}}>
+                          <TableRow>
                             <TableCell
                               sx={{
                                 fontWeight: "bold",
                                 borderBottom: "1px solid #ddd",
                               }}
                             >
-                              Title
+                              Vote Question
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontWeight: "bold",
+                                borderBottom: "1px solid #ddd",
+                              }}
+                            >
+                              Date
                             </TableCell>
                             <TableCell
                               sx={{
@@ -328,15 +377,23 @@ export default function SearchBill(params) {
                         </TableHead>
 
                         <TableBody>
-                          {searchResults.map((bill) => (
-                            <TableRow key={bill.id}>
+                          {searchResults.map((vote) => (
+                            <TableRow key={vote.voteId || vote.quorumId}>
                               <TableCell
                                 sx={{
                                   borderBottom: "1px solid #ddd",
                                   fontSize: "13px",
                                 }}
                               >
-                                {bill.title}
+                                {vote.question || vote.title}
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  borderBottom: "1px solid #ddd",
+                                  fontSize: "13px",
+                                }}
+                              >
+                                {formatDate(vote.date)}
                               </TableCell>
                               <TableCell
                                 sx={{
@@ -346,11 +403,10 @@ export default function SearchBill(params) {
                               >
                                 <Button
                                   variant="outlined"
-                                  onClick={() => handleAddBill(bill)}
+                                  onClick={() => handleAddVote(vote)}
                                   sx={{
                                     backgroundColor: "#173A5E !important",
                                     color: "white !important",
-
                                     "&:hover": {
                                       backgroundColor: "#1E4C80 !important",
                                     },
@@ -367,16 +423,17 @@ export default function SearchBill(params) {
                     </TableContainer>
                   )
                 )}
+
                 {searchAttempted &&
                   !loading &&
                   Array.isArray(searchResults) &&
                   searchResults.length === 0 && (
                     <Box sx={{ width: "100%", textAlign: "center", mt: 4 }}>
                       <Typography variant="body1" color="text.secondary">
-                        No matching bills found in Quorum.
+                        No matching votes found in Quorum.
                       </Typography>
                       <Button
-                        onClick={() => navigate("/add-bill")}
+                        onClick={() => navigate("/add-vote")}
                         sx={{
                           width: { xs: "100%", md: "auto" },
                           minWidth: "130px",

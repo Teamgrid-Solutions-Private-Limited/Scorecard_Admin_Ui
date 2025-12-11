@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import { API_URL } from "../API";
+import { api } from "../../utils/apiClient";
+import { getToken, getUserRole, setToken, setUser, setRole, logout as authLogout } from "../../utils/auth";
 import { jwtDecode } from "jwt-decode";
 
 // Async thunk for user login
@@ -8,11 +8,11 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/user/login`, credentials);
+      const response = await api.post("/user/login", credentials);
 
       return response.data; // Includes token and user details
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Login failed");
+      return rejectWithValue(error.message || "Login failed");
     }
   }
 );
@@ -21,27 +21,22 @@ export const getAllUsers = createAsyncThunk(
   "users/getAllUsers",
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         return rejectWithValue("Authentication token not found");
       }
-      // Decode JWT to get user role
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+      // Check user role
+      const userRole = getUserRole();
       if (userRole !== "admin") {
         return rejectWithValue("Access denied: Admins only");
       }
-      const response = await axios.get(`${API_URL}/user/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.get("/user/users");
       return response.data;
     } catch (error) {
-      if (error.response && error.response.status === 403) {
+      if (error.message && error.message.includes("Access denied")) {
         return rejectWithValue("Access denied: Admins only");
       }
-      return rejectWithValue(error.response?.data || "Failed to fetch users");
+      return rejectWithValue(error.message || "Failed to fetch users");
     }
   }
 );
@@ -50,27 +45,18 @@ export const updateUser = createAsyncThunk(
   "users/updateUser",
   async ({ userId, userData }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         return rejectWithValue("Authentication token not found");
       }
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+      const userRole = getUserRole();
       if (userRole !== "admin") {
         return rejectWithValue("You are not authorized to update users.");
       }
-      const response = await axios.put(
-        `${API_URL}/user/users/update/${userId}`,
-        userData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.put(`/user/users/update/${userId}`, userData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to update user");
+      return rejectWithValue(error.message || "Failed to update user");
     }
   }
 );
@@ -79,23 +65,18 @@ export const deleteUser = createAsyncThunk(
   "users/deleteUser",
   async (userId, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         return rejectWithValue("Authentication token not found");
       }
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+      const userRole = getUserRole();
       if (userRole !== "admin") {
         return rejectWithValue("You are not authorized to delete users.");
       }
-      await axios.delete(`${API_URL}/user/users/delete/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.delete(`/user/users/delete/${userId}`);
       return userId; // Return the deleted user's ID
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to delete user");
+      return rejectWithValue(error.message || "Failed to delete user");
     }
   }
 );
@@ -104,32 +85,20 @@ export const addUser = createAsyncThunk(
   "users/addUser",
   async (userData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         return rejectWithValue("Authentication token not found");
       }
-      const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
+      const userRole = getUserRole();
       if (userRole !== "admin") {
         return rejectWithValue("You are not authorized to add users.");
       }
-      const response = await axios.post(
-        `${API_URL}/user/users/create`,
-        userData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.post("/user/users/create", userData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-        error.response?.data ||
-        error.message ||
-        "Failed to add user"
-      );
+      return rejectWithValue({
+        message: error.message || "Failed to add user"
+      });
     }
   }
 );
@@ -150,8 +119,8 @@ const authSlice = createSlice({
       state.token = null;
       state.role = null;
       state.users = [];
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
+      // Use auth utility for consistent logout
+      authLogout();
     },
     clearUsers: (state) => {
       state.users = [];
@@ -168,7 +137,10 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.role = action.payload.user.role;
-        localStorage.setItem("token", action.payload.token);
+        // Use auth utilities for consistent storage
+        setToken(action.payload.token);
+        setUser(action.payload.user.fullName);
+        setRole(action.payload.user.role);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;

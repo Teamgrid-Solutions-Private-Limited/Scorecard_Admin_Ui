@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { API_URL } from "../API";
+import { API_URL, API_PROTECTED_KEY } from "../API";
 
 // Async thunks
 export const createSenatorData = createAsyncThunk(
@@ -26,7 +26,7 @@ export const getAllSenatorData = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/api/v1/admin/senator-data/`,
         {
-          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
+          headers: { "x-protected-key": API_PROTECTED_KEY },
         }
       );
       return response.data;
@@ -43,7 +43,7 @@ export const getSenatorDataById = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/api/v1/admin/senator-data/viewID/${id}`,
         {
-          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
+          headers: { "x-protected-key": API_PROTECTED_KEY },
         }
       );
       return response.data;
@@ -53,14 +53,14 @@ export const getSenatorDataById = createAsyncThunk(
   }
 );
 
-export const getSenatorDataBySenetorId = createAsyncThunk(
-  "senatorData/getSenatorDataBySenetorId",
+export const getSenatorDataBySenatorId = createAsyncThunk(
+  "senatorData/getSenatorDataBySenatorId",
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
         `${API_URL}/api/v1/admin/senator-data/viewbysenator/${id}`,
         {
-          headers: { "x-protected-key": "2oUtwJx8m1?0hx/JN7" },
+          headers: { "x-protected-key": API_PROTECTED_KEY },
         }
       );
       return response.data.info;
@@ -161,15 +161,15 @@ const senatorDataSlice = createSlice({
         state.error = action.payload;
       })
 
-      .addCase(getSenatorDataBySenetorId.pending, (state) => {
+      .addCase(getSenatorDataBySenatorId.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getSenatorDataBySenetorId.fulfilled, (state, action) => {
+      .addCase(getSenatorDataBySenatorId.fulfilled, (state, action) => {
         state.loading = false;
         state.currentSenator = action.payload;
       })
-      .addCase(getSenatorDataBySenetorId.rejected, (state, action) => {
+      .addCase(getSenatorDataBySenatorId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -202,3 +202,4 @@ const senatorDataSlice = createSlice({
 
 export default senatorDataSlice.reducer;
 export const { clearSenatorDataState } = senatorDataSlice.actions;
+

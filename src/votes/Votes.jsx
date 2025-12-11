@@ -8,16 +8,16 @@ import {
   updateVoteStatus,
   bulkUpdateSbaPosition,
 } from "../redux/reducer/voteSlice";
-import AppTheme from "../../src/shared-theme/AppTheme";
+import AppTheme from "../shared-theme/AppTheme";
 import SearchIcon from "@mui/icons-material/Search";
-import SideMenu from "../../src/components/SideMenu";
-import MainGrid from "../../src/components/MainGrid";
+import SideMenu from "../components/SideMenu";
+import MainGrid from "../components/MainGrid";
 import {
   chartsCustomizations,
   dataGridCustomizations,
   datePickersCustomizations,
   treeViewCustomizations,
-} from "../../src/Themes/customizations";
+} from "../Themes/customizations";
 import {
   Snackbar,
   Alert,
@@ -38,7 +38,7 @@ import {
   Button,
   InputAdornment,
 } from "@mui/material";
-import FixedHeader from "../../src/components/FixedHeader";
+import FixedHeader from "../components/FixedHeader";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -50,63 +50,68 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUserRole } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
-export default function Bills(props) {
+export default function Votes(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { votes, loading } = useSelector((state) => state.vote);
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
-  const token = localStorage.getItem("token");
-
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  const token = getToken();
+  const userRole = getUserRole();
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
   const [congressFilter, setCongressFilter] = useState([]);
   const statusOptions = ["published", "draft", "under review"];
-  const [selectedBills, setSelectedBills] = useState([]);
+  const [selectedVotes, setSelectedVotes] = useState([]);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
   const [bulkSbaPosition, setBulkSbaPosition] = useState("");
   const [expandedFilter, setExpandedFilter] = useState(null);
 
   const handleBulkUpdate = async () => {
-    if (!selectedBills.length || !bulkSbaPosition) return;
+    if (!selectedVotes.length || !bulkSbaPosition) return;
 
     setFetching(true);
     try {
-      await dispatch(
+      const result = await dispatch(
         bulkUpdateSbaPosition({
-          ids: selectedBills,
+          ids: selectedVotes,
           sbaPosition: bulkSbaPosition,
         })
       );
 
-      await dispatch(getAllVotes());
-      setSnackbarMessage(
-        `Updated SBA position for ${selectedBills.length} bill(s)`
-      );
-      setSnackbarSeverity("success");
+      if (result.payload) {
+        await dispatch(getAllVotes());
+        showSnackbar(
+          `Updated SBA position for ${selectedVotes.length} vote(s)`,
+          "success"
+        );
 
-      setSelectedBills([]);
-      setBulkSbaPosition("");
-      setIsBulkEditMode(false);
+        setSelectedVotes([]);
+        setBulkSbaPosition("");
+        setIsBulkEditMode(false);
+      } else if (result.payload === undefined) {
+        showSnackbar("Failed to update votes", "error");
+      }
     } catch (error) {
-      setSnackbarMessage("Failed to update bills");
-      setSnackbarSeverity("error");
+      showSnackbar("Failed to update votes", "error");
     } finally {
       setFetching(false);
-      setSnackbarOpen(true);
     }
   };
 
@@ -129,8 +134,8 @@ export default function Bills(props) {
 
     const searchMatch =
       !searchQuery ||
-      (vote.billName &&
-        vote.billName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (vote.voteName &&
+        vote.voteName.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (vote.title &&
         vote.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -143,19 +148,20 @@ export default function Bills(props) {
     ),
   ].sort((a, b) => parseInt(b) - parseInt(a));
 
-  const billsData = filteredVotes.map((vote, index) => ({
+  const votesData = filteredVotes.map((vote, index) => ({
     _id: vote._id || index,
     date: formatDate(vote.date),
-    bill: vote.billName || vote.title,
+    vote: vote.voteName || vote.title,
     congress: vote.congress || "N/A",
-    billsType: vote.type
+    VotesType: vote.type
       ? vote.type.toLowerCase().includes("senate")
         ? "Senate"
         : vote.type.toLowerCase().includes("house")
-        ? "House"
-        : "Other"
+          ? "House"
+          : "Other"
       : "Other",
     status: vote.status || "draft",
+    sbaPosition: vote.sbaPosition || "N/A",
   }));
 
   const toggleFilter = () => {
@@ -191,7 +197,7 @@ export default function Bills(props) {
   const activeFilterCount = statusFilter.length + congressFilter.length;
 
   const handleEdit = (row) => {
-    navigate(`/edit-bill/${row._id}`);
+    navigate(`/edit-vote/${row._id}`);
   };
   const handleDeleteClick = (row) => {
     setSelectedVote(row);
@@ -207,15 +213,12 @@ export default function Bills(props) {
     try {
       await dispatch(deleteVote(selectedVote._id));
       await dispatch(getAllVotes());
-      setSnackbarMessage(`This bill has been successfully deleted.`);
-      setSnackbarSeverity("success");
+      showSnackbar(`This vote has been successfully deleted.`, "success");
     } catch (error) {
-      setSnackbarMessage("Failed to delete this bill.");
-      setSnackbarSeverity("error");
+      showSnackbar("Failed to delete this vote.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100);
       setTimeout(() => setProgress(0), 500);
     }
@@ -226,9 +229,7 @@ export default function Bills(props) {
     dispatch(updateVoteStatus({ id: vote._id, status: newStatus }))
       .then(() => dispatch(getAllVotes()))
       .catch(() => {
-        setSnackbarMessage("Failed to update status.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Failed to update status.", "error");
       });
   };
 
@@ -305,9 +306,8 @@ export default function Bills(props) {
 
                         {/* Status Filter */}
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "status" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "status" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -326,7 +326,7 @@ export default function Bills(props) {
                                 {statusOptions.map((status) => (
                                   <Box
                                     key={status}
-                                    onClick={() => handleStatusFilter(status)}
+                                    onClick={() => toggleStatusFilter(status)}
                                     className="filter-option"
                                   >
                                     {statusFilter.includes(status) ? (
@@ -351,9 +351,8 @@ export default function Bills(props) {
                         {/* Congress Filter */}
                         {congressOptions.length > 0 && (
                           <Box
-                            className={`filter-section ${
-                              expandedFilter === "congress" ? "active" : ""
-                            }`}
+                            className={`filter-section ${expandedFilter === "congress" ? "active" : ""
+                              }`}
                           >
                             <Box
                               className="filter-title"
@@ -432,10 +431,10 @@ export default function Bills(props) {
 
                 {userRole === "admin" && (
                   <Button
-                    onClick={() => navigate("/search-bills")}
+                    onClick={() => navigate("/search-votes")}
                     className="addBillsBtn"
                   >
-                    Add Bills
+                    Add Votes
                   </Button>
                 )}
               </Stack>
@@ -447,7 +446,7 @@ export default function Bills(props) {
                   variant="subtitle1"
                   sx={{ fontSize: { xs: "11px", md: "14px" } }}
                 >
-                  {selectedBills.length} bill(s) selected
+                  {selectedVotes.length} Vote(s) selected
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -470,7 +469,7 @@ export default function Bills(props) {
 
                   <Button
                     // variant="contained"
-                    disabled={!selectedBills.length || !bulkSbaPosition}
+                    disabled={!selectedVotes.length || !bulkSbaPosition}
                     onClick={handleBulkUpdate}
                     className="applyBtn"
                   >
@@ -481,15 +480,15 @@ export default function Bills(props) {
             )}
 
             <MainGrid
-              type="bills"
-              data={billsData}
+              type="votes"
+              data={votesData}
               loading={fetching ? false : loading}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               onToggleStatus={handleToggleStatus}
               isSelectable={isBulkEditMode}
-              onSelectionChange={setSelectedBills}
-              selectedItems={selectedBills}
+              onSelectionChange={setSelectedVotes}
+              selectedItems={selectedVotes}
             />
           </Stack>
         </Box>
@@ -498,29 +497,29 @@ export default function Bills(props) {
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={hideSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
+          onClose={hideSnackbar}
           severity={snackbarSeverity}
           sx={{
             border: "none",
             boxShadow: "none",
             width: "100%",
             bgcolor:
-              snackbarMessage === "This bill has been successfully deleted."
+              snackbarMessage === "This vote has been successfully deleted."
                 ? "#fde8e4"
                 : undefined,
             "& .MuiAlert-icon": {
               color:
-                snackbarMessage === "This bill has been successfully deleted."
+                snackbarMessage === "This vote has been successfully deleted."
                   ? "#cc563d"
                   : undefined,
             },
             "& .MuiAlert-message": {
               color:
-                snackbarMessage === `This bill has been successfully deleted.`
+                snackbarMessage === `This vote has been successfully deleted.`
                   ? "#cc563d"
                   : undefined,
             },

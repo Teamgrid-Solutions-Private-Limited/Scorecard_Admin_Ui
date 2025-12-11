@@ -6,15 +6,16 @@ import { Avatar, Box } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
 import { GridOverlay } from "@mui/x-data-grid";
-import { getAllSenatorData } from "../redux/reducer/senetorTermSlice";
+import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
 import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { jwtDecode } from "jwt-decode";
 import { useTheme, useMediaQuery, Chip } from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { get } from "lodash";
 import { API_URL } from "../redux/API";
+import { getToken, getUserRole } from "../utils/auth";
+import { getItem, setItem, STORAGE_KEYS } from "../utils/storage";
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
     <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
@@ -37,9 +38,8 @@ export default function CustomizedDataGrid({
   const { senatorData } = useSelector((state) => state.senatorData);
   const { houseData } = useSelector((state) => state.houseData);
   const [mergedRows, setMergedRows] = useState([]);
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  const token = getToken();
+  const userRole = getUserRole();
   const { terms } = useSelector((state) => state.term);
 
   useEffect(() => {
@@ -171,21 +171,32 @@ export default function CustomizedDataGrid({
 
   const navigate = useNavigate();
 
-  const storageKey = `dataGridPagination_${type}`;
+  // Map type to storage key constant
+  const getPaginationStorageKey = (type) => {
+    const keyMap = {
+      senator: STORAGE_KEYS.PAGINATION_SENATOR,
+      representative: STORAGE_KEYS.PAGINATION_REPRESENTATIVE,
+      activities: STORAGE_KEYS.PAGINATION_ACTIVITIES,
+      bills: STORAGE_KEYS.PAGINATION_BILLS,
+    };
+    return keyMap[type] || `dataGridPagination_${type}`;
+  };
+
+  const storageKey = getPaginationStorageKey(type);
   const [paginationModel, setPaginationModel] = useState(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved) : { page: 0, pageSize: 20 };
+    const saved = getItem(storageKey);
+    return saved || { page: 0, pageSize: 20 };
   });
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(paginationModel));
+    setItem(storageKey, paginationModel);
   }, [paginationModel, storageKey]);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const columns =
-    type === "bills"
+    type === "votes"
       ? [
           {
             field: "date",
@@ -199,9 +210,9 @@ export default function CustomizedDataGrid({
             ),
           },
           {
-            field: "bill",
+            field: "vote",
             flex: 3,
-            headerName: "Bill",
+            headerName: "Vote",
             minWidth: 150,
             renderHeader: (params) => (
               <Typography sx={{ fontWeight: "bold" }}>
@@ -233,14 +244,14 @@ export default function CustomizedDataGrid({
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {params.row.bill}
+                  {params.row.vote}
                 </Typography>
               </Box>
             ),
           },
 
           {
-            field: "billsType",
+            field: "VotesType",
             flex: 2,
             headerName: "Type",
             minWidth: 150,

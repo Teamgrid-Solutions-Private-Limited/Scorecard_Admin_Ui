@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, List, ListItem, ListItemText } from "@mui/material";
+import { sanitizeKey } from "../helpers/fieldHelpers";
 
 const StatusDisplay = ({
   userRole,
@@ -414,13 +415,6 @@ const StatusDisplay = ({
   };
 
   const getEditorKey = (field) => {
-    const sanitizeKey = (str) => {
-      return str
-        .replace(/[^a-zA-Z0-9_]/g, "_")
-        .replace(/_+/g, "_")
-        .replace(/^_+|_+$/g, "");
-    };
-
     if (typeof field === "object" && field !== null) {
       if (
         Array.isArray(field.field) &&
@@ -596,7 +590,7 @@ const StatusDisplay = ({
 
                     const editorKey = getEditorKey(field);
                     const editorInfo = formData?.fieldEditors?.[editorKey];
-                    const editor = editorInfo?.editorName || "Unknown Editor";
+                    const editor = editorInfo?.editorName || "SBA Editor";
                     const editTime = editorInfo?.editedAt
                       ? new Date(editorInfo.editedAt).toLocaleString([], {
                           month: "short",
@@ -604,7 +598,13 @@ const StatusDisplay = ({
                           hour: "2-digit",
                           minute: "2-digit",
                         })
-                      : "unknown time";
+                      : new Date().toLocaleString([], {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        });
+ 
                     const fromQuorum = field.fromQuorum || false;
 
                     return (

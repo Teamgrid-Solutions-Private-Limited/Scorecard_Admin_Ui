@@ -52,25 +52,23 @@ const xThemeComponents = {
 };
 import { getAllHouseData } from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
-import { jwtDecode } from "jwt-decode";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { getToken, getUserRole } from "../utils/auth";
+import { useSnackbar } from "../hooks";
 
 export default function Representative(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const { open: snackbarOpen, message: snackbarMessage, severity: snackbarSeverity, showSnackbar, hideSnackbar } = useSnackbar();
   const { houses, loading } = useSelector((state) => state.house);
   const [fetching, setFetching] = useState(false);
   const [progress, setProgress] = useState(0);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRepresentative, setSelectedRepresentative] = useState(null);
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token);
-  const userRole = decodedToken.role;
+  const token = getToken();
+  const userRole = getUserRole();
 
   const [partyFilter, setPartyFilter] = useState([]);
   const [districtFilter, setDistrictFilter] = useState([]);
@@ -134,7 +132,7 @@ export default function Representative(props) {
           termId = currentTermData.termId;
           rating =
             currentTermData.rating !== undefined &&
-            currentTermData.rating !== null
+              currentTermData.rating !== null
               ? currentTermData.rating
               : "N/A";
           currentTerm = true;
@@ -202,14 +200,14 @@ export default function Representative(props) {
             const termObj = terms.find((t) => t._id === rec.termId);
             return termObj
               ? {
-                  termId: rec.termId,
-                  termName: termObj.name || "",
-                  currentTerm: rec.currentTerm || false,
-                  rating: rec.rating,
-                  congresses: Array.isArray(termObj.congresses)
-                    ? termObj.congresses
-                    : [],
-                }
+                termId: rec.termId,
+                termName: termObj.name || "",
+                currentTerm: rec.currentTerm || false,
+                rating: rec.rating,
+                congresses: Array.isArray(termObj.congresses)
+                  ? termObj.congresses
+                  : [],
+              }
               : null;
           })
           .filter(Boolean);
@@ -421,20 +419,17 @@ export default function Representative(props) {
       );
 
       if (response.status === 200) {
-        setSnackbarMessage("Success: Representatives fetched successfully!");
-        setSnackbarSeverity("success");
+        showSnackbar("Success: Representatives fetched successfully!", "success");
         await dispatch(getAllHouses());
       } else {
         throw new Error("Failed to fetch representatives from Quorum.");
       }
     } catch (error) {
       console.error("Error fetching representatives from Quorum:", error);
-      setSnackbarMessage("Error: Unable to fetch representatives.");
-      setSnackbarSeverity("error");
+      showSnackbar("Error: Unable to fetch representatives.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setProgress(100);
       setTimeout(() => setProgress(0), 500);
     }
@@ -456,20 +451,16 @@ export default function Representative(props) {
     try {
       await dispatch(deleteHouse(selectedRepresentative._id));
       await dispatch(getAllHouses());
-      setSnackbarMessage(
-        `${selectedRepresentative?.name} deleted successfully.`
+      showSnackbar(
+        `${selectedRepresentative?.name} deleted successfully.`,
+        "success"
       );
-      setSnackbarSeverity("success");
     } catch (error) {
-      setSnackbarMessage("Error deleting representative.");
-      setSnackbarSeverity("error");
-      console.error("Error fetching representatives from Quorum:", error);
-      setSnackbarMessage("Error: Unable to fetch representatives.");
-      setSnackbarSeverity("error");
+      console.error("Error deleting representative:", error);
+      showSnackbar("Error: Unable to delete representative.", "error");
     } finally {
       clearInterval(interval);
       setFetching(false);
-      setSnackbarOpen(true);
       setOpenDeleteDialog(false);
     }
   };
@@ -485,9 +476,7 @@ export default function Representative(props) {
       dispatch(getAllHouses());
     } catch (error) {
       console.error("Failed to update status:", error);
-      setSnackbarMessage("Failed to update status.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar("Failed to update status.", "error");
     }
   };
 
@@ -606,9 +595,8 @@ export default function Representative(props) {
                         </Box>
 
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "party" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "party" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -662,9 +650,8 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "district" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "district" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -740,9 +727,8 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "rating" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "rating" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -795,9 +781,8 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "congress" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "congress" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -857,16 +842,14 @@ export default function Representative(props) {
                                       >
                                         {congressYearMap[congress]
                                           ? `${getOrdinalSuffix(
-                                              congress
-                                            )} Congress (${
-                                              congressYearMap[congress]
-                                                .startYear
-                                            }-${
-                                              congressYearMap[congress].endYear
-                                            })`
+                                            congress
+                                          )} Congress (${congressYearMap[congress]
+                                            .startYear
+                                          }-${congressYearMap[congress].endYear
+                                          })`
                                           : `${getOrdinalSuffix(
-                                              congress
-                                            )} Congress`}
+                                            congress
+                                          )} Congress`}
                                       </Typography>
                                     </Box>
                                   ))
@@ -884,9 +867,8 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "term" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "term" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -929,9 +911,8 @@ export default function Representative(props) {
                         </Box>
 
                         <Box
-                          className={`filter-section ${
-                            expandedFilter === "status" ? "active" : ""
-                          }`}
+                          className={`filter-section ${expandedFilter === "status" ? "active" : ""
+                            }`}
                         >
                           <Box
                             className="filter-title"
@@ -1020,11 +1001,11 @@ export default function Representative(props) {
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={5000}
-          onClose={() => setSnackbarOpen(false)}
+          onClose={hideSnackbar}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
-            onClose={() => setSnackbarOpen(false)}
+            onClose={hideSnackbar}
             severity={snackbarSeverity}
             sx={{
               border: "none",
@@ -1032,33 +1013,33 @@ export default function Representative(props) {
               width: "100%",
               bgcolor:
                 snackbarMessage ===
-                `${selectedRepresentative?.name} deleted successfully.`
+                  `${selectedRepresentative?.name} deleted successfully.`
                   ? "#fde8e4"
                   : snackbarMessage ===
                     "Success: Representatives fetched successfully!"
-                  ? "#daf4f0"
-                  : undefined,
+                    ? "#daf4f0"
+                    : undefined,
 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
-                  `${selectedRepresentative?.name} deleted successfully.`
+                    `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d"
                     : snackbarMessage ===
                       "Success: Representatives fetched successfully!"
-                    ? "#099885"
-                    : undefined,
+                      ? "#099885"
+                      : undefined,
               },
 
               "& .MuiAlert-message": {
                 color:
                   snackbarMessage ===
-                  `${selectedRepresentative?.name} deleted successfully.`
+                    `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d"
                     : snackbarMessage ===
                       "Success: Representatives fetched successfully!"
-                    ? "#099885"
-                    : undefined,
+                      ? "#099885"
+                      : undefined,
               },
               "& .MuiAlert-action": {
                 display: "flex",

@@ -11,12 +11,15 @@ import {
 } from "../redux/reducer/voteSlice";
 import { API_URL } from "../redux/API";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { getErrorMessage } from "../utils/errorHandler";
+import { compareValues } from "../helpers/fieldHelpers";
+import { validateRequired } from "../helpers/validationHelpers";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import SideMenu from "../components/SideMenu";
-import AppTheme from "../../src/shared-theme/AppTheme";
+import AppTheme from "../shared-theme/AppTheme";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid2";
@@ -46,6 +49,7 @@ import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { useSnackbar, useAuth, useFileUpload, useEntityData, useFormChangeTracker } from "../hooks";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import MobileHeader from "../components/MobileHeader";
@@ -59,7 +63,6 @@ export default function AddBill(props) {
   const dispatch = useDispatch();
   const { vote: selectedVote } = useSelector((state) => state.vote);
 
-  const [isDataFetching, setIsDataFetching] = useState(true);
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -85,6 +88,15 @@ export default function AddBill(props) {
   const [readMoreType, setReadMoreType] = useState("file"); // 'url' or 'file'
   const terms = useSelector((state) => state.term?.terms || []);
 
+  const { isDataFetching, setIsDataFetching } = useEntityData({
+    dispatch,
+    id,
+    getAllTerms: id ? null : getAllTerms, 
+    getEntityById: id ? getVoteById : null,
+    clearEntityState: clearVoteState,
+    additionalActions: id ? [getAllTerms] : [], 
+  });
+
   const fieldLabels = {
     type: "Type",
     title: "Title",
@@ -98,35 +110,15 @@ export default function AddBill(props) {
     sbaPosition: "SBA Position",
     status: "Status",
   };
-
-  // Defensive userRole extraction
-  const token = localStorage.getItem("token");
-  let userRole = "";
-  try {
-    const decodedToken = jwtDecode(token);
-    userRole = decodedToken.role;
-  } catch (e) {
-    userRole = "";
-  }
-
-  const compareValues = (newVal, oldVal) => {
-    if (typeof newVal === "string" && typeof oldVal === "string") {
-      return newVal.trim() !== oldVal.trim();
-    }
-    return newVal !== oldVal;
-  };
-
+  const { token, userRole, getCurrentEditor } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
+  const {
+    open: openSnackbar,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar: handleSnackbarClose,
+  } = useSnackbar();
 
   const preFillForm = () => {
     if (selectedVote) {
@@ -141,7 +133,6 @@ export default function AddBill(props) {
       );
 
       if (termIdStr && termIds.includes(termIdStr)) {
-        // backend provided an id -> find that term and use its name
         const selectedTerm = terms.find(
           (term) =>
             String(term._id ?? term.id ?? term.termId ?? term.value ?? "") ===
@@ -153,11 +144,9 @@ export default function AddBill(props) {
             congressValue = String(selectedTerm.congresses[0]);
           }
         } else {
-          // fallback to the raw string
           resolvedTermName = termIdStr;
         }
       } else if (termIdStr) {
-        // backend provided a string (name or year-range) -> try to match by name/title/year-range
         const found = terms.find((t) => {
           const name = (t.name ?? t.title ?? "").toString();
           const yearRange =
@@ -185,9 +174,9 @@ export default function AddBill(props) {
 
       const newFormData = {
         type: selectedVote.type?.includes("senate")
-          ? "senate_bill"
+          ? "senate_vote"
           : selectedVote.type?.includes("house")
-          ? "house_bill"
+          ? "house_vote"
           : "",
         title: selectedVote.title || "",
         shortDesc: selectedVote.shortDesc || "",
@@ -206,7 +195,6 @@ export default function AddBill(props) {
     }
   };
 
-  // When selectedVote changes, set editedFields from backend
   useEffect(() => {
     if (selectedVote && !isDataFetching) {
       preFillForm();
@@ -218,7 +206,6 @@ export default function AddBill(props) {
     }
   }, [selectedVote, isDataFetching]);
 
-  // When formData changes, update editedFields (track all changes)
   useEffect(() => {
     if (originalFormData && formData) {
       const changes = [];
@@ -230,35 +217,6 @@ export default function AddBill(props) {
       setEditedFields(changes);
     }
   }, [formData, originalFormData]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsDataFetching(true); // optional loading state
-      try {
-        if (id) {
-          // Fetch id-dependent data concurrently
-          await Promise.all([
-            dispatch(getVoteById(id)).unwrap(),
-            dispatch(getAllTerms()).unwrap(),
-          ]);
-        } else {
-          await dispatch(getAllTerms()).unwrap();
-        }
-        return () => {
-          dispatch(clearVoteState());
-        };
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setSnackbarMessage("Error loading data. Please try again.");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      } finally {
-        setIsDataFetching(false);
-      }
-    };
-
-    fetchData();
-  }, [id, dispatch]);
 
   const editorRef = useRef(null);
   const VisuallyHiddenInput = styled("input")({
@@ -281,15 +239,22 @@ export default function AddBill(props) {
     }));
   };
 
+  const { handleChange: baseHandleChange } = useFormChangeTracker({
+    originalFormData,
+    useLocalChanges: false, 
+    formData,
+    setFormData,
+    editedFields,
+    setEditedFields,
+    compareValues,
+  });
+
   const handleChange = (event) => {
     const { name, value } = event.target;
-    if (!hasLocalChanges) {
-      setHasLocalChanges(true);
-    }
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-      if (name === "termId") {
-        // value is term.name now (not id)
+    
+    if (name === "termId") {
+      setFormData((prev) => {
+        const newData = { ...prev, [name]: value };
         const selectedTerm = terms.find(
           (t) =>
             (t.name ?? "").toString() === String(value) ||
@@ -306,16 +271,19 @@ export default function AddBill(props) {
           newData.congress = "";
           newData.termId = String(value);
         }
-      }
-      if (originalFormData) {
-        const changes = Object.keys(newData).filter((key) =>
-          compareValues(newData[key], originalFormData[key])
-        );
-        setEditedFields(changes);
-      }
-
-      return newData;
-    });
+        
+        if (originalFormData) {
+          const changes = Object.keys(newData).filter((key) =>
+            compareValues(newData[key], originalFormData[key])
+          );
+          setEditedFields(changes);
+        }
+        
+        return newData;
+      });
+    } else {
+      baseHandleChange(event);
+    }
   };
 
   const [editorsInitialized, setEditorsInitialized] = useState({
@@ -323,7 +291,6 @@ export default function AddBill(props) {
     longDesc: false,
   });
   const handleEditorChange = (content, fieldName) => {
-    // Skip initial empty content (first render)
     if (!editorsInitialized[fieldName]) {
       setEditorsInitialized((prev) => ({
         ...prev,
@@ -331,8 +298,6 @@ export default function AddBill(props) {
       }));
       return;
     }
-
-    // Check if content actually changed from current state
     if (content === formData[fieldName]) {
       return;
     }
@@ -344,8 +309,6 @@ export default function AddBill(props) {
         const changes = Object.keys(newData).filter((key) => {
           const newValue = newData[key];
           const oldValue = originalFormData[key];
-
-          // Special handling for string comparison
           if (typeof newValue === "string" && typeof oldValue === "string") {
             return newValue.trim() !== oldValue.trim();
           }
@@ -359,6 +322,13 @@ export default function AddBill(props) {
     });
   };
 
+  const { handleReadMoreFileUpload } = useFileUpload({
+    setFormData,
+    setEditedFields,
+    originalFormData,
+    fieldName: "readMore",
+  });
+
   const handleFileUpload = (event) => {
     if (!hasLocalChanges) {
       setHasLocalChanges(true);
@@ -366,39 +336,20 @@ export default function AddBill(props) {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-      // Set the file path in the readMore field
-      setFormData((prev) => ({
-        ...prev,
-        readMore: file.name,
-      }));
-
-      // Update editedFields if this is a change
-      if (originalFormData && file.name !== originalFormData.readMore) {
-        const changes = Object.keys(formData).filter((key) => {
-          if (key === "readMore") {
-            return file.name !== originalFormData.readMore;
-          }
-          return compareValues(formData[key], originalFormData[key]);
-        });
-        setEditedFields(changes);
-      }
+      handleReadMoreFileUpload(event, "file");
     }
   };
 
   const handleSubmit = async () => {
-    if (!formData.termId) {
-      setSnackbarMessage("Term is required!");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+    const termValidation = validateRequired(formData.termId, "Term");
+    if (!termValidation.isValid) {
+      showSnackbar(termValidation.message, "error");
       return;
     }
 
     setLoading(true);
     try {
-      // Create FormData for file upload
       const formDataToSend = new FormData();
-
-      // Add all form fields EXCEPT status (we'll add it separately)
       Object.keys(formData).forEach((key) => {
         if (key === "readMore") {
           if (readMoreType === "file" && selectedFile) {
@@ -410,8 +361,6 @@ export default function AddBill(props) {
           formDataToSend.append(key, formData[key]);
         }
       });
-
-      // Merge backend's editedFields with current session's changes
       const backendEditedFields = Array.isArray(selectedVote?.editedFields)
         ? selectedVote.editedFields
         : [];
@@ -430,20 +379,17 @@ export default function AddBill(props) {
         editedAt: new Date(),
       };
 
-      // Create updated fieldEditors map
       const updatedFieldEditors = { ...(selectedVote?.fieldEditors || {}) };
       filteredEditedFields.forEach((field) => {
         updatedFieldEditors[field] = currentEditor;
       });
 
-      // Add editedFields and fieldEditors to FormData
       formDataToSend.append("editedFields", JSON.stringify(mergedEditedFields));
       formDataToSend.append(
         "fieldEditors",
         JSON.stringify(updatedFieldEditors)
       );
 
-      // Add status ONLY ONCE
       const finalStatus = userRole === "admin" ? "published" : "under review";
       formDataToSend.append("status", finalStatus);
 
@@ -460,12 +406,7 @@ export default function AddBill(props) {
         if (!hasChanges) {
           setLoading(false);
 
-          setSnackbarMessage("No changes detected. Nothing to update.");
-
-          setSnackbarSeverity("info");
-
-          setOpenSnackbar(true);
-
+          showSnackbar("No changes detected. Nothing to update.", "info");
           return;
         }
 
@@ -474,30 +415,27 @@ export default function AddBill(props) {
         ).unwrap();
         if (readMoreType === "url") {
           setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
-          setReadMoreType("url"); // force back to URL mode
+          setReadMoreType("url"); 
         } else if (readMoreType === "file" && selectedFile) {
           setFormData((prev) => ({
             ...prev,
             readMore: `${API_URL}/uploads/documents/${selectedFile.name}`,
           }));
-          setReadMoreType("file"); // stay in file mode
+          setReadMoreType("file"); 
         }
         await dispatch(getVoteById(id)).unwrap();
 
-        setSnackbarMessage(
+        showSnackbar(
           userRole === "admin"
             ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.'
+            : 'Status changed to "Under Review" for admin to moderate.',
+          "success"
         );
-        setSnackbarSeverity("success");
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
-          // setOriginalFormData({ ...formData, readMore: selectedFile ? selectedFile.name : formData.readMore, status: "under review" });
-          // Remove status from editedFields after update
           setEditedFields((prev) => prev.filter((field) => field !== "status"));
         } else {
-          // Only clear locally if status is published
           if (finalStatus === "published") {
             setEditedFields([]);
           }
@@ -509,15 +447,13 @@ export default function AddBill(props) {
           !formData.shortDesc ||
           !formData.readMore
         ) {
-          setSnackbarMessage("Please fill all required fields!");
-          setSnackbarSeverity("warning");
-          setOpenSnackbar(true);
+          showSnackbar("Please fill all required fields!", "warning");
           setLoading(false);
           return;
         }
         const result = await dispatch(createVote(formDataToSend)).unwrap();
 
-        const newVoteId = result.data?._id || null; // Get the new activity ID from the response
+        const newVoteId = result.data?._id || null; 
 
         if (readMoreType === "url") {
           setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
@@ -529,54 +465,27 @@ export default function AddBill(props) {
           }));
           setReadMoreType("file");
         }
-        setSnackbarMessage(
-          userRole === "admin"
-            ? "Bill created successfully!"
-            : "Bill created successfully!"
-        );
-        setSnackbarSeverity("success");
+        showSnackbar("Bill created successfully!", "success");
         if (newVoteId) {
           setTimeout(() => {
-            navigate(`/edit-bill/${newVoteId}`);
+            navigate(`/edit-vote/${newVoteId}`);
           }, 1500);
         } else {
-          console.error("Bill (_id) is missing in the API response.");
+          console.error("Vote (_id) is missing in the API response.");
         }
       }
 
-      setOpenSnackbar(true);
     } catch (error) {
       console.error("Save error:", error);
-
-      // Better error handling
-      let errorMessage = "Operation failed";
-
-      if (error?.payload?.message) {
-        errorMessage = error.payload.message;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      } else if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error?.response?.status === 400) {
-        errorMessage = "Bad Request: Please check your input data";
-      } else if (error?.response?.status === 500) {
-        errorMessage = "Server Error: Please try again later";
-      }
-
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      const errorMessage = getErrorMessage(error, "Operation failed");
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
   };
   const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No house selected");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar("No house selected", "error");
       return;
     }
     setOpenDiscardDialog(true);
@@ -588,25 +497,19 @@ export default function AddBill(props) {
     try {
       setLoading(true);
       const result = await dispatch(discardVoteChanges(id)).unwrap();
-
-      // Refresh the data
       await dispatch(getVoteById(id));
-      setSnackbarMessage(
-        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      showSnackbar(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
+        "success"
       );
-      setSnackbarSeverity("success");
     } catch (error) {
       console.error("Discard failed:", error);
-      const errorMessage =
-        error?.payload?.message ||
-        error?.message ||
-        (typeof error === "string"
-          ? error
-          : `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`);
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
+      const errorMessage = getErrorMessage(
+        error,
+        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
+      );
+      showSnackbar(errorMessage, "error");
     } finally {
-      setOpenSnackbar(true);
       setLoading(false);
     }
   };
@@ -683,7 +586,6 @@ export default function AddBill(props) {
     originalFormData,
     formData,
   ]);
-  // Reset editor initialization when form data is loaded
   useEffect(() => {
     if (formData.shortDesc && formData.longDesc) {
       setEditorsInitialized({
@@ -886,7 +788,7 @@ export default function AddBill(props) {
                               >
                                 {id
                                   ? "No pending changes"
-                                  : "Fill in the form to create a new bill"}
+                                  : "Fill in the form to create a new vote"}
                               </Typography>
                             );
                           }
@@ -1074,8 +976,8 @@ export default function AddBill(props) {
                         onChange={handleChange}
                         sx={{ background: "#fff" }}
                       >
-                        <MenuItem value="senate_bill">Senate</MenuItem>
-                        <MenuItem value="house_bill">House</MenuItem>
+                        <MenuItem value="senate_vote">Senate</MenuItem>
+                        <MenuItem value="house_vote">House</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
@@ -1507,7 +1409,7 @@ export default function AddBill(props) {
                         onChange={handleChange}
                       >
                         <FormControlLabel
-                          value="yes"
+                          value="Yes"
                           control={
                             <Radio
                               icon={
@@ -1521,7 +1423,7 @@ export default function AddBill(props) {
                           label="Yes"
                         />
                         <FormControlLabel
-                          value="no"
+                          value="No"
                           control={
                             <Radio
                               icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}

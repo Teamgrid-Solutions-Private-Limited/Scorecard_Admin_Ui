@@ -22,24 +22,8 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 
-import { jwtDecode } from "jwt-decode";
-
-const getRole = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-  try {
-    return jwtDecode(token).role;
-  } catch {
-    return null;
-  }
-};
-const clearPaginationStorage = () => {
-  localStorage.removeItem("dataGridPagination_representative");
-  localStorage.removeItem("dataGridPagination_senator");
-  localStorage.removeItem("dataGridPagination_activities");
-  localStorage.removeItem("dataGridPagination_bills");
- 
-};
+import { getUserRole, logout } from "../utils/auth";
+import { clearPaginationStorage } from "../utils/storage";
 const mainListItems = [
   { text: "Senators", icon: <GavelRoundedIcon sx={{ fontSize: 40 }} />, link: "/" },
   {
@@ -47,7 +31,7 @@ const mainListItems = [
     icon: <GroupsRoundedIcon sx={{ fontSize: 40 }} />,
     link: "/representative",
   },
-  { text: "Votes We Scored", icon: <DescriptionRoundedIcon sx={{ fontSize: 40 }} />, link: "/bills" },
+  { text: "Votes We Scored", icon: <DescriptionRoundedIcon sx={{ fontSize: 40 }} />, link: "/votes" },
   {
     text: "Activities We Track",
     icon: <CalendarTodayRoundedIcon sx={{ fontSize: 40 }} />,
@@ -58,7 +42,7 @@ const mainListItems = [
 
 export default function MenuContent() {
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
-  const role = getRole();
+  const role = getUserRole();
   const menuItems =
     role === "admin"
       ? [
@@ -77,7 +61,7 @@ export default function MenuContent() {
   };
 
   const handleConfirmLogout = () => {
-    localStorage.removeItem("token");
+    logout();
     setOpenLogoutDialog(false);
     window.location.href = "/scorecard/admin/login";
   };
