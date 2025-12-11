@@ -117,8 +117,10 @@ function AddUser({ open = false, onClose }) {
         <MuiAlert
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
-          className={`snackbar-alert ${
-            snackbarSeverity === "success" ? "snackbar-success" : ""
+          className={`custom-snackbar ${
+            snackbarMessage === "User created successfully!"
+              ? "snackbar-create"
+              : ""
           }`}
           elevation={6}
           variant="filled"
