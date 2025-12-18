@@ -570,10 +570,7 @@ const [removedItems, setRemovedItems] = useState({
 
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenatorId(id));
-      setSnackbarMessage(
-        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
-      );
-      setSnackbarSeverity("success");
+      handleSnackbarOpen(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`, "success");
       setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
@@ -581,10 +578,8 @@ const [removedItems, setRemovedItems] = useState({
         error,
         `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
       );
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
+      handleSnackbarOpen(errorMessage, "error");
     } finally {
-      setOpenSnackbar(true);
       setLoading(false);
     }
   };
@@ -1559,8 +1554,8 @@ useEffect(() => {
     });
   };
 
-  const handleSave = async (e) => {
-  e.preventDefault();
+  const handleSave = async (publishFlag = false, e) => {
+  if (e && e.preventDefault) e.preventDefault();
   setLoading(true);
 
 
@@ -1581,7 +1576,7 @@ useEffect(() => {
       removedItems.pastVotes.length > 0 ||
       (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
 
-    if (userRole === "editor" && !hasLocalChanges) {
+    if (!hasLocalChanges) {
       setLoading(false);
       handleSnackbarOpen("No changes detected. Nothing to update.", "info");
       return;
@@ -1940,7 +1935,7 @@ useEffect(() => {
       ...formData,
       editedFields: allChanges,
       fieldEditors: updatedFieldEditors,
-      publishStatus: userRole === "admin" ? "published" : "under review",
+      publishStatus: publishFlag ? "published" : userRole === "admin" ? "under review" : "under review",
     };
 
     if (senatorUpdate.publishStatus === "published") {
@@ -2041,12 +2036,13 @@ useEffect(() => {
       pastVotes: []
     });
 
-    userRole === "admin"
-      ? handleSnackbarOpen("Changes published successfully!", "success")
-      : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
-          "info"
-        );
+    if (publishFlag) {
+      handleSnackbarOpen("Changes published successfully!", "success");
+    } else if (userRole === "admin") {
+      handleSnackbarOpen("Changes saved (draft).", "success");
+    } else {
+      handleSnackbarOpen('Status changed to "Under Review" for admin to moderate.', "info");
+    }
   } catch (error) {
     console.error("Save failed:", error);
 
@@ -2099,30 +2095,30 @@ useEffect(() => {
         descColor: "#1976D2",
       },
       "under review": {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
         title: "Under Review",
         description:
           editedFields.length > 0
             ? `${editedFields.map((f) => fieldLabels[f] || f).join(", ")}`
             : "No recent changes",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+                titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
       published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+     backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
         title: "Unsaved Changes",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
     };
     return configs[currentStatus];

@@ -340,7 +340,7 @@ export default function AddBill(props) {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (publishFlag = false) => {
     const termValidation = validateRequired(formData.termId, "Term");
     if (!termValidation.isValid) {
       showSnackbar(termValidation.message, "error");
@@ -390,7 +390,7 @@ export default function AddBill(props) {
         JSON.stringify(updatedFieldEditors)
       );
 
-      const finalStatus = userRole === "admin" ? "published" : "under review";
+      const finalStatus = publishFlag ? "published" : userRole === "admin" ? "under review" : "under review";
       formDataToSend.append("status", finalStatus);
 
       if (id) {
@@ -425,12 +425,13 @@ export default function AddBill(props) {
         }
         await dispatch(getVoteById(id)).unwrap();
 
-        showSnackbar(
-          userRole === "admin"
-            ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.',
-          "success"
-        );
+        if (publishFlag) {
+          showSnackbar("Changes published successfully!", "success");
+        } else if (userRole === "admin") {
+          showSnackbar("Changes saved (draft).", "success");
+        } else {
+          showSnackbar('Status changed to "Under Review" for admin to moderate.', "info");
+        }
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
@@ -532,32 +533,32 @@ export default function AddBill(props) {
         descColor: "#1976D2",
       },
       "under review": {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
-        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Under Review",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
+        icon:  <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Saved Changes",
         description:
           editedFields.length > 0
             ? `Edited fields: ${editedFields
                 .map((f) => fieldLabels[f] || f)
                 .join(", ")}`
             : "No recent changes",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
       published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
         title: "Unsaved Changes",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
     };
 
@@ -673,27 +674,59 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              {id && (
+              {id &&userRole === "admin" ? 
                 <Button
                   variant="outlined"
                   onClick={handleDiscard}
                   className="discardBtn"
                 >
-                  {userRole === "admin" ? "Discard" : "Undo"}
+                  Discard
+                  {/* {userRole === "admin" ? "Discard" : "Undo"} */}
+                </Button>:null
+              }
+
+              {id ? (
+                userRole === "admin" ? (
+                  <>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleSubmit(false)}
+                      className="publishBtn"
+                    >
+                      Save Draft
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleSubmit(true)}
+                   sx ={{
+              backgroundColor: "#2E7D32 !important",
+              color: "white !important",
+              padding: "0.5rem 1.5rem",
+              marginLeft: "0.5rem",
+              "&:hover": { backgroundColor: "#216A2A !important" },
+            }}
+                    >
+                      Publish
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleSubmit(false)}
+                    className="publishBtn"
+                  >
+                    Save Draft
+                  </Button>
+                )
+              ) : (
+                <Button
+                  variant="outlined"
+                  onClick={() => handleSubmit(false)}
+                  className="publishBtn"
+                >
+                  Create
                 </Button>
               )}
-
-              <Button
-                variant="outlined"
-                onClick={handleSubmit}
-                className="publishBtn"
-              >
-                {id
-                  ? userRole === "admin"
-                    ? "Publish"
-                    : "Save Changes"
-                  : "Create"}
-              </Button>
             </Stack>
             {userRole &&
               statusData &&
@@ -721,9 +754,9 @@ export default function AddBill(props) {
                           formData.status === "draft"
                             ? "66, 165, 245"
                             : formData.status === "under review"
-                            ? "230, 81, 0"
+                            ? "66, 165, 245"
                             : formData.status === "published"
-                            ? "76, 175, 80"
+                            ? "66, 165, 245"
                             : "244, 67, 54"
                         }, 0.2)`,
                         display: "grid",
@@ -807,12 +840,12 @@ export default function AddBill(props) {
                                     mb: 2,
                                   }}
                                 >
-                                  <Typography
+                                 {/* < Typography
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
                                     {id ? "Saved Changes" : "New Fields"}
-                                  </Typography>
+                                  </Typography> */}
                                   <List dense sx={{ py: 0 }}>
                                     {backendChanges.map((field) => {
                                       const editorInfo =
