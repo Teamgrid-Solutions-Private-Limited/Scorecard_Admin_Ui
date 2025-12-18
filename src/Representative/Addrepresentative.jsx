@@ -648,8 +648,8 @@ const handleRemoveTerm = (termIndex) => {
     fieldName: "photo",
   });
 
- const handleSave = async (e) => {
-  e.preventDefault();
+ const handleSave = async (publishFlag = false, e) => {
+  if (e && e.preventDefault) e.preventDefault();
   setLoading(true);
 
   try {
@@ -667,7 +667,7 @@ const handleRemoveTerm = (termIndex) => {
       deletedTermIds.length > 0 ||
       (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
 
-    if (userRole === "editor" && !hasLocalChanges) {
+    if ( !hasLocalChanges) {
       setLoading(false);
       handleSnackbarOpen("No changes detected. Nothing to update.", "info");
       return;
@@ -915,7 +915,7 @@ const handleRemoveTerm = (termIndex) => {
       ...formData,
       editedFields: allChanges,
       fieldEditors: updatedFieldEditors,
-      publishStatus: userRole === "admin" ? "published" : "under review",
+      publishStatus: publishFlag ? "published" : userRole === "admin" ? "under review" : "under review",
     };
 
     if (representativeUpdate.publishStatus === "published") {
@@ -990,12 +990,13 @@ const handleRemoveTerm = (termIndex) => {
     setLocalChanges([]);
     setDeletedTermIds([]);
 
-    userRole === "admin"
-      ? handleSnackbarOpen("Changes published successfully!", "success")
-      : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
-          "info"
-        );
+    if (publishFlag) {
+      handleSnackbarOpen("Changes published successfully!", "success");
+    } else if (userRole === "admin") {
+      handleSnackbarOpen("Changes saved (draft).", "success");
+    } else {
+      handleSnackbarOpen('Status changed to "Under Review" for admin to moderate.', "info");
+    }
   } catch (error) {
     console.error("Save failed:", error);
     
@@ -1086,30 +1087,30 @@ const handleRemoveTerm = (termIndex) => {
         descColor: "#1976D2",
       },
       "under review": {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
-        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Under Review",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
+        icon:  <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Saved Changes",
         description:
           editedFields.length > 0
             ? `Waiting approval for ${editedFields.length} changes`
             : "No changes pending review",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
       published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
         title: "Unsaved Changes",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
     };
 
@@ -1125,9 +1126,7 @@ const handleRemoveTerm = (termIndex) => {
 
   const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No house selected");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      handleSnackbarOpen("No house selected", "error");
       return;
     }
     setOpenDiscardDialog(true);
@@ -1142,10 +1141,10 @@ const handleRemoveTerm = (termIndex) => {
       navigate(0);
       await dispatch(getHouseById(id));
       await dispatch(getHouseDataByHouseId(id));
-      setSnackbarMessage(
-        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      handleSnackbarOpen(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
+        "success"
       );
-      setSnackbarSeverity("success");
       setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
@@ -1153,10 +1152,8 @@ const handleRemoveTerm = (termIndex) => {
         error,
         `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
       );
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
+      handleSnackbarOpen(errorMessage, "error");
     } finally {
-      setOpenSnackbar(true);
       setLoading(false);
     }
   };

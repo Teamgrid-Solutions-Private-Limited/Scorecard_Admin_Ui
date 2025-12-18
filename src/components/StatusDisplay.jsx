@@ -445,6 +445,9 @@ const StatusDisplay = ({
     return field;
   };
 
+  const displayTitle =
+    formData?.publishStatus === "under review" ? "Saved Changes" : statusData.title;
+
   const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
     : [];
@@ -472,10 +475,10 @@ const StatusDisplay = ({
               backgroundColor: `rgba(${
                 formData.publishStatus === "draft"
                   ? "66, 165, 245"
-                  : formData.publishStatus === "under review"
-                  ? "230, 81, 0"
+                  : formData.publishStatus === "Saved Changes"
+                  ? "66, 165, 245"
                   : formData.publishStatus === "published"
-                  ? "76, 175, 80"
+                  ? "66, 165, 245"
                   : "244, 67, 54"
               }, 0.2)`,
               display: "grid",
@@ -483,7 +486,7 @@ const StatusDisplay = ({
               flexShrink: 0,
             }}
           >
-            {React.cloneElement(statusData.icon, {
+           { React.cloneElement(statusData.icon, {
               sx: { color: statusData.iconColor },
             })}
           </Box>
@@ -497,7 +500,7 @@ const StatusDisplay = ({
                 mb: 0.5,
               }}
             >
-              {statusData.title}
+              {displayTitle}
             </Typography>
             <Typography variant="body2" sx={{ color: "text.disabled" }}>
               No pending changes
@@ -529,9 +532,9 @@ const StatusDisplay = ({
               formData.publishStatus === "draft"
                 ? "66, 165, 245"
                 : formData.publishStatus === "under review"
-                ? "230, 81, 0"
+                ? "66, 165, 245"
                 : formData.publishStatus === "published"
-                ? "76, 175, 80"
+                ?"66, 165, 245"
                 : "244, 67, 54"
             }, 0.2)`,
             display: "grid",
@@ -562,7 +565,7 @@ const StatusDisplay = ({
                 gap: 1,
               }}
             >
-              {statusData.title}
+              {displayTitle}
             </Typography>
           </Box>
           <Box sx={{ mt: 1.5 }}>
@@ -581,7 +584,6 @@ const StatusDisplay = ({
                   variant="overline"
                   sx={{ color: "text.secondary", mb: 1 }}
                 >
-                  Saved Changes
                 </Typography>
                 <List dense sx={{ py: 0 }}>
                   {backendChanges.map((field, index) => {
