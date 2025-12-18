@@ -446,7 +446,7 @@ const StatusDisplay = ({
   };
 
   const displayTitle =
-    formData?.publishStatus === "under review" ? "Saved Changes" : statusData.title;
+    formData?.publishStatus === "under review" ? "Saved Draft" : statusData.title;
 
   const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
@@ -475,7 +475,7 @@ const StatusDisplay = ({
               backgroundColor: `rgba(${
                 formData.publishStatus === "draft"
                   ? "66, 165, 245"
-                  : formData.publishStatus === "Saved Changes"
+                  : formData.publishStatus === "Saved Draft"
                   ? "66, 165, 245"
                   : formData.publishStatus === "published"
                   ? "66, 165, 245"
@@ -670,7 +670,7 @@ const StatusDisplay = ({
                 >
                   {formData.publishStatus === "published"
                     ? ""
-                    : "Unsaved Changes"}
+                    : "Unsaved Draft"}
                 </Typography>
                 <List dense sx={{ py: 0 }}>
                   {localChanges.map((field, index) => (

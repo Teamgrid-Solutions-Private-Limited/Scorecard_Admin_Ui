@@ -995,7 +995,7 @@ const handleRemoveTerm = (termIndex) => {
     } else if (userRole === "admin") {
       handleSnackbarOpen("Changes saved (draft).", "success");
     } else {
-      handleSnackbarOpen('Status changed to "Under Review" for admin to moderate.', "info");
+      handleSnackbarOpen('Status changed to "Draft" for admin to moderate.', "info");
     }
   } catch (error) {
     console.error("Save failed:", error);
@@ -1090,12 +1090,12 @@ const handleRemoveTerm = (termIndex) => {
         backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
-        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        icon:  <HourglassTop sx={{ fontSize: "20px" }} />,
         title: "Saved Draft",
         description:
           editedFields.length > 0
-            ? `${editedFields.map((f) => fieldLabels[f] || f).join(", ")}`
-            : "No changes made yet",
+            ? `Waiting approval for ${editedFields.length} changes`
+            : "No changes pending review",
         titleColor: "#0D47A1",
         descColor: "#1976D2",
       },
@@ -1103,8 +1103,11 @@ const handleRemoveTerm = (termIndex) => {
         backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`

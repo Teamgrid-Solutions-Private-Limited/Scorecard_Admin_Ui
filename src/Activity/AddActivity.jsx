@@ -340,7 +340,7 @@ export default function AddActivity(props) {
         } else if (userRole === "admin") {
           showSnackbar("Changes saved (draft).", "success");
         } else {
-          showSnackbar('Status changed to "Under Review" for admin to moderate.', "info");
+          showSnackbar('Status changed to "Draft" for admin to moderate.', "info");
         }
 
         if (userRole !== "admin") {
@@ -443,14 +443,14 @@ export default function AddActivity(props) {
         backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
-        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        icon:  <HourglassTop sx={{ fontSize: "20px" }} />,
         title: "Saved Draft",
         description:
           editedFields.length > 0
             ? `Edited fields: ${editedFields
                 .map((f) => fieldLabels[f] || f)
                 .join(", ")}`
-            : "No changes made yet",
+            : "No recent changes",
         titleColor: "#0D47A1",
         descColor: "#1976D2",
       },
@@ -459,7 +459,7 @@ export default function AddActivity(props) {
         borderColor: "#2196F3",
         iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
@@ -829,7 +829,7 @@ export default function AddActivity(props) {
                                   >
                                     {formData.status === "published"
                                       ? ""
-                                      : "Unsaved Changes"}
+                                      : "Unsaved Draft"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (

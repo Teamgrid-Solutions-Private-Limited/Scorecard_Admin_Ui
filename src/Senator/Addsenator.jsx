@@ -2041,7 +2041,7 @@ useEffect(() => {
     } else if (userRole === "admin") {
       handleSnackbarOpen("Changes saved (draft).", "success");
     } else {
-      handleSnackbarOpen('Status changed to "Under Review" for admin to moderate.', "info");
+      handleSnackbarOpen('Status changed to "Draft" for admin to moderate.', "info");
     }
   } catch (error) {
     console.error("Save failed:", error);
@@ -2098,13 +2098,13 @@ useEffect(() => {
         backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
-        icon: <Drafts sx={{ fontSize: "20px" }} />,
-        title: "Draft Version",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Under Review",
         description:
           editedFields.length > 0
             ? `${editedFields.map((f) => fieldLabels[f] || f).join(", ")}`
-            : "No changes made yet",
-        titleColor: "#0D47A1",
+            : "No recent changes",
+                titleColor: "#0D47A1",
         descColor: "#1976D2",
       },
       published: {
@@ -2112,7 +2112,7 @@ useEffect(() => {
         borderColor: "#2196F3",
         iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
