@@ -340,7 +340,7 @@ export default function AddActivity(props) {
         } else if (userRole === "admin") {
           showSnackbar("Changes saved (draft).", "success");
         } else {
-          showSnackbar('Status changed to "Under Review" for admin to moderate.', "info");
+          showSnackbar('Status changed to "Draft" for admin to moderate.', "info");
         }
 
         if (userRole !== "admin") {

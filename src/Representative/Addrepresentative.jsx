@@ -995,7 +995,7 @@ const handleRemoveTerm = (termIndex) => {
     } else if (userRole === "admin") {
       handleSnackbarOpen("Changes saved (draft).", "success");
     } else {
-      handleSnackbarOpen('Status changed to "Under Review" for admin to moderate.', "info");
+      handleSnackbarOpen('Status changed to "Draft" for admin to moderate.', "info");
     }
   } catch (error) {
     console.error("Save failed:", error);

@@ -2041,7 +2041,7 @@ useEffect(() => {
     } else if (userRole === "admin") {
       handleSnackbarOpen("Changes saved (draft).", "success");
     } else {
-      handleSnackbarOpen('Status changed to "Under Review" for admin to moderate.', "info");
+      handleSnackbarOpen('Status changed to "Draft" for admin to moderate.', "info");
     }
   } catch (error) {
     console.error("Save failed:", error);
@@ -2108,9 +2108,6 @@ useEffect(() => {
         descColor: "#1976D2",
       },
       published: {
-     backgroundColor: "rgba(66, 165, 245, 0.12)",
-        borderColor: "#2196F3",
-        iconColor: "#1565C0",
      backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
