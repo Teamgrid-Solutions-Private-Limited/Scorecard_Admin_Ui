@@ -113,7 +113,7 @@ export default function Senator(props) {
   };
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
-  const statusOptions = ["published", "under review", "draft"];
+  const statusOptions = ["published", "draft"];
 
   useEffect(() => {
     dispatch(getAllSenators());
@@ -375,7 +375,8 @@ export default function Senator(props) {
     // Status filter
     const statusMatch =
       statusFilter.length === 0 ||
-      (senator.publishStatus && statusFilter.includes(senator.publishStatus));
+      (senator.publishStatus && statusFilter.includes(senator.publishStatus)) ||
+      (statusFilter.includes("draft") && senator.publishStatus === "under review");
 
     // Past votes score filter - check all terms
     const pastVotesMatch =
