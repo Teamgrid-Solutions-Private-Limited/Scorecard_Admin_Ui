@@ -96,13 +96,15 @@ function AddUser({ open = false, onClose }) {
       dispatch(getAllUsers());
       if (onClose) onClose();
     } catch (error) {
-      const errorMessage = getErrorMessage(error, "Failed to create user. Please try again.");
+      const errorMessage = getErrorMessage(
+        error,
+        "Failed to create user. Please try again."
+      );
       showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <>
@@ -110,13 +112,15 @@ function AddUser({ open = false, onClose }) {
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <MuiAlert
           onClose={handleSnackbarClose}
           severity={snackbarSeverity}
-          className={`snackbar-alert ${
-            snackbarSeverity === "success" ? "snackbar-success" : ""
+          className={`custom-snackbar ${
+            snackbarMessage === "User created successfully!"
+              ? "snackbar-create"
+              : ""
           }`}
           elevation={6}
           variant="filled"

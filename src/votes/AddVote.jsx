@@ -390,7 +390,11 @@ export default function AddBill(props) {
         JSON.stringify(updatedFieldEditors)
       );
 
+<<<<<<< HEAD
       const finalStatus = publishFlag ? "published" : userRole === "admin" ? "under review" : "under review";
+=======
+      const finalStatus = userRole === "admin" ? "published" : "under review";
+>>>>>>> dev-test
       formDataToSend.append("status", finalStatus);
 
       if (id) {
