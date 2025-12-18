@@ -536,14 +536,14 @@ export default function AddBill(props) {
         backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
-        icon:  <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Saved Changes",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Saved Draft",
         description:
           editedFields.length > 0
             ? `Edited fields: ${editedFields
                 .map((f) => fieldLabels[f] || f)
                 .join(", ")}`
-            : "No recent changes",
+            : "No changes made yet",
         titleColor: "#0D47A1",
         descColor: "#1976D2",
       },

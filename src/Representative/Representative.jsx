@@ -89,7 +89,7 @@ export default function Representative(props) {
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
   const [statusFilter, setStatusFilter] = useState([]);
-  const statusOptions = ["published", "under review", "draft"];
+  const statusOptions = ["published", "draft"];
 
   const getOrdinalSuffix = (num) => {
     const n = Number(num);
@@ -318,7 +318,8 @@ export default function Representative(props) {
       const statusMatch =
         statusFilter.length === 0 ||
         (transformedHouse.publishStatus &&
-          statusFilter.includes(transformedHouse.publishStatus));
+          statusFilter.includes(transformedHouse.publishStatus)) ||
+        (statusFilter.includes("draft") && transformedHouse.publishStatus === "under review");
 
       return (
         nameMatch && partyMatch && districtMatch && ratingMatch && statusMatch

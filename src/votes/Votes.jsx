@@ -77,7 +77,7 @@ export default function Votes(props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
   const [congressFilter, setCongressFilter] = useState([]);
-  const statusOptions = ["published", "draft", "under review"];
+  const statusOptions = ["published", "draft"];
   const [selectedVotes, setSelectedVotes] = useState([]);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
   const [bulkSbaPosition, setBulkSbaPosition] = useState("");
@@ -126,7 +126,8 @@ export default function Votes(props) {
   const filteredVotes = votes.filter((vote) => {
     const statusMatch =
       statusFilter.length === 0 ||
-      (vote.status && statusFilter.includes(vote.status));
+      (vote.status && statusFilter.includes(vote.status)) ||
+      (statusFilter.includes("draft") && vote.status === "under review");
 
     const congressMatch =
       congressFilter.length === 0 ||

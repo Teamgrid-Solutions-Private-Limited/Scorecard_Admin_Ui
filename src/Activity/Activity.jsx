@@ -77,7 +77,7 @@ export default function Activity(props) {
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
-  const statusOptions = ["published", "draft", "under review"];
+  const statusOptions = ["published", "draft"];
   const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); 
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
   const [bulkTrackActivity, setBulkTrackActivity] = useState("");
@@ -95,7 +95,8 @@ export default function Activity(props) {
  
     const statusMatch =
       statusFilter.length === 0 ||
-      (activity.status && statusFilter.includes(activity.status));
+      (activity.status && statusFilter.includes(activity.status)) ||
+      (statusFilter.includes("draft") && activity.status === "under review");
 
     const searchMatch =
       !searchQuery ||

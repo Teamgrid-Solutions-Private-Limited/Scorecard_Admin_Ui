@@ -164,7 +164,7 @@ export default function CustomizedDataGrid({
     const lowerStatus = status.toLowerCase();
     if (lowerStatus.includes("published")) return "success";
     if (lowerStatus.includes("draft")) return "default";
-    if (lowerStatus.includes("review")) return "warning";
+    if (lowerStatus.includes("review")) return "default";
 
     return "default";
   };
@@ -305,7 +305,7 @@ export default function CustomizedDataGrid({
 
             renderCell: (params) => {
               const status = params?.row?.status;
-              const displayStatus = status
+              let displayStatus = status
                 ? status
                     .split(" ")
                     .map(
@@ -315,6 +315,11 @@ export default function CustomizedDataGrid({
                     )
                     .join(" ")
                 : "N/A";
+              
+              // Show "Draft" for "under review" status
+              if (status && status.toLowerCase() === "under review") {
+                displayStatus = "Draft";
+              }
 
               return (
                 <Chip
@@ -439,7 +444,7 @@ export default function CustomizedDataGrid({
             ),
             renderCell: (params) => {
               const status = params?.row?.status;
-              const displayStatus = status
+              let displayStatus = status
                 ? status
                     .split(" ")
                     .map(
@@ -449,6 +454,11 @@ export default function CustomizedDataGrid({
                     )
                     .join(" ")
                 : "N/A";
+              
+              // Show "Draft" for "under review" status
+              if (status && status.toLowerCase() === "under review") {
+                displayStatus = "Draft";
+              }
 
               return (
                 <Chip
@@ -775,7 +785,7 @@ export default function CustomizedDataGrid({
 
                   renderCell: (params) => {
                     const status = params?.row?.publishStatus;
-                    const displayStatus = status
+                    let displayStatus = status
                       ? status
                           .split(" ")
                           .map(
@@ -785,6 +795,11 @@ export default function CustomizedDataGrid({
                           )
                           .join(" ")
                       : "N/A";
+                    
+                    // Show "Draft" for "under review" status
+                    if (status && status.toLowerCase() === "under review") {
+                      displayStatus = "Draft";
+                    }
 
                     return (
                       <Chip
@@ -809,7 +824,7 @@ export default function CustomizedDataGrid({
                   ),
                   renderCell: (params) => {
                     const status = params?.row?.publishStatus;
-                    const displayStatus = status
+                    let displayStatus = status
                       ? status
                           .split(" ")
                           .map(
@@ -819,6 +834,11 @@ export default function CustomizedDataGrid({
                           )
                           .join(" ")
                       : "N/A";
+                    
+                    // Show "Draft" for "under review" status
+                    if (status && status.toLowerCase() === "under review") {
+                      displayStatus = "Draft";
+                    }
 
                     return (
                       <Chip

@@ -2098,13 +2098,13 @@ useEffect(() => {
         backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
-        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Under Review",
+        icon: <Drafts sx={{ fontSize: "20px" }} />,
+        title: "Draft Version",
         description:
           editedFields.length > 0
             ? `${editedFields.map((f) => fieldLabels[f] || f).join(", ")}`
-            : "No recent changes",
-                titleColor: "#0D47A1",
+            : "No changes made yet",
+        titleColor: "#0D47A1",
         descColor: "#1976D2",
       },
       published: {

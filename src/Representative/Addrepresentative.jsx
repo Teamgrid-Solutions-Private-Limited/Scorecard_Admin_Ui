@@ -1090,12 +1090,12 @@ const handleRemoveTerm = (termIndex) => {
         backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
-        icon:  <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Saved Changes",
+        icon: <HourglassTop sx={{ fontSize: "20px" }} />,
+        title: "Saved Draft",
         description:
           editedFields.length > 0
-            ? `Waiting approval for ${editedFields.length} changes`
-            : "No changes pending review",
+            ? `${editedFields.map((f) => fieldLabels[f] || f).join(", ")}`
+            : "No changes made yet",
         titleColor: "#0D47A1",
         descColor: "#1976D2",
       },
