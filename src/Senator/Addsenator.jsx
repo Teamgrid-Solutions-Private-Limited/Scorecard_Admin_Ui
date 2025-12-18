@@ -2112,7 +2112,7 @@ useEffect(() => {
         borderColor: "#2196F3",
         iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`

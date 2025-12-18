@@ -537,7 +537,7 @@ export default function AddBill(props) {
         borderColor: "#2196F3",
         iconColor: "#1565C0",
         icon:  <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Saved Changes",
+        title: "Saved Draft",
         description:
           editedFields.length > 0
             ? `Edited fields: ${editedFields
@@ -552,7 +552,7 @@ export default function AddBill(props) {
         borderColor: "#2196F3",
         iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
@@ -930,7 +930,7 @@ export default function AddBill(props) {
                                   >
                                     {formData.status === "published"
                                       ? ""
-                                      : "Unsaved Changes"}
+                                      : "Unsaved Draft"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (

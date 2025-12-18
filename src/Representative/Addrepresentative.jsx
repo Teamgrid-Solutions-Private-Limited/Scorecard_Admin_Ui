@@ -1091,7 +1091,7 @@ const handleRemoveTerm = (termIndex) => {
         borderColor: "#2196F3",
         iconColor: "#1565C0",
         icon:  <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Saved Changes",
+        title: "Saved Draft",
         description:
           editedFields.length > 0
             ? `Waiting approval for ${editedFields.length} changes`
@@ -1104,7 +1104,7 @@ const handleRemoveTerm = (termIndex) => {
         borderColor: "#2196F3",
         iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
