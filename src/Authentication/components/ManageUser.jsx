@@ -41,7 +41,7 @@ import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import MobileHeader from "../../components/MobileHeader";
 import Footer from "../../components/Footer";
 import LoadingOverlay from "../../components/LoadingOverlay";
@@ -60,7 +60,7 @@ export default function ManageUser(props) {
   const { users, loading, error } = useSelector((state) => state.auth);
   const [openAddUser, setOpenAddUser] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  
+
   // Use centralized snackbar hook
   const {
     open: openSnackbar,
@@ -80,27 +80,25 @@ export default function ManageUser(props) {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const token = getToken();
-  if (!token) {
-    navigate("/login");
-    return;
-  }
-
-  try {
-    const decoded = jwtDecode(token);
-    if (decoded.role !== "admin") {
-      navigate("/"); 
+    const token = getToken();
+    if (!token) {
+      navigate("/login");
+      return;
     }
-  } catch (err) {
-    navigate("/login");
-  }
-}, []);
 
+    try {
+      const decoded = jwtDecode(token);
+      if (decoded.role !== "admin") {
+        navigate("/");
+      }
+    } catch (err) {
+      navigate("/login");
+    }
+  }, []);
 
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
-
 
   useEffect(() => {
     if (error) {
@@ -139,7 +137,7 @@ export default function ManageUser(props) {
       ).unwrap();
       showSnackbar("User updated successfully", "success");
       setEditUser(null);
-      dispatch(getAllUsers()); 
+      dispatch(getAllUsers());
     } catch (error) {
       const errorMessage = getErrorMessage(error, "Failed to update user");
       showSnackbar(errorMessage, "error");
@@ -156,19 +154,13 @@ export default function ManageUser(props) {
     setOpenDeleteDialog(false);
     try {
       await dispatch(deleteUser(selectedUser)).unwrap();
-      setSnackbarMessage("User deleted successfully");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
-      dispatch(getAllUsers()); 
+      showSnackbar("User deleted successfully", "success");
+      dispatch(getAllUsers());
     } catch (error) {
       const errorMessage = getErrorMessage(error, "Failed to delete user");
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar(errorMessage, "error");
     }
   };
-
-
 
   const roleOptions = ["admin", "editor", "contributor"];
 

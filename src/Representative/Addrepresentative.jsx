@@ -1369,7 +1369,7 @@ const handleRemoveTerm = (termIndex) => {
                             return prev;
                           });
                         }}
-                        onBlur={() => {}}
+                        onBlur={() => { }}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,

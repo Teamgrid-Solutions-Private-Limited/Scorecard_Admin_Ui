@@ -994,6 +994,7 @@ export default function AddSenator(props) {
                     }
                   }
                 }
+
               }
             }
           });
@@ -1409,7 +1410,8 @@ export default function AddSenator(props) {
     setEditedFields(changes);
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
-  useEffect(() => {
+useEffect(() => {
+  
     termPreFill();
   }, [id, senatorData]);
   // Use centralized snackbar hook
@@ -1510,7 +1512,8 @@ export default function AddSenator(props) {
 
   useEffect(() => {
     preFillForm();
-  }, [senator, terms]);
+  
+}, [senator, terms]);
 
   // Use centralized form change tracker hook
   const { handleChange } = useFormChangeTracker({
