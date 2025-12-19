@@ -1103,9 +1103,6 @@ const handleRemoveTerm = (termIndex) => {
         backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
-        backgroundColor: "rgba(66, 165, 245, 0.12)",
-        borderColor: "#2196F3",
-        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
         title: "Unsaved Draft",
         description:

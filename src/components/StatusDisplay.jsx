@@ -451,7 +451,9 @@ const StatusDisplay = ({
   const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
     : [];
-
+const visibleBackendChanges = backendChanges
+  .map((field, index) => formatFieldName(field, index))
+  .filter(Boolean);
   const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
 
   if (!hasChanges) {
@@ -585,6 +587,17 @@ const StatusDisplay = ({
                   sx={{ color: "text.secondary", mb: 1 }}
                 >
                 </Typography>
+                 {visibleBackendChanges.length === 0 &&
+      formData.publishStatus === "under review" && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ px: 1 }}
+        >
+          Select the next term to see the changes
+        </Typography>
+      )}
+      {visibleBackendChanges.length > 0 && (
                 <List dense sx={{ py: 0 }}>
                   {backendChanges.map((field, index) => {
                     const fieldLabel = formatFieldName(field, index);
@@ -652,6 +665,7 @@ const StatusDisplay = ({
                     );
                   })}
                 </List>
+      )}
               </Box>
             )}
             {localChanges.length > 0 && (
