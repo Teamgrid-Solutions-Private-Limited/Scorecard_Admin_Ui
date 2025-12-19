@@ -603,7 +603,6 @@ const [removedItems, setRemovedItems] = useState({
 
   const contentRefs = useRef([]);
 useEffect(() => {
-  // console.log('=== localChanges state updated ===', localChanges);
 }, [localChanges]);
   const handleAddTerm = () => {
     setSenatorTermData((prev) => [
@@ -665,7 +664,7 @@ useEffect(() => {
       return;
     }
     if (senatorData?.currentSenator?.length > 0) {
-      const termsData = senatorData.currentSenator.map((term) => {
+      const termsData = senatorData.currentSenator.map((term, termIndex) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
         if (!matchedTerm) {
           return {
@@ -842,6 +841,7 @@ useEffect(() => {
           }
         });
         let orphanVotes = [];
+        const cutoffDate = new Date("2019-01-02");
 
         if (Array.isArray(term.votesScore) && term.votesScore.length > 0) {
           term.votesScore.forEach((vote) => {
@@ -850,6 +850,9 @@ useEffect(() => {
 
             const voteData = allVotes.find((v) => v._id === voteId);
             if (!voteData) return;
+
+            const voteDate = new Date(voteData.date);
+            const isBeforeCutoffDate = voteDate < cutoffDate;
 
             const belongsToAnyTerm = senatorData.currentSenator.some(
               (otherTerm) => {
@@ -862,21 +865,28 @@ useEffect(() => {
               }
             );
 
-            if (!belongsToAnyTerm) {
-              let scoreValue = "";
-              const dbScore = vote.score?.toLowerCase();
-              if (dbScore?.includes("yea")) scoreValue = "yea";
-              else if (dbScore?.includes("nay")) scoreValue = "nay";
-              else if (dbScore?.includes("other")) scoreValue = "other";
-              else scoreValue = vote.score || "";
+            // Add to orphanVotes if vote doesn't belong to any term OR if vote date is before Jan 2, 2019
+           // Add to orphanVotes ONLY if vote doesn't belong to any term
+// AND vote date is before Jan 2, 2019
+if (!belongsToAnyTerm && isBeforeCutoffDate) {
+  const alreadyAdded = orphanVotes.some((ov) => ov.voteId === voteId);
+  if (!alreadyAdded) {
+    let scoreValue = "";
+    const dbScore = vote.score?.toLowerCase();
+    if (dbScore?.includes("yea")) scoreValue = "yea";
+    else if (dbScore?.includes("nay")) scoreValue = "nay";
+    else if (dbScore?.includes("other")) scoreValue = "other";
+    else scoreValue = vote.score || "";
 
-              orphanVotes.push({
-                voteId: voteId,
-                score: scoreValue,
-                title: vote.voteId?.title || vote.title || "",
-                _id: vote._id || undefined,
-              });
-            }
+    orphanVotes.push({
+      voteId: voteId,
+      score: scoreValue,
+      title: vote.voteId?.title || vote.title || "",
+      _id: vote._id || undefined,
+    });  
+  }
+}
+
           });
         }
 
