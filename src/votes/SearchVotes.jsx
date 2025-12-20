@@ -1,4 +1,4 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Table,
   TableBody,
@@ -6,9 +6,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { getAllVotes } from "../redux/reducer/voteSlice";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getErrorMessage } from "../utils/errorHandler";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -34,6 +38,7 @@ import { useSnackbar } from "../hooks";
 
 export default function SearchVotes(params) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCongress, setSelectedCongress] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false);
@@ -41,6 +46,7 @@ export default function SearchVotes(params) {
   const navigate = useNavigate();
   const token = getToken();
   const user = getUser();
+  const { votes } = useSelector((state) => state.vote);
 
   // Use centralized snackbar hook
   const {
@@ -50,6 +56,20 @@ export default function SearchVotes(params) {
     showSnackbar,
     hideSnackbar: handleSnackbarClose,
   } = useSnackbar();
+
+  // Fetch votes on mount to get congress options
+  useEffect(() => {
+    dispatch(getAllVotes());
+  }, [dispatch]);
+
+  // Extract unique congress values from votes
+  const congressOptions = [
+    ...new Set(
+      votes
+        .filter((vote) => vote.congress)
+        .map((vote) => String(vote.congress))
+    ),
+  ].sort((a, b) => parseInt(b) - parseInt(a));
 
   const handleSearch = async () => {
     setLoading(true);
@@ -82,13 +102,17 @@ export default function SearchVotes(params) {
         } else {
           numberOnly = rollCallMatchNumberOnly[1];
         }
+        
+        const additionalParams = { number: numberOnly };
+        if (selectedCongress) {
+          additionalParams.congress = selectedCongress;
+        }
+
         response = await axios.post(
           `${API_URL}/fetch-quorum/store-data`,
           {
             type: "votes",
-            additionalParams: {
-              number: numberOnly,
-            },
+            additionalParams: additionalParams,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -99,13 +123,16 @@ export default function SearchVotes(params) {
         return;
       }
       const trySearch = async (fieldName) => {
+        const additionalParams = { [fieldName]: searchTerm };
+        if (selectedCongress) {
+          additionalParams.congress = selectedCongress;
+        }
+
         const res = await axios.post(
           `${API_URL}/fetch-quorum/store-data`,
           {
             type: "votes",
-            additionalParams: {
-              [fieldName]: searchTerm,
-            },
+            additionalParams: additionalParams,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -294,7 +321,7 @@ export default function SearchVotes(params) {
                       }}
                       fullWidth
                       sx={{
-                        maxWidth: { xs: "100%", md: "800px" },
+                        maxWidth: { xs: "100%", md: "600px" },
                         "& .MuiOutlinedInput-root": {
                           "&:hover .MuiOutlinedInput-notchedOutline": {
                             borderColor: "gray !important",
@@ -308,6 +335,44 @@ export default function SearchVotes(params) {
                         },
                       }}
                     />
+
+                    <FormControl
+  variant="outlined"
+  sx={{
+    minWidth: { xs: "100%", md: "140px" },
+    "& .MuiOutlinedInput-root": {
+      "&:hover .MuiOutlinedInput-notchedOutline": {
+        borderColor: "gray !important",
+      },
+    },
+  }}
+>
+  <Box sx={{ textAlign: "center",pb: 0}}>
+  <InputLabel >Congress</InputLabel>
+  </Box>
+  <Select
+    value={selectedCongress}
+    onChange={(e) => setSelectedCongress(e.target.value)}
+    label="Congress"
+  >
+    <MenuItem value="">
+      <em style={{ textAlign: "center", width: "100%" }}>Select Congress</em>
+    </MenuItem>
+    {congressOptions.map((congress) => (
+      <MenuItem 
+        key={congress} 
+        value={congress}
+        sx={{ 
+          display: "flex", 
+          justifyContent: "center",
+          textAlign: "center"
+        }}
+      >
+        {congress}th Congress
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
 
                     <Button
                       onClick={handleSearch}
