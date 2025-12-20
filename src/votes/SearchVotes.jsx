@@ -346,10 +346,11 @@ export default function SearchVotes(params) {
                         },
                         "& .MuiInputLabel-root": {
                           top: "-7px",
-                          left: "12px",
+                          left: "15px",
                         },
                         "& .MuiInputLabel-shrink": {
-                          top: "0",
+                          top: "-12px",
+                          left: "30px",
                         },
                       }}
                     >
