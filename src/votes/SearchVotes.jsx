@@ -336,7 +336,7 @@ export default function SearchVotes(params) {
                       }}
                     />
 
-                    <FormControl
+          <FormControl
   variant="outlined"
   sx={{
     minWidth: { xs: "100%", md: "140px" },
@@ -345,11 +345,15 @@ export default function SearchVotes(params) {
         borderColor: "gray !important",
       },
     },
+    "& .MuiInputLabel-root": {
+      top: "-7px", left:"12px"
+    },
+    "& .MuiInputLabel-shrink": {
+      top: "0",
+    }
   }}
 >
-  <Box sx={{ textAlign: "center",pb: 0}}>
-  <InputLabel >Congress</InputLabel>
-  </Box>
+  <InputLabel>Congress</InputLabel>
   <Select
     value={selectedCongress}
     onChange={(e) => setSelectedCongress(e.target.value)}
@@ -373,7 +377,6 @@ export default function SearchVotes(params) {
     ))}
   </Select>
 </FormControl>
-
                     <Button
                       onClick={handleSearch}
                       sx={{
