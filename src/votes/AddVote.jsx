@@ -47,6 +47,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { jwtDecode } from "jwt-decode";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSnackbar, useAuth, useFileUpload, useEntityData, useFormChangeTracker } from "../hooks";
@@ -79,6 +81,7 @@ export default function AddBill(props) {
 
   const [fieldEditors, setFieldEditors] = useState({});
   const [editedFields, setEditedFields] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -791,6 +794,26 @@ export default function AddBill(props) {
                         >
                           {statusData.title}
                         </Typography>
+                        {formData.status !== "draft" && (
+                          <Button
+                            variant="outlined"
+                            onClick={() => setShowHistory((s) => !s)}
+                            startIcon={showHistory ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            sx={{
+                              backgroundColor: showHistory ? "transparent" : "#173A5E !important",
+                              color: showHistory ? "text.primary" : "white !important",
+                              padding: "0.35rem 0.8rem",
+                              fontSize: "0.8rem",
+                              textTransform: "none",
+                              borderColor: "divider",
+                              '&:hover': {
+                                backgroundColor: showHistory ? 'rgba(0,0,0,0.04)' : '#1E4C80 !important'
+                              }
+                            }}
+                          >
+                            {showHistory ? 'Hide History' : 'Show History'}
+                          </Button>
+                        )}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -829,7 +852,7 @@ export default function AddBill(props) {
                           return (
                             <>
                               {/* Backend pending changes */}
-                              {backendChanges.length > 0 && (
+                              {showHistory && backendChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "#fff",
@@ -914,7 +937,7 @@ export default function AddBill(props) {
                               )}
 
                               {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
+                              {showHistory && localChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "#fff",

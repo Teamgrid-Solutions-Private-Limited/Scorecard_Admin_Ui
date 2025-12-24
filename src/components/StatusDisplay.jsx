@@ -1,5 +1,7 @@
-import React from "react";
-import { Box, Typography, List, ListItem, ListItemText } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Typography, List, ListItem, ListItemText, Button } from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { sanitizeKey } from "../helpers/fieldHelpers";
 
 const StatusDisplay = ({
@@ -448,6 +450,8 @@ const StatusDisplay = ({
   const displayTitle =
     formData?.publishStatus === "under review" ? "Saved Draft" : statusData.title;
 
+  const [showHistory, setShowHistory] = useState(false);
+
   const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
     : [];
@@ -569,9 +573,29 @@ const visibleBackendChanges = backendChanges
             >
               {displayTitle}
             </Typography>
+            {formData.publishStatus !== "draft" && (
+              <Button
+                variant="outlined"
+                onClick={() => setShowHistory((s) => !s)}
+                startIcon={showHistory ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                sx={{
+                  backgroundColor: showHistory ? "transparent" : "#173A5E !important",
+                  color: showHistory ? "text.primary"  : "white !important",
+                  padding: "0.35rem 0.8rem",
+                  fontSize: "0.8rem",
+                  textTransform: "none",
+                  borderColor: "divider",
+                  '&:hover': {
+                    backgroundColor: showHistory ?'rgba(0,0,0,0.04)'  :  '#1E4C80 !important'
+                  }
+                }}
+              >
+                {showHistory ? 'Hide History' : 'Show History'}
+              </Button>
+            )}
           </Box>
           <Box sx={{ mt: 1.5 }}>
-            {backendChanges.length > 0 && (
+            {showHistory && backendChanges.length > 0 && (
               <Box
                 sx={{
                   backgroundColor: "#fff",
@@ -668,7 +692,7 @@ const visibleBackendChanges = backendChanges
       )}
               </Box>
             )}
-            {localChanges.length > 0 && (
+            {showHistory && localChanges.length > 0 && (
               <Box
                 sx={{
                   backgroundColor: "#fff",
