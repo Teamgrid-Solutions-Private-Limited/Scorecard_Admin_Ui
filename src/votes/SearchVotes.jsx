@@ -299,102 +299,103 @@ export default function SearchVotes(params) {
                   pt={3}
                 >
                   <Grid
-                    item
-                    xs={12}
-                    md={8}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      flexDirection: { xs: "column", md: "row" },
-                      gap: { xs: 2, md: 1 },
-                      width: "100%",
-                      mt: 5,
-                    }}
-                  >
-                    <TextField
-                      placeholder="Search by vote question or roll call"
-                      variant="outlined"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSearch();
-                      }}
-                      fullWidth
-                      sx={{
-                        maxWidth: { xs: "100%", md: "600px" },
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "gray !important",
-                          },
-                        },
-                        "& .MuiInputBase-root": {
-                          "&.Mui-focused": {
-                            boxShadow: "none !important",
-                            outline: "none !important",
-                          },
-                        },
-                      }}
-                    />
-
-          <FormControl
-  variant="outlined"
+  item
+  xs={12}
+  md={8}
   sx={{
-    minWidth: { xs: "100%", md: "140px" },
-    "& .MuiOutlinedInput-root": {
-      "&:hover .MuiOutlinedInput-notchedOutline": {
-        borderColor: "gray !important",
-      },
-    },
-    "& .MuiInputLabel-root": {
-      top: "-7px", left:"12px"
-    },
-    "& .MuiInputLabel-shrink": {
-      top: "0",
-    }
+    display: "flex",
+    alignItems: "center",
+    flexDirection: { xs: "column", md: "row" },
+    gap: { xs: 2, md: 3 }, 
+    width: "100%",
+    mt: 5,
   }}
 >
-  <InputLabel>Congress</InputLabel>
-  <Select
-    value={selectedCongress}
-    onChange={(e) => setSelectedCongress(e.target.value)}
-    label="Congress"
+  <TextField
+    placeholder="Search by vote question or roll call"
+    variant="outlined"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") handleSearch();
+    }}
+    fullWidth
+    sx={{
+      maxWidth: { xs: "100%", md: "600px" },
+      "& .MuiOutlinedInput-root": {
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: "gray !important",
+        },
+      },
+      "& .MuiInputBase-root": {
+        "&.Mui-focused": {
+          boxShadow: "none !important",
+          outline: "none !important",
+        },
+      },
+    }}
+  />
+
+  <FormControl
+    variant="outlined"
+    sx={{
+      minWidth: { xs: "100%", md: "140px" },
+      "& .MuiOutlinedInput-root": {
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: "gray !important",
+        },
+      },
+      "& .MuiInputLabel-root": {
+        top: "-7px",
+        left: "12px"
+      },
+      "& .MuiInputLabel-shrink": {
+        top: "0",
+      }
+    }}
   >
-    <MenuItem value="">
-      <em style={{ textAlign: "center", width: "100%" }}>Select Congress</em>
-    </MenuItem>
-    {congressOptions.map((congress) => (
-      <MenuItem 
-        key={congress} 
-        value={congress}
-        sx={{ 
-          display: "flex", 
-          justifyContent: "center",
-          textAlign: "center"
-        }}
-      >
-        {congress}th Congress
+    <InputLabel>Congress</InputLabel>
+    <Select
+      value={selectedCongress}
+      onChange={(e) => setSelectedCongress(e.target.value)}
+      label="Congress"
+    >
+      <MenuItem value="">
+        <em style={{ textAlign: "center", width: "100%" }}>Select Congress</em>
       </MenuItem>
-    ))}
-  </Select>
-</FormControl>
-                    <Button
-                      onClick={handleSearch}
-                      sx={{
-                        width: { xs: "100%", md: "auto" },
-                        minWidth: "110px",
-                        backgroundColor: "#173A5E !important",
-                        color: "white !important",
-                        padding: "0.5rem 1rem",
-                        marginLeft: "0.5rem",
-                        "&:hover": {
-                          backgroundColor: "#1E4C80 !important",
-                        },
-                        transition: "all 0.3s ease",
-                      }}
-                    >
-                      Search
-                    </Button>
-                  </Grid>
+      {congressOptions.map((congress) => (
+        <MenuItem 
+          key={congress} 
+          value={congress}
+          sx={{ 
+            display: "flex", 
+            justifyContent: "center",
+            textAlign: "center"
+          }}
+        >
+          {congress}th Congress
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  <Button
+    onClick={handleSearch}
+    sx={{
+      width: { xs: "100%", md: "auto" },
+      minWidth: "110px",
+      backgroundColor: "#173A5E !important",
+      color: "white !important",
+      padding: "0.5rem 1rem",
+      "&:hover": {
+        backgroundColor: "#1E4C80 !important",
+      },
+      transition: "all 0.3s ease",
+    }}
+  >
+    Search
+  </Button>
+</Grid>
                 </Grid>
               </Box>
               <Box sx={{ p: 3 }}>

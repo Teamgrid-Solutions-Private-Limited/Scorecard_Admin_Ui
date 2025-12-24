@@ -39,6 +39,8 @@ import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { List, ListItem, ListItemText } from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useSnackbar, useAuth, useFileUpload, useFormChangeTracker, useEntityData } from "../hooks";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -77,6 +79,7 @@ export default function AddActivity(props) {
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
+  const [showHistory, setShowHistory] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
@@ -689,6 +692,26 @@ export default function AddActivity(props) {
                         >
                           {statusData.title}
                         </Typography>
+                        {formData.status !== "draft" && (
+                          <Button
+                            variant="outlined"
+                            onClick={() => setShowHistory((s) => !s)}
+                            startIcon={showHistory ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            sx={{
+                              backgroundColor: showHistory ? "#173A5E !important" : "transparent",
+                              color: showHistory ? "white !important" : "text.primary",
+                              padding: "0.35rem 0.8rem",
+                              fontSize: "0.8rem",
+                              textTransform: "none",
+                              borderColor: "divider",
+                              '&:hover': {
+                                backgroundColor: showHistory ? '#1E4C80 !important' : 'rgba(0,0,0,0.04)'
+                              }
+                            }}
+                          >
+                            {showHistory ? 'Hide History' : 'Show History'}
+                          </Button>
+                        )}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -727,7 +750,7 @@ export default function AddActivity(props) {
                           return (
                             <>
                               {/* Backend pending changes */}
-                              {backendChanges.length > 0 && (
+                              {showHistory && backendChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "#fff",
@@ -813,7 +836,7 @@ export default function AddActivity(props) {
                               )}
 
                               {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
+                              {showHistory && localChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "#fff",
