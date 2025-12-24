@@ -81,7 +81,7 @@ export default function AddBill(props) {
 
   const [fieldEditors, setFieldEditors] = useState({});
   const [editedFields, setEditedFields] = useState([]);
-  const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -800,14 +800,14 @@ export default function AddBill(props) {
                             onClick={() => setShowHistory((s) => !s)}
                             startIcon={showHistory ? <VisibilityOffIcon /> : <VisibilityIcon />}
                             sx={{
-                              backgroundColor: showHistory ? "#173A5E !important" : "transparent",
-                              color: showHistory ? "white !important" : "text.primary",
+                              backgroundColor: showHistory ? "transparent" : "#173A5E !important",
+                              color: showHistory ? "text.primary" : "white !important",
                               padding: "0.35rem 0.8rem",
                               fontSize: "0.8rem",
                               textTransform: "none",
                               borderColor: "divider",
                               '&:hover': {
-                                backgroundColor: showHistory ? '#1E4C80 !important' : 'rgba(0,0,0,0.04)'
+                                backgroundColor: showHistory ? 'rgba(0,0,0,0.04)' : '#1E4C80 !important'
                               }
                             }}
                           >
