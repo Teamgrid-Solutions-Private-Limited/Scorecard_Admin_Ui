@@ -65,9 +65,7 @@ export default function SearchVotes(params) {
   // Extract unique congress values from votes
   const congressOptions = [
     ...new Set(
-      votes
-        .filter((vote) => vote.congress)
-        .map((vote) => String(vote.congress))
+      votes.filter((vote) => vote.congress).map((vote) => String(vote.congress))
     ),
   ].sort((a, b) => parseInt(b) - parseInt(a));
 
@@ -102,7 +100,7 @@ export default function SearchVotes(params) {
         } else {
           numberOnly = rollCallMatchNumberOnly[1];
         }
-        
+
         const additionalParams = { number: numberOnly };
         if (selectedCongress) {
           additionalParams.congress = selectedCongress;
@@ -160,7 +158,8 @@ export default function SearchVotes(params) {
     try {
       const allVotes = await dispatch(getAllVotes()).unwrap();
       const isDuplicate = allVotes.some(
-        (existingVote) => String(existingVote.quorumId) === String(vote.quorumId || vote.voteId)
+        (existingVote) =>
+          String(existingVote.quorumId) === String(vote.quorumId || vote.voteId)
       );
       console.log("isDuplicate:", isDuplicate);
       if (isDuplicate) {
@@ -172,15 +171,15 @@ export default function SearchVotes(params) {
       const voteData = vote.quorumId
         ? vote
         : {
-          quorumId: vote.voteId,
-          title: vote.question,
-          type: "vote",
-          date: vote.date,
-          rollCallNumber: vote.rollCallNumber,
-          chamber: vote.chamber,
-          result: vote.result,
-          relatedBill: vote.relatedBill,
-        };
+            quorumId: vote.voteId,
+            title: vote.question,
+            type: "vote",
+            date: vote.date,
+            rollCallNumber: vote.rollCallNumber,
+            chamber: vote.chamber,
+            result: vote.result,
+            relatedBill: vote.relatedBill,
+          };
 
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [voteData],
@@ -299,103 +298,106 @@ export default function SearchVotes(params) {
                   pt={3}
                 >
                   <Grid
-  item
-  xs={12}
-  md={8}
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    flexDirection: { xs: "column", md: "row" },
-    gap: { xs: 2, md: 3 }, 
-    width: "100%",
-    mt: 5,
-  }}
->
-  <TextField
-    placeholder="Search by vote question or roll call"
-    variant="outlined"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") handleSearch();
-    }}
-    fullWidth
-    sx={{
-      maxWidth: { xs: "100%", md: "600px" },
-      "& .MuiOutlinedInput-root": {
-        "&:hover .MuiOutlinedInput-notchedOutline": {
-          borderColor: "gray !important",
-        },
-      },
-      "& .MuiInputBase-root": {
-        "&.Mui-focused": {
-          boxShadow: "none !important",
-          outline: "none !important",
-        },
-      },
-    }}
-  />
+                    item
+                    xs={12}
+                    md={8}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: { xs: "column", md: "row" },
+                      gap: { xs: 2, md: 3 },
+                      width: "100%",
+                      mt: 5,
+                    }}
+                  >
+                    <TextField
+                      placeholder="Search by vote question or roll call"
+                      variant="outlined"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSearch();
+                      }}
+                      fullWidth
+                      sx={{
+                        maxWidth: { xs: "100%", md: "600px" },
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "gray !important",
+                          },
+                        },
+                        "& .MuiInputBase-root": {
+                          "&.Mui-focused": {
+                            boxShadow: "none !important",
+                            outline: "none !important",
+                          },
+                        },
+                      }}
+                    />
 
-  <FormControl
-    variant="outlined"
-    sx={{
-      minWidth: { xs: "100%", md: "140px" },
-      "& .MuiOutlinedInput-root": {
-        "&:hover .MuiOutlinedInput-notchedOutline": {
-          borderColor: "gray !important",
-        },
-      },
-      "& .MuiInputLabel-root": {
-        top: "-7px",
-        left: "12px"
-      },
-      "& .MuiInputLabel-shrink": {
-        top: "0",
-      }
-    }}
-  >
-    <InputLabel>Congress</InputLabel>
-    <Select
-      value={selectedCongress}
-      onChange={(e) => setSelectedCongress(e.target.value)}
-      label="Congress"
-    >
-      <MenuItem value="">
-        <em style={{ textAlign: "center", width: "100%" }}>Select Congress</em>
-      </MenuItem>
-      {congressOptions.map((congress) => (
-        <MenuItem 
-          key={congress} 
-          value={congress}
-          sx={{ 
-            display: "flex", 
-            justifyContent: "center",
-            textAlign: "center"
-          }}
-        >
-          {congress}th Congress
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+                    <FormControl
+                      variant="outlined"
+                      sx={{
+                        minWidth: { xs: "100%", md: "140px" },
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "gray !important",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          top: "-7px",
+                          left: "15px",
+                        },
+                        "& .MuiInputLabel-shrink": {
+                          top: "-12px",
+                          left: "30px",
+                        },
+                      }}
+                    >
+                      <InputLabel>Congress</InputLabel>
+                      <Select
+                        value={selectedCongress}
+                        onChange={(e) => setSelectedCongress(e.target.value)}
+                        label="Congress"
+                      >
+                        <MenuItem value="">
+                          <em style={{ textAlign: "center", width: "100%" }}>
+                            Select Congress
+                          </em>
+                        </MenuItem>
+                        {congressOptions.map((congress) => (
+                          <MenuItem
+                            key={congress}
+                            value={congress}
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              textAlign: "center",
+                            }}
+                          >
+                            {congress}th Congress
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
 
-  <Button
-    onClick={handleSearch}
-    sx={{
-      width: { xs: "100%", md: "auto" },
-      minWidth: "110px",
-      backgroundColor: "#173A5E !important",
-      color: "white !important",
-      padding: "0.5rem 1rem",
-      "&:hover": {
-        backgroundColor: "#1E4C80 !important",
-      },
-      transition: "all 0.3s ease",
-    }}
-  >
-    Search
-  </Button>
-</Grid>
+                    <Button
+                      onClick={handleSearch}
+                      sx={{
+                        width: { xs: "100%", md: "auto" },
+                        minWidth: "110px",
+                        backgroundColor: "#173A5E !important",
+                        color: "white !important",
+                        padding: "0.5rem 1rem",
+                        "&:hover": {
+                          backgroundColor: "#1E4C80 !important",
+                        },
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      Search
+                    </Button>
+                  </Grid>
                 </Grid>
               </Box>
               <Box sx={{ p: 3 }}>
