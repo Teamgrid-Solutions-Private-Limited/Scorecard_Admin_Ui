@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 export default function ActionButtons({ onDiscard, onSave, userRole }) {
   return (
     <Stack direction="row" spacing={2} width="100%" sx={{ justifyContent: "flex-end", alignItems: "center" }}>
-  {userRole === "admin" ?    <Button
+   <Button
         variant="outlined"
         onClick={onDiscard}
         sx={{
@@ -18,7 +18,7 @@ export default function ActionButtons({ onDiscard, onSave, userRole }) {
       >
         Discard
         {/* {userRole === "admin" ? "Discard" : null} */}
-      </Button>: null}
+      </Button>
 
       {userRole === "admin" ? (
         <>
