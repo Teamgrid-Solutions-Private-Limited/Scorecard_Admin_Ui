@@ -677,7 +677,7 @@ export default function AddBill(props) {
                 alignItems: "center",
               }}
             >
-              {id &&userRole === "admin" ? 
+          
                 <Button
                   variant="outlined"
                   onClick={handleDiscard}
@@ -685,8 +685,8 @@ export default function AddBill(props) {
                 >
                   Discard
                   {/* {userRole === "admin" ? "Discard" : "Undo"} */}
-                </Button>:null
-              }
+                </Button>
+              
 
               {id ? (
                 userRole === "admin" ? (
@@ -740,7 +740,7 @@ export default function AddBill(props) {
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
-                    borderRadius: "0 8px 8px 0",
+                    borderRadius: "8px 8px 8px 8px",
                     boxShadow: 1,
                     mb: 2,
                   }}
@@ -1465,7 +1465,7 @@ export default function AddBill(props) {
                         onChange={handleChange}
                       >
                         <FormControlLabel
-                          value="yes"
+                          value="Yes"
                           control={
                             <Radio
                               icon={
@@ -1479,7 +1479,7 @@ export default function AddBill(props) {
                           label="Yes"
                         />
                         <FormControlLabel
-                          value="no"
+                          value="No"
                           control={
                             <Radio
                               icon={<CancelIcon sx={{ color: "#D3D3D3" }} />}

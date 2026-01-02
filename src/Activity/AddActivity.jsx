@@ -577,7 +577,6 @@ export default function AddActivity(props) {
               }}
             >
               {/* Show Discard button only for existing activities */}
-              {id &&  userRole === "admin" ? 
                 <Button
                   variant="outlined"
                   onClick={handleDiscard}
@@ -585,8 +584,8 @@ export default function AddActivity(props) {
                 >
                   Discard
                   {/* {userRole === "admin" ? "Discard" : "Undo"} */}
-                </Button>: null
-              }
+                </Button>
+              
 
               {id ? (
                 userRole === "admin" ? (
@@ -639,7 +638,7 @@ export default function AddActivity(props) {
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
-                    borderRadius: "0 8px 8px 0",
+                    borderRadius: "8px 8px 8px 8px",
                     boxShadow: 1,
                     mb: 2,
                   }}
