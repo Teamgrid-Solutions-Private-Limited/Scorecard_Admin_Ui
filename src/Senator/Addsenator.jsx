@@ -706,6 +706,7 @@ useEffect(() => {
   const termPreFill = () => {
     if (!terms?.length || !allVotes?.length || !allActivities?.length) {
       return;
+
     }
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term, termIndex) => {
@@ -1527,6 +1528,7 @@ if (!belongsToAnyTerm && isBeforeCutoffDate) {
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
+        isNew: senator.isNew || false,
         publishStatus: senator.publishStatus || "",
         editedFields: senator.editedFields || [],
         fieldEditors: senator.fieldEditors || {},
