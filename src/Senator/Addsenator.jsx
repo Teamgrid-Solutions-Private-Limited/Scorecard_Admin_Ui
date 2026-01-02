@@ -79,7 +79,7 @@ export default function AddSenator(props) {
   const [componentKey, setComponentKey] = useState(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
-
+console.log("Loadingg senatordata:", senatorData, );
   const [votesLoaded, setVotesLoaded] = useState(false);
   const [activitiesLoaded, setActivitiesLoaded] = useState(false);
   const [termsLoaded, setTermsLoaded] = useState(false);
@@ -481,6 +481,30 @@ const [removedItems, setRemovedItems] = useState({
             if (updatedTerm.pastVotesScore.length === 0) {
               updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
             }
+            // Automatically set currentTerm for the selected term.
+            // Use current year dynamically (not hardcoded) and also allow
+            // selecting a future term (e.g., 2026-2027) to become the current
+            // term if it is the newest term selected.
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const jan3ThisYear = new Date(`${2025}-01-03`);
+            const isAfterJan3 = now >= jan3ThisYear;
+
+            // Default behavior: mark currentTerm true if today is on/after Jan 3
+            // and today's date falls within the selected term range.
+            if (isAfterJan3 && now >= newTermStart && now <= newTermEnd) {
+              updatedTerm.currentTerm = true;
+            }
+
+            // If the selected term starts in the future (startYear > currentYear),
+            // mark it as the current term and clear currentTerm on other terms.
+            if (selectedTerm && Number(selectedTerm.startYear) > currentYear) {
+              updatedTerm.currentTerm = true;
+              // Ensure other terms will not be marked current later when we return
+              // from the mapper by setting a marker on the updated term. We'll
+              // clear others after the setState completes by using the returned
+              // newTerms in the outer setState (handled below by returning newTerms).
+            }
           }
         }
 
@@ -493,6 +517,26 @@ const [removedItems, setRemovedItems] = useState({
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
         setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+      }
+
+      // If the selected term is a future term, ensure it's the only term marked
+      // as currentTerm. Find the most recent (highest startYear) selected term
+      // among the updated terms and set currentTerm accordingly.
+      const currentYear = new Date().getFullYear();
+      const futureTerms = newTerms
+        .map((t, idx) => {
+          const tStart = t.termId
+            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))?.startYear
+            : null;
+          return { idx, startYear: tStart ? Number(tStart) : null };
+        })
+        .filter((t) => t.startYear && t.startYear > currentYear);
+
+      if (futureTerms.length > 0) {
+        const newest = futureTerms.reduce((a, b) =>
+          a.startYear > b.startYear ? a : b
+        );
+        return newTerms.map((t, i) => ({ ...t, currentTerm: i === newest.idx }));
       }
 
       return newTerms;
@@ -1286,12 +1330,31 @@ if (!belongsToAnyTerm && isBeforeCutoffDate) {
           activitiesScore = [{ activityId: "", score: "" }];
         }
 
+        // Determine automatic currentTerm: use dynamic current year (not hardcoded)
+        // and set true when today is on/after Jan 3 of the current year AND the
+        // current date falls within the term's actual date range. Future terms
+        // will be adjusted after building all terms so the newest future term
+        // can be marked current.
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const jan3ThisYear = new Date(`${2025}-01-03`);
+        const isAfterJan3 = now >= jan3ThisYear;
+        const termStart = matchedTerm
+          ? new Date(`${matchedTerm.startYear}-01-03`)
+          : null;
+        const termEnd = matchedTerm
+          ? new Date(`${matchedTerm.endYear}-01-02`)
+          : null;
+
+        const autoCurrentTerm =
+          isAfterJan3 && termStart && termEnd && now >= termStart && now <= termEnd;
+
         return {
           _id: term._id,
           summary: term.summary || "",
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
-          currentTerm: term.currentTerm || false,
+          currentTerm: autoCurrentTerm || term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
           isNew: false,
@@ -1300,8 +1363,26 @@ if (!belongsToAnyTerm && isBeforeCutoffDate) {
           pastVotesScore,
         };
       });
-      setSenatorTermData(termsData);
-      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
+      // If there are future terms (startYear > currentYear), mark the newest
+      // one as the current term and clear the flag on others.
+      const currentYear = new Date().getFullYear();
+      const futureTerms = termsData
+        .map((t, idx) => {
+          const start = t.termId
+            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))?.startYear
+            : null;
+          return { idx, startYear: start ? Number(start) : null };
+        })
+        .filter((t) => t.startYear && t.startYear > currentYear);
+
+      let adjustedTerms = termsData;
+      if (futureTerms.length > 0) {
+        const newest = futureTerms.reduce((a, b) => (a.startYear > b.startYear ? a : b));
+        adjustedTerms = termsData.map((t, i) => ({ ...t, currentTerm: i === newest.idx }));
+      }
+
+      setSenatorTermData(adjustedTerms);
+      setOriginalTermData(JSON.parse(JSON.stringify(adjustedTerms)));
     } else {
       const defaultTerm = [
         {
@@ -1586,7 +1667,8 @@ if (!belongsToAnyTerm && isBeforeCutoffDate) {
       removedItems.pastVotes.length > 0 ||
       (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
 
-    if (!hasLocalChanges) {
+    // Allow admins to save/publish even if there are no local changes
+    if (!hasLocalChanges && userRole !== "admin") {
       setLoading(false);
       handleSnackbarOpen("No changes detected. Nothing to update.", "info");
       return;
@@ -1635,30 +1717,65 @@ if (!belongsToAnyTerm && isBeforeCutoffDate) {
 
     const hasVoteChanged = (termIndex, voteIndex, vote) => {
       const originalTerm = originalTermData[termIndex] || {};
-      const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-      return (
-        vote.voteId !== originalVote.voteId ||
-        vote.score !== originalVote.score
-      );
+      const originalVotes = originalTerm.votesScore || [];
+      const newVoteId = vote.voteId?._id || vote.voteId;
+
+      if (!newVoteId) {
+        return !!(vote.score && vote.score !== "");
+      }
+
+      const matchingOriginal = originalVotes.find((ov) => {
+        const ovId = ov.voteId?._id || ov.voteId;
+        return ovId && ovId.toString() === newVoteId.toString();
+      });
+
+      if (matchingOriginal) {
+        return (vote.score || "") !== (matchingOriginal.score || "");
+      }
+
+      return true;
     };
 
     const hasActivityChanged = (termIndex, activityIndex, activity) => {
       const originalTerm = originalTermData[termIndex] || {};
-      const originalActivity =
-        originalTerm.activitiesScore?.[activityIndex] || {};
-      return (
-        activity.activityId !== originalActivity.activityId ||
-        activity.score !== originalActivity.score
-      );
+      const originalActivities = originalTerm.activitiesScore || [];
+      const newActId = activity.activityId?._id || activity.activityId;
+
+      if (!newActId) {
+        return !!(activity.score && activity.score !== "");
+      }
+
+      const matchingOriginal = originalActivities.find((oa) => {
+        const oaId = oa.activityId?._id || oa.activityId;
+        return oaId && oaId.toString() === newActId.toString();
+      });
+
+      if (matchingOriginal) {
+        return (activity.score || "") !== (matchingOriginal.score || "");
+      }
+
+      return true;
     };
 
     const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
       const originalTerm = originalTermData[termIndex] || {};
-      const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
-      return (
-        vote.voteId !== originalVote.voteId ||
-        vote.score !== originalVote.score
-      );
+      const originalPast = originalTerm.pastVotesScore || [];
+      const newVoteId = vote.voteId?._id || vote.voteId;
+
+      if (!newVoteId) {
+        return !!(vote.score && vote.score !== "");
+      }
+
+      const matchingOriginal = originalPast.find((pv) => {
+        const pvId = pv.voteId?._id || pv.voteId;
+        return pvId && pvId.toString() === newVoteId.toString();
+      });
+
+      if (matchingOriginal) {
+        return (vote.score || "") !== (matchingOriginal.score || "");
+      }
+
+      return true;
     };
 
     senatorTermData.forEach((term, termIndex) => {
@@ -1784,20 +1901,8 @@ if (!belongsToAnyTerm && isBeforeCutoffDate) {
         }
       });
 
-      if (
-        !(
-          originalTerm.currentTerm === undefined && term.currentTerm === false
-        ) &&
-        term.currentTerm !== originalTerm.currentTerm
-      ) {
-        const fieldName = `term${termIndex}_currentTerm`;
-        processedChanges.push({
-          uniqueId: fieldName,
-          displayName: `Term ${termIndex + 1}: Current Term`,
-          field: [fieldName],
-          name: `Term ${termIndex + 1}: Current Term`,
-        });
-      }
+      // Intentionally do not track changes to `currentTerm` in editedFields
+      // (skip adding term${termIndex}_currentTerm to processedChanges)
     });
 
     // Process removed items

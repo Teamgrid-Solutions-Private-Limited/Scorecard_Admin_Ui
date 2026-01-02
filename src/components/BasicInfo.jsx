@@ -9,6 +9,8 @@ import ButtonGroup from "@mui/material/ButtonGroup";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { styled } from "@mui/material/styles";
 import { API_URL } from "../redux/API";
@@ -72,34 +74,46 @@ export default function SenatorBasicInfo({
           />
         </Grid>
         <Grid size={isMobile ? 12 : 1}>
-          <InputLabel className="label">Status</InputLabel>
-        </Grid>
-        <Grid size={isMobile ? 12 : 4}>
-          <ButtonGroup
-            variant="outlined"
-            aria-label="Basic button group"
-            className="customButtonGroup"
-          >
-            <Button
-              variant={"outlined"}
-              onClick={() => handleStatusChange("Active")}
-              className={`statusBtn ${
-                formData.status === "Active" ? "active" : ""
-              }`}
-            >
-              Active
-            </Button>
-            <Button
-              variant={"outlined"}
-              onClick={() => handleStatusChange("Former")}
-              className={`statusBtn ${
-                formData.status === "Former" ? "active" : ""
-              }`}
-            >
-              Former
-            </Button>
-          </ButtonGroup>
-        </Grid>
+  <InputLabel className="label">Status</InputLabel>
+</Grid>
+
+<Grid size={isMobile ? 12 : 4}>
+  <ButtonGroup
+    variant="outlined"
+    className="customButtonGroup"
+  >
+    <Button
+      onClick={() => handleStatusChange("Active")}
+      className={`statusBtn ${formData.status === "Active" ? "active" : ""}`}
+    >
+      Active
+    </Button>
+    <Button
+      onClick={() => handleStatusChange("Former")}
+      className={`statusBtn ${formData.status === "Former" ? "active" : ""}`}
+    >
+      Former
+    </Button>
+  </ButtonGroup>
+
+  <FormControlLabel
+    sx={{ ml: 2 }}
+    control={
+      <Switch
+        name="isNew"
+        checked={!!formData.isNew}
+        onChange={(e) =>
+          handleChange({
+            target: { name: "isNew", value: e.target.checked },
+          })
+        }
+      />
+    }
+    label={<InputLabel className="label">Is New</InputLabel>}
+  />
+</Grid>
+
+       
         {mode === "senator" ? (
           <>
             <Grid size={isMobile ? 12 : 2}>
