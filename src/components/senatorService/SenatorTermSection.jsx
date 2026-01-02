@@ -94,15 +94,10 @@ export default function SenatorTermSection({
         </Grid>
 
         <Grid size={isMobile ? 6 : 2.1} sx={{ alignContent: "center" }}>
-          <InputLabel className="label">Current Term</InputLabel>
+          {/* <InputLabel className="label">Current Term</InputLabel> */}
         </Grid>
         <Grid size={isMobile ? 6 : 0}>
-          <Switch
-            name="currentTerm"
-            checked={term.currentTerm}
-            onChange={(e) => handleSwitchChange(e, termIndex)}
-            color="warning"
-          />
+          {/* <Switch name="currentTerm" checked={term.currentTerm} disabled color="warning" /> */}
         </Grid>
 
         <Grid size={isMobile ? 6 : 2.39}>

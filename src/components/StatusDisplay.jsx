@@ -524,7 +524,7 @@ const visibleBackendChanges = backendChanges
         p: 2,
         backgroundColor: statusData.backgroundColor,
         borderLeft: `4px solid ${statusData.borderColor}`,
-        borderRadius: "0 8px 8px 0",
+        borderRadius: "8px 8px 8px 8px",
         boxShadow: 1,
         mb: 2,
       }}

@@ -52,7 +52,10 @@ const xThemeComponents = {
 };
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
-import { getToken, getUserRole } from "../utils/auth";
+import axios from "axios";
+import { API_URL } from "../redux/API";
+import { jwtDecode } from "jwt-decode";
+import { getToken, getUserRole, getUser } from "../utils/auth";
 import { useSnackbar } from "../hooks";
 
 export default function Votes(props) {
@@ -80,8 +83,10 @@ export default function Votes(props) {
   const statusOptions = ["published", "draft"];
   const [selectedVotes, setSelectedVotes] = useState([]);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
+  const [isAssignMode, setIsAssignMode] = useState(false);
   const [bulkSbaPosition, setBulkSbaPosition] = useState("");
   const [expandedFilter, setExpandedFilter] = useState(null);
+  const [assignTarget, setAssignTarget] = useState("auto");
 
   const handleBulkUpdate = async () => {
     if (!selectedVotes.length || !bulkSbaPosition) return;
@@ -424,11 +429,26 @@ export default function Votes(props) {
                   )}
                 </Box>
                 <Button
-                  onClick={() => setIsBulkEditMode(!isBulkEditMode)}
+                  onClick={() => {
+                    setIsBulkEditMode(!isBulkEditMode);
+                    if (!isBulkEditMode) setIsAssignMode(false);
+                  }}
                   className={`bulkEditBtn ${isBulkEditMode ? "active" : ""}`}
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
+
+                {userRole === "admin" && (
+                  <Button
+                    onClick={() => {
+                      setIsAssignMode(!isAssignMode);
+                      if (!isAssignMode) setIsBulkEditMode(false);
+                    }}
+                    className={`bulkEditBtn ${isAssignMode ? "active" : ""}`}
+                  >
+                    {isAssignMode ? "Cancel Assign" : "Assign Vote"}
+                  </Button>
+                )}
 
                 {userRole === "admin" && (
                   <Button
@@ -480,6 +500,95 @@ export default function Votes(props) {
               </Box>
             )}
 
+            {isAssignMode && (
+              <Box className="bulkEditContainer">
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontSize: { xs: "11px", md: "14px" } }}
+                >
+                  {selectedVotes.length} Vote(s) selected
+                </Typography>
+
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <TextField
+                    select
+                    // label="Assign To"
+                    value={assignTarget}
+                    onChange={(e) => setAssignTarget(e.target.value)}
+                    size="small"
+                    sx={{ minWidth: { xs: 130, md: 200 } }}
+                    InputLabelProps={{
+                      sx: { fontSize: { xs: "0.7rem", md: "0.9rem" } },
+                    }}
+                  >
+                    <MenuItem value="auto">Populate Missing Legislators</MenuItem>
+                  </TextField>
+
+                  <Button
+                    disabled={!selectedVotes.length}
+                          onClick={async () => {
+                            setFetching(true);
+                            try {
+                              // build selected vote objects
+                              const selectedVoteObjects = votes.filter((v) =>
+                                selectedVotes.includes(v._id || String(v._id))
+                              );
+
+                              if (!selectedVoteObjects.length) {
+                                showSnackbar("No valid votes selected.", "warning");
+                                setFetching(false);
+                                return;
+                              }
+
+                              // send ids to the admin apply-quorum endpoint (backend expects ids)
+                              const ids = selectedVoteObjects.map((vote) => vote._id || String(vote._id));
+
+                              const getEditorInfo = () => {
+                                try {
+                                  if (!token) return null;
+                                  const decoded = jwtDecode(token);
+                                  const user = getUser();
+                                  return {
+                                    editorId: decoded.userId || decoded.id || "unknown",
+                                    editorName: user || decoded.name || decoded.username || "Unknown Editor",
+                                    editedAt: new Date().toISOString(),
+                                  };
+                                } catch (e) {
+                                  return { editorId: "unknown", editorName: "Unknown Editor", editedAt: new Date().toISOString() };
+                                }
+                              };
+
+                              const editorInfo = getEditorInfo();
+
+                              const response = await axios.post(
+                                `${API_URL}/api/v1/admin/votes/apply-quorum`,
+                                { ids, editorInfo },
+                                { headers: { Authorization: `Bearer ${token}` } }
+                              );
+
+                              if (response && response.data) {
+                                await dispatch(getAllVotes());
+                                showSnackbar("Assigned/populated votes successfully.", "success");
+                                setSelectedVotes([]);
+                                setIsAssignMode(false);
+                              } else {
+                                showSnackbar("Failed to assign votes.", "error");
+                              }
+                            } catch (err) {
+                              console.error(err);
+                              showSnackbar("Failed to assign votes.", "error");
+                            } finally {
+                              setFetching(false);
+                            }
+                          }}
+                    className="applyBtn"
+                  >
+                    Apply
+                  </Button>
+                </Stack>
+              </Box>
+            )}
+
             <MainGrid
               type="votes"
               data={votesData}
@@ -487,7 +596,7 @@ export default function Votes(props) {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               onToggleStatus={handleToggleStatus}
-              isSelectable={isBulkEditMode}
+              isSelectable={isBulkEditMode || isAssignMode}
               onSelectionChange={setSelectedVotes}
               selectedItems={selectedVotes}
             />

@@ -80,7 +80,7 @@ export default function Addrepresentative(props) {
     message: "",
     type: "",
   });
-
+console.log("Render Addrepresentative",houseData);
   const navigate = useNavigate();
 
   // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)
@@ -127,6 +127,7 @@ export default function Addrepresentative(props) {
     party: "",
     photo: null,
     status: "Active",
+    isNew: false,
     publishStatus: "",
   });
 
@@ -470,8 +471,11 @@ const handleRemoveTerm = (termIndex) => {
         };
       });
 
-      setHouseTermData(termsData);
-      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
+      // Force the first term (index 0) to be the current term and clear
+      // `currentTerm` on all other terms regardless of backend values.
+      const adjustedTerms = termsData.map((t, idx) => ({ ...t, currentTerm: idx === 0 }));
+      setHouseTermData(adjustedTerms);
+      setOriginalTermData(JSON.parse(JSON.stringify(adjustedTerms)));
     } else {
       const defaultTerm = [
         {
@@ -528,6 +532,7 @@ const handleRemoveTerm = (termIndex) => {
                 "editedFields",
                 "fieldEditors",
                 "isNew",
+                "currentTerm",
               ].includes(key)
             )
               return;
@@ -603,6 +608,7 @@ const handleRemoveTerm = (termIndex) => {
         party: house.party || "",
         photo: house.photo || null,
         status: house.status || "Active",
+        isNew: house.isNew || false,
         publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
@@ -667,7 +673,8 @@ const handleRemoveTerm = (termIndex) => {
       deletedTermIds.length > 0 ||
       (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
 
-    if ( !hasLocalChanges) {
+    // Allow admins to save/publish even if there are no local changes
+    if (!hasLocalChanges && userRole !== "admin") {
       setLoading(false);
       handleSnackbarOpen("No changes detected. Nothing to update.", "info");
       return;
@@ -712,21 +719,47 @@ const handleRemoveTerm = (termIndex) => {
     // Process vote changes
     const hasVoteChanged = (termIndex, voteIndex, vote) => {
       const originalTerm = originalTermData[termIndex] || {};
-      const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-      return (
-        vote.voteId !== originalVote.voteId ||
-        vote.score !== originalVote.score
-      );
+      const originalVotes = originalTerm.votesScore || [];
+      const newVoteId = vote.voteId?._id || vote.voteId;
+
+      if (!newVoteId) {
+        // new/empty vote — treat as changed only if it has a score
+        return !!(vote.score && vote.score !== "");
+      }
+
+      const matchingOriginal = originalVotes.find((ov) => {
+        const ovId = ov.voteId?._id || ov.voteId;
+        return ovId && ovId.toString() === newVoteId.toString();
+      });
+
+      if (matchingOriginal) {
+        return (vote.score || "") !== (matchingOriginal.score || "");
+      }
+
+      // If it's not in original, it's an added vote => changed
+      return true;
     };
 
     // Process activity changes
     const hasActivityChanged = (termIndex, activityIndex, activity) => {
       const originalTerm = originalTermData[termIndex] || {};
-      const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
-      return (
-        activity.activityId !== originalActivity.activityId ||
-        activity.score !== originalActivity.score
-      );
+      const originalActivities = originalTerm.activitiesScore || [];
+      const newActId = activity.activityId?._id || activity.activityId;
+
+      if (!newActId) {
+        return !!(activity.score && activity.score !== "");
+      }
+
+      const matchingOriginal = originalActivities.find((oa) => {
+        const oaId = oa.activityId?._id || oa.activityId;
+        return oaId && oaId.toString() === newActId.toString();
+      });
+
+      if (matchingOriginal) {
+        return (activity.score || "") !== (matchingOriginal.score || "");
+      }
+
+      return true;
     };
 
     // Process all term data changes
@@ -818,7 +851,7 @@ const handleRemoveTerm = (termIndex) => {
 
     houseTermData.forEach((term, termIndex) => {
       const originalTerm = originalTermData?.[termIndex] || {};
-      const termFields = ["summary", "rating", "currentTerm", "termId"];
+      const termFields = ["summary", "rating", "termId"];
 
       termFields.forEach((field) => {
         const newValue = term[field];
@@ -1294,16 +1327,16 @@ const handleRemoveTerm = (termIndex) => {
                       size={isMobile ? 6 : 2.1}
                       sx={{ alignContent: "center" }}
                     >
-                      <InputLabel className="label">Current Term</InputLabel>
+                      {/* <InputLabel className="label">Current Term</InputLabel> */}
                     </Grid>
                     <Grid size={isMobile ? 6 : 0}>
-                      <Switch
+                      {/* <Switch
                         {...label}
                         name="currentTerm"
                         checked={term.currentTerm}
                         onChange={(e) => handleSwitchChange(e, termIndex)}
                         color="warning"
-                      />
+                      /> */}
                     </Grid>
 
                     <Grid size={isMobile ? 6 : 2.39}>
