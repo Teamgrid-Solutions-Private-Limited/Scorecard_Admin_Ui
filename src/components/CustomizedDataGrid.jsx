@@ -2,8 +2,9 @@ import * as React from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { Avatar, Box } from "@mui/material";
+import { Avatar, Box, Button } from "@mui/material";
 import Typography from "@mui/material/Typography";
+import BulkEditModal from "./BulkEditModal";
 import { useNavigate } from "react-router-dom";
 import { GridOverlay } from "@mui/x-data-grid";
 import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
@@ -12,6 +13,8 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme, useMediaQuery, Chip } from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import {getAllVotes} from "../redux/reducer/voteSlice";
+import {getAllActivity} from "../redux/reducer/activitySlice";
 import { get } from "lodash";
 import { API_URL } from "../redux/API";
 import { getToken, getUserRole } from "../utils/auth";
@@ -33,6 +36,7 @@ export default function CustomizedDataGrid({
   isSelectable = false,
   onSelectionChange,
   selectedItems = [],
+  onBulkApply, // optional callback for bulk operations
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
@@ -46,6 +50,8 @@ export default function CustomizedDataGrid({
     dispatch(getAllSenatorData());
     dispatch(getAllHouseData());
     dispatch(getAllTerms());
+    dispatch(getAllVotes());
+    dispatch(getAllActivity());
   }, [dispatch]);
 
   useEffect(() => {
@@ -170,6 +176,13 @@ export default function CustomizedDataGrid({
   };
 
   const navigate = useNavigate();
+
+  const allVotes = useSelector((state) => state.vote.votes);
+  const allActivities = useSelector((state) => state.activity.activities);
+
+  const [selectionModel, setSelectionModel] = useState(selectedItems || []);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [showCheckboxes, setShowCheckboxes] = useState(false);
 
   // Map type to storage key constant
   const getPaginationStorageKey = (type) => {
@@ -889,6 +902,47 @@ export default function CustomizedDataGrid({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+      {((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin") || (isSelectable && type !== "senator" && type !== "representative")) && (
+        <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mb: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              const allIds = mergedRows.map((r) => r._id);
+              const hasSelection = selectionModel.length > 0;
+              const next = hasSelection ? [] : allIds;
+              setSelectionModel(next);
+              onSelectionChange && onSelectionChange(next);
+              // For senator and representative lists we only show checkboxes after explicit Select all
+              if ((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin")) {
+                if (!hasSelection && next.length > 0) setShowCheckboxes(true);
+                if (hasSelection && next.length === 0) setShowCheckboxes(false);
+              } else {
+                // For other types, keep checkboxes visible when parent requested selection
+                if (!hasSelection && next.length > 0) setShowCheckboxes(true);
+              }
+            }}
+          >
+            {selectionModel.length > 0 ? "Clear selection" : "Select all"}
+          </Button>
+          {(((type === "senator" && userRole === "admin" && showCheckboxes) || (type === "representative" && userRole === "admin" && showCheckboxes)) || (isSelectable && type !== "senator" && type !== "representative")) && selectionModel.length > 0 && (
+            <Button 
+              variant="contained" 
+              onClick={() => setBulkOpen(true)}
+              sx={{
+                backgroundColor: "#173A5E !important",
+                color: "white !important",
+                fontSize: "14px",
+                "&:hover": {
+                  backgroundColor: "#1E4C80 !important",
+                },
+              }}
+            >
+              Bulk Edit
+            </Button>
+          )}
+        </Box>
+      )}
+
       <DataGrid
         rows={mergedRows}
         columns={columns}
@@ -906,13 +960,25 @@ export default function CustomizedDataGrid({
         slots={{
           noRowsOverlay: CustomNoRowsOverlay,
         }}
-        checkboxSelection={isSelectable}
-        onRowSelectionModelChange={
-          isSelectable
-            ? (ids) => onSelectionChange && onSelectionChange(ids)
-            : undefined
+        checkboxSelection={
+          // For senator and representative admin view: only show when user explicitly clicked Select all
+          ((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin")) ? showCheckboxes : (isSelectable || showCheckboxes)
         }
-        selectionModel={isSelectable ? selectedItems : []}
+        onRowSelectionModelChange={(ids) => {
+          const next = ids.map((i) => (typeof i === "object" && i.id ? i.id : i));
+          setSelectionModel(next);
+          onSelectionChange && onSelectionChange(next);
+          // Hide checkboxes when all items are deselected
+          if (next.length === 0) {
+            if ((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin")) {
+              setShowCheckboxes(false);
+            } else if (!isSelectable) {
+              // For non-selectable types, hide checkboxes when all deselected
+              setShowCheckboxes(false);
+            }
+          }
+        }}
+        selectionModel={(isSelectable || showCheckboxes) ? selectionModel : []}
         sx={{
           ...(isMobile && {
             overflowX: "auto",
@@ -941,6 +1007,55 @@ export default function CustomizedDataGrid({
               outline: "none",
             },
           },
+        }}
+      />
+
+      <BulkEditModal
+        open={bulkOpen}
+        onClose={() => setBulkOpen(false)}
+        votes={
+          type === "senator"
+            ? (allVotes || []).filter(
+                (vote) =>
+                  vote.type &&
+                  vote.type.toLowerCase().includes("senate")
+              )
+            : type === "representative"
+            ? (allVotes || []).filter(
+                (vote) =>
+                  vote.type &&
+                  vote.type.toLowerCase().includes("house")
+              )
+            : allVotes
+        }
+        activities={
+          type === "senator"
+            ? (allActivities || []).filter(
+                (activity) =>
+                  activity.type &&
+                  (activity.type === "senate" ||
+                    activity.type.toLowerCase().includes("senate"))
+              )
+            : type === "representative"
+            ? (allActivities || []).filter(
+                (activity) =>
+                  activity.type &&
+                  (activity.type === "house" ||
+                    activity.type.toLowerCase().includes("house"))
+              )
+            : allActivities
+        }
+        onApply={(payload) => {
+          const data = { ids: selectionModel, payload };
+         
+          if (onBulkApply) {
+            onBulkApply(data);
+          } else if (typeof onEdit === "function") {
+            // Only call onEdit if it's not a bulk operation to avoid navigation
+            console.warn("⚠️ CustomizedDataGrid: onBulkApply not provided, but bulk edit was attempted");
+          } else {
+            console.error("❌ CustomizedDataGrid: Neither onBulkApply nor onEdit provided");
+          }
         }}
       />
     </div>

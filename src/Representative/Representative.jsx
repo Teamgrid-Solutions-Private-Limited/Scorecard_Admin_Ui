@@ -50,8 +50,10 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-import { getAllHouseData } from "../redux/reducer/houseTermSlice";
+import { getAllHouseData, updateHouseScores } from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { getAllVotes } from "../redux/reducer/voteSlice";
+import { getAllActivity } from "../redux/reducer/activitySlice";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";
@@ -111,6 +113,8 @@ export default function Representative(props) {
     dispatch(getAllHouses());
     dispatch(getAllHouseData());
     dispatch(getAllTerms());
+    dispatch(getAllVotes());
+    dispatch(getAllActivity());
   }, [dispatch]);
 
   useEffect(() => {
@@ -398,7 +402,88 @@ export default function Representative(props) {
   };
 
   const handleEdit = (row) => {
+    // Don't navigate if it's a bulk operation
+    if (row && row.bulk) {
+      return;
+    }
+    // Don't navigate if _id is missing or undefined
+    if (!row || !row._id) {
+      console.warn("⚠️ handleEdit: Missing _id, skipping navigation", row);
+      return;
+    }
     navigate(`/edit-representative/${row._id}`);
+  };
+
+  const handleBulkApply = async ({ ids = [], payload }) => {
+
+    if (!ids || ids.length === 0 || !payload) {
+      return;
+    }
+    if (userRole !== "admin") {
+      showSnackbar("Bulk edit is for admins only", "error");
+      return;
+    }
+
+    const { category, itemId, score } = payload;
+    
+    if (!category || !itemId || !score) {
+      showSnackbar("Invalid bulk payload", "error");
+      return;
+    }
+
+    setFetching(true);
+    try {
+      
+      // Build updates array for the bulk update endpoint
+      const updates = ids.map((houseId) => {
+        const update = {
+          houseId: houseId,
+        };
+        
+        if (category === "vote") {
+          update.votesScore = [{
+            voteId: itemId,
+            score: score,
+          }];
+        } else if (category === "activity") {
+          update.activitiesScore = [{
+            activityId: itemId,
+            score: score,
+          }];
+        }
+        
+        return update;
+      });
+      
+      const result = await dispatch(updateHouseScores(updates)).unwrap();      
+      const successCount = result.successful || 0;
+      const failedCount = result.failed || 0;
+      
+      if (result.errors && result.errors.length > 0) {
+        console.warn(`⚠️ Some updates failed:`, result.errors);
+      }
+            await dispatch(getAllHouseData());
+      await dispatch(getAllHouses());
+            
+      if (successCount > 0) {
+        showSnackbar(
+          `Bulk edit applied for ${successCount} member${successCount !== 1 ? 's' : ''}.${failedCount > 0 ? ` ${failedCount} failed.` : ''}`,
+          successCount === ids.length ? "success" : "warning"
+        );
+      } else {
+        showSnackbar("Bulk edit failed for all members. See console for details.", "error");
+      }
+    } catch (err) {
+      console.error("❌ Bulk apply failed:", {
+        error: err,
+        errorMessage: err?.message,
+        errorStack: err?.stack,
+        fullError: err,
+      });
+      showSnackbar("Bulk apply failed. See console for details.", "error");
+    } finally {
+      setFetching(false);
+    }
   };
 
   const fetchRepresentativeFromQuorum = async () => {
@@ -995,6 +1080,8 @@ export default function Representative(props) {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               handleToggleStatusHouse={handleToggleStatusHouse}
+              isSelectable={userRole === 'admin'}
+              onBulkApply={handleBulkApply}
             />
           </Stack>
         </Box>

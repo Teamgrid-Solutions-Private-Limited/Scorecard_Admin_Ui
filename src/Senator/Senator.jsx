@@ -6,7 +6,8 @@ import {
   getAllSenators,
   updateSenatorStatus,
 } from "../redux/reducer/senatorSlice";
-import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
+import { getAllSenatorData, getSenatorDataBySenatorId, updateSenatorData } from "../redux/reducer/senatorTermSlice";
+
 import { getErrorMessage } from "../utils/errorHandler";
 import {
   Box,
@@ -180,6 +181,134 @@ export default function Senator(props) {
     }
   }, [senators, senatorData, terms]);
 
+  const handleBulkApply = async ({ ids = [], payload }) => {
+ 
+    if (!ids || ids.length === 0 || !payload) {
+      return;
+    }
+    if (userRole !== "admin") {
+      showSnackbar("Bulk edit is for admins only", "error");
+      return;
+    }
+
+    const { category, itemId, score } = payload;
+    
+    if (!category || !itemId || !score) {
+      showSnackbar("Invalid bulk payload", "error");
+      return;
+    }
+
+    setFetching(true);
+    let successCount = 0;
+    try {
+      
+      for (const sid of ids) {
+        try {
+          const termRecords = await dispatch(getSenatorDataBySenatorId(sid)).unwrap();
+          
+          if (!Array.isArray(termRecords)) {
+            continue;
+          }
+
+          const updatePromises = [];
+          termRecords.forEach((term, termIndex) => {
+            
+            let modified = false;
+            const newTerm = { ...term };
+            if (category === "vote") {
+              const votes = (newTerm.votesScore || []).map((v, voteIndex) => {
+                const vid = v.voteId?._id || v.voteId;
+                const vidStr = vid ? vid.toString() : null;
+                const itemIdStr = itemId.toString();
+                
+                if (vid && vid.toString() === itemIdStr) {
+                  modified = true;
+                  return { ...v, score };
+                }
+                return v;
+              });
+              if (modified) {
+                newTerm.votesScore = votes;
+              } else {
+              }
+            } else if (category === "activity") {
+              const acts = (newTerm.activitiesScore || []).map((a, actIndex) => {
+                const aid = a.activityId?._id || a.activityId;
+                const aidStr = aid ? aid.toString() : null;
+                const itemIdStr = itemId.toString();
+                
+                if (aid && aid.toString() === itemIdStr) {
+                  modified = true;
+                  return { ...a, score };
+                }
+                return a;
+              });
+              if (modified) {
+                newTerm.activitiesScore = acts;
+              } else {
+                console.log(`⚠️ No matching activity found for itemId ${itemId} in term ${term._id}`);
+              }
+            }
+
+            if (modified) {
+              const payloadData = { ...newTerm };
+              if (payloadData.votesScore) {
+                payloadData.votesScore = payloadData.votesScore.map((v) => ({ voteId: v.voteId?._id || v.voteId, score: v.score }));
+              }
+              if (payloadData.activitiesScore) {
+                payloadData.activitiesScore = payloadData.activitiesScore.map((a) => ({ activityId: a.activityId?._id || a.activityId, score: a.score }));
+              }
+                      
+              updatePromises.push(
+                dispatch(updateSenatorData({ id: term._id, data: payloadData }))
+                  .unwrap()
+                  .then((result) => {
+                    return result;
+                  })
+                  .catch((error) => {
+                    console.error(`❌ updateSenatorData error for term ${term._id}:`, error);
+                    throw error;
+                  })
+              );
+            } else {
+              console.log(`⏭️ Term ${term._id} not modified - no matching ${category} found`);
+            }
+          });
+
+          if (updatePromises.length > 0) {
+            await Promise.all(updatePromises);
+            successCount += 1;
+            console.log(`✅ Successfully updated senator ${sid}`);
+          } else {
+            console.log(`⚠️ No updates needed for senator ${sid}`);
+          }
+        } catch (err) {
+          console.error(`❌ Bulk update error for senator ${sid}:`, {
+            error: err,
+            errorMessage: err?.message,
+            errorStack: err?.stack,
+            fullError: err,
+          });
+        }
+      }
+
+      await dispatch(getAllSenatorData());
+      await dispatch(getAllSenators());
+      console.log(`✅ Bulk edit completed. Success count: ${successCount}/${ids.length}`);
+      showSnackbar(`Bulk edit applied for ${successCount} members.`, "success");
+    } catch (err) {
+      console.error("❌ Bulk apply failed:", {
+        error: err,
+        errorMessage: err?.message,
+        errorStack: err?.stack,
+        fullError: err,
+      });
+      showSnackbar("Bulk apply failed. See console for details.", "error");
+    } finally {
+      setFetching(false);
+    }
+  };
+
   const currentYear = new Date().getFullYear();
   const years = [];
   for (let y = currentYear; y >= 2015; y--) {
@@ -210,6 +339,15 @@ export default function Senator(props) {
   );
 
   const handleEdit = (row) => {
+    // Don't navigate if it's a bulk operation
+    if (row && row.bulk) {
+      return;
+    }
+    // Don't navigate if _id is missing or undefined
+    if (!row || !row._id) {
+      console.warn("⚠️ handleEdit: Missing _id, skipping navigation", row);
+      return;
+    }
     navigate(`/edit-senator/${row._id}`);
   };
   const handleDeleteClick = (row) => {
@@ -929,6 +1067,8 @@ export default function Senator(props) {
               loading={fetching ? false : loading}
               onDelete={handleDeleteClick}
               onEdit={handleEdit}
+              isSelectable={userRole === 'admin'}
+              onBulkApply={handleBulkApply}
               handleToggleStatusSenator={handleToggleStatusSenator}
             />
           </Stack>
