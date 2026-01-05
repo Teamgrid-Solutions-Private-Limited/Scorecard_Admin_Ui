@@ -400,7 +400,8 @@ export default function Senator(props) {
         }
       );
       if (response.status === 200) {
-        showSnackbar("Success: Senators fetched successfully!", "success");
+        const statusText = status === "active" ? "active" : "former";
+        showSnackbar(`Success:  ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} senators fetched successfully!`, "success");
         await dispatch(getAllSenators());
         setFetching(false);
       } else {
