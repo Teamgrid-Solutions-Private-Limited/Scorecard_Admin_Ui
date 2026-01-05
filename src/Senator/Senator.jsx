@@ -33,6 +33,9 @@ import CheckIcon from "@mui/icons-material/Check";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import SearchIcon from "@mui/icons-material/Search";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Radio from "@mui/material/Radio";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "../shared-theme/AppTheme";
 import SideMenu from "../components/SideMenu";
@@ -80,6 +83,8 @@ export default function Senator(props) {
   const { terms } = useSelector((state) => state.term);
   const decodedToken = jwtDecode(token);
   const userRole = decodedToken.role;
+  const [openFetchDialog, setOpenFetchDialog] = useState(false);
+  const [fetchType, setFetchType] = useState("active");
   const [partyFilter, setPartyFilter] = useState([]);
   const [stateFilter, setStateFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState([]);
@@ -383,16 +388,26 @@ export default function Senator(props) {
     }
   };
 
-  const fetchSenatorsFromQuorum = async () => {
+  const handleFetchClick = () => {
+    setOpenFetchDialog(true);
+  };
+
+  const fetchSenatorsFromQuorum = async (status = "active") => {
+    setOpenFetchDialog(false);
     setFetching(true);
     setProgress(0);
     const interval = setInterval(() => {
       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
     }, 1000);
     try {
+      const requestBody = {
+        type: "senator",
+        ...(status === "former" && { status: "former" }),
+      };
+      
       const response = await axios.post(
         `${API_URL}/fetch-quorum/store-data`,
-        { type: "senator" },
+        requestBody,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -401,7 +416,7 @@ export default function Senator(props) {
       );
       if (response.status === 200) {
         const statusText = status === "active" ? "active" : "former";
-        showSnackbar(`Success:  ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} senators fetched successfully!`, "success");
+        showSnackbar(`Success: ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} senators fetched successfully!`, "success");
         await dispatch(getAllSenators());
         setFetching(false);
       } else {
@@ -564,7 +579,7 @@ export default function Senator(props) {
                   <Button
                     variant="outlined"
                     className="fetchBtn"
-                    onClick={fetchSenatorsFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Senators from Quorum
                   </Button>
@@ -1054,7 +1069,7 @@ export default function Senator(props) {
                   <Button
                     variant="outlined"
                     className="fetch-btn"
-                    onClick={fetchSenatorsFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Senators from Quorum
                   </Button>

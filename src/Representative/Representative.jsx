@@ -24,6 +24,9 @@ import {
   IconButton,
   ClickAwayListener,
   Paper,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "../../src/shared-theme/AppTheme";
@@ -81,6 +84,8 @@ export default function Representative(props) {
   const [termFilter, setTermFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedFilter, setExpandedFilter] = useState(null);
+  const [openFetchDialog, setOpenFetchDialog] = useState(false);
+  const [fetchType, setFetchType] = useState("active");
   const [searchTerms, setSearchTerms] = useState({
     party: "",
     district: "",
@@ -486,7 +491,12 @@ export default function Representative(props) {
     }
   };
 
-  const fetchRepresentativeFromQuorum = async () => {
+  const handleFetchClick = () => {
+    setOpenFetchDialog(true);
+  };
+
+  const fetchRepresentativeFromQuorum = async (status = "active") => {
+    setOpenFetchDialog(false);
     setFetching(true);
     setProgress(0);
     const interval = setInterval(() => {
@@ -494,9 +504,14 @@ export default function Representative(props) {
     }, 1000);
 
     try {
+      const requestBody = {
+        type: "representative",
+        ...(status === "former" && { status: "former" }),
+      };
+
       const response = await axios.post(
         `${API_URL}/fetch-quorum/store-data`,
-        { type: "representative" },
+        requestBody,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -505,7 +520,8 @@ export default function Representative(props) {
       );
 
       if (response.status === 200) {
-        showSnackbar("Success: Representatives fetched successfully!", "success");
+        const statusText = status === "active" ? "active" : "former";
+        showSnackbar(`Success: ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} representatives fetched successfully!`, "success");
         await dispatch(getAllHouses());
       } else {
         throw new Error("Failed to fetch representatives from Quorum.");
@@ -589,9 +605,9 @@ export default function Representative(props) {
                   <Button
                     variant="outlined"
                     className="fetchBtn"
-                    onClick={fetchRepresentativeFromQuorum}
+                    onClick={handleFetchClick}
                   >
-                    Fetch Senators from Quorum
+                    Fetch Representatives from Quorum
                   </Button>
                 </Box>
               )}
@@ -1065,7 +1081,7 @@ export default function Representative(props) {
                   <Button
                     variant="outlined"
                     className="fetch-btn"
-                    onClick={fetchRepresentativeFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Representatives from Quorum
                   </Button>
@@ -1179,6 +1195,69 @@ export default function Representative(props) {
                 sx={{ borderRadius: 2, paddingX: 3 }}
               >
                 Delete
+              </Button>
+            </Stack>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openFetchDialog}
+          onClose={() => setOpenFetchDialog(false)}
+          PaperProps={{
+            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
+          }}
+        >
+          <DialogTitle className="dialogBox">
+            Select Representative Type
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText className="dialogTitle" sx={{ mb: 2 }}>
+              Choose whether to fetch active or former representatives from Quorum.
+            </DialogContentText>
+            <RadioGroup
+              value={fetchType}
+              onChange={(e) => setFetchType(e.target.value)}
+            >
+              <FormControlLabel
+                value="active"
+                control={<Radio />}
+                label="Active"
+              />
+              <FormControlLabel
+                value="former"
+                control={<Radio />}
+                label="Former"
+              />
+            </RadioGroup>
+          </DialogContent>
+          <DialogActions>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+            >
+              <Button
+                onClick={() => setOpenFetchDialog(false)}
+                variant="outlined"
+                color="secondary"
+                sx={{ borderRadius: 2, paddingX: 3 }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => fetchRepresentativeFromQuorum(fetchType)}
+                variant="contained"
+                sx={{ 
+                  borderRadius: 2, 
+                  paddingX: 3,
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                  },
+                }}
+              >
+                Fetch
               </Button>
             </Stack>
           </DialogActions>
