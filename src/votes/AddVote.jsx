@@ -469,7 +469,7 @@ export default function AddBill(props) {
           }));
           setReadMoreType("file");
         }
-        showSnackbar("Bill created successfully!", "success");
+        showSnackbar("Vote created successfully!", "success");
         if (newVoteId) {
           setTimeout(() => {
             navigate(`/edit-vote/${newVoteId}`);
