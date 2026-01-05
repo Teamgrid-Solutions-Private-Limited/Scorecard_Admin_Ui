@@ -79,7 +79,6 @@ export default function AddSenator(props) {
   const [componentKey, setComponentKey] = useState(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
-console.log("Loadingg senatordata:", senatorData, );
   const [votesLoaded, setVotesLoaded] = useState(false);
   const [activitiesLoaded, setActivitiesLoaded] = useState(false);
   const [termsLoaded, setTermsLoaded] = useState(false);

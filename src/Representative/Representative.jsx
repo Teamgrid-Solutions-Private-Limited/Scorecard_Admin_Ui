@@ -24,6 +24,9 @@ import {
   IconButton,
   ClickAwayListener,
   Paper,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "../../src/shared-theme/AppTheme";
@@ -50,8 +53,10 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-import { getAllHouseData } from "../redux/reducer/houseTermSlice";
+import { getAllHouseData, updateHouseScores } from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { getAllVotes } from "../redux/reducer/voteSlice";
+import { getAllActivity } from "../redux/reducer/activitySlice";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";
@@ -79,6 +84,8 @@ export default function Representative(props) {
   const [termFilter, setTermFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedFilter, setExpandedFilter] = useState(null);
+  const [openFetchDialog, setOpenFetchDialog] = useState(false);
+  const [fetchType, setFetchType] = useState("active");
   const [searchTerms, setSearchTerms] = useState({
     party: "",
     district: "",
@@ -111,6 +118,8 @@ export default function Representative(props) {
     dispatch(getAllHouses());
     dispatch(getAllHouseData());
     dispatch(getAllTerms());
+    dispatch(getAllVotes());
+    dispatch(getAllActivity());
   }, [dispatch]);
 
   useEffect(() => {
@@ -398,10 +407,96 @@ export default function Representative(props) {
   };
 
   const handleEdit = (row) => {
+    // Don't navigate if it's a bulk operation
+    if (row && row.bulk) {
+      return;
+    }
+    // Don't navigate if _id is missing or undefined
+    if (!row || !row._id) {
+      console.warn("⚠️ handleEdit: Missing _id, skipping navigation", row);
+      return;
+    }
     navigate(`/edit-representative/${row._id}`);
   };
 
-  const fetchRepresentativeFromQuorum = async () => {
+  const handleBulkApply = async ({ ids = [], payload }) => {
+
+    if (!ids || ids.length === 0 || !payload) {
+      return;
+    }
+    if (userRole !== "admin") {
+      showSnackbar("Bulk edit is for admins only", "error");
+      return;
+    }
+
+    const { category, itemId, score } = payload;
+    
+    if (!category || !itemId || !score) {
+      showSnackbar("Invalid bulk payload", "error");
+      return;
+    }
+
+    setFetching(true);
+    try {
+      
+      // Build updates array for the bulk update endpoint
+      const updates = ids.map((houseId) => {
+        const update = {
+          houseId: houseId,
+        };
+        
+        if (category === "vote") {
+          update.votesScore = [{
+            voteId: itemId,
+            score: score,
+          }];
+        } else if (category === "activity") {
+          update.activitiesScore = [{
+            activityId: itemId,
+            score: score,
+          }];
+        }
+        
+        return update;
+      });
+      
+      const result = await dispatch(updateHouseScores(updates)).unwrap();      
+      const successCount = result.successful || 0;
+      const failedCount = result.failed || 0;
+      
+      if (result.errors && result.errors.length > 0) {
+        console.warn(`⚠️ Some updates failed:`, result.errors);
+      }
+            await dispatch(getAllHouseData());
+      await dispatch(getAllHouses());
+            
+      if (successCount > 0) {
+        showSnackbar(
+          `Bulk edit applied for ${successCount} member${successCount !== 1 ? 's' : ''}.${failedCount > 0 ? ` ${failedCount} failed.` : ''}`,
+          successCount === ids.length ? "success" : "warning"
+        );
+      } else {
+        showSnackbar("Bulk edit failed for all members. See console for details.", "error");
+      }
+    } catch (err) {
+      console.error("❌ Bulk apply failed:", {
+        error: err,
+        errorMessage: err?.message,
+        errorStack: err?.stack,
+        fullError: err,
+      });
+      showSnackbar("Bulk apply failed. See console for details.", "error");
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const handleFetchClick = () => {
+    setOpenFetchDialog(true);
+  };
+
+  const fetchRepresentativeFromQuorum = async (status = "active") => {
+    setOpenFetchDialog(false);
     setFetching(true);
     setProgress(0);
     const interval = setInterval(() => {
@@ -409,9 +504,14 @@ export default function Representative(props) {
     }, 1000);
 
     try {
+      const requestBody = {
+        type: "representative",
+        ...(status === "former" && { status: "former" }),
+      };
+
       const response = await axios.post(
         `${API_URL}/fetch-quorum/store-data`,
-        { type: "representative" },
+        requestBody,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -420,7 +520,8 @@ export default function Representative(props) {
       );
 
       if (response.status === 200) {
-        showSnackbar("Success: Representatives fetched successfully!", "success");
+        const statusText = status === "active" ? "active" : "former";
+        showSnackbar(`Success: ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} representatives fetched successfully!`, "success");
         await dispatch(getAllHouses());
       } else {
         throw new Error("Failed to fetch representatives from Quorum.");
@@ -504,9 +605,9 @@ export default function Representative(props) {
                   <Button
                     variant="outlined"
                     className="fetchBtn"
-                    onClick={fetchRepresentativeFromQuorum}
+                    onClick={handleFetchClick}
                   >
-                    Fetch Senators from Quorum
+                    Fetch Representatives from Quorum
                   </Button>
                 </Box>
               )}
@@ -980,7 +1081,7 @@ export default function Representative(props) {
                   <Button
                     variant="outlined"
                     className="fetch-btn"
-                    onClick={fetchRepresentativeFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Representatives from Quorum
                   </Button>
@@ -995,6 +1096,8 @@ export default function Representative(props) {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               handleToggleStatusHouse={handleToggleStatusHouse}
+              isSelectable={userRole === 'admin'}
+              onBulkApply={handleBulkApply}
             />
           </Stack>
         </Box>
@@ -1092,6 +1195,69 @@ export default function Representative(props) {
                 sx={{ borderRadius: 2, paddingX: 3 }}
               >
                 Delete
+              </Button>
+            </Stack>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openFetchDialog}
+          onClose={() => setOpenFetchDialog(false)}
+          PaperProps={{
+            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
+          }}
+        >
+          <DialogTitle className="dialogBox">
+            Select Representative Type
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText className="dialogTitle" sx={{ mb: 2 }}>
+              Choose whether to fetch active or former representatives from Quorum.
+            </DialogContentText>
+            <RadioGroup
+              value={fetchType}
+              onChange={(e) => setFetchType(e.target.value)}
+            >
+              <FormControlLabel
+                value="active"
+                control={<Radio />}
+                label="Active"
+              />
+              <FormControlLabel
+                value="former"
+                control={<Radio />}
+                label="Former"
+              />
+            </RadioGroup>
+          </DialogContent>
+          <DialogActions>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+            >
+              <Button
+                onClick={() => setOpenFetchDialog(false)}
+                variant="outlined"
+                color="secondary"
+                sx={{ borderRadius: 2, paddingX: 3 }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => fetchRepresentativeFromQuorum(fetchType)}
+                variant="contained"
+                sx={{ 
+                  borderRadius: 2, 
+                  paddingX: 3,
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                  },
+                }}
+              >
+                Fetch
               </Button>
             </Stack>
           </DialogActions>
