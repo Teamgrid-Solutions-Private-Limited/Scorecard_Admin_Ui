@@ -705,6 +705,7 @@ useEffect(() => {
   const termPreFill = () => {
     if (!terms?.length || !allVotes?.length || !allActivities?.length) {
       return;
+
     }
     if (senatorData?.currentSenator?.length > 0) {
       const termsData = senatorData.currentSenator.map((term, termIndex) => {
