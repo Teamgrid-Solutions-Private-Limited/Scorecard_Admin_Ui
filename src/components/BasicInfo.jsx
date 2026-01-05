@@ -74,46 +74,50 @@ export default function SenatorBasicInfo({
           />
         </Grid>
         <Grid size={isMobile ? 12 : 1}>
-  <InputLabel className="label">Status</InputLabel>
-</Grid>
+          <InputLabel className="label">Status</InputLabel>
+        </Grid>
 
-<Grid size={isMobile ? 12 : 4}>
-  <ButtonGroup
-    variant="outlined"
-    className="customButtonGroup"
-  >
-    <Button
-      onClick={() => handleStatusChange("Active")}
-      className={`statusBtn ${formData.status === "Active" ? "active" : ""}`}
-    >
-      Active
-    </Button>
-    <Button
-      onClick={() => handleStatusChange("Former")}
-      className={`statusBtn ${formData.status === "Former" ? "active" : ""}`}
-    >
-      Former
-    </Button>
-  </ButtonGroup>
+        <Grid size={isMobile ? 12 : 4}>
+          <ButtonGroup variant="outlined" className="customButtonGroup">
+            <Button
+              onClick={() => handleStatusChange("active")}
+              className={`statusBtn ${
+                formData.status === "active" || formData.status === "Active"
+                  ? "active"
+                  : ""
+              }`}
+            >
+              Active
+            </Button>
+            <Button
+              onClick={() => handleStatusChange("former")}
+              className={`statusBtn ${
+                formData.status === "former" || formData.status === "Former"
+                  ? "active"
+                  : ""
+              }`}
+            >
+              Former
+            </Button>
+          </ButtonGroup>
 
-  <FormControlLabel
-    sx={{ ml: 2 }}
-    control={
-      <Switch
-        name="isNew"
-        checked={!!formData.isNew}
-        onChange={(e) =>
-          handleChange({
-            target: { name: "isNew", value: e.target.checked },
-          })
-        }
-      />
-    }
-    label={<InputLabel className="label">Is New</InputLabel>}
-  />
-</Grid>
+          <FormControlLabel
+            sx={{ ml: 2 }}
+            control={
+              <Switch
+                name="isNew"
+                checked={!!formData.isNew}
+                onChange={(e) =>
+                  handleChange({
+                    target: { name: "isNew", value: e.target.checked },
+                  })
+                }
+              />
+            }
+            label={<InputLabel className="label">Is New</InputLabel>}
+          />
+        </Grid>
 
-       
         {mode === "senator" ? (
           <>
             <Grid size={isMobile ? 12 : 2}>
