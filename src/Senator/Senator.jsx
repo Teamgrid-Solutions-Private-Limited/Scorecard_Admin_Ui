@@ -420,37 +420,24 @@ export default function Senator(props) {
     setOpenFetchDialog(true);
   };
 
-  const fetchSenatorsFromQuorum = async (status = "active") => {
-    setOpenFetchDialog(false);
+  const fetchSenatorsFromQuorum = async () => {
     setFetching(true);
     setProgress(0);
     const interval = setInterval(() => {
       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
     }, 1000);
     try {
-      const requestBody = {
-        type: "senator",
-      };
-
-      // Use different endpoints based on status
-      const endpoint =
-        status === "former"
-          ? `${API_URL}/fetch-quorum/save-former`
-          : `${API_URL}/fetch-quorum/store-data`;
-
-      const response = await axios.post(endpoint, requestBody, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        `${API_URL}/fetch-quorum/store-data`,
+        { type: "senator" },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.status === 200) {
-        const statusText = status === "active" ? "active" : "former";
-        showSnackbar(
-          `Success: ${
-            statusText.charAt(0).toUpperCase() + statusText.slice(1)
-          } senators fetched successfully!`,
-          "success"
-        );
+        showSnackbar("Success: Senators fetched successfully!", "success");
         await dispatch(getAllSenators());
         setFetching(false);
       } else {
@@ -466,7 +453,6 @@ export default function Senator(props) {
       setTimeout(() => setProgress(0), 500); // Re
     }
   };
-
   const handlePartyFilter = (party) => {
     setPartyFilter((prev) =>
       prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party]
@@ -613,12 +599,23 @@ export default function Senator(props) {
           <MobileHeader />
           <Stack spacing={2} className="stackBox">
             <Box className="actionsBox">
-              {userRole === "admin" && (
+              {/* {userRole === "admin" && (
                 <Box className="adminBox">
                   <Button
                     variant="outlined"
                     className="fetchBtn"
                     onClick={handleFetchClick}
+                  >
+                    Fetch Senators from Quorum
+                  </Button>
+                </Box>
+              )} */}
+              {userRole === "admin" && (
+                <Box className="adminBox">
+                  <Button
+                    variant="outlined"
+                    className="fetchBtn"
+                    onClick={fetchSenatorsFromQuorum}
                   >
                     Fetch Senators from Quorum
                   </Button>
@@ -1114,7 +1111,19 @@ export default function Senator(props) {
                 </Box>
 
                 {/* Desktop: Show Fetch button inside search/filter stack */}
+                {/* Desktop: Show Fetch button inside search/filter stack */}
                 {userRole === "admin" && (
+                  <Button
+                    variant="outlined"
+                    className="fetch-btn"
+                    onClick={fetchSenatorsFromQuorum}
+                  >
+                    Fetch Senators from Quorum
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+            {/* {userRole === "admin" && (
                   <Button
                     variant="outlined"
                     className="fetch-btn"
@@ -1124,7 +1133,7 @@ export default function Senator(props) {
                   </Button>
                 )}
               </Stack>
-            </Box>
+            </Box> */}
 
             <MainGrid
               type="senator"
@@ -1155,20 +1164,26 @@ export default function Senator(props) {
               bgcolor:
                 snackbarMessage ===
                 `${selectedSenator?.name} deleted successfully.`
-                  ? "#fde8e4"
-                  : snackbarMessage?.includes("senators fetched successfully!")
-                  ? "#daf4f0"
+                  ? "#fde8e4 !important"
+                  : snackbarMessage
+                      ?.toLowerCase()
+                      .includes("senators fetched successfully!") ||
+                    snackbarMessage?.toLowerCase().includes("bulk edit applied")
+                  ? "#daf4f0 !important"
                   : undefined,
 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
                   `${selectedSenator?.name} deleted successfully.`
-                    ? "#cc563d"
-                    : snackbarMessage?.includes(
-                        "senators fetched successfully!"
-                      )
-                    ? "#099885"
+                    ? "#cc563d !important"
+                    : snackbarMessage
+                        ?.toLowerCase()
+                        .includes("senators fetched successfully!") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk edit applied")
+                    ? "#099885 !important"
                     : undefined,
               },
 
@@ -1176,11 +1191,14 @@ export default function Senator(props) {
                 color:
                   snackbarMessage ===
                   `${selectedSenator?.name} deleted successfully.`
-                    ? "#cc563d"
-                    : snackbarMessage?.includes(
-                        "senators fetched successfully!"
-                      )
-                    ? "#099885"
+                    ? "#cc563d !important"
+                    : snackbarMessage
+                        ?.toLowerCase()
+                        .includes("senators fetched successfully!") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk edit applied")
+                    ? "#099885 !important"
                     : undefined,
               },
               "& .MuiAlert-action": {

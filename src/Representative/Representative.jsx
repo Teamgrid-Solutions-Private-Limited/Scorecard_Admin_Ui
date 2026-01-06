@@ -509,54 +509,54 @@ export default function Representative(props) {
     setOpenFetchDialog(true);
   };
 
-  const fetchRepresentativeFromQuorum = async (status = "active") => {
-    setOpenFetchDialog(false);
-    setFetching(true);
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
-    }, 1000);
+  // const fetchRepresentativeFromQuorum = async (status = "active") => {
+  //   setOpenFetchDialog(false);
+  //   setFetching(true);
+  //   setProgress(0);
+  //   const interval = setInterval(() => {
+  //     setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
+  //   }, 1000);
 
-    try {
-      const requestBody = {
-        type: "representative",
-      };
+  //   try {
+  //     const requestBody = {
+  //       type: "representative",
+  //     };
 
-      // Use different endpoints based on status
-      const endpoint =
-        status === "former"
-          ? `${API_URL}/fetch-quorum/save-former`
-          : `${API_URL}/fetch-quorum/store-data`;
+  //     // Use different endpoints based on status
+  //     const endpoint =
+  //       status === "former"
+  //         ? `${API_URL}/fetch-quorum/save-former`
+  //         : `${API_URL}/fetch-quorum/store-data`;
 
-      const response = await axios.post(endpoint, requestBody, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  //     const response = await axios.post(endpoint, requestBody, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
-      if (response.status === 200) {
-        const statusText = status === "active" ? "active" : "former";
-        showSnackbar(
-          `Success: ${
-            statusText.charAt(0).toUpperCase() + statusText.slice(1)
-          } representatives fetched successfully!`,
-          "success"
-        );
-        await dispatch(getAllHouses());
-        setFetching(false);
-      } else {
-        throw new Error("Failed to fetch representatives from Quorum");
-      }
-    } catch (error) {
-      console.error("Error fetching representatives:", error);
-      showSnackbar("Error: Unable to fetch representatives.", "error");
-    } finally {
-      clearInterval(interval);
-      setFetching(false);
-      setProgress(100);
-      setTimeout(() => setProgress(0), 500);
-    }
-  };
+  //     if (response.status === 200) {
+  //       const statusText = status === "active" ? "active" : "former";
+  //       showSnackbar(
+  //         `Success: ${
+  //           statusText.charAt(0).toUpperCase() + statusText.slice(1)
+  //         } representatives fetched successfully!`,
+  //         "success"
+  //       );
+  //       await dispatch(getAllHouses());
+  //       setFetching(false);
+  //     } else {
+  //       throw new Error("Failed to fetch representatives from Quorum");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching representatives:", error);
+  //     showSnackbar("Error: Unable to fetch representatives.", "error");
+  //   } finally {
+  //     clearInterval(interval);
+  //     setFetching(false);
+  //     setProgress(100);
+  //     setTimeout(() => setProgress(0), 500);
+  //   }
+  // };
 
   const handleDeleteClick = (row) => {
     setSelectedRepresentative(row);
@@ -610,7 +610,43 @@ export default function Representative(props) {
     congressFilter.length +
     (termFilter ? 1 : 0) +
     statusFilter.length;
+  const fetchRepresentativeFromQuorum = async () => {
+    setFetching(true);
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
+    }, 1000);
 
+    try {
+      const response = await axios.post(
+        `${API_URL}/fetch-quorum/store-data`,
+        { type: "representative" },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        showSnackbar(
+          "Success: Representatives fetched successfully!",
+          "success"
+        );
+        await dispatch(getAllHouses());
+      } else {
+        throw new Error("Failed to fetch representatives from Quorum.");
+      }
+    } catch (error) {
+      console.error("Error fetching representatives from Quorum:", error);
+      showSnackbar("Error: Unable to fetch representatives.", "error");
+    } finally {
+      clearInterval(interval);
+      setFetching(false);
+      setProgress(100);
+      setTimeout(() => setProgress(0), 500);
+    }
+  };
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <LoadingOverlay loading={loading || fetching} />
@@ -621,7 +657,7 @@ export default function Representative(props) {
           <MobileHeader />
           <Stack spacing={2} className="stackBox">
             <Box className="actionsBox">
-              {userRole === "admin" && (
+              {/* {userRole === "admin" && (
                 <Box className="adminBox">
                   <Button
                     variant="outlined"
@@ -629,6 +665,17 @@ export default function Representative(props) {
                     onClick={handleFetchClick}
                   >
                     Fetch Representatives from Quorum
+                  </Button>
+                </Box>
+              )} */}
+              {userRole === "admin" && (
+                <Box className="adminBox">
+                  <Button
+                    variant="outlined"
+                    className="fetchBtn"
+                    onClick={fetchRepresentativeFromQuorum}
+                  >
+                    Fetch Senators from Quorum
                   </Button>
                 </Box>
               )}
@@ -1106,11 +1153,20 @@ export default function Representative(props) {
                   )}
                 </Box>
 
-                {userRole === "admin" && (
+                {/* {userRole === "admin" && (
                   <Button
                     variant="outlined"
                     className="fetch-btn"
                     onClick={handleFetchClick}
+                  >
+                    Fetch Representatives from Quorum
+                  </Button>
+                )} */}
+                {userRole === "admin" && (
+                  <Button
+                    variant="outlined"
+                    className="fetch-btn"
+                    onClick={fetchRepresentativeFromQuorum}
                   >
                     Fetch Representatives from Quorum
                   </Button>
@@ -1147,22 +1203,26 @@ export default function Representative(props) {
               bgcolor:
                 snackbarMessage ===
                 `${selectedRepresentative?.name} deleted successfully.`
-                  ? "#fde8e4"
+                  ? "#fde8e4 !important"
                   : snackbarMessage?.includes(
-                      "representatives fetched successfully!"
-                    )
-                  ? "#daf4f0"
+                      "Representatives fetched successfully!"
+                    ) ||
+                    snackbarMessage?.toLowerCase().includes("bulk edit applied")
+                  ? "#daf4f0 !important"
                   : undefined,
 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#cc563d"
+                    ? "#cc563d !important"
                     : snackbarMessage?.includes(
-                        "representatives fetched successfully!"
-                      )
-                    ? "#099885"
+                        "Representatives fetched successfully!"
+                      ) ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk edit applied")
+                    ? "#099885 !important"
                     : undefined,
               },
 
@@ -1170,11 +1230,14 @@ export default function Representative(props) {
                 color:
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#cc563d"
+                    ? "#cc563d !important"
                     : snackbarMessage?.includes(
-                        "representatives fetched successfully!"
-                      )
-                    ? "#099885"
+                        "Representatives fetched successfully!"
+                      ) ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk edit applied")
+                    ? "#099885 !important"
                     : undefined,
               },
               "& .MuiAlert-action": {
