@@ -39,23 +39,27 @@ export default function BulkEditModal({
   const voteOptions = votes || [];
   const activityOptions = activities || [];
 
-  const scoreOptions = mode === "vote" ? ["yea", "nay", "other"] : ["yes", "no", "other"];
+  const scoreOptions =
+    mode === "vote" ? ["yea", "nay", "other"] : ["yes", "no", "other"];
 
   const handleSave = () => {
     if (!selectedItem || !score) {
-      console.log("❌ BulkEditModal: Cannot save - missing selectedItem or score", {
-        selectedItem,
-        score,
-      });
+      console.log(
+        "❌ BulkEditModal: Cannot save - missing selectedItem or score",
+        {
+          selectedItem,
+          score,
+        }
+      );
       return;
     }
-    
+
     const payload = {
       category: mode,
       itemId: selectedItem._id || selectedItem,
       score: score,
     };
-    
+
     console.log("✅ BulkEditModal: Applying bulk edit", {
       mode,
       selectedItem: {
@@ -66,7 +70,7 @@ export default function BulkEditModal({
       score,
       payload,
     });
-    
+
     onApply && onApply(payload);
     onClose && onClose();
   };
@@ -77,7 +81,8 @@ export default function BulkEditModal({
       <DialogContent>
         <Box sx={{ mt: 1, mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Apply a score to the selected members for a specific vote or tracked activity.
+            Apply a score to the selected members for a specific vote or tracked
+            activity.
           </Typography>
         </Box>
 
@@ -91,7 +96,11 @@ export default function BulkEditModal({
           }}
         >
           <FormControlLabel value="vote" control={<Radio />} label="Vote" />
-          <FormControlLabel value="activity" control={<Radio />} label="Activity" />
+          <FormControlLabel
+            value="activity"
+            control={<Radio />}
+            label="Activity"
+          />
         </RadioGroup>
 
         {mode === "vote" ? (
@@ -100,15 +109,19 @@ export default function BulkEditModal({
             getOptionLabel={(opt) => opt.title || opt}
             value={selectedItem}
             onChange={(_, v) => setSelectedItem(v)}
-            sx={{ "& .MuiInputLabel-root": {
-                          top: "-7px",
-                          left: "15px",
-                        },
-                        "& .MuiInputLabel-shrink": {
-                          top: "-12px",
-                          left: "30px",
-                        },}}
-            renderInput={(params) => <TextField {...params} label="Select vote" margin="normal" />}
+            sx={{
+              "& .MuiInputLabel-root": {
+                top: "-7px",
+                left: "15px",
+              },
+              "& .MuiInputLabel-shrink": {
+                top: "-12px",
+                left: "30px",
+              },
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Select vote" margin="normal" />
+            )}
           />
         ) : (
           <Autocomplete
@@ -116,26 +129,36 @@ export default function BulkEditModal({
             getOptionLabel={(opt) => opt.title || opt}
             value={selectedItem}
             onChange={(_, v) => setSelectedItem(v)}
-              sx={{ "& .MuiInputLabel-root": {
-                          top: "-7px",
-                          left: "15px",
-                        },
-                        "& .MuiInputLabel-shrink": {
-                          top: "-7px",
-                          left: "30px",
-                        },}}
-            renderInput={(params) => <TextField {...params} label="Select activity" margin="normal" />}
+            sx={{
+              "& .MuiInputLabel-root": {
+                top: "-7px",
+                left: "15px",
+              },
+              "& .MuiInputLabel-shrink": {
+                top: "-7px",
+                left: "30px",
+              },
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Select activity" margin="normal" />
+            )}
           />
         )}
 
-        <FormControl fullWidth sx={{ mt: 1, "& .MuiInputLabel-root": {
-                          top: "-7px",
-                          left: "15px",
-                        },
-                        "& .MuiInputLabel-shrink": {
-                          top: "-7px",
-                          left: "30px",
-                        },}} >
+        <FormControl
+          fullWidth
+          sx={{
+            mt: 1,
+            "& .MuiInputLabel-root": {
+              top: "-7px",
+              left: "15px",
+            },
+            "& .MuiInputLabel-shrink": {
+              top: "-7px",
+              left: "30px",
+            },
+          }}
+        >
           <InputLabel id="score-select-label">Score</InputLabel>
           <Select
             labelId="score-select-label"
@@ -151,22 +174,41 @@ export default function BulkEditModal({
           </Select>
         </FormControl>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button 
-          variant="contained" 
-          onClick={handleSave} 
+      <DialogActions sx={{ paddingRight: "22px" , paddingBottom: "24px" }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="secondary"
+          sx={{ borderRadius: 2, paddingX: 3 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="outlined"
+          className="bulkEditBtn"
+          onClick={handleSave}
           disabled={!selectedItem || !score}
           sx={{
+            borderRadius: 2,
             backgroundColor: "#173A5E !important",
             color: "white !important",
             fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "none",
+            padding: "8px 24px",
+            border: "none !important",
             "&:hover": {
               backgroundColor: "#1E4C80 !important",
+              color: "white !important",
+              border: "none !important",
+            },
+            "&:active": {
+              backgroundColor: "#173A5E !important",
             },
             "&:disabled": {
               backgroundColor: "#ccc !important",
               color: "#666 !important",
+              border: "none !important",
             },
           }}
         >
