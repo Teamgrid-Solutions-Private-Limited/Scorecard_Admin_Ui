@@ -438,7 +438,7 @@ export default function Votes(props) {
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
 
-                {/* {userRole === "admin" && (
+                {userRole === "admin" && (
                   <Button
                     onClick={() => {
                       setIsAssignMode(!isAssignMode);
@@ -448,7 +448,7 @@ export default function Votes(props) {
                   >
                     {isAssignMode ? "Cancel Assign" : "Assign Vote"}
                   </Button>
-                )} */}
+                )}
 
                 {userRole === "admin" && (
                   <Button

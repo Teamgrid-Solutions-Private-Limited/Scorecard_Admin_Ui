@@ -425,85 +425,91 @@ export default function Representative(props) {
     }
     navigate(`/edit-representative/${row._id}`);
   };
+const handleBulkApply = async ({ ids = [], payload }) => {
+  if (!ids || ids.length === 0 || !payload) {
+    return;
+  }
+  if (userRole !== "admin") {
+    showSnackbar("Bulk edit is for admins only", "error");
+    return;
+  }
 
-  const handleBulkApply = async ({ ids = [], payload }) => {
-    if (!ids || ids.length === 0 || !payload) {
-      return;
-    }
-    if (userRole !== "admin") {
-      showSnackbar("Bulk edit is for admins only", "error");
-      return;
-    }
+  const { category, itemId, score } = payload;
+  
+  if (!category || !itemId || !score) {
+    showSnackbar("Invalid bulk payload", "error");
+    return;
+  }
 
-    const { category, itemId, score } = payload;
-
-    if (!category || !itemId || !score) {
-      showSnackbar("Invalid bulk payload", "error");
-      return;
-    }
-
-    setFetching(true);
-    try {
-      // Build updates array for the bulk update endpoint
-      const updates = ids.map((houseId) => {
-        const update = {
-          houseId: houseId,
-        };
-
-        if (category === "vote") {
-          update.votesScore = [
-            {
-              voteId: itemId,
-              score: score,
-            },
-          ];
-        } else if (category === "activity") {
-          update.activitiesScore = [
-            {
-              activityId: itemId,
-              score: score,
-            },
-          ];
-        }
-
-        return update;
-      });
-
-      const result = await dispatch(updateHouseScores(updates)).unwrap();
-      const successCount = result.successful || 0;
-      const failedCount = result.failed || 0;
-
-      if (result.errors && result.errors.length > 0) {
-        console.warn(`⚠️ Some updates failed:`, result.errors);
+  setFetching(true);
+  try {
+    // Build updates array for the bulk update endpoint
+    const updates = ids.map((houseId) => {
+      const update = {
+        houseId: houseId,
+      };
+      
+      if (category === "vote") {
+        update.votesScore = [{
+          voteId: itemId,
+          score: score,
+        }];
+      } else if (category === "activity") {
+        update.activitiesScore = [{
+          activityId: itemId,
+          score: score,
+        }];
       }
-      await dispatch(getAllHouseData());
-      await dispatch(getAllHouses());
-
-      if (successCount > 0) {
-        showSnackbar(
-          `Bulk edit applied for ${successCount} member${
-            successCount !== 1 ? "s" : ""
-          }.${failedCount > 0 ? ` ${failedCount} failed.` : ""}`,
-          successCount === ids.length ? "success" : "warning"
-        );
-      } else {
-        showSnackbar(
-          "Bulk edit failed for all members. See console for details.",
-          "error"
-        );
-      }
-    } catch (err) {
-      console.error("❌ Bulk apply failed:", {
-        error: err,
-        errorMessage: err?.message,
-        errorStack: err?.stack,
-        fullError: err,
-      });
-      showSnackbar("Bulk apply failed. See console for details.", "error");
-    } finally {
+      
+      return update;
+    });
+    
+    const result = await dispatch(updateHouseScores(updates)).unwrap();
+    
+    // Check if no representative had the item
+    if (result.message && result.message.includes("was not found for any of the representatives")) {
+      showSnackbar(result.message, "error");
       setFetching(false);
+      return;
     }
-  };
+    
+    const successCount = result.successful || 0;
+    const failedCount = result.failed || 0;
+    
+    if (result.errors && result.errors.length > 0) {
+      console.warn(`⚠️ Some updates failed:`, result.errors);
+    }
+    
+    await dispatch(getAllHouseData());
+    await dispatch(getAllHouses());
+    
+    if (successCount > 0) {
+      showSnackbar(
+        `Bulk edit applied for ${successCount} member${successCount !== 1 ? 's' : ''}.${failedCount > 0 ? ` ${failedCount} failed (item not found for those representatives).` : ''}`,
+        successCount === ids.length ? "success" : "warning"
+      );
+    } else {
+      showSnackbar("Bulk edit failed for all members. See console for details.", "error");
+    }
+  } catch (err) {
+    console.error("❌ Bulk apply failed:", {
+      error: err,
+      errorMessage: err?.message,
+      errorStack: err?.stack,
+      fullError: err,
+    });
+    
+    // Check for the specific "not found for any" error
+    if (err?.message?.includes("was not found for any of the representatives")) {
+      showSnackbar(err.message, "error");
+    } else {
+      showSnackbar("Bulk apply failed.");
+    }
+  } finally {
+    setFetching(false);
+  }
+};
+  
 
   const handleFetchClick = () => {
     setOpenFetchDialog(true);
