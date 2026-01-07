@@ -402,18 +402,17 @@ export default function Senator(props) {
     try {
       const requestBody = {
         type: "senator",
-        ...(status === "former" && { status: "former" }),
       };
-      
-      const response = await axios.post(
-        `${API_URL}/fetch-quorum/store-data`,
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+       const endpoint =
+        status === "former"
+          ? `${API_URL}/fetch-quorum/save-former`
+          : `${API_URL}/fetch-quorum/store-data`;
+ 
+      const response = await axios.post(endpoint, requestBody, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.status === 200) {
         const statusText = status === "active" ? "active" : "former";
         showSnackbar(`Success: ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} senators fetched successfully!`, "success");
@@ -1144,7 +1143,108 @@ export default function Senator(props) {
             {snackbarMessage}
           </Alert>
         </Snackbar>
+ <Dialog
+          open={openFetchDialog}
+          onClose={() => setOpenFetchDialog(false)}
+          PaperProps={{
+            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
+          }}
+        >
+          <DialogTitle className="dialogBox">
+            Fetch Senators from Quorum
+          </DialogTitle>
+ 
+          <DialogContent>
+            <DialogContentText className="dialogTitle">
+              Select the type of senators you want to fetch:
+            </DialogContentText>
+            <Stack spacing={2} sx={{ mt: 2 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+               sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                }}
 
+                onClick={() => fetchSenatorsFromQuorum("active")}
+              >
+                Active Senators
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+   sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                }}
+
+                onClick={() => fetchSenatorsFromQuorum("former")}
+              >
+                Former Senators
+              </Button>
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setOpenFetchDialog(false)}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+            >
+              Cancel
+            </Button>
+          </DialogActions>
+        </Dialog>
+ 
+        <Dialog
+          open={openDeleteDialog}
+          onClose={() => setOpenDeleteDialog(false)}
+          PaperProps={{
+            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
+          }}
+        >
+          <DialogTitle className="dialogBox">Confirm Deletion</DialogTitle>
+ 
+          <DialogContent>
+            <DialogContentText className="dialogTitle">
+              Are you sure you want to delete{" "}
+              <strong>{selectedSenator?.name}</strong>?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
+            >
+              <Button
+                onClick={() => setOpenDeleteDialog(false)}
+                variant="outlined"
+                color="secondary"
+                sx={{ borderRadius: 2, paddingX: 3 }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmDelete}
+                variant="contained"
+                color="error"
+                sx={{ borderRadius: 2, paddingX: 3 }}
+              >
+                Delete
+              </Button>
+            </Stack>
+          </DialogActions>
+        </Dialog>
         <Dialog
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}

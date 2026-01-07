@@ -82,18 +82,26 @@ export default function SenatorBasicInfo({
     variant="outlined"
     className="customButtonGroup"
   >
-    <Button
-      onClick={() => handleStatusChange("Active")}
-      className={`statusBtn ${formData.status === "Active" ? "active" : ""}`}
-    >
-      Active
-    </Button>
-    <Button
-      onClick={() => handleStatusChange("Former")}
-      className={`statusBtn ${formData.status === "Former" ? "active" : ""}`}
-    >
-      Former
-    </Button>
+ <Button
+              onClick={() => handleStatusChange("active")}
+              className={`statusBtn ${
+                formData.status === "active" || formData.status === "Active"
+                  ? "active"
+                  : ""
+              }`}
+            >
+              Active
+            </Button>
+            <Button
+              onClick={() => handleStatusChange("former")}
+              className={`statusBtn ${
+                formData.status === "former" || formData.status === "Former"
+                  ? "active"
+                  : ""
+              }`}
+            >
+              Former
+            </Button>
   </ButtonGroup>
 
   <FormControlLabel

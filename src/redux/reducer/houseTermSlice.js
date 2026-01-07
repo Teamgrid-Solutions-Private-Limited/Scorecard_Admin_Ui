@@ -97,21 +97,44 @@ export const deleteHouseData = createAsyncThunk(
   }
 );
 
+// export const updateHouseScores = createAsyncThunk(
+//   "houseData/updateHouseScores",
+//   async (updates, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.put(
+//         `${API_URL}/api/v1/admin/house-data/scores/update`,
+//         { updates }
+//       );
+//       return response.data;
+//     } catch (error) {
+//       return rejectWithValue(error.response?.data || error.message);
+//     }
+//   }
+// );
 export const updateHouseScores = createAsyncThunk(
   "houseData/updateHouseScores",
   async (updates, { rejectWithValue }) => {
     try {
+      console.log("Sending updates to server:", updates);
+      console.log("Request body being sent:", { updates });
+      
       const response = await axios.put(
         `${API_URL}/api/v1/admin/house-data/scores/update`,
         { updates }
       );
+      
+      console.log("Server response:", response.data);
       return response.data;
     } catch (error) {
+      console.error("API Error:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
-
 // Initial state
 const initialState = {
   houseData: [],

@@ -141,19 +141,25 @@ const [removedItems, setRemovedItems] = useState({
     });
   });
 
-  const doesVoteBelongToTerm = (voteData, term) => {
-    if (!voteData || !term) return false;
+ const doesVoteBelongToTerm = (voteData, term) => {
+  if (!voteData || !term) return false;
 
-    const voteDate = new Date(voteData.date);
-    const termStart = new Date(`${term.startYear}-01-03`);
-    const termEnd = new Date(`${term.endYear}-01-02`);
+  const voteDate = new Date(voteData.date);
 
-    const inDateRange = voteDate >= termStart && voteDate <= termEnd;
+  // 🚫 HARD STOP: these votes must NEVER go into votesScore
+  const CUTOFF_DATE = new Date("2019-01-02");
+  if (voteDate <= CUTOFF_DATE) {
+    return false;
+  }
 
-    const inCongress = term.congresses.includes(Number(voteData.congress));
+  const termStart = new Date(`${term.startYear}-01-03`);
+  const termEnd = new Date(`${term.endYear}-01-02`);
 
-    return inDateRange && inCongress;
-  };
+  const inDateRange = voteDate >= termStart && voteDate <= termEnd;
+  const inCongress = term.congresses.includes(Number(voteData.congress));
+
+  return inDateRange && inCongress;
+};
 
   const doesActivityBelongToTerm = (activityData, term) => {
     if (!activityData || !term) return false;
@@ -340,7 +346,11 @@ const [removedItems, setRemovedItems] = useState({
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
-
+   const cutoffDate = new Date("2019-01-02");
+                const isBeforeCutoffDate = voteDate < cutoffDate;
+                
+                // Skip votes before cutoff date
+                if (isBeforeCutoffDate) return;
               const inTerm =
                 voteDate >= newTermStart &&
                 voteDate <= newTermEnd &&
@@ -708,6 +718,7 @@ useEffect(() => {
 
     }
     if (senatorData?.currentSenator?.length > 0) {
+      console.log("Pre-filling term data based on fetched senator data",senatorData?.currentSenator);
       const termsData = senatorData.currentSenator.map((term, termIndex) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
         if (!matchedTerm) {
@@ -751,6 +762,12 @@ useEffect(() => {
 
           termVotes = allVotes.filter((vote) => {
             const voteDate = new Date(vote.date);
+                        const cutoffDate = new Date("2019-01-02");
+            const isBeforeCutoffDate = voteDate < cutoffDate;
+            
+            // Skip votes before cutoff date
+            if (isBeforeCutoffDate) return false;
+
             const inTerm =
               voteDate >= termStart &&
               voteDate <= termEnd &&
@@ -788,6 +805,11 @@ useEffect(() => {
               if (!voteData || !matchedTerm) return false;
 
               const voteDate = new Date(voteData.date);
+                 const cutoffDate = new Date("2019-01-02");
+              const isBeforeCutoffDate = voteDate < cutoffDate;
+              
+              if (isBeforeCutoffDate) return false;
+
               const termStart = new Date(`${matchedTerm.startYear}-01-03`);
               const termEnd = new Date(`${matchedTerm.endYear}-01-02`);
 
@@ -832,6 +854,12 @@ useEffect(() => {
                 matchedTerm &&
                 doesVoteBelongToTerm(voteData, matchedTerm)
               ) {
+                   const cutoffDate = new Date("2019-01-02");
+                const voteDate = new Date(voteData.date);
+                const isBeforeCutoffDate = voteDate < cutoffDate;
+                
+                // Skip votes before cutoff date
+                if (isBeforeCutoffDate) return;
                 const alreadyIncluded = votesScore.some(
                   (v) => v.voteId === voteId
                 );
@@ -912,7 +940,7 @@ useEffect(() => {
             // Add to orphanVotes if vote doesn't belong to any term OR if vote date is before Jan 2, 2019
            // Add to orphanVotes ONLY if vote doesn't belong to any term
 // AND vote date is before Jan 2, 2019
-if (!belongsToAnyTerm && isBeforeCutoffDate) {
+if (  isBeforeCutoffDate) {
   const alreadyAdded = orphanVotes.some((ov) => ov.voteId === voteId);
   if (!alreadyAdded) {
     let scoreValue = "";
@@ -1515,6 +1543,7 @@ if (!belongsToAnyTerm && isBeforeCutoffDate) {
   } = useSnackbar();
   const preFillForm = () => {
     if (senator) {
+    console.log("Pre-filling form with senator data:", senator);
       const termId =
         senator.termId && terms.length > 0
           ? terms.find((term) => term._id === senator.termId)?._id || ""

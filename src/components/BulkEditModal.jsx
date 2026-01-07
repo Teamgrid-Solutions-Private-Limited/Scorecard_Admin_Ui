@@ -38,24 +38,42 @@ export default function BulkEditModal({
 
   const voteOptions = votes || [];
   const activityOptions = activities || [];
+  const formatDate = (date) => {
+    if (!date) return "Unknown date";
 
-  const scoreOptions = mode === "vote" ? ["yea", "nay", "other"] : ["yes", "no", "other"];
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
+
+  // const scoreOptions = mode === "vote" ? ["yea", "nay", "other"] : ["yes", "no", "other"];
+  const scoreOptions = [
+    { label: "Yea", value: "yea" },
+    { label: "Nay", value: "nay" },
+    { label: "Other", value: "other" },
+  ];
 
   const handleSave = () => {
     if (!selectedItem || !score) {
-      console.log("❌ BulkEditModal: Cannot save - missing selectedItem or score", {
-        selectedItem,
-        score,
-      });
+      console.log(
+        "❌ BulkEditModal: Cannot save - missing selectedItem or score",
+        {
+          selectedItem,
+          score,
+        }
+      );
       return;
     }
-    
+
     const payload = {
       category: mode,
       itemId: selectedItem._id || selectedItem,
       score: score,
     };
-    
+
     console.log("✅ BulkEditModal: Applying bulk edit", {
       mode,
       selectedItem: {
@@ -66,7 +84,7 @@ export default function BulkEditModal({
       score,
       payload,
     });
-    
+
     onApply && onApply(payload);
     onClose && onClose();
   };
@@ -77,7 +95,8 @@ export default function BulkEditModal({
       <DialogContent>
         <Box sx={{ mt: 1, mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Apply a score to the selected members for a specific vote or tracked activity.
+            Apply a score to the selected members for a specific vote or tracked
+            activity.
           </Typography>
         </Box>
 
@@ -91,51 +110,91 @@ export default function BulkEditModal({
           }}
         >
           <FormControlLabel value="vote" control={<Radio />} label="Vote" />
-          <FormControlLabel value="activity" control={<Radio />} label="Activity" />
+          <FormControlLabel
+            value="activity"
+            control={<Radio />}
+            label="Activity"
+          />
         </RadioGroup>
 
         {mode === "vote" ? (
           <Autocomplete
             options={voteOptions}
-            getOptionLabel={(opt) => opt.title || opt}
             value={selectedItem}
             onChange={(_, v) => setSelectedItem(v)}
-            sx={{ "& .MuiInputLabel-root": {
-                          top: "-7px",
-                          left: "15px",
-                        },
-                        "& .MuiInputLabel-shrink": {
-                          top: "-12px",
-                          left: "30px",
-                        },}}
-            renderInput={(params) => <TextField {...params} label="Select vote" margin="normal" />}
+            getOptionLabel={(opt) =>
+              opt?.title ? `${opt.title} (${formatDate(opt.date)})` : opt
+            }
+            renderOption={(props, option) => (
+              <li {...props} key={option._id}>
+                <Typography variant="body2">
+                  {option.title}{" "}
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontSize: "12px" }}
+                  >
+                    ({formatDate(option.date)})
+                  </Typography>
+                </Typography>
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField {...params} label="Select vote" margin="normal" />
+            )}
+            sx={{
+              "& .MuiInputLabel-root": { top: "-7px", left: "15px" },
+              "& .MuiInputLabel-shrink": { top: "-12px", left: "30px" },
+            }}
           />
         ) : (
           <Autocomplete
             options={activityOptions}
-            getOptionLabel={(opt) => opt.title || opt}
             value={selectedItem}
             onChange={(_, v) => setSelectedItem(v)}
-              sx={{ "& .MuiInputLabel-root": {
-                          top: "-7px",
-                          left: "15px",
-                        },
-                        "& .MuiInputLabel-shrink": {
-                          top: "-7px",
-                          left: "30px",
-                        },}}
-            renderInput={(params) => <TextField {...params} label="Select activity" margin="normal" />}
+            getOptionLabel={(opt) =>
+              opt?.title ? `${opt.title} (${formatDate(opt.date)})` : opt
+            }
+            renderOption={(props, option) => (
+              <li {...props} key={option._id}>
+                <Typography variant="body2">
+                  {option.title}{" "}
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontSize: "12px" }}
+                  >
+                    ({formatDate(option.date)})
+                  </Typography>
+                </Typography>
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField {...params} label="Select activity" margin="normal" />
+            )}
+            sx={{
+              "& .MuiInputLabel-root": { top: "-7px", left: "15px" },
+              "& .MuiInputLabel-shrink": { top: "-7px", left: "30px" },
+            }}
           />
         )}
 
-        <FormControl fullWidth sx={{ mt: 1, "& .MuiInputLabel-root": {
-                          top: "-7px",
-                          left: "15px",
-                        },
-                        "& .MuiInputLabel-shrink": {
-                          top: "-7px",
-                          left: "30px",
-                        },}} >
+        <FormControl
+          fullWidth
+          sx={{
+            mt: 1,
+            "& .MuiInputLabel-root": {
+              top: "-7px",
+              left: "15px",
+            },
+            "& .MuiInputLabel-shrink": {
+              top: "-7px",
+              left: "30px",
+            },
+          }}
+        >
           <InputLabel id="score-select-label">Score</InputLabel>
           <Select
             labelId="score-select-label"
@@ -143,24 +202,25 @@ export default function BulkEditModal({
             value={score}
             onChange={(e) => setScore(e.target.value)}
           >
-            {scoreOptions.map((s) => (
-              <MenuItem key={s} value={s}>
-                {s}
+            {scoreOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ paddingRight: "20px" }}>
         <Button onClick={onClose}>Cancel</Button>
-        <Button 
-          variant="contained" 
-          onClick={handleSave} 
+        <Button
+          variant="contained"
+          onClick={handleSave}
           disabled={!selectedItem || !score}
           sx={{
             backgroundColor: "#173A5E !important",
             color: "white !important",
             fontSize: "14px",
+            paddingRight: "20px",
             "&:hover": {
               backgroundColor: "#1E4C80 !important",
             },

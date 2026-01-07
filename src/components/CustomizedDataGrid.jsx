@@ -925,8 +925,8 @@ export default function CustomizedDataGrid({
             {selectionModel.length > 0 ? "Clear selection" : "Select all"}
           </Button>
           {(((type === "senator" && userRole === "admin" && showCheckboxes) || (type === "representative" && userRole === "admin" && showCheckboxes)) || (isSelectable && type !== "senator" && type !== "representative")) && selectionModel.length > 0 && (
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={() => setBulkOpen(true)}
               sx={{
                 backgroundColor: "#173A5E !important",
