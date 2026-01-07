@@ -24,9 +24,6 @@ import {
   IconButton,
   ClickAwayListener,
   Paper,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AppTheme from "../../src/shared-theme/AppTheme";
@@ -53,7 +50,10 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-import { getAllHouseData, updateHouseScores } from "../redux/reducer/houseTermSlice";
+import {
+  getAllHouseData,
+  updateHouseScores,
+} from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
 import { getAllVotes } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
@@ -66,7 +66,13 @@ export default function Representative(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
-  const { open: snackbarOpen, message: snackbarMessage, severity: snackbarSeverity, showSnackbar, hideSnackbar } = useSnackbar();
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
   const { houses, loading } = useSelector((state) => state.house);
   const [fetching, setFetching] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -141,7 +147,7 @@ export default function Representative(props) {
           termId = currentTermData.termId;
           rating =
             currentTermData.rating !== undefined &&
-              currentTermData.rating !== null
+            currentTermData.rating !== null
               ? currentTermData.rating
               : "N/A";
           currentTerm = true;
@@ -209,14 +215,14 @@ export default function Representative(props) {
             const termObj = terms.find((t) => t._id === rec.termId);
             return termObj
               ? {
-                termId: rec.termId,
-                termName: termObj.name || "",
-                currentTerm: rec.currentTerm || false,
-                rating: rec.rating,
-                congresses: Array.isArray(termObj.congresses)
-                  ? termObj.congresses
-                  : [],
-              }
+                  termId: rec.termId,
+                  termName: termObj.name || "",
+                  currentTerm: rec.currentTerm || false,
+                  rating: rec.rating,
+                  congresses: Array.isArray(termObj.congresses)
+                    ? termObj.congresses
+                    : [],
+                }
               : null;
           })
           .filter(Boolean);
@@ -328,7 +334,8 @@ export default function Representative(props) {
         statusFilter.length === 0 ||
         (transformedHouse.publishStatus &&
           statusFilter.includes(transformedHouse.publishStatus)) ||
-        (statusFilter.includes("draft") && transformedHouse.publishStatus === "under review");
+        (statusFilter.includes("draft") &&
+          transformedHouse.publishStatus === "under review");
 
       return (
         nameMatch && partyMatch && districtMatch && ratingMatch && statusMatch
@@ -418,78 +425,6 @@ export default function Representative(props) {
     }
     navigate(`/edit-representative/${row._id}`);
   };
-
-  // const handleBulkApply = async ({ ids = [], payload }) => {
-
-  //   if (!ids || ids.length === 0 || !payload) {
-  //     return;
-  //   }
-  //   if (userRole !== "admin") {
-  //     showSnackbar("Bulk edit is for admins only", "error");
-  //     return;
-  //   }
-
-  //   const { category, itemId, score } = payload;
-    
-  //   if (!category || !itemId || !score) {
-  //     showSnackbar("Invalid bulk payload", "error");
-  //     return;
-  //   }
-
-  //   setFetching(true);
-  //   try {
-      
-  //     // Build updates array for the bulk update endpoint
-  //     const updates = ids.map((houseId) => {
-  //       const update = {
-  //         houseId: houseId,
-  //       };
-        
-  //       if (category === "vote") {
-  //         update.votesScore = [{
-  //           voteId: itemId,
-  //           score: score,
-  //         }];
-  //       } else if (category === "activity") {
-  //         update.activitiesScore = [{
-  //           activityId: itemId,
-  //           score: score,
-  //         }];
-  //       }
-        
-  //       return update;
-  //     });
-      
-  //     const result = await dispatch(updateHouseScores(updates)).unwrap();      
-  //     const successCount = result.successful || 0;
-  //     const failedCount = result.failed || 0;
-      
-  //     if (result.errors && result.errors.length > 0) {
-  //       console.warn(`⚠️ Some updates failed:`, result.errors);
-  //     }
-  //           await dispatch(getAllHouseData());
-  //     await dispatch(getAllHouses());
-            
-  //     if (successCount > 0) {
-  //       showSnackbar(
-  //         `Bulk edit applied for ${successCount} member${successCount !== 1 ? 's' : ''}.${failedCount > 0 ? ` ${failedCount} failed.` : ''}`,
-  //         successCount === ids.length ? "success" : "warning"
-  //       );
-  //     } else {
-  //       showSnackbar("Bulk edit failed for all members", "error");
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Bulk apply failed:", {
-  //       error: err,
-  //       errorMessage: err?.message,
-  //       errorStack: err?.stack,
-  //       fullError: err,
-  //     });
-  //     showSnackbar("Bulk apply failed");
-  //   } finally {
-  //     setFetching(false);
-  //   }
-  // };
 const handleBulkApply = async ({ ids = [], payload }) => {
   if (!ids || ids.length === 0 || !payload) {
     return;
@@ -574,51 +509,60 @@ const handleBulkApply = async ({ ids = [], payload }) => {
     setFetching(false);
   }
 };
+  
+
   const handleFetchClick = () => {
     setOpenFetchDialog(true);
   };
 
-  const fetchRepresentativeFromQuorum = async (status = "active") => {
-    setOpenFetchDialog(false);
-    setFetching(true);
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
-    }, 1000);
+  // const fetchRepresentativeFromQuorum = async (status = "active") => {
+  //   setOpenFetchDialog(false);
+  //   setFetching(true);
+  //   setProgress(0);
+  //   const interval = setInterval(() => {
+  //     setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
+  //   }, 1000);
 
-    try {
-      const requestBody = {
-        type: "representative",
-        ...(status === "former" && { status: "former" }),
-      };
+  //   try {
+  //     const requestBody = {
+  //       type: "representative",
+  //     };
 
-      const response = await axios.post(
-        `${API_URL}/fetch-quorum/store-data`,
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  //     // Use different endpoints based on status
+  //     const endpoint =
+  //       status === "former"
+  //         ? `${API_URL}/fetch-quorum/save-former`
+  //         : `${API_URL}/fetch-quorum/store-data`;
 
-      if (response.status === 200) {
-        const statusText = status === "active" ? "active" : "former";
-        showSnackbar(`Success: ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} representatives fetched successfully!`, "success");
-        await dispatch(getAllHouses());
-      } else {
-        throw new Error("Failed to fetch representatives from Quorum.");
-      }
-    } catch (error) {
-      console.error("Error fetching representatives from Quorum:", error);
-      showSnackbar("Error: Unable to fetch representatives.", "error");
-    } finally {
-      clearInterval(interval);
-      setFetching(false);
-      setProgress(100);
-      setTimeout(() => setProgress(0), 500);
-    }
-  };
+  //     const response = await axios.post(endpoint, requestBody, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+
+  //     if (response.status === 200) {
+  //       const statusText = status === "active" ? "active" : "former";
+  //       showSnackbar(
+  //         `Success: ${
+  //           statusText.charAt(0).toUpperCase() + statusText.slice(1)
+  //         } representatives fetched successfully!`,
+  //         "success"
+  //       );
+  //       await dispatch(getAllHouses());
+  //       setFetching(false);
+  //     } else {
+  //       throw new Error("Failed to fetch representatives from Quorum");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching representatives:", error);
+  //     showSnackbar("Error: Unable to fetch representatives.", "error");
+  //   } finally {
+  //     clearInterval(interval);
+  //     setFetching(false);
+  //     setProgress(100);
+  //     setTimeout(() => setProgress(0), 500);
+  //   }
+  // };
 
   const handleDeleteClick = (row) => {
     setSelectedRepresentative(row);
@@ -672,7 +616,43 @@ const handleBulkApply = async ({ ids = [], payload }) => {
     congressFilter.length +
     (termFilter ? 1 : 0) +
     statusFilter.length;
+  const fetchRepresentativeFromQuorum = async () => {
+    setFetching(true);
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
+    }, 1000);
 
+    try {
+      const response = await axios.post(
+        `${API_URL}/fetch-quorum/store-data`,
+        { type: "representative" },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        showSnackbar(
+          "Success: Representatives fetched successfully!",
+          "success"
+        );
+        await dispatch(getAllHouses());
+      } else {
+        throw new Error("Failed to fetch representatives from Quorum.");
+      }
+    } catch (error) {
+      console.error("Error fetching representatives from Quorum:", error);
+      showSnackbar("Error: Unable to fetch representatives.", "error");
+    } finally {
+      clearInterval(interval);
+      setFetching(false);
+      setProgress(100);
+      setTimeout(() => setProgress(0), 500);
+    }
+  };
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <LoadingOverlay loading={loading || fetching} />
@@ -683,7 +663,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
           <MobileHeader />
           <Stack spacing={2} className="stackBox">
             <Box className="actionsBox">
-              {userRole === "admin" && (
+              {/* {userRole === "admin" && (
                 <Box className="adminBox">
                   <Button
                     variant="outlined"
@@ -691,6 +671,17 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                     onClick={handleFetchClick}
                   >
                     Fetch Representatives from Quorum
+                  </Button>
+                </Box>
+              )} */}
+              {userRole === "admin" && (
+                <Box className="adminBox">
+                  <Button
+                    variant="outlined"
+                    className="fetchBtn"
+                    onClick={fetchRepresentativeFromQuorum}
+                  >
+                    Fetch Senators from Quorum
                   </Button>
                 </Box>
               )}
@@ -780,8 +771,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                         </Box>
 
                         <Box
-                          className={`filter-section ${expandedFilter === "party" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "party" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -835,8 +827,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${expandedFilter === "district" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "district" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -912,8 +905,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${expandedFilter === "rating" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "rating" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -966,8 +960,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${expandedFilter === "congress" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "congress" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -1027,14 +1022,16 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                                       >
                                         {congressYearMap[congress]
                                           ? `${getOrdinalSuffix(
-                                            congress
-                                          )} Congress (${congressYearMap[congress]
-                                            .startYear
-                                          }-${congressYearMap[congress].endYear
-                                          })`
+                                              congress
+                                            )} Congress (${
+                                              congressYearMap[congress]
+                                                .startYear
+                                            }-${
+                                              congressYearMap[congress].endYear
+                                            })`
                                           : `${getOrdinalSuffix(
-                                            congress
-                                          )} Congress`}
+                                              congress
+                                            )} Congress`}
                                       </Typography>
                                     </Box>
                                   ))
@@ -1052,8 +1049,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${expandedFilter === "term" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "term" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -1096,8 +1094,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                         </Box>
 
                         <Box
-                          className={`filter-section ${expandedFilter === "status" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "status" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -1160,11 +1159,20 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                   )}
                 </Box>
 
-                {userRole === "admin" && (
+                {/* {userRole === "admin" && (
                   <Button
                     variant="outlined"
                     className="fetch-btn"
                     onClick={handleFetchClick}
+                  >
+                    Fetch Representatives from Quorum
+                  </Button>
+                )} */}
+                {userRole === "admin" && (
+                  <Button
+                    variant="outlined"
+                    className="fetch-btn"
+                    onClick={fetchRepresentativeFromQuorum}
                   >
                     Fetch Representatives from Quorum
                   </Button>
@@ -1179,7 +1187,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               handleToggleStatusHouse={handleToggleStatusHouse}
-              isSelectable={userRole === 'admin'}
+              isSelectable={userRole === "admin"}
               onBulkApply={handleBulkApply}
             />
           </Stack>
@@ -1200,33 +1208,43 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               width: "100%",
               bgcolor:
                 snackbarMessage ===
-                  `${selectedRepresentative?.name} deleted successfully.`
-                  ? "#fde8e4"
-                  : snackbarMessage ===
-                    "Success: Representatives fetched successfully!"
-                    ? "#daf4f0"
-                    : undefined,
+                `${selectedRepresentative?.name} deleted successfully.`
+                  ? "#fde8e4 !important"
+                  : snackbarMessage?.includes(
+                      "Representatives fetched successfully!"
+                    ) ||
+                    snackbarMessage?.toLowerCase().includes("bulk edit applied")
+                  ? "#daf4f0 !important"
+                  : undefined,
 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
-                    `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#cc563d"
-                    : snackbarMessage ===
-                      "Success: Representatives fetched successfully!"
-                      ? "#099885"
-                      : undefined,
+                  `${selectedRepresentative?.name} deleted successfully.`
+                    ? "#cc563d !important"
+                    : snackbarMessage?.includes(
+                        "Representatives fetched successfully!"
+                      ) ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk edit applied")
+                    ? "#099885 !important"
+                    : undefined,
               },
 
               "& .MuiAlert-message": {
                 color:
                   snackbarMessage ===
-                    `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#cc563d"
-                    : snackbarMessage ===
-                      "Success: Representatives fetched successfully!"
-                      ? "#099885"
-                      : undefined,
+                  `${selectedRepresentative?.name} deleted successfully.`
+                    ? "#cc563d !important"
+                    : snackbarMessage?.includes(
+                        "Representatives fetched successfully!"
+                      ) ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk edit applied")
+                    ? "#099885 !important"
+                    : undefined,
               },
               "& .MuiAlert-action": {
                 display: "flex",
@@ -1291,58 +1309,41 @@ const handleBulkApply = async ({ ids = [], payload }) => {
           }}
         >
           <DialogTitle className="dialogBox">
-            Select Representative Type
+            Fetch Representatives from Quorum
           </DialogTitle>
+
           <DialogContent>
-            <DialogContentText className="dialogTitle" sx={{ mb: 2 }}>
-              Choose whether to fetch active or former representatives from Quorum.
+            <DialogContentText className="dialogTitle">
+              Select the type of representatives you want to fetch:
             </DialogContentText>
-            <RadioGroup
-              value={fetchType}
-              onChange={(e) => setFetchType(e.target.value)}
-            >
-              <FormControlLabel
-                value="active"
-                control={<Radio />}
-                label="Active"
-              />
-              <FormControlLabel
-                value="former"
-                control={<Radio />}
-                label="Former"
-              />
-            </RadioGroup>
-          </DialogContent>
-          <DialogActions>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
-            >
+            <Stack spacing={2} sx={{ mt: 2 }}>
               <Button
-                onClick={() => setOpenFetchDialog(false)}
                 variant="outlined"
-                color="secondary"
-                sx={{ borderRadius: 2, paddingX: 3 }}
+                fullWidth
+                sx={{ borderRadius: 2 }}
+                onClick={() => fetchRepresentativeFromQuorum("active")}
               >
-                Cancel
+                Active Representatives
               </Button>
               <Button
-                onClick={() => fetchRepresentativeFromQuorum(fetchType)}
-                variant="contained"
-                sx={{ 
-                  borderRadius: 2, 
-                  paddingX: 3,
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                  },
-                }}
+                variant="outlined"
+                fullWidth
+                sx={{ borderRadius: 2 }}
+                onClick={() => fetchRepresentativeFromQuorum("former")}
               >
-                Fetch
+                Former Representatives
               </Button>
             </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setOpenFetchDialog(false)}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+            >
+              Cancel
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>

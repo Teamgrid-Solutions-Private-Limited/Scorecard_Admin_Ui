@@ -74,15 +74,12 @@ export default function SenatorBasicInfo({
           />
         </Grid>
         <Grid size={isMobile ? 12 : 1}>
-  <InputLabel className="label">Status</InputLabel>
-</Grid>
+          <InputLabel className="label">Status</InputLabel>
+        </Grid>
 
-<Grid size={isMobile ? 12 : 4}>
-  <ButtonGroup
-    variant="outlined"
-    className="customButtonGroup"
-  >
- <Button
+        <Grid size={isMobile ? 12 : 4}>
+          <ButtonGroup variant="outlined" className="customButtonGroup">
+            <Button
               onClick={() => handleStatusChange("active")}
               className={`statusBtn ${
                 formData.status === "active" || formData.status === "Active"
@@ -102,26 +99,25 @@ export default function SenatorBasicInfo({
             >
               Former
             </Button>
-  </ButtonGroup>
+          </ButtonGroup>
 
-  <FormControlLabel
-    sx={{ ml: 2 }}
-    control={
-      <Switch
-        name="isNew"
-        checked={!!formData.isNew}
-        onChange={(e) =>
-          handleChange({
-            target: { name: "isNew", value: e.target.checked },
-          })
-        }
-      />
-    }
-    label={<InputLabel className="label">Is New</InputLabel>}
-  />
-</Grid>
+          <FormControlLabel
+            sx={{ ml: 2 }}
+            control={
+              <Switch
+                name="isNew"
+                checked={!!formData.isNew}
+                onChange={(e) =>
+                  handleChange({
+                    target: { name: "isNew", value: e.target.checked },
+                  })
+                }
+              />
+            }
+            label={<InputLabel className="label">Is New</InputLabel>}
+          />
+        </Grid>
 
-       
         {mode === "senator" ? (
           <>
             <Grid size={isMobile ? 12 : 2}>

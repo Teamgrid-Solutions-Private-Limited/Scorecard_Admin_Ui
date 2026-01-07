@@ -210,23 +210,41 @@ export default function BulkEditModal({
           </Select>
         </FormControl>
       </DialogContent>
-      <DialogActions sx={{ paddingRight: "20px" }}>
-        <Button onClick={onClose}>Cancel</Button>
+ <DialogActions sx={{ paddingRight: "22px" , paddingBottom: "24px" }}>
         <Button
-          variant="contained"
+          onClick={onClose}
+          variant="outlined"
+          color="secondary"
+          sx={{ borderRadius: 2, paddingX: 3 }}
+        >
+          Cancel
+        </Button>
+         <Button
+          variant="outlined"
+          className="bulkEditBtn"
           onClick={handleSave}
           disabled={!selectedItem || !score}
           sx={{
+            borderRadius: 2,
             backgroundColor: "#173A5E !important",
             color: "white !important",
             fontSize: "14px",
-            paddingRight: "20px",
+            fontWeight: 600,
+            textTransform: "none",
+            padding: "8px 24px",
+            border: "none !important",
             "&:hover": {
               backgroundColor: "#1E4C80 !important",
+              color: "white !important",
+              border: "none !important",
+            },
+            "&:active": {
+              backgroundColor: "#173A5E !important",
             },
             "&:disabled": {
               backgroundColor: "#ccc !important",
               color: "#666 !important",
+              border: "none !important",
             },
           }}
         >

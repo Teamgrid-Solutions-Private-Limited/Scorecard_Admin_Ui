@@ -6,7 +6,11 @@ import {
   getAllSenators,
   updateSenatorStatus,
 } from "../redux/reducer/senatorSlice";
-import { getAllSenatorData, getSenatorDataBySenatorId, updateSenatorData } from "../redux/reducer/senatorTermSlice";
+import {
+  getAllSenatorData,
+  getSenatorDataBySenatorId,
+  updateSenatorData,
+} from "../redux/reducer/senatorTermSlice";
 
 import { getErrorMessage } from "../utils/errorHandler";
 import {
@@ -77,7 +81,13 @@ export default function Senator(props) {
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { open: snackbarOpen, message: snackbarMessage, severity: snackbarSeverity, showSnackbar, hideSnackbar } = useSnackbar();
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedSenator, setSelectedSenator] = useState(null);
   const { terms } = useSelector((state) => state.term);
@@ -140,21 +150,18 @@ export default function Senator(props) {
       const merged = senators.map((senator) => {
         const dataEntries = senatorDataBySenateId[senator._id] || [];
 
-
         const hasPastVotesData = dataEntries.some(
           (data) => data.pastVotesScore && data.pastVotesScore.length > 0
         );
 
         const allRatings = dataEntries
-          .map(data => data.rating)
-          .filter(rating => rating && rating !== "N/A");
+          .map((data) => data.rating)
+          .filter((rating) => rating && rating !== "N/A");
 
-        const displayRating = allRatings.length > 0
-          ? allRatings[allRatings.length - 1]
-          : "N/A";
+        const displayRating =
+          allRatings.length > 0 ? allRatings[allRatings.length - 1] : "N/A";
 
-
-        const senatorTerms = dataEntries.map(data => {
+        const senatorTerms = dataEntries.map((data) => {
           const termObj = terms.find((t) => t._id === data.termId);
           return {
             termId: data.termId,
@@ -162,12 +169,13 @@ export default function Senator(props) {
             currentTerm: data.currentTerm,
             rating: data.rating,
             votesScore: data.votesScore,
-            pastVotesScore: data.pastVotesScore
+            pastVotesScore: data.pastVotesScore,
           };
         });
 
-
-        const hasCurrentTerm = dataEntries.some(data => data.currentTerm === true);
+        const hasCurrentTerm = dataEntries.some(
+          (data) => data.currentTerm === true
+        );
 
         return {
           ...senator,
@@ -176,10 +184,12 @@ export default function Senator(props) {
           allTerms: senatorTerms,
           hasPastVotesData: hasPastVotesData,
           hasCurrentTerm: hasCurrentTerm,
-          termId: dataEntries.length > 0 ? dataEntries[0].termId : senator.termId,
+          termId:
+            dataEntries.length > 0 ? dataEntries[0].termId : senator.termId,
           votesScore: dataEntries.length > 0 ? dataEntries[0].votesScore : [],
-          pastVotesScore: dataEntries.length > 0 ? dataEntries[0].pastVotesScore : [],
-          currentTerm: hasCurrentTerm
+          pastVotesScore:
+            dataEntries.length > 0 ? dataEntries[0].pastVotesScore : [],
+          currentTerm: hasCurrentTerm,
         };
       });
       setMergedSenators(merged);
@@ -187,7 +197,6 @@ export default function Senator(props) {
   }, [senators, senatorData, terms]);
 
   const handleBulkApply = async ({ ids = [], payload }) => {
- 
     if (!ids || ids.length === 0 || !payload) {
       return;
     }
@@ -197,7 +206,7 @@ export default function Senator(props) {
     }
 
     const { category, itemId, score } = payload;
-    
+
     if (!category || !itemId || !score) {
       showSnackbar("Invalid bulk payload", "error");
       return;
@@ -206,18 +215,18 @@ export default function Senator(props) {
     setFetching(true);
     let successCount = 0;
     try {
-      
       for (const sid of ids) {
         try {
-          const termRecords = await dispatch(getSenatorDataBySenatorId(sid)).unwrap();
-          
+          const termRecords = await dispatch(
+            getSenatorDataBySenatorId(sid)
+          ).unwrap();
+
           if (!Array.isArray(termRecords)) {
             continue;
           }
 
           const updatePromises = [];
           termRecords.forEach((term, termIndex) => {
-            
             let modified = false;
             const newTerm = { ...term };
             if (category === "vote") {
@@ -225,7 +234,7 @@ export default function Senator(props) {
                 const vid = v.voteId?._id || v.voteId;
                 const vidStr = vid ? vid.toString() : null;
                 const itemIdStr = itemId.toString();
-                
+
                 if (vid && vid.toString() === itemIdStr) {
                   modified = true;
                   return { ...v, score };
@@ -237,33 +246,45 @@ export default function Senator(props) {
               } else {
               }
             } else if (category === "activity") {
-              const acts = (newTerm.activitiesScore || []).map((a, actIndex) => {
-                const aid = a.activityId?._id || a.activityId;
-                const aidStr = aid ? aid.toString() : null;
-                const itemIdStr = itemId.toString();
-                
-                if (aid && aid.toString() === itemIdStr) {
-                  modified = true;
-                  return { ...a, score };
+              const acts = (newTerm.activitiesScore || []).map(
+                (a, actIndex) => {
+                  const aid = a.activityId?._id || a.activityId;
+                  const aidStr = aid ? aid.toString() : null;
+                  const itemIdStr = itemId.toString();
+
+                  if (aid && aid.toString() === itemIdStr) {
+                    modified = true;
+                    return { ...a, score };
+                  }
+                  return a;
                 }
-                return a;
-              });
+              );
               if (modified) {
                 newTerm.activitiesScore = acts;
               } else {
-                console.log(`⚠️ No matching activity found for itemId ${itemId} in term ${term._id}`);
+                console.log(
+                  `⚠️ No matching activity found for itemId ${itemId} in term ${term._id}`
+                );
               }
             }
 
             if (modified) {
               const payloadData = { ...newTerm };
               if (payloadData.votesScore) {
-                payloadData.votesScore = payloadData.votesScore.map((v) => ({ voteId: v.voteId?._id || v.voteId, score: v.score }));
+                payloadData.votesScore = payloadData.votesScore.map((v) => ({
+                  voteId: v.voteId?._id || v.voteId,
+                  score: v.score,
+                }));
               }
               if (payloadData.activitiesScore) {
-                payloadData.activitiesScore = payloadData.activitiesScore.map((a) => ({ activityId: a.activityId?._id || a.activityId, score: a.score }));
+                payloadData.activitiesScore = payloadData.activitiesScore.map(
+                  (a) => ({
+                    activityId: a.activityId?._id || a.activityId,
+                    score: a.score,
+                  })
+                );
               }
-                      
+
               updatePromises.push(
                 dispatch(updateSenatorData({ id: term._id, data: payloadData }))
                   .unwrap()
@@ -271,12 +292,17 @@ export default function Senator(props) {
                     return result;
                   })
                   .catch((error) => {
-                    console.error(`❌ updateSenatorData error for term ${term._id}:`, error);
+                    console.error(
+                      `❌ updateSenatorData error for term ${term._id}:`,
+                      error
+                    );
                     throw error;
                   })
               );
             } else {
-              console.log(`⏭️ Term ${term._id} not modified - no matching ${category} found`);
+              console.log(
+                `⏭️ Term ${term._id} not modified - no matching ${category} found`
+              );
             }
           });
 
@@ -299,7 +325,9 @@ export default function Senator(props) {
 
       await dispatch(getAllSenatorData());
       await dispatch(getAllSenators());
-      console.log(`✅ Bulk edit completed. Success count: ${successCount}/${ids.length}`);
+      console.log(
+        `✅ Bulk edit completed. Success count: ${successCount}/${ids.length}`
+      );
       showSnackbar(`Bulk edit applied for ${successCount} members.`, "success");
     } catch (err) {
       console.error("❌ Bulk apply failed:", {
@@ -392,30 +420,24 @@ export default function Senator(props) {
     setOpenFetchDialog(true);
   };
 
-  const fetchSenatorsFromQuorum = async (status = "active") => {
-    setOpenFetchDialog(false);
+  const fetchSenatorsFromQuorum = async () => {
     setFetching(true);
     setProgress(0);
     const interval = setInterval(() => {
       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
     }, 1000);
     try {
-      const requestBody = {
-        type: "senator",
-      };
-       const endpoint =
-        status === "former"
-          ? `${API_URL}/fetch-quorum/save-former`
-          : `${API_URL}/fetch-quorum/store-data`;
- 
-      const response = await axios.post(endpoint, requestBody, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        `${API_URL}/fetch-quorum/store-data`,
+        { type: "senator" },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.status === 200) {
-        const statusText = status === "active" ? "active" : "former";
-        showSnackbar(`Success: ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} senators fetched successfully!`, "success");
+        showSnackbar("Success: Senators fetched successfully!", "success");
         await dispatch(getAllSenators());
         setFetching(false);
       } else {
@@ -431,7 +453,6 @@ export default function Senator(props) {
       setTimeout(() => setProgress(0), 500); // Re
     }
   };
-
   const handlePartyFilter = (party) => {
     setPartyFilter((prev) =>
       prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party]
@@ -490,12 +511,11 @@ export default function Senator(props) {
       if (senator.hasCurrentTerm) return false;
     }
 
-
     if (selectedYears.length > 0) {
-      const hasMatchingYear = senator.allTerms.some(term => {
+      const hasMatchingYear = senator.allTerms.some((term) => {
         if (term.termName && term.termName.includes("-")) {
           const [start, end] = term.termName.split("-").map(Number);
-          return selectedYears.some(year => {
+          return selectedYears.some((year) => {
             const yearNum = Number(year);
             return yearNum >= start && yearNum <= end;
           });
@@ -521,22 +541,28 @@ export default function Senator(props) {
     // Rating filter - check all terms
     const ratingMatch =
       ratingFilter.length === 0 ||
-      senator.allTerms.some(term =>
-        term.rating && ratingFilter.includes(term.rating)
+      senator.allTerms.some(
+        (term) => term.rating && ratingFilter.includes(term.rating)
       );
 
     // Status filter
     const statusMatch =
       statusFilter.length === 0 ||
       (senator.publishStatus && statusFilter.includes(senator.publishStatus)) ||
-      (statusFilter.includes("draft") && senator.publishStatus === "under review");
+      (statusFilter.includes("draft") &&
+        senator.publishStatus === "under review");
 
     // Past votes score filter - check all terms
-    const pastVotesMatch =
-      !hasPastVotesFilter ||
-      senator.hasPastVotesData;
+    const pastVotesMatch = !hasPastVotesFilter || senator.hasPastVotesData;
 
-    return nameMatch && partyMatch && stateMatch && ratingMatch && statusMatch && pastVotesMatch;
+    return (
+      nameMatch &&
+      partyMatch &&
+      stateMatch &&
+      ratingMatch &&
+      statusMatch &&
+      pastVotesMatch
+    );
   });
 
   const activeFilterCount =
@@ -573,12 +599,23 @@ export default function Senator(props) {
           <MobileHeader />
           <Stack spacing={2} className="stackBox">
             <Box className="actionsBox">
-              {userRole === "admin" && (
+              {/* {userRole === "admin" && (
                 <Box className="adminBox">
                   <Button
                     variant="outlined"
                     className="fetchBtn"
                     onClick={handleFetchClick}
+                  >
+                    Fetch Senators from Quorum
+                  </Button>
+                </Box>
+              )} */}
+              {userRole === "admin" && (
+                <Box className="adminBox">
+                  <Button
+                    variant="outlined"
+                    className="fetchBtn"
+                    onClick={fetchSenatorsFromQuorum}
                   >
                     Fetch Senators from Quorum
                   </Button>
@@ -651,8 +688,9 @@ export default function Senator(props) {
 
                         {/* Party Filter */}
                         <Box
-                          className={`filter-section ${expandedFilter === "party" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "party" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -708,8 +746,9 @@ export default function Senator(props) {
 
                         {/* State Filter */}
                         <Box
-                          className={`filter-section ${expandedFilter === "state" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "state" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -782,8 +821,9 @@ export default function Senator(props) {
 
                         {/* Rating Filter */}
                         <Box
-                          className={`filter-section ${expandedFilter === "rating" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "rating" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -838,8 +878,9 @@ export default function Senator(props) {
 
                         {/* Year Filter */}
                         <Box
-                          className={`filter-section ${expandedFilter === "year" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "year" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -916,8 +957,9 @@ export default function Senator(props) {
 
                         {/* Term Filter */}
                         <Box
-                          className={`filter-section ${expandedFilter === "term" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "term" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -961,8 +1003,9 @@ export default function Senator(props) {
 
                         {/* Status Filter */}
                         <Box
-                          className={`filter-section ${expandedFilter === "status" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "status" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -1004,8 +1047,9 @@ export default function Senator(props) {
                         </Box>
 
                         <Box
-                          className={`filter-section ${expandedFilter === "pastVotes" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "pastVotes" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -1026,7 +1070,10 @@ export default function Senator(props) {
                                   className="filter-option"
                                 >
                                   {hasPastVotesFilter ? (
-                                    <CheckIcon color="primary" fontSize="small" />
+                                    <CheckIcon
+                                      color="primary"
+                                      fontSize="small"
+                                    />
                                   ) : (
                                     <Box sx={{ width: 24, height: 24 }} />
                                   )}
@@ -1064,7 +1111,19 @@ export default function Senator(props) {
                 </Box>
 
                 {/* Desktop: Show Fetch button inside search/filter stack */}
+                {/* Desktop: Show Fetch button inside search/filter stack */}
                 {userRole === "admin" && (
+                  <Button
+                    variant="outlined"
+                    className="fetch-btn"
+                    onClick={fetchSenatorsFromQuorum}
+                  >
+                    Fetch Senators from Quorum
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+            {/* {userRole === "admin" && (
                   <Button
                     variant="outlined"
                     className="fetch-btn"
@@ -1074,7 +1133,7 @@ export default function Senator(props) {
                   </Button>
                 )}
               </Stack>
-            </Box>
+            </Box> */}
 
             <MainGrid
               type="senator"
@@ -1082,7 +1141,7 @@ export default function Senator(props) {
               loading={fetching ? false : loading}
               onDelete={handleDeleteClick}
               onEdit={handleEdit}
-              isSelectable={userRole === 'admin'}
+              isSelectable={userRole === "admin"}
               onBulkApply={handleBulkApply}
               handleToggleStatusSenator={handleToggleStatusSenator}
             />
@@ -1104,33 +1163,43 @@ export default function Senator(props) {
               width: "100%",
               bgcolor:
                 snackbarMessage ===
-                  `${selectedSenator?.name} deleted successfully.`
-                  ? "#fde8e4"
-                  : snackbarMessage ===
-                    "Success: Senators fetched successfully!"
-                    ? "#daf4f0"
-                    : undefined,
+                `${selectedSenator?.name} deleted successfully.`
+                  ? "#fde8e4 !important"
+                  : snackbarMessage
+                      ?.toLowerCase()
+                      .includes("senators fetched successfully!") ||
+                    snackbarMessage?.toLowerCase().includes("bulk edit applied")
+                  ? "#daf4f0 !important"
+                  : undefined,
 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
-                    `${selectedSenator?.name} deleted successfully.`
-                    ? "#cc563d"
-                    : snackbarMessage ===
-                      "Success: Senators fetched successfully!"
-                      ? "#099885"
-                      : undefined,
+                  `${selectedSenator?.name} deleted successfully.`
+                    ? "#cc563d !important"
+                    : snackbarMessage
+                        ?.toLowerCase()
+                        .includes("senators fetched successfully!") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk edit applied")
+                    ? "#099885 !important"
+                    : undefined,
               },
 
               "& .MuiAlert-message": {
                 color:
                   snackbarMessage ===
-                    `${selectedSenator?.name} deleted successfully.`
-                    ? "#cc563d"
-                    : snackbarMessage ===
-                      "Success: Senators fetched successfully!"
-                      ? "#099885"
-                      : undefined,
+                  `${selectedSenator?.name} deleted successfully.`
+                    ? "#cc563d !important"
+                    : snackbarMessage
+                        ?.toLowerCase()
+                        .includes("senators fetched successfully!") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk edit applied")
+                    ? "#099885 !important"
+                    : undefined,
               },
               "& .MuiAlert-action": {
                 display: "flex",
@@ -1143,7 +1212,8 @@ export default function Senator(props) {
             {snackbarMessage}
           </Alert>
         </Snackbar>
- <Dialog
+
+        <Dialog
           open={openFetchDialog}
           onClose={() => setOpenFetchDialog(false)}
           PaperProps={{
@@ -1153,7 +1223,7 @@ export default function Senator(props) {
           <DialogTitle className="dialogBox">
             Fetch Senators from Quorum
           </DialogTitle>
- 
+
           <DialogContent>
             <DialogContentText className="dialogTitle">
               Select the type of senators you want to fetch:
@@ -1162,15 +1232,7 @@ export default function Senator(props) {
               <Button
                 variant="outlined"
                 fullWidth
-               sx={{
-                  borderRadius: 2,
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                    color: "white !important",
-                    border: "none !important",
-                  },
-                }}
-
+                sx={{ borderRadius: 2 }}
                 onClick={() => fetchSenatorsFromQuorum("active")}
               >
                 Active Senators
@@ -1178,15 +1240,7 @@ export default function Senator(props) {
               <Button
                 variant="outlined"
                 fullWidth
-   sx={{
-                  borderRadius: 2,
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                    color: "white !important",
-                    border: "none !important",
-                  },
-                }}
-
+                sx={{ borderRadius: 2 }}
                 onClick={() => fetchSenatorsFromQuorum("former")}
               >
                 Former Senators
@@ -1204,7 +1258,7 @@ export default function Senator(props) {
             </Button>
           </DialogActions>
         </Dialog>
- 
+
         <Dialog
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}
@@ -1213,48 +1267,6 @@ export default function Senator(props) {
           }}
         >
           <DialogTitle className="dialogBox">Confirm Deletion</DialogTitle>
- 
-          <DialogContent>
-            <DialogContentText className="dialogTitle">
-              Are you sure you want to delete{" "}
-              <strong>{selectedSenator?.name}</strong>?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
-            >
-              <Button
-                onClick={() => setOpenDeleteDialog(false)}
-                variant="outlined"
-                color="secondary"
-                sx={{ borderRadius: 2, paddingX: 3 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmDelete}
-                variant="contained"
-                color="error"
-                sx={{ borderRadius: 2, paddingX: 3 }}
-              >
-                Delete
-              </Button>
-            </Stack>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={openDeleteDialog}
-          onClose={() => setOpenDeleteDialog(false)}
-          PaperProps={{
-            sx: { borderRadius: 3, padding: 2, width: '90%', maxWidth: 420 },
-          }}
-        >
-          <DialogTitle className="dialogBox">
-            Confirm Deletion
-          </DialogTitle>
 
           <DialogContent>
             <DialogContentText className="dialogTitle">

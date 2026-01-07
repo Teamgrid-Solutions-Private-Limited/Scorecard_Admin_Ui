@@ -96,21 +96,6 @@ export const deleteHouseData = createAsyncThunk(
     }
   }
 );
-
-// export const updateHouseScores = createAsyncThunk(
-//   "houseData/updateHouseScores",
-//   async (updates, { rejectWithValue }) => {
-//     try {
-//       const response = await axios.put(
-//         `${API_URL}/api/v1/admin/house-data/scores/update`,
-//         { updates }
-//       );
-//       return response.data;
-//     } catch (error) {
-//       return rejectWithValue(error.response?.data || error.message);
-//     }
-//   }
-// );
 export const updateHouseScores = createAsyncThunk(
   "houseData/updateHouseScores",
   async (updates, { rejectWithValue }) => {
@@ -135,6 +120,7 @@ export const updateHouseScores = createAsyncThunk(
     }
   }
 );
+
 // Initial state
 const initialState = {
   houseData: [],

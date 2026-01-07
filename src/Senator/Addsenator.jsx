@@ -6,7 +6,14 @@ import { jwtDecode } from "jwt-decode";
 import { alpha, styled, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Box, Paper, Stack, Button } from "@mui/material";
-import { useSnackbar, useAuth, useTermItemManager, useFileUpload, useEntityData, useFormChangeTracker } from "../hooks";
+import {
+  useSnackbar,
+  useAuth,
+  useTermItemManager,
+  useFileUpload,
+  useEntityData,
+  useFormChangeTracker,
+} from "../hooks";
 import {
   CloudUpload as CloudUploadIcon,
   DeleteForever as DeleteForeverIcon,
@@ -83,11 +90,11 @@ export default function AddSenator(props) {
   const [activitiesLoaded, setActivitiesLoaded] = useState(false);
   const [termsLoaded, setTermsLoaded] = useState(false);
   const [loading, setLoading] = useState(loadingg);
-const [removedItems, setRemovedItems] = useState({
-  votes: [],
-  activities: [],
-  pastVotes: []
-});
+  const [removedItems, setRemovedItems] = useState({
+    votes: [],
+    activities: [],
+    pastVotes: [],
+  });
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -104,7 +111,12 @@ const [removedItems, setRemovedItems] = useState({
   };
 
   const validateActivityInTermRangeWrapper = (activityId, termId) => {
-    return validateActivityInTermRange(activityId, termId, allActivities, terms);
+    return validateActivityInTermRange(
+      activityId,
+      termId,
+      allActivities,
+      terms
+    );
   };
 
   const allActivities = useSelector((state) => state.activity.activities);
@@ -266,12 +278,12 @@ const [removedItems, setRemovedItems] = useState({
   // Use centralized term item managers for votes, activities, and pastVotes
   // These must be declared after all state variables (formData, senatorTermData, etc.)
   const voteManager = useTermItemManager({
-    type: 'vote',
-    dataPath: 'votesScore',
-    idField: 'voteId',
-    fieldKeyPrefix: 'ScoredVote',
+    type: "vote",
+    dataPath: "votesScore",
+    idField: "voteId",
+    fieldKeyPrefix: "ScoredVote",
     allItems: allVotes,
-    removedItemsKey: 'votes',
+    removedItemsKey: "votes",
     termData: senatorTermData,
     setTermData: setSenatorTermData,
     originalTermData: originalTermData,
@@ -287,12 +299,12 @@ const [removedItems, setRemovedItems] = useState({
   });
 
   const activityManager = useTermItemManager({
-    type: 'activity',
-    dataPath: 'activitiesScore',
-    idField: 'activityId',
-    fieldKeyPrefix: 'TrackedActivity',
+    type: "activity",
+    dataPath: "activitiesScore",
+    idField: "activityId",
+    fieldKeyPrefix: "TrackedActivity",
     allItems: allActivities,
-    removedItemsKey: 'activities',
+    removedItemsKey: "activities",
     termData: senatorTermData,
     setTermData: setSenatorTermData,
     originalTermData: originalTermData,
@@ -308,12 +320,12 @@ const [removedItems, setRemovedItems] = useState({
   });
 
   const pastVoteManager = useTermItemManager({
-    type: 'pastVote',
-    dataPath: 'pastVotesScore',
-    idField: 'voteId',
-    fieldKeyPrefix: 'pastVotesScore',
+    type: "pastVote",
+    dataPath: "pastVotesScore",
+    idField: "voteId",
+    fieldKeyPrefix: "pastVotesScore",
     allItems: allVotes,
-    removedItemsKey: 'pastVotes',
+    removedItemsKey: "pastVotes",
     termData: senatorTermData,
     setTermData: setSenatorTermData,
     originalTermData: originalTermData,
@@ -535,7 +547,8 @@ const [removedItems, setRemovedItems] = useState({
       const futureTerms = newTerms
         .map((t, idx) => {
           const tStart = t.termId
-            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))?.startYear
+            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))
+                ?.startYear
             : null;
           return { idx, startYear: tStart ? Number(tStart) : null };
         })
@@ -545,7 +558,10 @@ const [removedItems, setRemovedItems] = useState({
         const newest = futureTerms.reduce((a, b) =>
           a.startYear > b.startYear ? a : b
         );
-        return newTerms.map((t, i) => ({ ...t, currentTerm: i === newest.idx }));
+        return newTerms.map((t, i) => ({
+          ...t,
+          currentTerm: i === newest.idx,
+        }));
       }
 
       return newTerms;
@@ -623,7 +639,10 @@ const [removedItems, setRemovedItems] = useState({
 
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenatorId(id));
-      handleSnackbarOpen(`Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`, "success");
+      handleSnackbarOpen(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
+        "success"
+      );
       setComponentKey((prev) => prev + 1);
     } catch (error) {
       console.error("Discard failed:", error);
@@ -655,8 +674,7 @@ const [removedItems, setRemovedItems] = useState({
   const handlePastVoteChange = pastVoteManager.handleChange;
 
   const contentRefs = useRef([]);
-useEffect(() => {
-}, [localChanges]);
+  useEffect(() => {}, [localChanges]);
   const handleAddTerm = () => {
     setSenatorTermData((prev) => [
       ...prev,
@@ -715,7 +733,6 @@ useEffect(() => {
   const termPreFill = () => {
     if (!terms?.length || !allVotes?.length || !allActivities?.length) {
       return;
-
     }
     if (senatorData?.currentSenator?.length > 0) {
       console.log("Pre-filling term data based on fetched senator data",senatorData?.currentSenator);
@@ -950,15 +967,14 @@ if (  isBeforeCutoffDate) {
     else if (dbScore?.includes("other")) scoreValue = "other";
     else scoreValue = vote.score || "";
 
-    orphanVotes.push({
-      voteId: voteId,
-      score: scoreValue,
-      title: vote.voteId?.title || vote.title || "",
-      _id: vote._id || undefined,
-    });  
-  }
-}
-
+                orphanVotes.push({
+                  voteId: voteId,
+                  score: scoreValue,
+                  title: vote.voteId?.title || vote.title || "",
+                  _id: vote._id || undefined,
+                });
+              }
+            }
           });
         }
 
@@ -1375,7 +1391,11 @@ if (  isBeforeCutoffDate) {
           : null;
 
         const autoCurrentTerm =
-          isAfterJan3 && termStart && termEnd && now >= termStart && now <= termEnd;
+          isAfterJan3 &&
+          termStart &&
+          termEnd &&
+          now >= termStart &&
+          now <= termEnd;
 
         return {
           _id: term._id,
@@ -1397,7 +1417,8 @@ if (  isBeforeCutoffDate) {
       const futureTerms = termsData
         .map((t, idx) => {
           const start = t.termId
-            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))?.startYear
+            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))
+                ?.startYear
             : null;
           return { idx, startYear: start ? Number(start) : null };
         })
@@ -1405,8 +1426,13 @@ if (  isBeforeCutoffDate) {
 
       let adjustedTerms = termsData;
       if (futureTerms.length > 0) {
-        const newest = futureTerms.reduce((a, b) => (a.startYear > b.startYear ? a : b));
-        adjustedTerms = termsData.map((t, i) => ({ ...t, currentTerm: i === newest.idx }));
+        const newest = futureTerms.reduce((a, b) =>
+          a.startYear > b.startYear ? a : b
+        );
+        adjustedTerms = termsData.map((t, i) => ({
+          ...t,
+          currentTerm: i === newest.idx,
+        }));
       }
 
       setSenatorTermData(adjustedTerms);
@@ -1551,14 +1577,14 @@ if (  isBeforeCutoffDate) {
 
       const newFormData = {
         name: senator.name || "",
-        status: senator.status || "Active",
+        status: senator.status || "active",
         state: senator.state || "",
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
         isNew: senator.isNew || false,
         publishStatus: senator.publishStatus || "",
-        editedFields: senator.editedFields || [],
+        editedFields: senator.editedFields || {},
         fieldEditors: senator.fieldEditors || {},
       };
 
@@ -1676,538 +1702,557 @@ if (  isBeforeCutoffDate) {
   };
 
   const handleSave = async (publishFlag = false, e) => {
-  if (e && e.preventDefault) e.preventDefault();
-  setLoading(true);
+    if (e && e.preventDefault) e.preventDefault();
+    setLoading(true);
 
-
-  try {
-    // Validate term data using centralized validation
-    const termValidation = validateTermData(senatorTermData);
-    if (!termValidation.isValid) {
-      setLoading(false);
-      handleSnackbarOpen(termValidation.message, "error");
-      return;
-    }
-
-    const hasLocalChanges =
-      localChanges.length > 0 ||
-      deletedTermIds.length > 0 ||
-      removedItems.votes.length > 0 ||
-      removedItems.activities.length > 0 ||
-      removedItems.pastVotes.length > 0 ||
-      (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
-
-    // Allow admins to save/publish even if there are no local changes
-    if (!hasLocalChanges && userRole !== "admin") {
-      setLoading(false);
-      handleSnackbarOpen("No changes detected. Nothing to update.", "info");
-      return;
-    }
-
-    const currentEditor = getCurrentEditor;
-
-    if (deletedTermIds.length > 0) {
-      await Promise.all(
-        deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
-      );
-      setDeletedTermIds([]);
-    }
-
-    const existingEditedFields = Array.isArray(formData.editedFields)
-      ? formData.editedFields
-      : [];
-    const existingFieldsMap = new Map();
-    existingEditedFields.forEach((field) => {
-      let fieldKey;
-      if (
-        Array.isArray(field.field) &&
-        field.field[0] === "votesScore" &&
-        field.name
-      ) {
-        fieldKey = `votesScore_${sanitizeKey(field.name)}`;
-      } else if (
-        Array.isArray(field.field) &&
-        field.field[0] === "activitiesScore" &&
-        field.name
-      ) {
-        fieldKey = `activitiesScore_${sanitizeKey(field.name)}`;
-      } else if (
-        Array.isArray(field.field) &&
-        field.field[0] === "pastVotesScore" &&
-        field.name
-      ) {
-        fieldKey = `pastVotesScore_${sanitizeKey(field.name)}`;
-      } else {
-        fieldKey = Array.isArray(field.field) ? field.field[0] : field;
-      }
-      existingFieldsMap.set(fieldKey, { ...field });
-    });
-
-    const processedChanges = [];
-
-    const hasVoteChanged = (termIndex, voteIndex, vote) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalVotes = originalTerm.votesScore || [];
-      const newVoteId = vote.voteId?._id || vote.voteId;
-
-      if (!newVoteId) {
-        return !!(vote.score && vote.score !== "");
+    try {
+      // Validate term data using centralized validation
+      const termValidation = validateTermData(senatorTermData);
+      if (!termValidation.isValid) {
+        setLoading(false);
+        handleSnackbarOpen(termValidation.message, "error");
+        return;
       }
 
-      const matchingOriginal = originalVotes.find((ov) => {
-        const ovId = ov.voteId?._id || ov.voteId;
-        return ovId && ovId.toString() === newVoteId.toString();
-      });
+      const hasLocalChanges =
+        localChanges.length > 0 ||
+        deletedTermIds.length > 0 ||
+        removedItems.votes.length > 0 ||
+        removedItems.activities.length > 0 ||
+        removedItems.pastVotes.length > 0 ||
+        (formData?.fieldEditors &&
+          Object.keys(formData.fieldEditors).length > 0);
 
-      if (matchingOriginal) {
-        return (vote.score || "") !== (matchingOriginal.score || "");
+      // Allow admins to save/publish even if there are no local changes
+      if (!hasLocalChanges && userRole !== "admin") {
+        setLoading(false);
+        handleSnackbarOpen("No changes detected. Nothing to update.", "info");
+        return;
       }
 
-      return true;
-    };
+      const currentEditor = getCurrentEditor;
 
-    const hasActivityChanged = (termIndex, activityIndex, activity) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalActivities = originalTerm.activitiesScore || [];
-      const newActId = activity.activityId?._id || activity.activityId;
-
-      if (!newActId) {
-        return !!(activity.score && activity.score !== "");
+      if (deletedTermIds.length > 0) {
+        await Promise.all(
+          deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
+        );
+        setDeletedTermIds([]);
       }
 
-      const matchingOriginal = originalActivities.find((oa) => {
-        const oaId = oa.activityId?._id || oa.activityId;
-        return oaId && oaId.toString() === newActId.toString();
-      });
-
-      if (matchingOriginal) {
-        return (activity.score || "") !== (matchingOriginal.score || "");
-      }
-
-      return true;
-    };
-
-    const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalPast = originalTerm.pastVotesScore || [];
-      const newVoteId = vote.voteId?._id || vote.voteId;
-
-      if (!newVoteId) {
-        return !!(vote.score && vote.score !== "");
-      }
-
-      const matchingOriginal = originalPast.find((pv) => {
-        const pvId = pv.voteId?._id || pv.voteId;
-        return pvId && pvId.toString() === newVoteId.toString();
-      });
-
-      if (matchingOriginal) {
-        return (vote.score || "") !== (matchingOriginal.score || "");
-      }
-
-      return true;
-    };
-
-    senatorTermData.forEach((term, termIndex) => {
-      term.votesScore.forEach((vote, voteIndex) => {
-        if (vote.voteId && vote.voteId.toString().trim() !== "") {
-          if (hasVoteChanged(termIndex, voteIndex, vote)) {
-            const voteItem = votes.find((v) => v._id === vote.voteId);
-            if (voteItem) {
-              const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Scored Vote ${
-                  voteIndex + 1
-                }`,
-                field: ["votesScore"],
-                name: voteItem.title,
-                termIndex,
-                voteIndex,
-              });
-            }
-          }
-        }
-      });
-
-      term.activitiesScore.forEach((activity, activityIndex) => {
+      const existingEditedFields = Array.isArray(formData.editedFields)
+        ? formData.editedFields
+        : [];
+      const existingFieldsMap = new Map();
+      existingEditedFields.forEach((field) => {
+        let fieldKey;
         if (
-          activity.activityId &&
-          activity.activityId.toString().trim() !== ""
+          Array.isArray(field.field) &&
+          field.field[0] === "votesScore" &&
+          field.name
         ) {
-          if (hasActivityChanged(termIndex, activityIndex, activity)) {
-            const activityItem = activities.find(
-              (a) => a._id === activity.activityId
-            );
-            if (activityItem) {
-              const uniqueId = `activitiesScore_${sanitizeKey(
-                activityItem.title
-              )}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Tracked Activity ${
-                  activityIndex + 1
-                }`,
-                field: ["activitiesScore"],
-                name: activityItem.title,
-                termIndex,
-                activityIndex,
-              });
-            }
-          }
+          fieldKey = `votesScore_${sanitizeKey(field.name)}`;
+        } else if (
+          Array.isArray(field.field) &&
+          field.field[0] === "activitiesScore" &&
+          field.name
+        ) {
+          fieldKey = `activitiesScore_${sanitizeKey(field.name)}`;
+        } else if (
+          Array.isArray(field.field) &&
+          field.field[0] === "pastVotesScore" &&
+          field.name
+        ) {
+          fieldKey = `pastVotesScore_${sanitizeKey(field.name)}`;
+        } else {
+          fieldKey = Array.isArray(field.field) ? field.field[0] : field;
         }
+        existingFieldsMap.set(fieldKey, { ...field });
       });
 
-      term.pastVotesScore.forEach((vote, voteIndex) => {
-        if (vote.voteId && vote.voteId.toString().trim() !== "") {
-          if (hasPastVoteChanged(termIndex, voteIndex, vote)) {
-            const voteItem = votes.find((v) => v._id === vote.voteId);
-            if (voteItem) {
-              const uniqueId = `pastVotesScore_${sanitizeKey(
-                voteItem.title
-              )}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Important Past Vote ${
-                  voteIndex + 1
-                }`,
-                field: ["pastVotesScore"],
-                name: voteItem.title,
-                termIndex,
-                voteIndex,
-              });
-            }
-          }
-        }
-      });
-    });
+      const processedChanges = [];
 
-    localChanges.forEach((change) => {
-      if (
-        !change.includes("votesScore_") &&
-        !change.includes("pastVotesScore_") &&
-        !change.includes("activitiesScore_") &&
-        !change.startsWith("term")
-      ) {
-        processedChanges.push({
-          uniqueId: change,
-          displayName: getFieldDisplayName(change),
-          field: [change],
-          name: getFieldDisplayName(change),
+      const hasVoteChanged = (termIndex, voteIndex, vote) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalVotes = originalTerm.votesScore || [];
+        const newVoteId = vote.voteId?._id || vote.voteId;
+
+        if (!newVoteId) {
+          return !!(vote.score && vote.score !== "");
+        }
+
+        const matchingOriginal = originalVotes.find((ov) => {
+          const ovId = ov.voteId?._id || ov.voteId;
+          return ovId && ovId.toString() === newVoteId.toString();
         });
-      }
-    });
 
-    const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+        if (matchingOriginal) {
+          return (vote.score || "") !== (matchingOriginal.score || "");
+        }
 
-    const hasNonDefaultValue = (field, value) => {
-      if (value === null || value === undefined) return false;
-      if (typeof value === "string" && value.trim() === "") return false;
-      return true;
-    };
+        return true;
+      };
 
-    senatorTermData.forEach((term, termIndex) => {
-      const originalTerm = originalTermData?.[termIndex] || {};
+      const hasActivityChanged = (termIndex, activityIndex, activity) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalActivities = originalTerm.activitiesScore || [];
+        const newActId = activity.activityId?._id || activity.activityId;
 
-      const termFields = ["summary", "rating", "termId"];
+        if (!newActId) {
+          return !!(activity.score && activity.score !== "");
+        }
 
-      termFields.forEach((field) => {
-        const newValue = term[field];
-        const oldValue = originalTerm[field];
+        const matchingOriginal = originalActivities.find((oa) => {
+          const oaId = oa.activityId?._id || oa.activityId;
+          return oaId && oaId.toString() === newActId.toString();
+        });
 
+        if (matchingOriginal) {
+          return (activity.score || "") !== (matchingOriginal.score || "");
+        }
+
+        return true;
+      };
+
+      const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalPast = originalTerm.pastVotesScore || [];
+        const newVoteId = vote.voteId?._id || vote.voteId;
+
+        if (!newVoteId) {
+          return !!(vote.score && vote.score !== "");
+        }
+
+        const matchingOriginal = originalPast.find((pv) => {
+          const pvId = pv.voteId?._id || pv.voteId;
+          return pvId && pvId.toString() === newVoteId.toString();
+        });
+
+        if (matchingOriginal) {
+          return (vote.score || "") !== (matchingOriginal.score || "");
+        }
+
+        return true;
+      };
+
+      senatorTermData.forEach((term, termIndex) => {
+        term.votesScore.forEach((vote, voteIndex) => {
+          if (vote.voteId && vote.voteId.toString().trim() !== "") {
+            if (hasVoteChanged(termIndex, voteIndex, vote)) {
+              const voteItem = votes.find((v) => v._id === vote.voteId);
+              if (voteItem) {
+                const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Scored Vote ${
+                    voteIndex + 1
+                  }`,
+                  field: ["votesScore"],
+                  name: voteItem.title,
+                  termIndex,
+                  voteIndex,
+                });
+              }
+            }
+          }
+        });
+
+        term.activitiesScore.forEach((activity, activityIndex) => {
+          if (
+            activity.activityId &&
+            activity.activityId.toString().trim() !== ""
+          ) {
+            if (hasActivityChanged(termIndex, activityIndex, activity)) {
+              const activityItem = activities.find(
+                (a) => a._id === activity.activityId
+              );
+              if (activityItem) {
+                const uniqueId = `activitiesScore_${sanitizeKey(
+                  activityItem.title
+                )}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Tracked Activity ${
+                    activityIndex + 1
+                  }`,
+                  field: ["activitiesScore"],
+                  name: activityItem.title,
+                  termIndex,
+                  activityIndex,
+                });
+              }
+            }
+          }
+        });
+
+        term.pastVotesScore.forEach((vote, voteIndex) => {
+          if (vote.voteId && vote.voteId.toString().trim() !== "") {
+            if (hasPastVoteChanged(termIndex, voteIndex, vote)) {
+              const voteItem = votes.find((v) => v._id === vote.voteId);
+              if (voteItem) {
+                const uniqueId = `pastVotesScore_${sanitizeKey(
+                  voteItem.title
+                )}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Important Past Vote ${
+                    voteIndex + 1
+                  }`,
+                  field: ["pastVotesScore"],
+                  name: voteItem.title,
+                  termIndex,
+                  voteIndex,
+                });
+              }
+            }
+          }
+        });
+      });
+
+      localChanges.forEach((change) => {
         if (
-          !isEqual(newValue, oldValue) &&
-          hasNonDefaultValue(field, newValue)
+          !change.includes("votesScore_") &&
+          !change.includes("pastVotesScore_") &&
+          !change.includes("activitiesScore_") &&
+          !change.startsWith("term")
         ) {
-          const fieldName = `term${termIndex}_${field}`;
           processedChanges.push({
-            uniqueId: fieldName,
-            displayName: `Term ${termIndex + 1}: ${
-              fieldLabels[field] || field
-            }`,
-            field: [fieldName],
-            name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
+            uniqueId: change,
+            displayName: getFieldDisplayName(change),
+            field: [change],
+            name: getFieldDisplayName(change),
           });
         }
       });
 
-      // Intentionally do not track changes to `currentTerm` in editedFields
-      // (skip adding term${termIndex}_currentTerm to processedChanges)
-    });
+      const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-    // Process removed items
-    const processRemovedItems = () => {
-      const removedFields = [];
-
-      // Process removed votes
-      removedItems.votes.forEach(removedVote => {
-        removedFields.push({
-          field: [removedVote.fieldKey],
-          name: `Term ${removedVote.termIndex + 1}: Scored Vote ${removedVote.voteIndex + 1} - Removed`,
-          fromQuorum: false,
-          // _id: `removed_vote_${removedVote.voteId}`
-        });
-      });
-
-      // Process removed activities
-      removedItems.activities.forEach(removedActivity => {
-        removedFields.push({
-          field: [removedActivity.fieldKey],
-          name: `Term ${removedActivity.termIndex + 1}: Tracked Activity ${removedActivity.activityIndex + 1} - Removed`,
-          fromQuorum: false,
-          // _id: `removed_activity_${removedActivity.activityId}`
-        });
-      });
-
-      // Process removed past votes
-      removedItems.pastVotes.forEach(removedPastVote => {
-        removedFields.push({
-          field: [removedPastVote.fieldKey],
-          name: `Term ${removedPastVote.termIndex + 1}: Important Past Vote ${removedPastVote.voteIndex + 1} - Removed`,
-          fromQuorum: false,
-          // _id: `removed_pastvote_${removedPastVote.voteId}`
-        });
-      });
-
-      return removedFields;
-    };
-
-    const removedFields = processRemovedItems();
-
-    processedChanges.forEach((change) => {
-      const existingField = existingFieldsMap.get(change.uniqueId);
-      if (!existingField || existingField.name !== change.name) {
-        existingFieldsMap.set(change.uniqueId, {
-          field: change.field,
-          name: change.name,
-          updatedAt: new Date().toISOString(),
-          fromQuorum: existingField?.fromQuorum || false,
-          _id: existingField?._id,
-        });
-      } else {
-        existingFieldsMap.set(change.uniqueId, {
-          ...existingField,
-          updatedAt: new Date().toISOString(),
-        });
-      }
-    });
-
-    // Combine existing changes with removed items
-    const allChanges = [...Array.from(existingFieldsMap.values()), ...removedFields];
-
-    const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-    const changedFieldsInThisSession = new Set();
-
-    localChanges.forEach((change) => {
-      let editorKey;
-
-      const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
-      if (voteMatch) {
-        const [, termIndex, voteIndex] = voteMatch;
-        const term = senatorTermData[parseInt(termIndex)];
-        const vote = term?.votesScore?.[parseInt(voteIndex)];
-        if (vote && vote.voteId) {
-          const voteItem = votes.find((v) => v._id === vote.voteId);
-          if (voteItem && voteItem.title) {
-            editorKey = `votesScore_${sanitizeKey(voteItem.title)}`;
-            updatedFieldEditors[editorKey] = currentEditor;
-            changedFieldsInThisSession.add(editorKey);
-          }
-        }
-        return;
-      }
-
-      const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
-      if (activityMatch) {
-        const [, termIndex, activityIndex] = activityMatch;
-        const term = senatorTermData[parseInt(termIndex)];
-        const activity = term?.activitiesScore?.[parseInt(activityIndex)];
-        if (activity && activity.activityId) {
-          const activityItem = activities.find(
-            (a) => a._id === activity.activityId
-          );
-          if (activityItem && activityItem.title) {
-            editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
-            updatedFieldEditors[editorKey] = currentEditor;
-            changedFieldsInThisSession.add(editorKey);
-          }
-        }
-        return;
-      }
-
-      const pastVoteMatch = change.match(/^term(\d+)_pastVotesScore_(\d+)$/);
-      if (pastVoteMatch) {
-        const [, termIndex, voteIndex] = pastVoteMatch;
-        const term = senatorTermData[parseInt(termIndex)];
-        const vote = term?.pastVotesScore?.[parseInt(voteIndex)];
-        if (vote && vote.voteId) {
-          const voteItem = votes.find((v) => v._id === vote.voteId);
-          if (voteItem && voteItem.title) {
-            editorKey = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
-            updatedFieldEditors[editorKey] = currentEditor;
-            changedFieldsInThisSession.add(editorKey);
-          }
-        }
-        return;
-      }
-
-      editorKey = change;
-      updatedFieldEditors[editorKey] = currentEditor;
-      changedFieldsInThisSession.add(editorKey);
-    });
-
-    // Also add field editors for removed items
-    removedItems.votes.forEach(removedVote => {
-      updatedFieldEditors[removedVote.fieldKey] = currentEditor;
-    });
-
-    removedItems.activities.forEach(removedActivity => {
-      updatedFieldEditors[removedActivity.fieldKey] = currentEditor;
-    });
-
-    removedItems.pastVotes.forEach(removedPastVote => {
-      updatedFieldEditors[removedPastVote.fieldKey] = currentEditor;
-    });
-
-    processedChanges.forEach((change) => {
-      if (!changedFieldsInThisSession.has(change.uniqueId)) {
-        updatedFieldEditors[change.uniqueId] =
-          updatedFieldEditors[change.uniqueId] || currentEditor;
-      }
-    });
-
-    const senatorUpdate = {
-      ...formData,
-      editedFields: allChanges,
-      fieldEditors: updatedFieldEditors,
-      publishStatus: publishFlag ? "published" : userRole === "admin" ? "under review" : "under review",
-    };
-
-    if (senatorUpdate.publishStatus === "published") {
-      senatorUpdate.editedFields = [];
-      senatorUpdate.fieldEditors = {};
-    }
-
-    if (id) {
-      const formDataToSend = new FormData();
-      Object.entries(senatorUpdate).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          if (typeof value === "object" && !(value instanceof File)) {
-            formDataToSend.append(key, JSON.stringify(value));
-          } else {
-            formDataToSend.append(key, value);
-          }
-        }
-      });
-      await dispatch(
-        updateSenator({ id, formData: formDataToSend })
-      ).unwrap();
-    }
-
-    const termPromises = senatorTermData.map((term, index) => {
-      const cleanVotesScore = term.votesScore
-        .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
-        .map((vote) => ({
-          voteId: vote.voteId.toString(),
-          score: vote.score,
-          title: vote.title || "",
-        }));
-
-      const cleanActivitiesScore = term.activitiesScore
-        .filter(
-          (activity) =>
-            activity.activityId &&
-            activity.activityId.toString().trim() !== ""
-        )
-        .map((activity) => ({
-          activityId: activity.activityId.toString(),
-          score: activity.score,
-        }));
-
-      const cleanPastVotesScore = term.pastVotesScore
-        ? term.pastVotesScore
-            .filter(
-              (vote) => vote.voteId && vote.voteId.toString().trim() !== ""
-            )
-            .map((vote) => ({
-              voteId: vote.voteId.toString(),
-              score: vote.score,
-              title: vote.title || "",
-            }))
-        : [];
-
-      const termSpecificChanges = allChanges.filter((f) => {
-        const fieldName =
-          typeof f === "string"
-            ? f
-            : Array.isArray(f.field)
-            ? f.field[0]
-            : f.field;
-        return fieldName.startsWith(`term${index}_`);
-      });
-
-      const termUpdate = {
-        ...term,
-        votesScore: cleanVotesScore,
-        pastVotesScore: cleanPastVotesScore,
-        activitiesScore: cleanActivitiesScore,
-        isNew: false,
-        senateId: id,
-        editedFields: termSpecificChanges,
-        fieldEditors: updatedFieldEditors,
-        summary: term.summary,
+      const hasNonDefaultValue = (field, value) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string" && value.trim() === "") return false;
+        return true;
       };
-      return term._id
-        ? dispatch(
-            updateSenatorData({ id: term._id, data: termUpdate })
-          ).unwrap()
-        : dispatch(createSenatorData(termUpdate)).unwrap();
-    });
 
-    await Promise.all(termPromises);
+      senatorTermData.forEach((term, termIndex) => {
+        const originalTerm = originalTermData?.[termIndex] || {};
 
-    await dispatch(getSenatorDataBySenatorId(id)).unwrap();
-    await dispatch(getSenatorById(id)).unwrap();
+        const termFields = ["summary", "rating", "termId"];
 
-    setOriginalFormData(JSON.parse(JSON.stringify(formData)));
-    setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
-    setLocalChanges([]);
-    setDeletedTermIds([]);
-    
-    // Clear removed items after successful save
-    setRemovedItems({
-      votes: [],
-      activities: [],
-      pastVotes: []
-    });
+        termFields.forEach((field) => {
+          const newValue = term[field];
+          const oldValue = originalTerm[field];
 
-    if (publishFlag) {
-      handleSnackbarOpen("Changes published successfully!", "success");
-    } else if (userRole === "admin") {
-      handleSnackbarOpen("Changes saved (draft).", "success");
-    } else {
-      handleSnackbarOpen('Status changed to "Draft" for admin to moderate.', "info");
+          if (
+            !isEqual(newValue, oldValue) &&
+            hasNonDefaultValue(field, newValue)
+          ) {
+            const fieldName = `term${termIndex}_${field}`;
+            processedChanges.push({
+              uniqueId: fieldName,
+              displayName: `Term ${termIndex + 1}: ${
+                fieldLabels[field] || field
+              }`,
+              field: [fieldName],
+              name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
+            });
+          }
+        });
+
+        // Intentionally do not track changes to `currentTerm` in editedFields
+        // (skip adding term${termIndex}_currentTerm to processedChanges)
+      });
+
+      // Process removed items
+      const processRemovedItems = () => {
+        const removedFields = [];
+
+        // Process removed votes
+        removedItems.votes.forEach((removedVote) => {
+          removedFields.push({
+            field: [removedVote.fieldKey],
+            name: `Term ${removedVote.termIndex + 1}: Scored Vote ${
+              removedVote.voteIndex + 1
+            } - Removed`,
+            fromQuorum: false,
+            // _id: `removed_vote_${removedVote.voteId}`
+          });
+        });
+
+        // Process removed activities
+        removedItems.activities.forEach((removedActivity) => {
+          removedFields.push({
+            field: [removedActivity.fieldKey],
+            name: `Term ${removedActivity.termIndex + 1}: Tracked Activity ${
+              removedActivity.activityIndex + 1
+            } - Removed`,
+            fromQuorum: false,
+            // _id: `removed_activity_${removedActivity.activityId}`
+          });
+        });
+
+        // Process removed past votes
+        removedItems.pastVotes.forEach((removedPastVote) => {
+          removedFields.push({
+            field: [removedPastVote.fieldKey],
+            name: `Term ${removedPastVote.termIndex + 1}: Important Past Vote ${
+              removedPastVote.voteIndex + 1
+            } - Removed`,
+            fromQuorum: false,
+            // _id: `removed_pastvote_${removedPastVote.voteId}`
+          });
+        });
+
+        return removedFields;
+      };
+
+      const removedFields = processRemovedItems();
+
+      processedChanges.forEach((change) => {
+        const existingField = existingFieldsMap.get(change.uniqueId);
+        if (!existingField || existingField.name !== change.name) {
+          existingFieldsMap.set(change.uniqueId, {
+            field: change.field,
+            name: change.name,
+            updatedAt: new Date().toISOString(),
+            fromQuorum: existingField?.fromQuorum || false,
+            _id: existingField?._id,
+          });
+        } else {
+          existingFieldsMap.set(change.uniqueId, {
+            ...existingField,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      });
+
+      // Combine existing changes with removed items
+      const allChanges = [
+        ...Array.from(existingFieldsMap.values()),
+        ...removedFields,
+      ];
+
+      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+      const changedFieldsInThisSession = new Set();
+
+      localChanges.forEach((change) => {
+        let editorKey;
+
+        const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
+        if (voteMatch) {
+          const [, termIndex, voteIndex] = voteMatch;
+          const term = senatorTermData[parseInt(termIndex)];
+          const vote = term?.votesScore?.[parseInt(voteIndex)];
+          if (vote && vote.voteId) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem && voteItem.title) {
+              editorKey = `votesScore_${sanitizeKey(voteItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+            }
+          }
+          return;
+        }
+
+        const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
+        if (activityMatch) {
+          const [, termIndex, activityIndex] = activityMatch;
+          const term = senatorTermData[parseInt(termIndex)];
+          const activity = term?.activitiesScore?.[parseInt(activityIndex)];
+          if (activity && activity.activityId) {
+            const activityItem = activities.find(
+              (a) => a._id === activity.activityId
+            );
+            if (activityItem && activityItem.title) {
+              editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+            }
+          }
+          return;
+        }
+
+        const pastVoteMatch = change.match(/^term(\d+)_pastVotesScore_(\d+)$/);
+        if (pastVoteMatch) {
+          const [, termIndex, voteIndex] = pastVoteMatch;
+          const term = senatorTermData[parseInt(termIndex)];
+          const vote = term?.pastVotesScore?.[parseInt(voteIndex)];
+          if (vote && vote.voteId) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem && voteItem.title) {
+              editorKey = `pastVotesScore_${sanitizeKey(voteItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+              changedFieldsInThisSession.add(editorKey);
+            }
+          }
+          return;
+        }
+
+        editorKey = change;
+        updatedFieldEditors[editorKey] = currentEditor;
+        changedFieldsInThisSession.add(editorKey);
+      });
+
+      // Also add field editors for removed items
+      removedItems.votes.forEach((removedVote) => {
+        updatedFieldEditors[removedVote.fieldKey] = currentEditor;
+      });
+
+      removedItems.activities.forEach((removedActivity) => {
+        updatedFieldEditors[removedActivity.fieldKey] = currentEditor;
+      });
+
+      removedItems.pastVotes.forEach((removedPastVote) => {
+        updatedFieldEditors[removedPastVote.fieldKey] = currentEditor;
+      });
+
+      processedChanges.forEach((change) => {
+        if (!changedFieldsInThisSession.has(change.uniqueId)) {
+          updatedFieldEditors[change.uniqueId] =
+            updatedFieldEditors[change.uniqueId] || currentEditor;
+        }
+      });
+
+      const senatorUpdate = {
+        ...formData,
+        editedFields: allChanges,
+        fieldEditors: updatedFieldEditors,
+        publishStatus: publishFlag
+          ? "published"
+          : userRole === "admin"
+          ? "under review"
+          : "under review",
+      };
+
+      if (senatorUpdate.publishStatus === "published") {
+        senatorUpdate.editedFields = [];
+        senatorUpdate.fieldEditors = {};
+      }
+
+      if (id) {
+        const formDataToSend = new FormData();
+        Object.entries(senatorUpdate).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (typeof value === "object" && !(value instanceof File)) {
+              formDataToSend.append(key, JSON.stringify(value));
+            } else {
+              formDataToSend.append(key, value);
+            }
+          }
+        });
+        await dispatch(
+          updateSenator({ id, formData: formDataToSend })
+        ).unwrap();
+      }
+
+      const termPromises = senatorTermData.map((term, index) => {
+        const cleanVotesScore = term.votesScore
+          .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
+          .map((vote) => ({
+            voteId: vote.voteId.toString(),
+            score: vote.score,
+            title: vote.title || "",
+          }));
+
+        const cleanActivitiesScore = term.activitiesScore
+          .filter(
+            (activity) =>
+              activity.activityId &&
+              activity.activityId.toString().trim() !== ""
+          )
+          .map((activity) => ({
+            activityId: activity.activityId.toString(),
+            score: activity.score,
+          }));
+
+        const cleanPastVotesScore = term.pastVotesScore
+          ? term.pastVotesScore
+              .filter(
+                (vote) => vote.voteId && vote.voteId.toString().trim() !== ""
+              )
+              .map((vote) => ({
+                voteId: vote.voteId.toString(),
+                score: vote.score,
+                title: vote.title || "",
+              }))
+          : [];
+
+        const termSpecificChanges = allChanges.filter((f) => {
+          const fieldName =
+            typeof f === "string"
+              ? f
+              : Array.isArray(f.field)
+              ? f.field[0]
+              : f.field;
+          return fieldName.startsWith(`term${index}_`);
+        });
+
+        const termUpdate = {
+          ...term,
+          votesScore: cleanVotesScore,
+          pastVotesScore: cleanPastVotesScore,
+          activitiesScore: cleanActivitiesScore,
+          isNew: false,
+          senateId: id,
+          editedFields: termSpecificChanges,
+          fieldEditors: updatedFieldEditors,
+          summary: term.summary,
+        };
+        return term._id
+          ? dispatch(
+              updateSenatorData({ id: term._id, data: termUpdate })
+            ).unwrap()
+          : dispatch(createSenatorData(termUpdate)).unwrap();
+      });
+
+      await Promise.all(termPromises);
+
+      await dispatch(getSenatorDataBySenatorId(id)).unwrap();
+      await dispatch(getSenatorById(id)).unwrap();
+
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(senatorTermData)));
+      setLocalChanges([]);
+      setDeletedTermIds([]);
+
+      // Clear removed items after successful save
+      setRemovedItems({
+        votes: [],
+        activities: [],
+        pastVotes: [],
+      });
+
+      if (publishFlag) {
+        handleSnackbarOpen("Changes published successfully!", "success");
+      } else if (userRole === "admin") {
+        handleSnackbarOpen("Changes saved (draft).", "success");
+      } else {
+        handleSnackbarOpen(
+          'Status changed to "Draft" for admin to moderate.',
+          "info"
+        );
+      }
+    } catch (error) {
+      console.error("Save failed:", error);
+
+      let errorMessage = getErrorMessage(
+        error,
+        "Operation failed. Please try again."
+      );
+
+      // Handle specific error codes
+      if (error?.code === 11000) {
+        errorMessage = "Duplicate entry: This senator term already exists.";
+      } else if (error?.config?.url?.includes("updateSenator")) {
+        errorMessage = "Failed to update senator data.";
+      } else if (error?.config?.url?.includes("updateSenatorData")) {
+        errorMessage = "Failed to update senator term.";
+      } else if (error?.config?.url?.includes("createSenatorData")) {
+        errorMessage = "Failed to create senator term.";
+      }
+      handleSnackbarOpen(errorMessage, "error");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Save failed:", error);
-
-    let errorMessage = getErrorMessage(error, "Operation failed. Please try again.");
-
-    // Handle specific error codes
-    if (error?.code === 11000) {
-      errorMessage = "Duplicate entry: This senator term already exists.";
-    } else if (error?.config?.url?.includes("updateSenator")) {
-      errorMessage = "Failed to update senator data.";
-    } else if (error?.config?.url?.includes("updateSenatorData")) {
-      errorMessage = "Failed to update senator term.";
-    } else if (error?.config?.url?.includes("createSenatorData")) {
-      errorMessage = "Failed to create senator term.";
-    }
-    handleSnackbarOpen(errorMessage, "error");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Snackbar handlers are now provided by useSnackbar hook
 
@@ -2249,11 +2294,11 @@ if (  isBeforeCutoffDate) {
           editedFields.length > 0
             ? `${editedFields.map((f) => fieldLabels[f] || f).join(", ")}`
             : "No recent changes",
-                titleColor: "#0D47A1",
+        titleColor: "#0D47A1",
         descColor: "#1976D2",
       },
       published: {
-     backgroundColor: "rgba(66, 165, 245, 0.12)",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
         borderColor: "#2196F3",
         iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
@@ -2377,7 +2422,9 @@ if (  isBeforeCutoffDate) {
                   handleRemoveVote={handleRemoveVote}
                   handleAddVote={handleAddVote}
                   allActivities={allActivities}
-                  validateActivityInTermRange={validateActivityInTermRangeWrapper}
+                  validateActivityInTermRange={
+                    validateActivityInTermRangeWrapper
+                  }
                   handleActivityChange={handleActivityChange}
                   handleRemoveActivity={handleRemoveActivity}
                   handleAddActivity={handleAddActivity}
