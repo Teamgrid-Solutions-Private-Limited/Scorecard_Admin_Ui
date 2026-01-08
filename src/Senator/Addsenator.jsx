@@ -588,6 +588,7 @@ const handleTermChange = (e, termIndex) => {
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
+<<<<<<< HEAD
               const cutoffDate = new Date("2019-01-02");
               const isBeforeCutoffDate = voteDate < cutoffDate;
               
@@ -606,6 +607,32 @@ const handleTermChange = (e, termIndex) => {
               const exactMatch = senatorVotes.find((v) => {
                 const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
                 return vId === vote._id;
+=======
+   const cutoffDate = new Date("2019-01-02");
+                const isBeforeCutoffDate = voteDate < cutoffDate;
+                
+                // Skip votes before cutoff date
+                if (isBeforeCutoffDate) return;
+              const inTerm =
+                voteDate >= newTermStart &&
+                voteDate <= newTermEnd &&
+                selectedTerm.congresses.includes(Number(vote.congress));
+
+              if (!inTerm) return false;
+              return senatorVotes.some((v) => {
+                if (!v?.score || v.score.trim() === "") return false;
+
+                const vId =
+                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+
+                return (
+                  vId === vote._id ||
+                  v.quorumId === vote.quorumId ||
+                  (v.billNumber &&
+                    vote.billNumber &&
+                    v.billNumber === vote.billNumber)
+                );
+>>>>>>> dev-features
               });
 
               if (exactMatch) {
