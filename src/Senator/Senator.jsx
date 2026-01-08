@@ -381,15 +381,12 @@ const handleBulkApply = async ({ ids = [], payload }) => {
           getSenatorDataBySenatorId(sid)
         ).unwrap();
 
-        console.log(`\n📋 Processing senator ${sid}`);
-        console.log(`   Term records count: ${termRecords?.length || 0}`);
         termRecords?.forEach((tr) => {
           // Handle termId being either an object or string
           const termId = typeof tr.termId === 'object' ? tr.termId._id : tr.termId;
           const termName = typeof tr.termId === 'object' 
             ? tr.termId.name 
             : terms?.find((t) => t._id === termId)?.name || termId;
-          console.log(`   - Term: ${termName} (currentTerm: ${tr.currentTerm})`);
         });
 
         if (!Array.isArray(termRecords) || termRecords.length === 0) continue;
@@ -412,7 +409,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               const termName = typeof term.termId === 'object' 
                 ? term.termId.name 
                 : terms?.find((t) => t._id === termId)?.name || termId;
-              console.log(`   ✅ Found existing vote in votesScore (Term: ${termName})`);
 
               if (voteMatch.score !== score) {
                 const updatedVotes = term.votesScore.map((v) =>
@@ -433,7 +429,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                     },
                   })
                 ).unwrap();
-                console.log(`   📝 Updated vote score to "${score}"`);
               }
               break;
             }
@@ -450,7 +445,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               const termName = typeof term.termId === 'object' 
                 ? term.termId.name 
                 : terms?.find((t) => t._id === termId)?.name || termId;
-              console.log(`   ✅ Found existing vote in pastVotesScore (Term: ${termName})`);
 
               if (pastVoteMatch.score !== score) {
                 const updatedPastVotes = term.pastVotesScore.map((v) =>
@@ -471,7 +465,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                     },
                   })
                 ).unwrap();
-                console.log(`   📝 Updated past vote score to "${score}"`);
               }
               break;
             }
@@ -490,7 +483,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               const termName = typeof term.termId === 'object' 
                 ? term.termId.name 
                 : terms?.find((t) => t._id === termId)?.name || termId;
-              console.log(`   ✅ Found existing activity (Term: ${termName})`);
 
               if (match.score !== score) {
                 const updatedActs = term.activitiesScore.map((a) =>
@@ -521,11 +513,8 @@ const handleBulkApply = async ({ ids = [], payload }) => {
 
         // 2️⃣ SECOND PASS → insert only if NOT found
         if (!foundExisting) {
-          console.log(`   🆕 Not found - will insert new ${category}`);
-
           // Determine the item date based on category
           const itemDate = category === "vote" ? voteDate : activityDate;
-          console.log(`   📅 Item date: ${itemDate}`);
 
           // Find the term this item belongs to based on date
           let matchingTerm = null;
@@ -533,14 +522,10 @@ const handleBulkApply = async ({ ids = [], payload }) => {
 
           if (itemDate && termRecords && termRecords.length > 0) {
             const itemDateTime = new Date(itemDate);
-            console.log(`   🔍 Searching for matching term in ${termRecords.length} term records...`);
-
             // Check if vote is before Jan 2 (when terms start - Jan 3)
             const termStartBoundary = new Date('2019-01-02T23:59:59Z');
             if (itemDateTime <= termStartBoundary && category === "vote") {
               isPastVote = true;
-              console.log(`   ⏳ Vote date is on/before Jan 2, 2019 → This is a PAST VOTE`);
-
               // Find the oldest term
               const oldestTerm = termRecords.reduce((oldest, current) => {
                 const oldestYear = typeof oldest.termId === 'object' ? oldest.termId.startYear : 0;
@@ -553,7 +538,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               const termName = typeof matchingTerm.termId === 'object' 
                 ? matchingTerm.termId.name 
                 : terms?.find((t) => t._id === termId)?.name || termId;
-              console.log(`   📌 Past vote: inserting into oldest term's pastVotesScore - "${termName}"`);
             } else {
               // Normal date matching logic
               for (const term of termRecords) {
@@ -569,7 +553,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
 
                 if (!termDef) {
                   const termIdDisplay = typeof term.termId === 'object' ? term.termId._id : term.termId;
-                  console.log(`   ⚠️  Term definition not found for termId: ${termIdDisplay}`);
                   continue;
                 }
 
@@ -580,15 +563,8 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                   `${termDef.endYear}-01-02T23:59:59Z`
                 );
 
-                console.log(
-                  `      Checking "${termDef.name}": ${termStart.getFullYear()}-${termEnd.getFullYear()}`
-                );
-
                 if (itemDateTime >= termStart && itemDateTime <= termEnd) {
                   matchingTerm = term;
-                  console.log(
-                    `      ✅ Item date falls within "${termDef.name}" (${termStart.getFullYear()}-${termEnd.getFullYear()})`
-                  );
                   break;
                 }
               }
@@ -597,7 +573,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
 
           // Fallback logic if no match found by date
           if (!matchingTerm) {
-            console.log(`   📌 No date match found, using fallback logic`);
             matchingTerm = termRecords.find((t) => t.currentTerm);
             if (!matchingTerm) {
               matchingTerm = termRecords[0];
@@ -606,7 +581,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
             const termName = typeof matchingTerm.termId === 'object' 
               ? matchingTerm.termId.name 
               : terms?.find((t) => t._id === termId)?.name || termId;
-            console.log(`   → Selected term (fallback): ${termName}`);
           }
 
           targetTerm = matchingTerm;
@@ -620,8 +594,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               // Insert into pastVotesScore
               const pastVotes = [...(targetTerm.pastVotesScore || [])];
               pastVotes.push({ voteId: itemId, score });
-
-              console.log(`   ➕ Adding vote to "${selectedTermName}" pastVotesScore`);
 
               await dispatch(
                 updateSenatorData({
@@ -639,8 +611,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               // Insert into votesScore
               const votes = [...(targetTerm.votesScore || [])];
               votes.push({ voteId: itemId, score });
-
-              console.log(`   ➕ Adding vote to "${selectedTermName}" votesScore`);
 
               await dispatch(
                 updateSenatorData({
@@ -660,8 +630,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
           if (category === "activity") {
             const acts = [...(targetTerm.activitiesScore || [])];
             acts.push({ activityId: itemId, score });
-
-            console.log(`   ➕ Adding activity to "${selectedTermName}" activitiesScore`);
 
             await dispatch(
               updateSenatorData({
@@ -688,7 +656,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
     await dispatch(getAllSenators());
 
     showSnackbar(
-      `Bulk select applied for ${successCount}/${ids.length} senators.`,
+      `Bulk select applied for ${successCount}/${ids.length} senator${successCount !== 1 ? "s" : ""}!.`,
       "success"
     );
   } catch (err) {
@@ -2080,7 +2048,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
           onClose={hideSnackbar}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          <Alert
+         <Alert
             onClose={hideSnackbar}
             severity={snackbarSeverity}
             sx={{
@@ -2094,14 +2062,10 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                   : (snackbarMessage
                       ?.toLowerCase()
                       .includes("senators fetched successfully!") ||
-<<<<<<< HEAD
-                    snackbarMessage?.toLowerCase().includes("bulk select applied")
-=======
-                    snackbarMessage?.toLowerCase().includes("bulk edit applied"))
->>>>>>> dev-features
+                    snackbarMessage?.toLowerCase().includes("bulk select applied"))
                   ? "#daf4f0 !important"
                   : undefined,
-
+ 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
@@ -2112,15 +2076,11 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-<<<<<<< HEAD
-                        .includes("bulk select applied")
-=======
-                        .includes("bulk edit applied"))
->>>>>>> dev-features
+                        .includes("bulk select applied"))
                     ? "#099885 !important"
                     : undefined,
               },
-
+ 
               "& .MuiAlert-message": {
                 color:
                   snackbarMessage ===
@@ -2131,16 +2091,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-<<<<<<< HEAD
-                        .includes("bulk select applied") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk") && snackbarMessage
-                        ?.toLowerCase()
-                        .includes("applied successfully")
-=======
-                        .includes("bulk edit applied"))
->>>>>>> dev-features
+                        .includes("bulk select applied"))
                     ? "#099885 !important"
                     : undefined,
               },

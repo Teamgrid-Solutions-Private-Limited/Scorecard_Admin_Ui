@@ -588,7 +588,6 @@ const handleTermChange = (e, termIndex) => {
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
-<<<<<<< HEAD
               const cutoffDate = new Date("2019-01-02");
               const isBeforeCutoffDate = voteDate < cutoffDate;
               
@@ -607,32 +606,6 @@ const handleTermChange = (e, termIndex) => {
               const exactMatch = senatorVotes.find((v) => {
                 const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
                 return vId === vote._id;
-=======
-   const cutoffDate = new Date("2019-01-02");
-                const isBeforeCutoffDate = voteDate < cutoffDate;
-                
-                // Skip votes before cutoff date
-                if (isBeforeCutoffDate) return;
-              const inTerm =
-                voteDate >= newTermStart &&
-                voteDate <= newTermEnd &&
-                selectedTerm.congresses.includes(Number(vote.congress));
-
-              if (!inTerm) return false;
-              return senatorVotes.some((v) => {
-                if (!v?.score || v.score.trim() === "") return false;
-
-                const vId =
-                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-
-                return (
-                  vId === vote._id ||
-                  v.quorumId === vote.quorumId ||
-                  (v.billNumber &&
-                    vote.billNumber &&
-                    v.billNumber === vote.billNumber)
-                );
->>>>>>> dev-features
               });
 
               if (exactMatch) {
@@ -738,21 +711,12 @@ const handleTermChange = (e, termIndex) => {
 
             // [Rest of the code remains the same...]
             
-            // Activities filtering
-            console.log(`\n   🔍 Filtering activities...`);
-            console.log(`   📊 All activities count: ${allActivities.length}`);
-            console.log(`   📊 Senator activities count: ${senatorActivities?.length || 0}`);
 
             const newParticipatedActivities = allActivities.filter(
               (activity) => {
                 const activityDate = new Date(activity.date);
-                console.log(`      📅 Activity ${activity._id} (${activity.date})`);
-
                 const inTerm = activityDate >= newTermStart && activityDate <= newTermEnd;
-                console.log(`         In term range? ${inTerm}`);
-
                 if (!inTerm) {
-                  console.log(`         ❌ Activity outside term range`);
                   return false;
                 }
                 
@@ -763,16 +727,12 @@ const handleTermChange = (e, termIndex) => {
                 });
 
                 if (exactMatch) {
-                  console.log(`         ✅ Exact activityId match found`);
                   return true;
                 }
 
-                console.log(`         ❌ No match found for activity ${activity._id}`);
                 return false;
               }
             );
-
-            console.log(`   📋 New filtered activities count: ${newParticipatedActivities.length}`);
 
             updatedTerm.activitiesScore = newParticipatedActivities.map(
               (activity) => {
@@ -781,10 +741,7 @@ const handleTermChange = (e, termIndex) => {
                   return aId === activity._id;
                 });
 
-                console.log(`   🔍 Processing activity ${activity._id}:`, {
-                  hasSenatorActivity: !!senAct,
-                  senatorActivityScore: senAct?.score
-                });
+               
 
                 let mappedScore = "";
                 if (senAct?.score) {
@@ -793,7 +750,6 @@ const handleTermChange = (e, termIndex) => {
                   else if (s.includes("nay") || s === "no") mappedScore = "no";
                   else if (s.includes("other")) mappedScore = "other";
                   else mappedScore = senAct.score;
-                  console.log(`      🎯 Score mapped from "${senAct.score}" to "${mappedScore}"`);
                 } else {
                   console.log(`      ⚠️ No senator activity found or no score`);
                 }
@@ -807,20 +763,13 @@ const handleTermChange = (e, termIndex) => {
             );
 
             if (updatedTerm.activitiesScore.length === 0) {
-              console.log(`   📭 No activities found, adding empty activity placeholder`);
               updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
             }
 
-            console.log(`   🎯 Final activitiesScore for term:`, updatedTerm.activitiesScore);
-
             // Past votes filtering - only include votes marked as important past votes
-            console.log(`\n   🔍 Filtering past votes...`);
             const newPastVotes = allVotes.filter((vote) => {
-              console.log(`      📅 Vote ${vote._id} isImportantPastVote? ${vote.isImportantPastVote}`);
               return vote.isImportantPastVote === true;
             });
-
-            console.log(`   📋 Past votes count: ${newPastVotes.length}`);
 
             updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
               // Only match by exact voteId for past votes
@@ -829,10 +778,6 @@ const handleTermChange = (e, termIndex) => {
                 return vId === vote._id;
               });
 
-              console.log(`   🔍 Processing past vote ${vote._id}:`, {
-                hasSenatorPastVote: !!senatorPastVote,
-                senatorPastVoteScore: senatorPastVote?.score
-              });
 
               return {
                 voteId: vote._id,
@@ -842,12 +787,8 @@ const handleTermChange = (e, termIndex) => {
             });
 
             if (updatedTerm.pastVotesScore.length === 0) {
-              console.log(`   📭 No past votes found, adding empty past vote placeholder`);
               updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
-            }
-
-            console.log(`   🎯 Final pastVotesScore for term:`, updatedTerm.pastVotesScore);
-            
+            }            
             // [Rest of the currentTerm logic remains the same...]
           } else {
             console.log(`   ❌ Selected term not found in terms list`);
@@ -859,34 +800,17 @@ const handleTermChange = (e, termIndex) => {
         return updatedTerm;
       });
 
-      
-      console.log(`\n📊 All new terms after update:`, newTerms);
-      console.log(`🔍 Checking for actual changes...`);
-
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
-      console.log(`🔍 Change detection:`, {
-        fieldName,
-        newValue: value,
-        originalValue: originalTerm[name],
-        isActualChange,
-        localChanges
-      });
-
       if (isActualChange && !localChanges.includes(fieldName)) {
-        console.log(`✅ Adding ${fieldName} to localChanges`);
         setLocalChanges((prev) => [...prev, fieldName]);
       } else if (!isActualChange && localChanges.includes(fieldName)) {
-        console.log(`🗑️ Removing ${fieldName} from localChanges`);
         setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
 
       // Future term currentTerm logic
       const currentYear = new Date().getFullYear();
-      console.log(`\n🔍 Checking future terms for currentTerm adjustment...`);
-      console.log(`   Current year: ${currentYear}`);
-
       const futureTerms = newTerms
         .map((t, idx) => {
           const tStart = t.termId
@@ -896,30 +820,20 @@ const handleTermChange = (e, termIndex) => {
         })
         .filter((t) => t.startYear && t.startYear > currentYear);
 
-      console.log(`   Future terms found:`, futureTerms);
 
       if (futureTerms.length > 0) {
         const newest = futureTerms.reduce((a, b) =>
           a.startYear > b.startYear ? a : b
         );
-        console.log(`   Newest future term: index ${newest.idx}, startYear ${newest.startYear}`);
-        console.log(`   Setting currentTerm=true only for term index ${newest.idx}`);
         
         const result = newTerms.map((t, i) => ({
           ...t,
           currentTerm: i === newest.idx,
         }));
         
-        console.log(`   Final terms after currentTerm adjustment:`, result.map((t, i) => ({
-          index: i,
-          termId: t.termId?._id || t.termId,
-          currentTerm: t.currentTerm
-        })));
         
         return result;
       }
-
-      console.log(`   No future terms, returning newTerms as is`);
       return newTerms;
     });
   };

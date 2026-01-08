@@ -51,7 +51,6 @@ export default function BulkEditModal({
 
   // const scoreOptions = mode === "vote" ? ["yea", "nay", "other"] : ["yes", "no", "other"];
  const scoreOptions =
-<<<<<<< HEAD
   mode === "vote"
     ? [
         { label: "Yea", value: "yea" },
@@ -63,19 +62,6 @@ export default function BulkEditModal({
         { label: "Nay", value: "no" },
         { label: "Other", value: "other" },
       ];
-=======
-   mode === "vote"
-     ? [
-         { label: "Yea", value: "yea" },
-         { label: "Nay", value: "nay" },
-         { label: "Other", value: "other" },
-       ]
-     : [
-         { label: "Yea", value: "yes" },
-         { label: "Nay", value: "no" },
-         { label: "Other", value: "other" },
-       ];
->>>>>>> dev-features
 
   const handleSave = () => {
     if (!selectedItem || !score) {
