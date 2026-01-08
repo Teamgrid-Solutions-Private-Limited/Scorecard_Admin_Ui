@@ -422,6 +422,7 @@ export default function Senator(props) {
 
    const fetchSenatorsFromQuorum = async (status = "active") => {
      setOpenFetchDialog(false);
+     setFetching(true);
      setProgress(0);
      const interval = setInterval(() => {
        setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
@@ -1177,10 +1178,10 @@ export default function Senator(props) {
                 snackbarMessage ===
                 `${selectedSenator?.name} deleted successfully.`
                   ? "#fde8e4 !important"
-                  : snackbarMessage
+                  : (snackbarMessage
                       ?.toLowerCase()
                       .includes("senators fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk edit applied")
+                    snackbarMessage?.toLowerCase().includes("bulk edit applied"))
                   ? "#daf4f0 !important"
                   : undefined,
 
@@ -1189,12 +1190,12 @@ export default function Senator(props) {
                   snackbarMessage ===
                   `${selectedSenator?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : snackbarMessage
+                    : (snackbarMessage
                         ?.toLowerCase()
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk edit applied")
+                        .includes("bulk edit applied"))
                     ? "#099885 !important"
                     : undefined,
               },
@@ -1204,12 +1205,12 @@ export default function Senator(props) {
                   snackbarMessage ===
                   `${selectedSenator?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : snackbarMessage
+                    : (snackbarMessage
                         ?.toLowerCase()
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk edit applied")
+                        .includes("bulk edit applied"))
                     ? "#099885 !important"
                     : undefined,
               },
