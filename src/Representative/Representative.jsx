@@ -1189,10 +1189,10 @@ export default function Representative(props) {
                 snackbarMessage ===
                 `${selectedRepresentative?.name} deleted successfully.`
                   ? "#fde8e4 !important"
-                  : (snackbarMessage
+                  : snackbarMessage
                       ?.toLowerCase()
                       .includes("representatives fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk edit applied"))
+                    snackbarMessage?.toLowerCase().includes("bulk edit applied")
                   ? "#daf4f0 !important"
                   : undefined,
 
@@ -1201,12 +1201,12 @@ export default function Representative(props) {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : (snackbarMessage
+                    : snackbarMessage
                         ?.toLowerCase()
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk edit applied"))
+                        .includes("bulk edit applied")
                     ? "#099885 !important"
                     : undefined,
               },
@@ -1216,12 +1216,12 @@ export default function Representative(props) {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : (snackbarMessage
+                    : snackbarMessage
                         ?.toLowerCase()
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk edit applied"))
+                        .includes("bulk edit applied")
                     ? "#099885 !important"
                     : undefined,
               },
