@@ -420,39 +420,51 @@ export default function Senator(props) {
     setOpenFetchDialog(true);
   };
 
-  const fetchSenatorsFromQuorum = async () => {
-    setFetching(true);
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
-    }, 1000);
-    try {
-      const response = await axios.post(
-        `${API_URL}/fetch-quorum/store-data`,
-        { type: "senator" },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (response.status === 200) {
-        showSnackbar("Success: Senators fetched successfully!", "success");
-        await dispatch(getAllSenators());
-        setFetching(false);
-      } else {
-        throw new Error("Failed to fetch senators from Quorum");
-      }
-    } catch (error) {
-      console.error("Error fetching senators:", error);
-      showSnackbar("Error: Unable to fetch senators.", "error");
-    } finally {
-      clearInterval(interval);
-      setFetching(false);
-      setProgress(100); // Ensure it completes
-      setTimeout(() => setProgress(0), 500); // Re
-    }
-  };
+   const fetchSenatorsFromQuorum = async (status = "active") => {
+     setOpenFetchDialog(false);
+     setProgress(0);
+     const interval = setInterval(() => {
+       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
+     }, 1000);
+     try {
+       const requestBody = {
+         type: "senator",
+       };
+
+       // Use different endpoints based on status
+       const endpoint =
+         status === "former"
+           ? `${API_URL}/fetch-quorum/save-former`
+           : `${API_URL}/fetch-quorum/store-data`;
+
+       const response = await axios.post(endpoint, requestBody, {
+         headers: {
+           Authorization: `Bearer ${token}`,
+         },
+       });
+       if (response.status === 200) {
+            const statusText = status === "active" ? "active" : "former";
+        showSnackbar(
+          `Success: ${
+            statusText.charAt(0).toUpperCase() + statusText.slice(1)
+          } senators fetched successfully!`,
+          "success"
+        );
+         await dispatch(getAllSenators());
+         setFetching(false);
+       } else {
+         throw new Error("Failed to fetch senators from Quorum");
+       }
+     } catch (error) {
+       console.error("Error fetching senators:", error);
+       showSnackbar("Error: Unable to fetch senators.", "error");
+     } finally {
+       clearInterval(interval);
+       setFetching(false);
+       setProgress(100); // Ensure it completes
+       setTimeout(() => setProgress(0), 500); // Re
+     }
+   };
   const handlePartyFilter = (party) => {
     setPartyFilter((prev) =>
       prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party]
@@ -615,7 +627,7 @@ export default function Senator(props) {
                   <Button
                     variant="outlined"
                     className="fetchBtn"
-                    onClick={fetchSenatorsFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Senators from Quorum
                   </Button>
@@ -1116,7 +1128,7 @@ export default function Senator(props) {
                   <Button
                     variant="outlined"
                     className="fetch-btn"
-                    onClick={fetchSenatorsFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Senators from Quorum
                   </Button>
@@ -1232,7 +1244,14 @@ export default function Senator(props) {
               <Button
                 variant="outlined"
                 fullWidth
-                sx={{ borderRadius: 2 }}
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                }}
                 onClick={() => fetchSenatorsFromQuorum("active")}
               >
                 Active Senators
@@ -1240,7 +1259,14 @@ export default function Senator(props) {
               <Button
                 variant="outlined"
                 fullWidth
-                sx={{ borderRadius: 2 }}
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                }}
                 onClick={() => fetchSenatorsFromQuorum("former")}
               >
                 Former Senators

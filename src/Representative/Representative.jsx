@@ -425,144 +425,112 @@ export default function Representative(props) {
     }
     navigate(`/edit-representative/${row._id}`);
   };
-const handleBulkApply = async ({ ids = [], payload }) => {
-  if (!ids || ids.length === 0 || !payload) {
-    return;
-  }
-  if (userRole !== "admin") {
-    showSnackbar("Bulk edit is for admins only", "error");
-    return;
-  }
-
-  const { category, itemId, score } = payload;
-  
-  if (!category || !itemId || !score) {
-    showSnackbar("Invalid bulk payload", "error");
-    return;
-  }
-
-  setFetching(true);
-  try {
-    // Build updates array for the bulk update endpoint
-    const updates = ids.map((houseId) => {
-      const update = {
-        houseId: houseId,
-      };
-      
-      if (category === "vote") {
-        update.votesScore = [{
-          voteId: itemId,
-          score: score,
-        }];
-      } else if (category === "activity") {
-        update.activitiesScore = [{
-          activityId: itemId,
-          score: score,
-        }];
-      }
-      
-      return update;
-    });
-    
-    const result = await dispatch(updateHouseScores(updates)).unwrap();
-    
-    // Check if no representative had the item
-    if (result.message && result.message.includes("was not found for any of the representatives")) {
-      showSnackbar(result.message, "error");
-      setFetching(false);
+  const handleBulkApply = async ({ ids = [], payload }) => {
+    if (!ids || ids.length === 0 || !payload) {
       return;
     }
-    
-    const successCount = result.successful || 0;
-    const failedCount = result.failed || 0;
-    
-    if (result.errors && result.errors.length > 0) {
-      console.warn(`⚠️ Some updates failed:`, result.errors);
+    if (userRole !== "admin") {
+      showSnackbar("Bulk edit is for admins only", "error");
+      return;
     }
-    
-    await dispatch(getAllHouseData());
-    await dispatch(getAllHouses());
-    
-    if (successCount > 0) {
-      showSnackbar(
-        `Bulk edit applied for ${successCount} member${successCount !== 1 ? 's' : ''}.${failedCount > 0 ? ` ${failedCount} failed (item not found for those representatives).` : ''}`,
-        successCount === ids.length ? "success" : "warning"
-      );
-    } else {
-      showSnackbar("Bulk edit failed for all members. See console for details.", "error");
+
+    const { category, itemId, score } = payload;
+
+    if (!category || !itemId || !score) {
+      showSnackbar("Invalid bulk payload", "error");
+      return;
     }
-  } catch (err) {
-    console.error("❌ Bulk apply failed:", {
-      error: err,
-      errorMessage: err?.message,
-      errorStack: err?.stack,
-      fullError: err,
-    });
-    
-    // Check for the specific "not found for any" error
-    if (err?.message?.includes("was not found for any of the representatives")) {
-      showSnackbar(err.message, "error");
-    } else {
-      showSnackbar("Bulk apply failed.");
+
+    setFetching(true);
+    try {
+      // Build updates array for the bulk update endpoint
+      const updates = ids.map((houseId) => {
+        const update = {
+          houseId: houseId,
+        };
+
+        if (category === "vote") {
+          update.votesScore = [
+            {
+              voteId: itemId,
+              score: score,
+            },
+          ];
+        } else if (category === "activity") {
+          update.activitiesScore = [
+            {
+              activityId: itemId,
+              score: score,
+            },
+          ];
+        }
+
+        return update;
+      });
+
+      const result = await dispatch(updateHouseScores(updates)).unwrap();
+
+      // Check if no representative had the item
+      if (
+        result.message &&
+        result.message.includes("was not found for any of the representatives")
+      ) {
+        showSnackbar(result.message, "error");
+        setFetching(false);
+        return;
+      }
+
+      const successCount = result.successful || 0;
+      const failedCount = result.failed || 0;
+
+      if (result.errors && result.errors.length > 0) {
+        console.warn(`⚠️ Some updates failed:`, result.errors);
+      }
+
+      await dispatch(getAllHouseData());
+      await dispatch(getAllHouses());
+
+      if (successCount > 0) {
+        showSnackbar(
+          `Bulk edit applied for ${successCount} member${
+            successCount !== 1 ? "s" : ""
+          }.${
+            failedCount > 0
+              ? ` ${failedCount} failed (item not found for those representatives).`
+              : ""
+          }`,
+          successCount === ids.length ? "success" : "warning"
+        );
+      } else {
+        showSnackbar(
+          "Bulk edit failed for all members. See console for details.",
+          "error"
+        );
+      }
+    } catch (err) {
+      console.error("❌ Bulk apply failed:", {
+        error: err,
+        errorMessage: err?.message,
+        errorStack: err?.stack,
+        fullError: err,
+      });
+
+      // Check for the specific "not found for any" error
+      if (
+        err?.message?.includes("was not found for any of the representatives")
+      ) {
+        showSnackbar(err.message, "error");
+      } else {
+        showSnackbar("Bulk apply failed.");
+      }
+    } finally {
+      setFetching(false);
     }
-  } finally {
-    setFetching(false);
-  }
-};
-  
+  };
 
   const handleFetchClick = () => {
     setOpenFetchDialog(true);
   };
-
-  // const fetchRepresentativeFromQuorum = async (status = "active") => {
-  //   setOpenFetchDialog(false);
-  //   setFetching(true);
-  //   setProgress(0);
-  //   const interval = setInterval(() => {
-  //     setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
-  //   }, 1000);
-
-  //   try {
-  //     const requestBody = {
-  //       type: "representative",
-  //     };
-
-  //     // Use different endpoints based on status
-  //     const endpoint =
-  //       status === "former"
-  //         ? `${API_URL}/fetch-quorum/save-former`
-  //         : `${API_URL}/fetch-quorum/store-data`;
-
-  //     const response = await axios.post(endpoint, requestBody, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     if (response.status === 200) {
-  //       const statusText = status === "active" ? "active" : "former";
-  //       showSnackbar(
-  //         `Success: ${
-  //           statusText.charAt(0).toUpperCase() + statusText.slice(1)
-  //         } representatives fetched successfully!`,
-  //         "success"
-  //       );
-  //       await dispatch(getAllHouses());
-  //       setFetching(false);
-  //     } else {
-  //       throw new Error("Failed to fetch representatives from Quorum");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching representatives:", error);
-  //     showSnackbar("Error: Unable to fetch representatives.", "error");
-  //   } finally {
-  //     clearInterval(interval);
-  //     setFetching(false);
-  //     setProgress(100);
-  //     setTimeout(() => setProgress(0), 500);
-  //   }
-  // };
 
   const handleDeleteClick = (row) => {
     setSelectedRepresentative(row);
@@ -616,7 +584,8 @@ const handleBulkApply = async ({ ids = [], payload }) => {
     congressFilter.length +
     (termFilter ? 1 : 0) +
     statusFilter.length;
-  const fetchRepresentativeFromQuorum = async () => {
+  const fetchRepresentativeFromQuorum = async (status = "active") => {
+    setOpenFetchDialog(false);
     setFetching(true);
     setProgress(0);
     const interval = setInterval(() => {
@@ -624,27 +593,37 @@ const handleBulkApply = async ({ ids = [], payload }) => {
     }, 1000);
 
     try {
-      const response = await axios.post(
-        `${API_URL}/fetch-quorum/store-data`,
-        { type: "representative" },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const requestBody = {
+        type: "representative",
+      };
+
+      // Use different endpoints based on status
+      const endpoint =
+        status === "former"
+          ? `${API_URL}/fetch-quorum/save-former`
+          : `${API_URL}/fetch-quorum/store-data`;
+
+      const response = await axios.post(endpoint, requestBody, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.status === 200) {
+        const statusText = status === "active" ? "active" : "former";
         showSnackbar(
-          "Success: Representatives fetched successfully!",
+          `Success: ${
+            statusText.charAt(0).toUpperCase() + statusText.slice(1)
+          } representatives fetched successfully!`,
           "success"
         );
         await dispatch(getAllHouses());
+        setFetching(false);
       } else {
-        throw new Error("Failed to fetch representatives from Quorum.");
+        throw new Error("Failed to fetch representatives from Quorum");
       }
     } catch (error) {
-      console.error("Error fetching representatives from Quorum:", error);
+      console.error("Error fetching representatives:", error);
       showSnackbar("Error: Unable to fetch representatives.", "error");
     } finally {
       clearInterval(interval);
@@ -663,7 +642,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
           <MobileHeader />
           <Stack spacing={2} className="stackBox">
             <Box className="actionsBox">
-              {/* {userRole === "admin" && (
+              {userRole === "admin" && (
                 <Box className="adminBox">
                   <Button
                     variant="outlined"
@@ -673,18 +652,18 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                     Fetch Representatives from Quorum
                   </Button>
                 </Box>
-              )} */}
-              {userRole === "admin" && (
+              )}
+              {/* {userRole === "admin" && (
                 <Box className="adminBox">
                   <Button
                     variant="outlined"
                     className="fetchBtn"
-                    onClick={fetchRepresentativeFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Senators from Quorum
                   </Button>
                 </Box>
-              )}
+              )} */}
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
@@ -1172,7 +1151,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                   <Button
                     variant="outlined"
                     className="fetch-btn"
-                    onClick={fetchRepresentativeFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Representatives from Quorum
                   </Button>
@@ -1210,9 +1189,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                 snackbarMessage ===
                 `${selectedRepresentative?.name} deleted successfully.`
                   ? "#fde8e4 !important"
-                  : snackbarMessage?.includes(
-                      "Representatives fetched successfully!"
-                    ) ||
+                  : snackbarMessage
+                      ?.toLowerCase()
+                      .includes("representatives fetched successfully!") ||
                     snackbarMessage?.toLowerCase().includes("bulk edit applied")
                   ? "#daf4f0 !important"
                   : undefined,
@@ -1222,9 +1201,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : snackbarMessage?.includes(
-                        "Representatives fetched successfully!"
-                      ) ||
+                    : snackbarMessage
+                        ?.toLowerCase()
+                        .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
                         .includes("bulk edit applied")
@@ -1237,9 +1216,9 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : snackbarMessage?.includes(
-                        "Representatives fetched successfully!"
-                      ) ||
+                    : snackbarMessage
+                        ?.toLowerCase()
+                        .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
                         .includes("bulk edit applied")
@@ -1320,7 +1299,14 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               <Button
                 variant="outlined"
                 fullWidth
-                sx={{ borderRadius: 2 }}
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                }}
                 onClick={() => fetchRepresentativeFromQuorum("active")}
               >
                 Active Representatives
@@ -1328,7 +1314,14 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               <Button
                 variant="outlined"
                 fullWidth
-                sx={{ borderRadius: 2 }}
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                }}
                 onClick={() => fetchRepresentativeFromQuorum("former")}
               >
                 Former Representatives
