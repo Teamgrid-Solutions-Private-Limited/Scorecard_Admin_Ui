@@ -947,7 +947,7 @@ export default function CustomizedDataGrid({
                 },
               }}
             >
-              Bulk Edit
+              Bulk Select
             </Button>
           )}
         </Box>

@@ -50,11 +50,18 @@ export default function BulkEditModal({
   };
 
   // const scoreOptions = mode === "vote" ? ["yea", "nay", "other"] : ["yes", "no", "other"];
-  const scoreOptions = [
-    { label: "Yea", value: "yea" },
-    { label: "Nay", value: "nay" },
-    { label: "Other", value: "other" },
-  ];
+ const scoreOptions =
+  mode === "vote"
+    ? [
+        { label: "Yea", value: "yea" },
+        { label: "Nay", value: "nay" },
+        { label: "Other", value: "other" },
+      ]
+    : [
+        { label: "Yea", value: "yes" },
+        { label: "Nay", value: "no" },
+        { label: "Other", value: "other" },
+      ];
 
   const handleSave = () => {
     if (!selectedItem || !score) {
@@ -74,11 +81,19 @@ export default function BulkEditModal({
       score: score,
     };
 
+    // Include date if available (for term matching)
+    if (mode === "vote" && selectedItem.date) {
+      payload.voteDate = selectedItem.date;
+    } else if (mode === "activity" && selectedItem.date) {
+      payload.activityDate = selectedItem.date;
+    }
+
     console.log("✅ BulkEditModal: Applying bulk edit", {
       mode,
       selectedItem: {
         _id: selectedItem._id,
         title: selectedItem.title,
+        date: selectedItem.date,
         fullItem: selectedItem,
       },
       score,

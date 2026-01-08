@@ -195,152 +195,1065 @@ export default function Senator(props) {
       setMergedSenators(merged);
     }
   }, [senators, senatorData, terms]);
+const findTermForDate = (terms = [], date) => {
+  if (!date) return null;
 
-  const handleBulkApply = async ({ ids = [], payload }) => {
-    if (!ids || ids.length === 0 || !payload) {
-      return;
-    }
-    if (userRole !== "admin") {
-      showSnackbar("Bulk edit is for admins only", "error");
-      return;
-    }
+  const targetDate = new Date(date);
 
-    const { category, itemId, score } = payload;
+  return terms.find((t) => {
+    const start = new Date(t.termId?.startDate);
+    const end = new Date(t.termId?.endDate);
+    return targetDate >= start && targetDate <= end;
+  });
+};
 
-    if (!category || !itemId || !score) {
-      showSnackbar("Invalid bulk payload", "error");
-      return;
-    }
+  // const handleBulkApply = async ({ ids = [], payload }) => {
+  //   if (!ids || ids.length === 0 || !payload) {
+  //     return;
+  //   }
+  //   if (userRole !== "admin") {
+  //     showSnackbar("Bulk edit is for admins only", "error");
+  //     return;
+  //   }
 
-    setFetching(true);
-    let successCount = 0;
-    try {
-      for (const sid of ids) {
-        try {
-          const termRecords = await dispatch(
-            getSenatorDataBySenatorId(sid)
-          ).unwrap();
+  //   const { category, itemId, score } = payload;
 
-          if (!Array.isArray(termRecords)) {
-            continue;
-          }
+  //   if (!category || !itemId || !score) {
+  //     showSnackbar("Invalid bulk payload", "error");
+  //     return;
+  //   }
 
-          const updatePromises = [];
-          termRecords.forEach((term, termIndex) => {
-            let modified = false;
-            const newTerm = { ...term };
-            if (category === "vote") {
-              const votes = (newTerm.votesScore || []).map((v, voteIndex) => {
-                const vid = v.voteId?._id || v.voteId;
-                const vidStr = vid ? vid.toString() : null;
-                const itemIdStr = itemId.toString();
+  //   setFetching(true);
+  //   let successCount = 0;
+  //   try {
+  //     for (const sid of ids) {
+  //       try {
+  //         const termRecords = await dispatch(
+  //           getSenatorDataBySenatorId(sid)
+  //         ).unwrap();
 
-                if (vid && vid.toString() === itemIdStr) {
-                  modified = true;
-                  return { ...v, score };
-                }
-                return v;
-              });
-              if (modified) {
-                newTerm.votesScore = votes;
-              } else {
-              }
-            } else if (category === "activity") {
-              const acts = (newTerm.activitiesScore || []).map(
-                (a, actIndex) => {
-                  const aid = a.activityId?._id || a.activityId;
-                  const aidStr = aid ? aid.toString() : null;
-                  const itemIdStr = itemId.toString();
+  //         if (!Array.isArray(termRecords)) {
+  //           continue;
+  //         }
 
-                  if (aid && aid.toString() === itemIdStr) {
-                    modified = true;
-                    return { ...a, score };
-                  }
-                  return a;
-                }
-              );
-              if (modified) {
-                newTerm.activitiesScore = acts;
-              } else {
-                console.log(
-                  `⚠️ No matching activity found for itemId ${itemId} in term ${term._id}`
+  //         const updatePromises = [];
+  //         termRecords.forEach((term) => {
+  // let modified = false;
+  // const newTerm = { ...term };
+
+  // if (category === "vote") {
+  //   const votes = [...(newTerm.votesScore || [])];
+  //   const itemIdStr = itemId.toString();
+
+  //   const index = votes.findIndex((v) => {
+  //     const vid = v.voteId?._id || v.voteId;
+  //     return vid?.toString() === itemIdStr;
+  //   });
+
+  //   if (index > -1) {
+  //     // ✅ UPDATE existing vote
+  //     votes[index] = { ...votes[index], score };
+  //   } else {
+  //     // ✅ INSERT new vote
+  //     votes.push({
+  //       voteId: itemId,
+  //       score,
+  //     });
+  //   }
+
+  //   newTerm.votesScore = votes;
+  //   modified = true;
+  // }
+
+  // if (category === "activity") {
+  //   const acts = [...(newTerm.activitiesScore || [])];
+  //   const itemIdStr = itemId.toString();
+
+  //   const index = acts.findIndex((a) => {
+  //     const aid = a.activityId?._id || a.activityId;
+  //     return aid?.toString() === itemIdStr;
+  //   });
+
+  //   if (index > -1) {
+  //     // ✅ UPDATE existing activity
+  //     acts[index] = { ...acts[index], score };
+  //   } else {
+  //     // ✅ INSERT new activity
+  //     acts.push({
+  //       activityId: itemId,
+  //       score,
+  //     });
+  //   }
+
+  //   newTerm.activitiesScore = acts;
+  //   modified = true;
+  // }
+
+  // if (modified) {
+  //   const payloadData = {
+  //     ...newTerm,
+  //     votesScore: newTerm.votesScore?.map((v) => ({
+  //       voteId: v.voteId?._id || v.voteId,
+  //       score: v.score,
+  //     })),
+  //     activitiesScore: newTerm.activitiesScore?.map((a) => ({
+  //       activityId: a.activityId?._id || a.activityId,
+  //       score: a.score,
+  //     })),
+  //   };
+
+  //   updatePromises.push(
+  //     dispatch(updateSenatorData({ id: term._id, data: payloadData })).unwrap()
+  //                 .then((result) => {
+  //                   return result;
+  //                 })
+  //                 .catch((error) => {
+  //                   console.error(
+  //                     `❌ updateSenatorData error for term ${term._id}:`,
+  //                     error
+  //                   );
+  //                   throw error;
+  //                 })
+  //             );
+  //           } else {
+  //             console.log(
+  //               `⏭️ Term ${term._id} not modified - no matching ${category} found`
+  //             );
+  //           }
+  //         });
+
+  //         if (updatePromises.length > 0) {
+  //           await Promise.all(updatePromises);
+  //           successCount += 1;
+  //           console.log(`✅ Successfully updated senator ${sid}`);
+  //         } else {
+  //           console.log(`⚠️ No updates needed for senator ${sid}`);
+  //         }
+  //       } catch (err) {
+  //         console.error(`❌ Bulk update error for senator ${sid}:`, {
+  //           error: err,
+  //           errorMessage: err?.message,
+  //           errorStack: err?.stack,
+  //           fullError: err,
+  //         });
+  //       }
+  //     }
+
+  //     await dispatch(getAllSenatorData());
+  //     await dispatch(getAllSenators());
+  //     console.log(
+  //       `✅ Bulk edit completed. Success count: ${successCount}/${ids.length}`
+  //     );
+  //     showSnackbar(`Bulk edit applied for ${successCount} members.`, "success");
+  //   } catch (err) {
+  //     console.error("❌ Bulk apply failed:", {
+  //       error: err,
+  //       errorMessage: err?.message,
+  //       errorStack: err?.stack,
+  //       fullError: err,
+  //     });
+  //     showSnackbar("Bulk apply failed. See console for details.", "error");
+  //   } finally {
+  //     setFetching(false);
+  //   }
+  // };
+const handleBulkApply = async ({ ids = [], payload }) => {
+  if (!ids.length || !payload) return;
+
+  if (userRole !== "admin") {
+    showSnackbar("Bulk edit is for admins only", "error");
+    return;
+  }
+
+  const { category, itemId, score, voteDate, activityDate } = payload;
+  if (!category || !itemId || !score) {
+    showSnackbar("Invalid bulk payload", "error");
+    return;
+  }
+
+  setFetching(true);
+  let successCount = 0;
+
+  try {
+    for (const sid of ids) {
+      try {
+        const termRecords = await dispatch(
+          getSenatorDataBySenatorId(sid)
+        ).unwrap();
+
+        console.log(`\n📋 Processing senator ${sid}`);
+        console.log(`   Term records count: ${termRecords?.length || 0}`);
+        termRecords?.forEach((tr) => {
+          // Handle termId being either an object or string
+          const termId = typeof tr.termId === 'object' ? tr.termId._id : tr.termId;
+          const termName = typeof tr.termId === 'object' 
+            ? tr.termId.name 
+            : terms?.find((t) => t._id === termId)?.name || termId;
+          console.log(`   - Term: ${termName} (currentTerm: ${tr.currentTerm})`);
+        });
+
+        if (!Array.isArray(termRecords) || termRecords.length === 0) continue;
+
+        let foundExisting = false;
+        let targetTerm = null;
+
+        // 1️⃣ FIRST PASS → check if vote/activity exists anywhere
+        for (const term of termRecords) {
+          if (category === "vote") {
+            // 🔍 1. Check votesScore
+            const voteMatch = term.votesScore?.find(
+              (v) =>
+                (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
+            );
+
+            if (voteMatch) {
+              foundExisting = true;
+              const termId = typeof term.termId === 'object' ? term.termId._id : term.termId;
+              const termName = typeof term.termId === 'object' 
+                ? term.termId.name 
+                : terms?.find((t) => t._id === termId)?.name || termId;
+              console.log(`   ✅ Found existing vote in votesScore (Term: ${termName})`);
+
+              if (voteMatch.score !== score) {
+                const updatedVotes = term.votesScore.map((v) =>
+                  (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
+                    ? { ...v, score }
+                    : v
                 );
+
+                await dispatch(
+                  updateSenatorData({
+                    id: term._id,
+                    data: {
+                      ...term,
+                      votesScore: updatedVotes.map((v) => ({
+                        voteId: v.voteId?._id || v.voteId,
+                        score: v.score,
+                      })),
+                    },
+                  })
+                ).unwrap();
+                console.log(`   📝 Updated vote score to "${score}"`);
               }
+              break;
             }
 
-            if (modified) {
-              const payloadData = { ...newTerm };
-              if (payloadData.votesScore) {
-                payloadData.votesScore = payloadData.votesScore.map((v) => ({
-                  voteId: v.voteId?._id || v.voteId,
-                  score: v.score,
-                }));
+            // 🔍 2. Check pastVotesScore
+            const pastVoteMatch = term.pastVotesScore?.find(
+              (v) =>
+                (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
+            );
+
+            if (pastVoteMatch) {
+              foundExisting = true;
+              const termId = typeof term.termId === 'object' ? term.termId._id : term.termId;
+              const termName = typeof term.termId === 'object' 
+                ? term.termId.name 
+                : terms?.find((t) => t._id === termId)?.name || termId;
+              console.log(`   ✅ Found existing vote in pastVotesScore (Term: ${termName})`);
+
+              if (pastVoteMatch.score !== score) {
+                const updatedPastVotes = term.pastVotesScore.map((v) =>
+                  (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
+                    ? { ...v, score }
+                    : v
+                );
+
+                await dispatch(
+                  updateSenatorData({
+                    id: term._id,
+                    data: {
+                      ...term,
+                      pastVotesScore: updatedPastVotes.map((v) => ({
+                        voteId: v.voteId?._id || v.voteId,
+                        score: v.score,
+                      })),
+                    },
+                  })
+                ).unwrap();
+                console.log(`   📝 Updated past vote score to "${score}"`);
               }
-              if (payloadData.activitiesScore) {
-                payloadData.activitiesScore = payloadData.activitiesScore.map(
-                  (a) => ({
+              break;
+            }
+          }
+
+          if (category === "activity") {
+            const match = term.activitiesScore?.find(
+              (a) =>
+                (a.activityId?._id || a.activityId)?.toString() ===
+                itemId.toString()
+            );
+
+            if (match) {
+              foundExisting = true;
+              const termId = typeof term.termId === 'object' ? term.termId._id : term.termId;
+              const termName = typeof term.termId === 'object' 
+                ? term.termId.name 
+                : terms?.find((t) => t._id === termId)?.name || termId;
+              console.log(`   ✅ Found existing activity (Term: ${termName})`);
+
+              if (match.score !== score) {
+                const updatedActs = term.activitiesScore.map((a) =>
+                  (a.activityId?._id || a.activityId)?.toString() ===
+                  itemId.toString()
+                    ? { ...a, score }
+                    : a
+                );
+
+                await dispatch(
+                  updateSenatorData({
+                    id: term._id,
+                    data: {
+                      ...term,
+                      activitiesScore: updatedActs.map((a) => ({
+                        activityId: a.activityId?._id || a.activityId,
+                        score: a.score,
+                      })),
+                    },
+                  })
+                ).unwrap();
+                console.log(`   📝 Updated activity score to "${score}"`);
+              }
+              break;
+            }
+          }
+        }
+
+        // 2️⃣ SECOND PASS → insert only if NOT found
+        if (!foundExisting) {
+          console.log(`   🆕 Not found - will insert new ${category}`);
+
+          // Determine the item date based on category
+          const itemDate = category === "vote" ? voteDate : activityDate;
+          console.log(`   📅 Item date: ${itemDate}`);
+
+          // Find the term this item belongs to based on date
+          let matchingTerm = null;
+          let isPastVote = false;
+
+          if (itemDate && termRecords && termRecords.length > 0) {
+            const itemDateTime = new Date(itemDate);
+            console.log(`   🔍 Searching for matching term in ${termRecords.length} term records...`);
+
+            // Check if vote is before Jan 2 (when terms start - Jan 3)
+            const termStartBoundary = new Date('2019-01-02T23:59:59Z');
+            if (itemDateTime <= termStartBoundary && category === "vote") {
+              isPastVote = true;
+              console.log(`   ⏳ Vote date is on/before Jan 2, 2019 → This is a PAST VOTE`);
+
+              // Find the oldest term
+              const oldestTerm = termRecords.reduce((oldest, current) => {
+                const oldestYear = typeof oldest.termId === 'object' ? oldest.termId.startYear : 0;
+                const currentYear = typeof current.termId === 'object' ? current.termId.startYear : 0;
+                return currentYear < oldestYear ? current : oldest;
+              });
+
+              matchingTerm = oldestTerm;
+              const termId = typeof matchingTerm.termId === 'object' ? matchingTerm.termId._id : matchingTerm.termId;
+              const termName = typeof matchingTerm.termId === 'object' 
+                ? matchingTerm.termId.name 
+                : terms?.find((t) => t._id === termId)?.name || termId;
+              console.log(`   📌 Past vote: inserting into oldest term's pastVotesScore - "${termName}"`);
+            } else {
+              // Normal date matching logic
+              for (const term of termRecords) {
+                // Handle termId being either an object or string
+                let termDef = null;
+                if (typeof term.termId === 'object' && term.termId._id) {
+                  // termId is already an object with term definition
+                  termDef = term.termId;
+                } else {
+                  // termId is a string, look it up
+                  termDef = terms?.find((t) => t._id === term.termId);
+                }
+
+                if (!termDef) {
+                  const termIdDisplay = typeof term.termId === 'object' ? term.termId._id : term.termId;
+                  console.log(`   ⚠️  Term definition not found for termId: ${termIdDisplay}`);
+                  continue;
+                }
+
+                const termStart = new Date(
+                  `${termDef.startYear}-01-03T00:00:00Z`
+                );
+                const termEnd = new Date(
+                  `${termDef.endYear}-01-02T23:59:59Z`
+                );
+
+                console.log(
+                  `      Checking "${termDef.name}": ${termStart.getFullYear()}-${termEnd.getFullYear()}`
+                );
+
+                if (itemDateTime >= termStart && itemDateTime <= termEnd) {
+                  matchingTerm = term;
+                  console.log(
+                    `      ✅ Item date falls within "${termDef.name}" (${termStart.getFullYear()}-${termEnd.getFullYear()})`
+                  );
+                  break;
+                }
+              }
+            }
+          }
+
+          // Fallback logic if no match found by date
+          if (!matchingTerm) {
+            console.log(`   📌 No date match found, using fallback logic`);
+            matchingTerm = termRecords.find((t) => t.currentTerm);
+            if (!matchingTerm) {
+              matchingTerm = termRecords[0];
+            }
+            const termId = typeof matchingTerm.termId === 'object' ? matchingTerm.termId._id : matchingTerm.termId;
+            const termName = typeof matchingTerm.termId === 'object' 
+              ? matchingTerm.termId.name 
+              : terms?.find((t) => t._id === termId)?.name || termId;
+            console.log(`   → Selected term (fallback): ${termName}`);
+          }
+
+          targetTerm = matchingTerm;
+          const termId = typeof targetTerm.termId === 'object' ? targetTerm.termId._id : targetTerm.termId;
+          const selectedTermName = typeof targetTerm.termId === 'object' 
+            ? targetTerm.termId.name 
+            : terms?.find((t) => t._id === termId)?.name || termId;
+
+          if (category === "vote") {
+            if (isPastVote) {
+              // Insert into pastVotesScore
+              const pastVotes = [...(targetTerm.pastVotesScore || [])];
+              pastVotes.push({ voteId: itemId, score });
+
+              console.log(`   ➕ Adding vote to "${selectedTermName}" pastVotesScore`);
+
+              await dispatch(
+                updateSenatorData({
+                  id: targetTerm._id,
+                  data: {
+                    ...targetTerm,
+                    pastVotesScore: pastVotes.map((v) => ({
+                      voteId: v.voteId?._id || v.voteId,
+                      score: v.score,
+                    })),
+                  },
+                })
+              ).unwrap();
+            } else {
+              // Insert into votesScore
+              const votes = [...(targetTerm.votesScore || [])];
+              votes.push({ voteId: itemId, score });
+
+              console.log(`   ➕ Adding vote to "${selectedTermName}" votesScore`);
+
+              await dispatch(
+                updateSenatorData({
+                  id: targetTerm._id,
+                  data: {
+                    ...targetTerm,
+                    votesScore: votes.map((v) => ({
+                      voteId: v.voteId?._id || v.voteId,
+                      score: v.score,
+                    })),
+                  },
+                })
+              ).unwrap();
+            }
+          }
+
+          if (category === "activity") {
+            const acts = [...(targetTerm.activitiesScore || [])];
+            acts.push({ activityId: itemId, score });
+
+            console.log(`   ➕ Adding activity to "${selectedTermName}" activitiesScore`);
+
+            await dispatch(
+              updateSenatorData({
+                id: targetTerm._id,
+                data: {
+                  ...targetTerm,
+                  activitiesScore: acts.map((a) => ({
                     activityId: a.activityId?._id || a.activityId,
                     score: a.score,
-                  })
-                );
-              }
-
-              updatePromises.push(
-                dispatch(updateSenatorData({ id: term._id, data: payloadData }))
-                  .unwrap()
-                  .then((result) => {
-                    return result;
-                  })
-                  .catch((error) => {
-                    console.error(
-                      `❌ updateSenatorData error for term ${term._id}:`,
-                      error
-                    );
-                    throw error;
-                  })
-              );
-            } else {
-              console.log(
-                `⏭️ Term ${term._id} not modified - no matching ${category} found`
-              );
-            }
-          });
-
-          if (updatePromises.length > 0) {
-            await Promise.all(updatePromises);
-            successCount += 1;
-            console.log(`✅ Successfully updated senator ${sid}`);
-          } else {
-            console.log(`⚠️ No updates needed for senator ${sid}`);
+                  })),
+                },
+              })
+            ).unwrap();
           }
-        } catch (err) {
-          console.error(`❌ Bulk update error for senator ${sid}:`, {
-            error: err,
-            errorMessage: err?.message,
-            errorStack: err?.stack,
-            fullError: err,
-          });
         }
-      }
 
-      await dispatch(getAllSenatorData());
-      await dispatch(getAllSenators());
-      console.log(
-        `✅ Bulk edit completed. Success count: ${successCount}/${ids.length}`
-      );
-      showSnackbar(`Bulk edit applied for ${successCount} members.`, "success");
-    } catch (err) {
-      console.error("❌ Bulk apply failed:", {
-        error: err,
-        errorMessage: err?.message,
-        errorStack: err?.stack,
-        fullError: err,
-      });
-      showSnackbar("Bulk apply failed. See console for details.", "error");
-    } finally {
-      setFetching(false);
+        successCount++;
+      } catch (err) {
+        console.error(`❌ Error updating senator ${sid}`, err);
+      }
     }
-  };
+
+    await dispatch(getAllSenatorData());
+    await dispatch(getAllSenators());
+
+    showSnackbar(
+      `Bulk select applied for ${successCount}/${ids.length} senators.`,
+      "success"
+    );
+  } catch (err) {
+    console.error("❌ Bulk apply failed", err);
+    showSnackbar("Bulk apply failed.", "error");
+  } finally {
+    setFetching(false);
+  }
+};
+
+// const handleBulkApply = async ({ ids = [], payload }) => {
+//   if (!ids.length || !payload) return;
+
+//   if (userRole !== "admin") {
+//     showSnackbar("Bulk edit is for admins only", "error");
+//     return;
+//   }
+
+//   const { category, itemId, score } = payload;
+//   if (!category || !itemId || !score) {
+//     showSnackbar("Invalid bulk payload", "error");
+//     return;
+//   }
+
+//   setFetching(true);
+
+//   let successCount = 0;
+//   let errorCount = 0;
+//   const errorReasons = new Set();
+
+//   try {
+//     for (const sid of ids) {
+//       try {
+//         const termRecords = await dispatch(
+//           getSenatorDataBySenatorId(sid)
+//         ).unwrap();
+
+//         if (!Array.isArray(termRecords) || termRecords.length === 0) {
+//           throw new Error("No senator data found");
+//         }
+
+//         let foundExisting = false;
+
+//         // 🔁 PASS 1 → UPDATE if already exists anywhere
+//         for (const term of termRecords) {
+//           if (category === "vote") {
+//             const match = term.votesScore?.find(
+//               (v) =>
+//                 (v.voteId?._id || v.voteId)?.toString() ===
+//                 itemId.toString()
+//             );
+
+//             if (match) {
+//               foundExisting = true;
+
+//               if (match.score !== score) {
+//                 const updatedVotes = term.votesScore.map((v) =>
+//                   (v.voteId?._id || v.voteId)?.toString() ===
+//                   itemId.toString()
+//                     ? { ...v, score }
+//                     : v
+//                 );
+
+//                 await dispatch(
+//                   updateSenatorData({
+//                     id: term._id,
+//                     data: {
+//                       ...term,
+//                       votesScore: updatedVotes.map((v) => ({
+//                         voteId: v.voteId?._id || v.voteId,
+//                         score: v.score,
+//                       })),
+//                     },
+//                   })
+//                 ).unwrap();
+//               }
+//               break;
+//             }
+//           }
+
+//           if (category === "activity") {
+//             const match = term.activitiesScore?.find(
+//               (a) =>
+//                 (a.activityId?._id || a.activityId)?.toString() ===
+//                 itemId.toString()
+//             );
+
+//             if (match) {
+//               foundExisting = true;
+
+//               if (match.score !== score) {
+//                 const updatedActs = term.activitiesScore.map((a) =>
+//                   (a.activityId?._id || a.activityId)?.toString() ===
+//                   itemId.toString()
+//                     ? { ...a, score }
+//                     : a
+//                 );
+
+//                 await dispatch(
+//                   updateSenatorData({
+//                     id: term._id,
+//                     data: {
+//                       ...term,
+//                       activitiesScore: updatedActs.map((a) => ({
+//                         activityId: a.activityId?._id || a.activityId,
+//                         score: a.score,
+//                       })),
+//                     },
+//                   })
+//                 ).unwrap();
+//               }
+//               break;
+//             }
+//           }
+//         }
+
+//         // ➕ PASS 2 → INSERT if NOT found anywhere
+//         if (!foundExisting) {
+//           // priority:
+//           // 1️⃣ currentTerm
+//           // 2️⃣ latest term
+//           // 3️⃣ senator doc WITHOUT termId
+//           const targetTerm =
+//             termRecords.find((t) => t.currentTerm) ||
+//             termRecords.find((t) => t.termId) ||
+//             termRecords[0];
+
+//           if (!targetTerm) {
+//             throw new Error("Term is required");
+//           }
+
+//           if (category === "vote") {
+//             const votes = [...(targetTerm.votesScore || [])];
+//             votes.push({ voteId: itemId, score });
+
+//             await dispatch(
+//               updateSenatorData({
+//                 id: targetTerm._id,
+//                 data: {
+//                   ...targetTerm,
+//                   votesScore: votes.map((v) => ({
+//                     voteId: v.voteId?._id || v.voteId,
+//                     score: v.score,
+//                   })),
+//                 },
+//               })
+//             ).unwrap();
+//           }
+
+//           if (category === "activity") {
+//             const acts = [...(targetTerm.activitiesScore || [])];
+//             acts.push({ activityId: itemId, score });
+
+//             await dispatch(
+//               updateSenatorData({
+//                 id: targetTerm._id,
+//                 data: {
+//                   ...targetTerm,
+//                   activitiesScore: acts.map((a) => ({
+//                     activityId: a.activityId?._id || a.activityId,
+//                     score: a.score,
+//                   })),
+//                 },
+//               })
+//             ).unwrap();
+//           }
+//         }
+
+//         successCount++;
+//       } catch (err) {
+//         errorCount++;
+
+//         const actualError =
+//           err?.response?.data?.message ||
+//           err?.message ||
+//           "Unknown error";
+
+//         errorReasons.add(actualError);
+
+//         console.error(`❌ Senator ${sid} failed`, actualError);
+//       }
+//     }
+
+//     await dispatch(getAllSenatorData());
+//     await dispatch(getAllSenators());
+
+//     const errorText =
+//       errorReasons.size > 0
+//         ? `${[...errorReasons].join(", ")}`
+//         : "";
+
+//     // ✅ FINAL SNACKBAR LOGIC (FIXED)
+//     if (successCount === 0) {
+//       showSnackbar(
+//         `Bulk edit failed for all ${ids.length} senators. ${errorText}`,
+//         "error"
+//       );
+//     } else if (successCount === ids.length) {
+//       showSnackbar(
+//         `Bulk edit applied successfully for all ${successCount} senators.`,
+//         "success"
+//       );
+//     } else {
+//       showSnackbar(
+//         `Bulk edit applied for ${successCount}/${ids.length} senators. ${errorText}`,
+//         "warning"
+//       );
+//     }
+//   } catch (err) {
+//     console.error("❌ Bulk apply crashed", err);
+//     showSnackbar("Bulk apply failed unexpectedly.", "error");
+//   } finally {
+//     setFetching(false);
+//   }
+// };
+// const handleBulkApply = async ({ ids = [], payload }) => {
+//   if (!ids.length || !payload) return;
+
+//   if (userRole !== "admin") {
+//     showSnackbar("Bulk edit is for admins only", "error");
+//     return;
+//   }
+
+//   const { category, itemId, score, voteDate } = payload;
+//   if (!category || !itemId || !score) {
+//     showSnackbar("Invalid bulk payload", "error");
+//     return;
+//   }
+
+//   setFetching(true);
+//   let successCount = 0;
+
+//   try {
+//     // Fetch term ranges once for all senators
+//     const allTermsData = await dispatch(getAllTerms()).unwrap();
+//     console.log("✅ All terms data:", allTermsData);
+    
+//     const termRangesMap = {};
+//     allTermsData.forEach(term => {
+//       termRangesMap[term._id] = {
+//         startDate: term.startDate,
+//         endDate: term.endDate,
+//         termId: term._id,
+//         name: term.name || term.title || `Term ${term._id}`
+//       };
+//     });
+
+//     console.log("✅ Term ranges map:", termRangesMap);
+
+//     for (const sid of ids) {
+//       try {
+//         console.log(`\n🔍 Processing senator ${sid}`);
+//         const termRecords = await dispatch(
+//           getSenatorDataBySenatorId(sid)
+//         ).unwrap();
+
+//         if (!Array.isArray(termRecords) || termRecords.length === 0) {
+//           console.log(`⚠️ No term records found for senator ${sid}`);
+//           continue;
+//         }
+
+//         console.log(`📊 Found ${termRecords.length} term records for senator ${sid}:`, 
+//           termRecords.map(tr => ({
+//             termId: tr.termId,
+//             currentTerm: tr.currentTerm,
+//             termRange: termRangesMap[tr.termId]
+//           }))
+//         );
+
+//         let foundExisting = false;
+//         let targetTerm = null;
+
+//         // 1️⃣ FIRST PASS → check if vote/activity exists anywhere
+//         for (const term of termRecords) {
+//           if (category === "vote") {
+//             // Check votesScore
+//             const voteMatch = term.votesScore?.find(
+//               (v) =>
+//                 (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
+//             );
+
+//             if (voteMatch) {
+//               foundExisting = true;
+//               console.log(`✅ Found existing vote in votesScore for term ${term.termId}`);
+//               if (voteMatch.score !== score) {
+//                 const updatedVotes = term.votesScore.map((v) =>
+//                   (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
+//                     ? { ...v, score }
+//                     : v
+//                 );
+
+//                 await dispatch(
+//                   updateSenatorData({
+//                     id: term._id,
+//                     data: {
+//                       ...term,
+//                       votesScore: updatedVotes.map((v) => ({
+//                         voteId: v.voteId?._id || v.voteId,
+//                         score: v.score,
+//                       })),
+//                     },
+//                   })
+//                 ).unwrap();
+//               }
+//               break;
+//             }
+
+//             // Check pastVotesScore
+//             const pastVoteMatch = term.pastVotesScore?.find(
+//               (v) =>
+//                 (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
+//             );
+
+//             if (pastVoteMatch) {
+//               foundExisting = true;
+//               console.log(`✅ Found existing vote in pastVotesScore for term ${term.termId}`);
+//               if (pastVoteMatch.score !== score) {
+//                 const updatedPastVotes = term.pastVotesScore.map((v) =>
+//                   (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
+//                     ? { ...v, score }
+//                     : v
+//                 );
+
+//                 await dispatch(
+//                   updateSenatorData({
+//                     id: term._id,
+//                     data: {
+//                       ...term,
+//                       pastVotesScore: updatedPastVotes.map((v) => ({
+//                         voteId: v.voteId?._id || v.voteId,
+//                         score: v.score,
+//                       })),
+//                     },
+//                   })
+//                 ).unwrap();
+//               }
+//               break;
+//             }
+//           }
+
+//           if (category === "activity") {
+//             const match = term.activitiesScore?.find(
+//               (a) =>
+//                 (a.activityId?._id || a.activityId)?.toString() ===
+//                 itemId.toString()
+//             );
+
+//             if (match) {
+//               foundExisting = true;
+//               console.log(`✅ Found existing activity for term ${term.termId}`);
+//               if (match.score !== score) {
+//                 const updatedActs = term.activitiesScore.map((a) =>
+//                   (a.activityId?._id || a.activityId)?.toString() ===
+//                   itemId.toString()
+//                     ? { ...a, score }
+//                     : a
+//                 );
+
+//                 await dispatch(
+//                   updateSenatorData({
+//                     id: term._id,
+//                     data: {
+//                       ...term,
+//                       activitiesScore: updatedActs.map((a) => ({
+//                         activityId: a.activityId?._id || a.activityId,
+//                         score: a.score,
+//                       })),
+//                     },
+//                   })
+//                 ).unwrap();
+//               }
+//               break;
+//             }
+//           }
+//         }
+
+//         // 2️⃣ SECOND PASS → insert only if NOT found
+//         if (!foundExisting) {
+//           console.log(`🆕 No existing ${category} found, will insert new entry`);
+          
+//           // Find the correct term based on voteDate and term ranges
+//           if (voteDate) {
+//             const voteDateTime = new Date(voteDate);
+//             console.log(`📅 Vote date: ${voteDate} (parsed: ${voteDateTime})`);
+            
+//             // Find term where voteDate falls within term range
+//             let matchingTerm = null;
+            
+//             for (const term of termRecords) {
+//               const termRange = termRangesMap[term.termId];
+//               console.log(`🔍 Checking term ${term.termId}:`, termRange);
+              
+//               if (termRange && termRange.startDate && termRange.endDate) {
+//                 const termStart = new Date(termRange.startDate);
+//                 const termEnd = new Date(termRange.endDate);
+                
+//                 console.log(`   Term range: ${termStart} to ${termEnd}`);
+//                 console.log(`   Vote date: ${voteDateTime}`);
+//                 console.log(`   Is within range? ${voteDateTime >= termStart && voteDateTime <= termEnd}`);
+                
+//                 // Check if voteDate is within this term's range
+//                 if (voteDateTime >= termStart && voteDateTime <= termEnd) {
+//                   matchingTerm = term;
+//                   console.log(`✅ Found matching term: ${term.termId}`);
+//                   break;
+//                 }
+//               } else {
+//                 console.log(`❌ No term range data for term ${term.termId}`);
+//               }
+//             }
+            
+//             // If no term matches the date, fallback logic
+//             if (!matchingTerm) {
+//               console.log(`🤔 No term found matching vote date, using fallback logic`);
+              
+//               // Create array of terms with dates for sorting
+//               const termsWithDates = termRecords
+//                 .map(term => {
+//                   const range = termRangesMap[term.termId];
+//                   return {
+//                     term,
+//                     startDate: range?.startDate ? new Date(range.startDate) : null,
+//                     endDate: range?.endDate ? new Date(range.endDate) : null
+//                   };
+//                 })
+//                 .filter(t => t.startDate)
+//                 .sort((a, b) => a.startDate - b.startDate);
+              
+//               console.log(`📊 Terms with dates (sorted):`, termsWithDates.map(t => ({
+//                 termId: t.term.termId,
+//                 start: t.startDate,
+//                 end: t.endDate
+//               })));
+              
+//               if (termsWithDates.length > 0) {
+//                 const earliestTerm = termsWithDates[0];
+//                 const latestTerm = termsWithDates[termsWithDates.length - 1];
+                
+//                 console.log(`📅 Earliest term: ${earliestTerm.term.termId} (${earliestTerm.startDate})`);
+//                 console.log(`📅 Latest term: ${latestTerm.term.termId} (${latestTerm.startDate})`);
+                
+//                 if (voteDateTime < earliestTerm.startDate) {
+//                   // Vote is before earliest term
+//                   matchingTerm = earliestTerm.term;
+//                   console.log(`⬅️ Vote is before earliest term, using earliest term`);
+//                 } else if (voteDateTime > latestTerm.startDate) {
+//                   // Vote is after latest term
+//                   const currentTerm = termRecords.find(t => t.currentTerm);
+//                   matchingTerm = currentTerm || latestTerm.term;
+//                   console.log(`➡️ Vote is after latest term, using ${currentTerm ? 'current term' : 'latest term'}`);
+//                 } else {
+//                   // Vote is between terms, find closest term
+//                   console.log(`🔍 Vote is between terms, finding closest...`);
+//                   for (let i = 0; i < termsWithDates.length - 1; i++) {
+//                     const current = termsWithDates[i];
+//                     const next = termsWithDates[i + 1];
+                    
+//                     if (voteDateTime > current.startDate && voteDateTime < next.startDate) {
+//                       // Vote is between two terms, use the later term
+//                       matchingTerm = next.term;
+//                       console.log(`↔️ Vote between terms, using later term: ${next.term.termId}`);
+//                       break;
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+            
+//             targetTerm = matchingTerm || termRecords.find(t => t.currentTerm) || termRecords[0];
+//             console.log(`🎯 Selected target term: ${targetTerm.termId} (currentTerm: ${targetTerm.currentTerm})`);
+//           } else {
+//             // No voteDate provided, use original fallback
+//             targetTerm = termRecords.find(t => t.currentTerm) || termRecords[0];
+//             console.log(`📭 No vote date provided, using fallback term: ${targetTerm.termId}`);
+//           }
+
+//           // Determine if this should be a past vote or current vote
+//           const isPastVote = (category === "vote") && targetTerm && 
+//             termRangesMap[targetTerm.termId] && voteDate && 
+//             new Date(voteDate) < new Date(termRangesMap[targetTerm.termId].startDate);
+
+//           console.log(`🎯 Is past vote? ${isPastVote} (voteDate: ${voteDate}, termStart: ${targetTerm && termRangesMap[targetTerm.termId]?.startDate})`);
+
+//           if (category === "vote") {
+//             if (isPastVote) {
+//               // Add to pastVotesScore for votes before term start
+//               const pastVotes = [...(targetTerm.pastVotesScore || [])];
+//               pastVotes.push({ voteId: itemId, score });
+//               console.log(`➕ Adding to pastVotesScore for term ${targetTerm.termId}`);
+
+//               await dispatch(
+//                 updateSenatorData({
+//                   id: targetTerm._id,
+//                   data: {
+//                     ...targetTerm,
+//                     pastVotesScore: pastVotes.map((v) => ({
+//                       voteId: v.voteId?._id || v.voteId,
+//                       score: v.score,
+//                     })),
+//                   },
+//                 })
+//               ).unwrap();
+//             } else {
+//               // Add to votesScore for current term votes
+//               const votes = [...(targetTerm.votesScore || [])];
+//               votes.push({ voteId: itemId, score });
+//               console.log(`➕ Adding to votesScore for term ${targetTerm.termId}`);
+
+//               await dispatch(
+//                 updateSenatorData({
+//                   id: targetTerm._id,
+//                   data: {
+//                     ...targetTerm,
+//                     votesScore: votes.map((v) => ({
+//                       voteId: v.voteId?._id || v.voteId,
+//                       score: v.score,
+//                     })),
+//                   },
+//                 })
+//               ).unwrap();
+//             }
+//           }
+
+//           if (category === "activity") {
+//             const acts = [...(targetTerm.activitiesScore || [])];
+//             acts.push({ activityId: itemId, score });
+//             console.log(`➕ Adding to activitiesScore for term ${targetTerm.termId}`);
+
+//             await dispatch(
+//               updateSenatorData({
+//                 id: targetTerm._id,
+//                 data: {
+//                   ...targetTerm,
+//                   activitiesScore: acts.map((a) => ({
+//                     activityId: a.activityId?._id || a.activityId,
+//                     score: a.score,
+//                   })),
+//                 },
+//               })
+//             ).unwrap();
+//           }
+//         }
+
+//         successCount++;
+//         console.log(`✅ Successfully processed senator ${sid}`);
+//       } catch (err) {
+//         console.error(`❌ Error updating senator ${sid}`, err);
+//       }
+//     }
+
+//     await dispatch(getAllSenatorData());
+//     await dispatch(getAllSenators());
+
+//     showSnackbar(
+//       `Bulk select applied for ${successCount}/${ids.length} senators.`,
+//       "success"
+//     );
+//   } catch (err) {
+//     console.error("❌ Bulk apply failed", err);
+//     showSnackbar("Bulk apply failed.", "error");
+//   } finally {
+//     setFetching(false);
+//   }
+// };
+
 
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -1168,7 +2081,7 @@ export default function Senator(props) {
                   : snackbarMessage
                       ?.toLowerCase()
                       .includes("senators fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk edit applied")
+                    snackbarMessage?.toLowerCase().includes("bulk select applied")
                   ? "#daf4f0 !important"
                   : undefined,
 
@@ -1182,7 +2095,7 @@ export default function Senator(props) {
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk edit applied")
+                        .includes("bulk select applied")
                     ? "#099885 !important"
                     : undefined,
               },
@@ -1197,7 +2110,12 @@ export default function Senator(props) {
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk edit applied")
+                        .includes("bulk select applied") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk") && snackbarMessage
+                        ?.toLowerCase()
+                        .includes("applied successfully")
                     ? "#099885 !important"
                     : undefined,
               },
