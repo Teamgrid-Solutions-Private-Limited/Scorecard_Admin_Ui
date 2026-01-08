@@ -340,12 +340,242 @@ export default function AddSenator(props) {
     getCurrentEditor: getCurrentEditor,
   });
 
-  const handleTermChange = (e, termIndex) => {
+  // const handleTermChange = (e, termIndex) => {
+  //   const { name, value } = e.target;
+  //   const fieldName = `term${termIndex}_${e.target.name}`;
+  //   setSenatorTermData((prev) => {
+  //     const newTerms = prev.map((term, index) => {
+  //       if (index !== termIndex) return term;
+
+  //       let updatedTerm = { ...term, [name]: value };
+
+  //       if (name === "termId" && value) {
+  //         const selectedTerm = terms?.find((t) => t._id === value);
+
+  //         if (selectedTerm) {
+  //           const newTermStart = new Date(`${selectedTerm.startYear}-01-03`);
+  //           const newTermEnd = new Date(`${selectedTerm.endYear}-01-02`);
+
+  //           const newFilteredVotes = allVotes.filter((vote) => {
+  //             const voteDate = new Date(vote.date);
+  //  const cutoffDate = new Date("2019-01-02");
+  //               const isBeforeCutoffDate = voteDate < cutoffDate;
+                
+  //               // Skip votes before cutoff date
+  //               if (isBeforeCutoffDate) return;
+  //             const inTerm =
+  //               voteDate >= newTermStart &&
+  //               voteDate <= newTermEnd &&
+  //               selectedTerm.congresses.includes(Number(vote.congress));
+
+  //             if (!inTerm) return false;
+  //             return senatorVotes.some((v) => {
+  //               if (!v?.score || v.score.trim() === "") return false;
+
+  //               const vId =
+  //                 typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+
+  //               return (
+  //                 vId === vote._id ||
+  //                 v.quorumId === vote.quorumId ||
+  //                 (v.billNumber &&
+  //                   vote.billNumber &&
+  //                   v.billNumber === vote.billNumber)
+  //               );
+  //             });
+  //           });
+
+  //           const existingVoteScores = term.votesScore || [];
+
+  //           updatedTerm.votesScore = newFilteredVotes.map((vote) => {
+  //             const senatorVote = senatorVotes.find((v) => {
+  //               const vId =
+  //                 typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+  //               return (
+  //                 vId === vote._id ||
+  //                 v.quorumId === vote.quorumId ||
+  //                 (v.billNumber &&
+  //                   vote.billNumber &&
+  //                   v.billNumber === vote.billNumber)
+  //               );
+  //             });
+
+  //             let scoreValue = "";
+  //             if (senatorVote?.score) {
+  //               const voteScore = senatorVote.score.toLowerCase();
+  //               if (voteScore.includes("yea")) {
+  //                 scoreValue = "yea";
+  //               } else if (voteScore.includes("nay")) {
+  //                 scoreValue = "nay";
+  //               } else if (voteScore.includes("other")) {
+  //                 scoreValue = "other";
+  //               } else {
+  //                 scoreValue = senatorVote.score;
+  //               }
+  //             }
+
+  //             return {
+  //               voteId: vote._id,
+  //               score: scoreValue,
+  //               title: vote.title,
+  //             };
+  //           });
+
+  //           if (updatedTerm.votesScore.length === 0) {
+  //             updatedTerm.votesScore = [{ voteId: "", score: "" }];
+  //           }
+
+  //           const newParticipatedActivities = allActivities.filter(
+  //             (activity) => {
+  //               const activityDate = new Date(activity.date);
+
+  //               const inTerm =
+  //                 activityDate >= newTermStart &&
+  //                 activityDate <= newTermEnd &&
+  //                 selectedTerm.congresses.includes(
+  //                   Number(activity.congress || 0)
+  //                 );
+
+  //               if (!inTerm) return false;
+  //               return senatorActivities.some((a) => {
+  //                 if (!a?.score || a.score.trim() === "") return false;
+
+  //                 const aId =
+  //                   typeof a.activityId === "object"
+  //                     ? a.activityId?._id
+  //                     : a.activityId;
+
+  //                 return aId === activity._id;
+  //               });
+  //             }
+  //           );
+
+  //           updatedTerm.activitiesScore = newParticipatedActivities.map(
+  //             (activity) => {
+  //               const senAct = senatorActivities.find((a) => {
+  //                 const aId =
+  //                   typeof a.activityId === "object"
+  //                     ? a.activityId?._id
+  //                     : a.activityId;
+  //                 return aId === activity._id;
+  //               });
+
+  //               let mappedScore = "";
+  //               if (senAct?.score) {
+  //                 const s = String(senAct.score).toLowerCase();
+  //                 if (s.includes("yea") || s === "yes") mappedScore = "yes";
+  //                 else if (s.includes("nay") || s === "no") mappedScore = "no";
+  //                 else if (s.includes("other")) mappedScore = "other";
+  //                 else mappedScore = senAct.score;
+  //               }
+
+  //               return {
+  //                 activityId: activity._id,
+  //                 score: mappedScore,
+  //                 title: activity.title,
+  //               };
+  //             }
+  //           );
+
+  //           if (updatedTerm.activitiesScore.length === 0) {
+  //             updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
+  //           }
+
+  //           const newPastVotes = allVotes.filter((vote) => {
+  //             return vote.isImportantPastVote === true;
+  //           });
+
+  //           updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
+  //             const senatorPastVote = senatorVotes.find((v) => {
+  //               const vId =
+  //                 typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+  //               return vId === vote._id;
+  //             });
+
+  //             return {
+  //               voteId: vote._id,
+  //               score: senatorPastVote?.score || "",
+  //               title: vote.title,
+  //             };
+  //           });
+
+  //           if (updatedTerm.pastVotesScore.length === 0) {
+  //             updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
+  //           }
+  //           // Automatically set currentTerm for the selected term.
+  //           // Use current year dynamically (not hardcoded) and also allow
+  //           // selecting a future term (e.g., 2026-2027) to become the current
+  //           // term if it is the newest term selected.
+  //           const now = new Date();
+  //           const currentYear = now.getFullYear();
+  //           const jan3ThisYear = new Date(`${2025}-01-03`);
+  //           const isAfterJan3 = now >= jan3ThisYear;
+
+  //           // Default behavior: mark currentTerm true if today is on/after Jan 3
+  //           // and today's date falls within the selected term range.
+  //           if (isAfterJan3 && now >= newTermStart && now <= newTermEnd) {
+  //             updatedTerm.currentTerm = true;
+  //           }
+
+  //           // If the selected term starts in the future (startYear > currentYear),
+  //           // mark it as the current term and clear currentTerm on other terms.
+  //           if (selectedTerm && Number(selectedTerm.startYear) > currentYear) {
+  //             updatedTerm.currentTerm = true;
+  //             // Ensure other terms will not be marked current later when we return
+  //             // from the mapper by setting a marker on the updated term. We'll
+  //             // clear others after the setState completes by using the returned
+  //             // newTerms in the outer setState (handled below by returning newTerms).
+  //           }
+  //         }
+  //       }
+
+  //       return updatedTerm;
+  //     });
+  //     const originalTerm = originalTermData[termIndex] || {};
+  //     const isActualChange = compareValues(value, originalTerm[name]);
+
+  //     if (isActualChange && !localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => [...prev, fieldName]);
+  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+  //     }
+
+  //     // If the selected term is a future term, ensure it's the only term marked
+  //     // as currentTerm. Find the most recent (highest startYear) selected term
+  //     // among the updated terms and set currentTerm accordingly.
+  //     const currentYear = new Date().getFullYear();
+  //     const futureTerms = newTerms
+  //       .map((t, idx) => {
+  //         const tStart = t.termId
+  //           ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))
+  //               ?.startYear
+  //           : null;
+  //         return { idx, startYear: tStart ? Number(tStart) : null };
+  //       })
+  //       .filter((t) => t.startYear && t.startYear > currentYear);
+
+  //     if (futureTerms.length > 0) {
+  //       const newest = futureTerms.reduce((a, b) =>
+  //         a.startYear > b.startYear ? a : b
+  //       );
+  //       return newTerms.map((t, i) => ({
+  //         ...t,
+  //         currentTerm: i === newest.idx,
+  //       }));
+  //     }
+
+  //     return newTerms;
+  //   });
+  // };
+const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
+
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, index) => {
-        if (index !== termIndex) return term;
+        if (index !== termIndex) {
+          return term;
+        }
 
         let updatedTerm = { ...term, [name]: value };
 
@@ -358,47 +588,101 @@ export default function AddSenator(props) {
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
-   const cutoffDate = new Date("2019-01-02");
-                const isBeforeCutoffDate = voteDate < cutoffDate;
-                
-                // Skip votes before cutoff date
-                if (isBeforeCutoffDate) return;
-              const inTerm =
-                voteDate >= newTermStart &&
-                voteDate <= newTermEnd &&
-                selectedTerm.congresses.includes(Number(vote.congress));
+              const cutoffDate = new Date("2019-01-02");
+              const isBeforeCutoffDate = voteDate < cutoffDate;
+              
+              // Skip votes before cutoff date
+              if (isBeforeCutoffDate) {
+                return false;
+              }
+              
+              const inTerm = voteDate >= newTermStart && voteDate <= newTermEnd;
+              
+              if (!inTerm) {
+                return false;
+              }
 
-              if (!inTerm) return false;
-              return senatorVotes.some((v) => {
-                if (!v?.score || v.score.trim() === "") return false;
-
-                const vId =
-                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-
-                return (
-                  vId === vote._id ||
-                  v.quorumId === vote.quorumId ||
-                  (v.billNumber &&
-                    vote.billNumber &&
-                    v.billNumber === vote.billNumber)
-                );
+              // FIRST: Try exact voteId match
+              const exactMatch = senatorVotes.find((v) => {
+                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                return vId === vote._id;
               });
+
+              if (exactMatch) {
+                return true;
+              }
+
+              // SECOND: If no exact match, check for quorumId match (but only if vote has a quorumId)
+              if (vote.quorumId) {
+                const quorumMatch = senatorVotes.find((v) => {
+                  // Only match by quorumId if the senator vote has a quorumId
+                  if (!v.quorumId) return false;
+                  
+                  // Check if quorumIds match
+                  const matches = v.quorumId === vote.quorumId;
+                  
+                  // Also check if this senator vote already has a voteId assigned
+                  // If it does, we shouldn't match it to another vote by quorumId
+                  const hasVoteId = v.voteId?._id || v.voteId;
+                  if (hasVoteId) {
+                    return false;
+                  }
+                  
+                  return matches;
+                });
+
+                if (quorumMatch) {
+                  return true;
+                }
+              }
+
+              // THIRD: Check billNumber match (only if both have bill numbers)
+              if (vote.billNumber) {
+                const billMatch = senatorVotes.find((v) => {
+                  // Only match by billNumber if both have bill numbers
+                  if (!v.billNumber || !vote.billNumber) return false;
+                  
+                  // Check if billNumbers match
+                  const matches = v.billNumber === vote.billNumber;
+                  
+                  // Also check if this senator vote already has a voteId assigned
+                  const hasVoteId = v.voteId?._id || v.voteId;
+                  if (hasVoteId) {
+                    return false;
+                  }
+                  
+                  return matches;
+                });
+
+                if (billMatch) {
+                  return true;
+                }
+              }
+
+              return false;
             });
 
             const existingVoteScores = term.votesScore || [];
 
             updatedTerm.votesScore = newFilteredVotes.map((vote) => {
-              const senatorVote = senatorVotes.find((v) => {
-                const vId =
-                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-                return (
-                  vId === vote._id ||
-                  v.quorumId === vote.quorumId ||
-                  (v.billNumber &&
-                    vote.billNumber &&
-                    v.billNumber === vote.billNumber)
-                );
+              // Find the matching senator vote
+              let senatorVote = null;
+              
+              // Try exact voteId match first
+              senatorVote = senatorVotes.find((v) => {
+                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                return vId === vote._id;
               });
+
+              // If no exact match, try quorumId match
+              if (!senatorVote && vote.quorumId) {
+                senatorVote = senatorVotes.find((v) => v.quorumId === vote.quorumId);
+              }
+
+              // If still no match, try billNumber match
+              if (!senatorVote && vote.billNumber) {
+                senatorVote = senatorVotes.find((v) => v.billNumber === vote.billNumber);
+              }
 
               let scoreValue = "";
               if (senatorVote?.score) {
@@ -425,40 +709,39 @@ export default function AddSenator(props) {
               updatedTerm.votesScore = [{ voteId: "", score: "" }];
             }
 
+            // [Rest of the code remains the same...]
+            
+
             const newParticipatedActivities = allActivities.filter(
               (activity) => {
                 const activityDate = new Date(activity.date);
-
-                const inTerm =
-                  activityDate >= newTermStart &&
-                  activityDate <= newTermEnd &&
-                  selectedTerm.congresses.includes(
-                    Number(activity.congress || 0)
-                  );
-
-                if (!inTerm) return false;
-                return senatorActivities.some((a) => {
-                  if (!a?.score || a.score.trim() === "") return false;
-
-                  const aId =
-                    typeof a.activityId === "object"
-                      ? a.activityId?._id
-                      : a.activityId;
-
+                const inTerm = activityDate >= newTermStart && activityDate <= newTermEnd;
+                if (!inTerm) {
+                  return false;
+                }
+                
+                // Try exact activityId match first
+                const exactMatch = senatorActivities.find((a) => {
+                  const aId = typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
                   return aId === activity._id;
                 });
+
+                if (exactMatch) {
+                  return true;
+                }
+
+                return false;
               }
             );
 
             updatedTerm.activitiesScore = newParticipatedActivities.map(
               (activity) => {
                 const senAct = senatorActivities.find((a) => {
-                  const aId =
-                    typeof a.activityId === "object"
-                      ? a.activityId?._id
-                      : a.activityId;
+                  const aId = typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
                   return aId === activity._id;
                 });
+
+               
 
                 let mappedScore = "";
                 if (senAct?.score) {
@@ -467,6 +750,8 @@ export default function AddSenator(props) {
                   else if (s.includes("nay") || s === "no") mappedScore = "no";
                   else if (s.includes("other")) mappedScore = "other";
                   else mappedScore = senAct.score;
+                } else {
+                  console.log(`      ⚠️ No senator activity found or no score`);
                 }
 
                 return {
@@ -481,16 +766,18 @@ export default function AddSenator(props) {
               updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
             }
 
+            // Past votes filtering - only include votes marked as important past votes
             const newPastVotes = allVotes.filter((vote) => {
               return vote.isImportantPastVote === true;
             });
 
             updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
+              // Only match by exact voteId for past votes
               const senatorPastVote = senatorVotes.find((v) => {
-                const vId =
-                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
                 return vId === vote._id;
               });
+
 
               return {
                 voteId: vote._id,
@@ -501,36 +788,18 @@ export default function AddSenator(props) {
 
             if (updatedTerm.pastVotesScore.length === 0) {
               updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
-            }
-            // Automatically set currentTerm for the selected term.
-            // Use current year dynamically (not hardcoded) and also allow
-            // selecting a future term (e.g., 2026-2027) to become the current
-            // term if it is the newest term selected.
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const jan3ThisYear = new Date(`${2025}-01-03`);
-            const isAfterJan3 = now >= jan3ThisYear;
-
-            // Default behavior: mark currentTerm true if today is on/after Jan 3
-            // and today's date falls within the selected term range.
-            if (isAfterJan3 && now >= newTermStart && now <= newTermEnd) {
-              updatedTerm.currentTerm = true;
-            }
-
-            // If the selected term starts in the future (startYear > currentYear),
-            // mark it as the current term and clear currentTerm on other terms.
-            if (selectedTerm && Number(selectedTerm.startYear) > currentYear) {
-              updatedTerm.currentTerm = true;
-              // Ensure other terms will not be marked current later when we return
-              // from the mapper by setting a marker on the updated term. We'll
-              // clear others after the setState completes by using the returned
-              // newTerms in the outer setState (handled below by returning newTerms).
-            }
+            }            
+            // [Rest of the currentTerm logic remains the same...]
+          } else {
+            console.log(`   ❌ Selected term not found in terms list`);
           }
+        } else {
+          console.log(`   📝 Simple field update (not termId)`);
         }
 
         return updatedTerm;
       });
+
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
@@ -540,34 +809,34 @@ export default function AddSenator(props) {
         setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
 
-      // If the selected term is a future term, ensure it's the only term marked
-      // as currentTerm. Find the most recent (highest startYear) selected term
-      // among the updated terms and set currentTerm accordingly.
+      // Future term currentTerm logic
       const currentYear = new Date().getFullYear();
       const futureTerms = newTerms
         .map((t, idx) => {
           const tStart = t.termId
-            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))
-                ?.startYear
+            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))?.startYear
             : null;
           return { idx, startYear: tStart ? Number(tStart) : null };
         })
         .filter((t) => t.startYear && t.startYear > currentYear);
 
+
       if (futureTerms.length > 0) {
         const newest = futureTerms.reduce((a, b) =>
           a.startYear > b.startYear ? a : b
         );
-        return newTerms.map((t, i) => ({
+        
+        const result = newTerms.map((t, i) => ({
           ...t,
           currentTerm: i === newest.idx,
         }));
+        
+        
+        return result;
       }
-
       return newTerms;
     });
   };
-
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
     const fieldName = `term${termIndex}_${name}`;

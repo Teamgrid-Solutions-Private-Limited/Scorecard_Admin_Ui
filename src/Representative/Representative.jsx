@@ -434,12 +434,12 @@ export default function Representative(props) {
       return;
     }
 
-    const { category, itemId, score } = payload;
-
-    if (!category || !itemId || !score) {
-      showSnackbar("Invalid bulk payload", "error");
-      return;
-    }
+  const { category, itemId, score } = payload;
+  
+  if (!category || !itemId || !score) {
+    showSnackbar("Invalid bulk payload", "error");
+    return;
+  }
 
     setFetching(true);
     try {
@@ -490,21 +490,28 @@ export default function Representative(props) {
       await dispatch(getAllHouseData());
       await dispatch(getAllHouses());
 
-      if (successCount > 0) {
+      // Show appropriate snackbar based on success count
+      if (successCount === ids.length) {
+        // All succeeded
         showSnackbar(
-          `Bulk edit applied for ${successCount} member${
-            successCount !== 1 ? "s" : ""
-          }.${
+          `Bulk select applied for ${successCount}/${ids.length} representative${successCount !== 1 ? "s" : ""}!`,
+          "success"
+        );
+      } else if (successCount === 0) {
+        // All failed
+        showSnackbar(
+          `Bulk select failed for all ${ids.length} representatives.`,
+          "error"
+        );
+      } else {
+        // Partial success
+        showSnackbar(
+          `Bulk select applied for ${successCount} of ${ids.length} representatives.${
             failedCount > 0
               ? ` ${failedCount} failed (item not found for those representatives).`
               : ""
           }`,
-          successCount === ids.length ? "success" : "warning"
-        );
-      } else {
-        showSnackbar(
-          "Bulk edit failed for all members. See console for details.",
-          "error"
+          "warning"
         );
       }
     } catch (err) {
@@ -1192,7 +1199,7 @@ export default function Representative(props) {
                   : snackbarMessage
                       ?.toLowerCase()
                       .includes("representatives fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk edit applied")
+                    snackbarMessage?.toLowerCase().includes("bulk select applied")
                   ? "#daf4f0 !important"
                   : undefined,
 
@@ -1201,12 +1208,12 @@ export default function Representative(props) {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : snackbarMessage
+                    : (snackbarMessage
                         ?.toLowerCase()
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk edit applied")
+                        .includes("bulk select applied"))
                     ? "#099885 !important"
                     : undefined,
               },
@@ -1216,12 +1223,12 @@ export default function Representative(props) {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : snackbarMessage
+                    : (snackbarMessage
                         ?.toLowerCase()
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk edit applied")
+                        .includes("bulk select applied"))
                     ? "#099885 !important"
                     : undefined,
               },
