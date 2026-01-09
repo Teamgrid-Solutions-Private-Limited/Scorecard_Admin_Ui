@@ -1222,6 +1222,42 @@ const handleBulkApply = async ({ ids = [], payload }) => {
 //   }
 // };
 
+const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
+  if (!ids.length) return;
+
+  if (userRole !== "admin") {
+    showSnackbar("Bulk publish is for admins only", "error");
+    return;
+  }
+
+  setFetching(true);
+  let successCount = 0;
+
+  try {
+    for (const senatorId of ids) {
+      try {
+        await dispatch(
+          updateSenatorStatus({ id: senatorId, publishStatus })
+        ).unwrap();
+        successCount++;
+      } catch (err) {
+        console.error(`❌ Error publishing senator ${senatorId}`, err);
+      }
+    }
+
+    await dispatch(getAllSenators());
+
+    showSnackbar(
+      `Bulk publish applied for ${successCount}/${ids.length} senator${successCount !== 1 ? "s" : ""}!.`,
+      successCount === ids.length ? "success" : "warning"
+    );
+  } catch (err) {
+    console.error("❌ Bulk publish failed", err);
+    showSnackbar("Bulk publish failed.", "error");
+  } finally {
+    setFetching(false);
+  }
+};
 
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -2037,6 +2073,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
               onEdit={handleEdit}
               isSelectable={userRole === "admin"}
               onBulkApply={handleBulkApply}
+              onBulkPublish={handleBulkPublish}
               handleToggleStatusSenator={handleToggleStatusSenator}
             />
           </Stack>

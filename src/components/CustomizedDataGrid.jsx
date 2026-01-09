@@ -5,6 +5,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Avatar, Box, Button } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import BulkEditModal from "./BulkEditModal";
+import BulkPublishModal from "./BulkPublishModal";
 import { useNavigate } from "react-router-dom";
 import { GridOverlay } from "@mui/x-data-grid";
 import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
@@ -37,6 +38,7 @@ export default function CustomizedDataGrid({
   onSelectionChange,
   selectedItems = [],
   onBulkApply, // optional callback for bulk operations
+  onBulkPublish, // optional callback for bulk publish operations
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
@@ -183,6 +185,7 @@ export default function CustomizedDataGrid({
   const [selectionModel, setSelectionModel] = useState(selectedItems || []);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [showCheckboxes, setShowCheckboxes] = useState(false);
+  const [bulkPublishOpen, setBulkPublishOpen] = useState(false);
 
   // Map type to storage key constant
   const getPaginationStorageKey = (type) => {
@@ -925,30 +928,56 @@ export default function CustomizedDataGrid({
             {selectionModel.length > 0 ? "Clear selection" : "Select all"}
           </Button>
           {(((type === "senator" && userRole === "admin" && showCheckboxes) || (type === "representative" && userRole === "admin" && showCheckboxes)) || (isSelectable && type !== "senator" && type !== "representative")) && selectionModel.length > 0 && (
-            <Button 
-              variant="outlined"
-              className="bulkEditBtn"
-              onClick={() => setBulkOpen(true)}
-              sx={{
-                backgroundColor: "#173A5E !important",
-                color: "white !important",
-                fontSize: "14px",
-                fontWeight: 600,
-                textTransform: "none",
-                padding: "8px 24px",
-                border: "none !important",
-                "&:hover": {
-                  backgroundColor: "#1E4C80 !important",
-                  color: "white !important",
-                  border: "none !important",
-                },
-                "&:active": {
+            <>
+              <Button 
+                variant="outlined"
+                className="bulkEditBtn"
+                onClick={() => setBulkOpen(true)}
+                sx={{
                   backgroundColor: "#173A5E !important",
-                },
-              }}
-            >
-              Bulk Select
-            </Button>
+                  color: "white !important",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  padding: "8px 24px",
+                  border: "none !important",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                  "&:active": {
+                    backgroundColor: "#173A5E !important",
+                  },
+                }}
+              >
+                Bulk Select
+              </Button>
+              <Button 
+                variant="outlined"
+                className="bulkPublishBtn"
+                onClick={() => setBulkPublishOpen(true)}
+                sx={{
+                  backgroundColor: "#2E7D32 !important",
+                  color: "white !important",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  padding: "8px 24px",
+                  border: "none !important",
+                  "&:hover": {
+                    backgroundColor: "#388E3C !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                  "&:active": {
+                    backgroundColor: "#2E7D32 !important",
+                  },
+                }}
+              >
+                Bulk Publish
+              </Button>
+            </>
           )}
         </Box>
       )}
@@ -1065,6 +1094,18 @@ export default function CustomizedDataGrid({
             console.warn("⚠️ CustomizedDataGrid: onBulkApply not provided, but bulk edit was attempted");
           } else {
             console.error("❌ CustomizedDataGrid: Neither onBulkApply nor onEdit provided");
+          }
+        }}
+      />
+
+      <BulkPublishModal
+        open={bulkPublishOpen}
+        onClose={() => setBulkPublishOpen(false)}
+        selectedCount={selectionModel.length}
+        type={type}
+        onApply={(payload) => {
+          if (onBulkPublish) {
+            onBulkPublish({ ids: selectionModel, publishStatus: payload.publishStatus });
           }
         }}
       />

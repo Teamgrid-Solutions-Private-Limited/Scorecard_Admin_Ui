@@ -584,6 +584,43 @@ export default function Representative(props) {
     }
   };
 
+  const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
+    if (!ids.length) return;
+
+    if (userRole !== "admin") {
+      showSnackbar("Bulk publish is for admins only", "error");
+      return;
+    }
+
+    setFetching(true);
+    let successCount = 0;
+
+    try {
+      for (const houseId of ids) {
+        try {
+          await dispatch(
+            updateRepresentativeStatus({ id: houseId, publishStatus })
+          ).unwrap();
+          successCount++;
+        } catch (err) {
+          console.error(`❌ Error publishing representative ${houseId}`, err);
+        }
+      }
+
+      await dispatch(getAllHouses());
+
+      showSnackbar(
+        `Bulk publish applied for ${successCount}/${ids.length} representative${successCount !== 1 ? "s" : ""}!.`,
+        successCount === ids.length ? "success" : "warning"
+      );
+    } catch (err) {
+      console.error("❌ Bulk publish failed", err);
+      showSnackbar("Bulk publish failed.", "error");
+    } finally {
+      setFetching(false);
+    }
+  };
+
   const activeFilterCount =
     partyFilter.length +
     districtFilter.length +
@@ -1175,6 +1212,7 @@ export default function Representative(props) {
               handleToggleStatusHouse={handleToggleStatusHouse}
               isSelectable={userRole === "admin"}
               onBulkApply={handleBulkApply}
+              onBulkPublish={handleBulkPublish}
             />
           </Stack>
         </Box>
