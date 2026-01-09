@@ -1570,14 +1570,14 @@ const filteredSenators = mergedSenators.filter((senator) => {
                       height: "100%",
                       backgroundColor:
                         currentOrFormerFilter === "current"
-                          ? "#173a5e "
+                          ? "#497bb2;"
                           : "#fff",
                       color:
                         currentOrFormerFilter === "current" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "current"
-                            ? "#173a5e "
+                            ? "#497bb2 ; "
                             : "#f5f5f5",
                       },
                     }}
@@ -1601,13 +1601,15 @@ const filteredSenators = mergedSenators.filter((senator) => {
                       // border: "none",
                       height: "100%",
                       backgroundColor:
-                        currentOrFormerFilter === "former" ? "#173a5e" : "#fff",
+                        currentOrFormerFilter === "former"
+                          ? "#497bb2 !important;"
+                          : "#fff",
                       color:
                         currentOrFormerFilter === "former" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "former"
-                            ? "#173a5e"
+                            ? "#497bb2 !important;"
                             : "#f5f5f5",
                       },
                     }}

@@ -790,14 +790,14 @@ export default function Representative(props) {
                       height: "100%",
                       backgroundColor:
                         currentOrFormerFilter === "current"
-                          ? "#173a5e "
+                          ? "#497bb2 !important; "
                           : "#fff",
                       color:
                         currentOrFormerFilter === "current" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "current"
-                            ? "#173a5e "
+                            ? "#497bb2 !important; "
                             : "#f5f5f5",
                       },
                     }}
@@ -816,14 +816,14 @@ export default function Representative(props) {
                       height: "100%",
                       backgroundColor:
                         currentOrFormerFilter === "former"
-                          ? "#173a5e "
+                          ? "#497bb2 !important; "
                           : "#fff",
                       color:
                         currentOrFormerFilter === "former" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "former"
-                            ? "#173a5e "
+                            ? "#497bb2 !important; "
                             : "#f5f5f5",
                       },
                     }}
