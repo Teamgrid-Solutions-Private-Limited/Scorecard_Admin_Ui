@@ -11,7 +11,7 @@ import {
   getSenatorDataBySenatorId,
   updateSenatorData,
 } from "../redux/reducer/senatorTermSlice";
-
+ 
 import { getErrorMessage } from "../utils/errorHandler";
 import {
   Box,
@@ -77,6 +77,9 @@ export default function Senator(props) {
     loading,
     error,
   } = useSelector((state) => state.senator || {});
+
+   const [currentOrFormerFilter, setCurrentOrFormerFilter] =
+     useState("current");
 
   const [progress, setProgress] = useState(0);
   const [fetching, setFetching] = useState(false);
@@ -1397,67 +1400,74 @@ const handleBulkApply = async ({ ids = [], payload }) => {
     setSearchQuery("");
   };
 
-  const filteredSenators = mergedSenators.filter((senator) => {
-    // Term filter logic - check all terms
-    if (termFilter === "current") {
-      if (!senator.hasCurrentTerm) return false;
-    } else if (termFilter === "past") {
-      if (senator.hasCurrentTerm) return false;
-    }
+const filteredSenators = mergedSenators.filter((senator) => {
+  // Current/Former toggle filter - based on status field
+  if (currentOrFormerFilter === "current") {
+    if (senator.status !== "active") return false;
+  } else if (currentOrFormerFilter === "former") {
+    if (senator.status !== "former") return false;
+  }
 
-    if (selectedYears.length > 0) {
-      const hasMatchingYear = senator.allTerms.some((term) => {
-        if (term.termName && term.termName.includes("-")) {
-          const [start, end] = term.termName.split("-").map(Number);
-          return selectedYears.some((year) => {
-            const yearNum = Number(year);
-            return yearNum >= start && yearNum <= end;
-          });
-        }
-        return false;
-      });
-      if (!hasMatchingYear) return false;
-    }
+  // Term filter logic - check all terms
+  if (termFilter === "current") {
+    if (!senator.hasCurrentTerm) return false;
+  } else if (termFilter === "past") {
+    if (senator.hasCurrentTerm) return false;
+  }
 
-    const nameMatch = searchQuery
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean)
-      .every((word) => senator.name.toLowerCase().includes(word));
+  if (selectedYears.length > 0) {
+    const hasMatchingYear = senator.allTerms.some((term) => {
+      if (term.termName && term.termName.includes("-")) {
+        const [start, end] = term.termName.split("-").map(Number);
+        return selectedYears.some((year) => {
+          const yearNum = Number(year);
+          return yearNum >= start && yearNum <= end;
+        });
+      }
+      return false;
+    });
+    if (!hasMatchingYear) return false;
+  }
 
-    const partyMatch =
-      partyFilter.length === 0 || partyFilter.includes(senator.party);
+  const nameMatch = searchQuery
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((word) => senator.name.toLowerCase().includes(word));
 
-    // State filter
-    const stateMatch =
-      stateFilter.length === 0 || stateFilter.includes(senator.state);
+  const partyMatch =
+    partyFilter.length === 0 || partyFilter.includes(senator.party);
 
-    // Rating filter - check all terms
-    const ratingMatch =
-      ratingFilter.length === 0 ||
-      senator.allTerms.some(
-        (term) => term.rating && ratingFilter.includes(term.rating)
-      );
+  // State filter
+  const stateMatch =
+    stateFilter.length === 0 || stateFilter.includes(senator.state);
 
-    // Status filter
-    const statusMatch =
-      statusFilter.length === 0 ||
-      (senator.publishStatus && statusFilter.includes(senator.publishStatus)) ||
-      (statusFilter.includes("draft") &&
-        senator.publishStatus === "under review");
-
-    // Past votes score filter - check all terms
-    const pastVotesMatch = !hasPastVotesFilter || senator.hasPastVotesData;
-
-    return (
-      nameMatch &&
-      partyMatch &&
-      stateMatch &&
-      ratingMatch &&
-      statusMatch &&
-      pastVotesMatch
+  // Rating filter - check all terms
+  const ratingMatch =
+    ratingFilter.length === 0 ||
+    senator.allTerms.some(
+      (term) => term.rating && ratingFilter.includes(term.rating)
     );
-  });
+
+  // Status filter
+  const statusMatch =
+    statusFilter.length === 0 ||
+    (senator.publishStatus && statusFilter.includes(senator.publishStatus)) ||
+    (statusFilter.includes("draft") &&
+      senator.publishStatus === "under review");
+
+  // Past votes score filter - check all terms
+  const pastVotesMatch = !hasPastVotesFilter || senator.hasPastVotesData;
+
+  return (
+    nameMatch &&
+    partyMatch &&
+    stateMatch &&
+    ratingMatch &&
+    statusMatch &&
+    pastVotesMatch
+  );
+});
 
   const activeFilterCount =
     partyFilter.length +
@@ -1537,7 +1547,74 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                   }}
                   className="custom-search"
                 />
-
+                {/* Current/Former Toggle */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    height: "38px",
+                    minWidth: "150px",
+                  }}
+                >
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("current")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "8px 0 0 8px",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "current"
+                          ? "#173a5e "
+                          : "#fff",
+                      color:
+                        currentOrFormerFilter === "current" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "current"
+                            ? "#173a5e "
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Current
+                  </Button>
+                  {/* <Box
+                    sx={{
+                      width: "1px",
+                      backgroundColor: "#ccc",
+                    }}
+                  /> */}
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("former")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "0 8px 8px   0",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "former" ? "#173a5e" : "#fff",
+                      color:
+                        currentOrFormerFilter === "former" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "former"
+                            ? "#173a5e"
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Former
+                  </Button>
+                </Box>
                 <Box
                   sx={{
                     position: "relative",
@@ -2048,7 +2125,7 @@ const handleBulkApply = async ({ ids = [], payload }) => {
           onClose={hideSnackbar}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-         <Alert
+          <Alert
             onClose={hideSnackbar}
             severity={snackbarSeverity}
             sx={{
@@ -2059,39 +2136,41 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                 snackbarMessage ===
                 `${selectedSenator?.name} deleted successfully.`
                   ? "#fde8e4 !important"
-                  : (snackbarMessage
+                  : snackbarMessage
                       ?.toLowerCase()
                       .includes("senators fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk select applied"))
+                    snackbarMessage
+                      ?.toLowerCase()
+                      .includes("bulk select applied")
                   ? "#daf4f0 !important"
                   : undefined,
- 
+
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
                   `${selectedSenator?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : (snackbarMessage
+                    : snackbarMessage
                         ?.toLowerCase()
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied"))
+                        .includes("bulk select applied")
                     ? "#099885 !important"
                     : undefined,
               },
- 
+
               "& .MuiAlert-message": {
                 color:
                   snackbarMessage ===
                   `${selectedSenator?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : (snackbarMessage
+                    : snackbarMessage
                         ?.toLowerCase()
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied"))
+                        .includes("bulk select applied")
                     ? "#099885 !important"
                     : undefined,
               },

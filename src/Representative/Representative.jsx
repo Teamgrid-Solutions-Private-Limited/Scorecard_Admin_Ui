@@ -98,6 +98,7 @@ export default function Representative(props) {
     rating: "",
     congress: "",
   });
+  const [currentOrFormerFilter, setCurrentOrFormerFilter] = useState("current");
   const { terms } = useSelector((state) => state.term);
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
@@ -294,6 +295,13 @@ export default function Representative(props) {
 
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
+      // Current/Former toggle filter - based on status field (case-insensitive)
+      if (currentOrFormerFilter === "current") {
+        if (transformedHouse.status?.toLowerCase() !== "active") return false;
+      } else if (currentOrFormerFilter === "former") {
+        if (transformedHouse.status?.toLowerCase() !== "former") return false;
+      }
+
       if (termFilter === "current") {
         if (transformedHouse.currentTerm !== true) return false;
       } else if (termFilter === "past") {
@@ -434,12 +442,12 @@ export default function Representative(props) {
       return;
     }
 
-  const { category, itemId, score } = payload;
-  
-  if (!category || !itemId || !score) {
-    showSnackbar("Invalid bulk payload", "error");
-    return;
-  }
+    const { category, itemId, score } = payload;
+
+    if (!category || !itemId || !score) {
+      showSnackbar("Invalid bulk payload", "error");
+      return;
+    }
 
     setFetching(true);
     try {
@@ -494,7 +502,9 @@ export default function Representative(props) {
       if (successCount === ids.length) {
         // All succeeded
         showSnackbar(
-          `Bulk select applied for ${successCount}/${ids.length} representative${successCount !== 1 ? "s" : ""}!`,
+          `Bulk select applied for ${successCount}/${
+            ids.length
+          } representative${successCount !== 1 ? "s" : ""}!`,
           "success"
         );
       } else if (successCount === 0) {
@@ -506,7 +516,9 @@ export default function Representative(props) {
       } else {
         // Partial success
         showSnackbar(
-          `Bulk select applied for ${successCount} of ${ids.length} representatives.${
+          `Bulk select applied for ${successCount} of ${
+            ids.length
+          } representatives.${
             failedCount > 0
               ? ` ${failedCount} failed (item not found for those representatives).`
               : ""
@@ -581,6 +593,48 @@ export default function Representative(props) {
     } catch (error) {
       console.error("Failed to update status:", error);
       showSnackbar("Failed to update status.", "error");
+    }
+  };
+
+  const handleBulkPublish = async ({
+    ids = [],
+    publishStatus = "published",
+  }) => {
+    if (!ids.length) return;
+
+    if (userRole !== "admin") {
+      showSnackbar("Bulk publish is for admins only", "error");
+      return;
+    }
+
+    setFetching(true);
+    let successCount = 0;
+
+    try {
+      for (const houseId of ids) {
+        try {
+          await dispatch(
+            updateRepresentativeStatus({ id: houseId, publishStatus })
+          ).unwrap();
+          successCount++;
+        } catch (err) {
+          console.error(`❌ Error publishing representative ${houseId}`, err);
+        }
+      }
+
+      await dispatch(getAllHouses());
+
+      showSnackbar(
+        `Bulk publish applied for ${successCount}/${ids.length} representative${
+          successCount !== 1 ? "s" : ""
+        }!.`,
+        successCount === ids.length ? "success" : "warning"
+      );
+    } catch (err) {
+      console.error("❌ Bulk publish failed", err);
+      showSnackbar("Bulk publish failed.", "error");
+    } finally {
+      setFetching(false);
     }
   };
 
@@ -713,7 +767,70 @@ export default function Representative(props) {
                     },
                   }}
                 />
-
+                {/* Current/Former Toggle */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    height: "38px",
+                    minWidth: "150px",
+                  }}
+                >
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("current")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "8px 0 0 8px",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "current"
+                          ? "#173a5e "
+                          : "#fff",
+                      color:
+                        currentOrFormerFilter === "current" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "current"
+                            ? "#173a5e "
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Current
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("former")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "0 8px 8px 0",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "former"
+                          ? "#173a5e "
+                          : "#fff",
+                      color:
+                        currentOrFormerFilter === "former" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "former"
+                            ? "#173a5e "
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Former
+                  </Button>
+                </Box>
                 <Box
                   sx={{
                     position: "relative",
@@ -1175,6 +1292,7 @@ export default function Representative(props) {
               handleToggleStatusHouse={handleToggleStatusHouse}
               isSelectable={userRole === "admin"}
               onBulkApply={handleBulkApply}
+              onBulkPublish={handleBulkPublish}
             />
           </Stack>
         </Box>
@@ -1199,7 +1317,9 @@ export default function Representative(props) {
                   : snackbarMessage
                       ?.toLowerCase()
                       .includes("representatives fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk select applied")
+                    snackbarMessage
+                      ?.toLowerCase()
+                      .includes("bulk select applied")
                   ? "#daf4f0 !important"
                   : undefined,
 
@@ -1208,12 +1328,12 @@ export default function Representative(props) {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : (snackbarMessage
+                    : snackbarMessage
                         ?.toLowerCase()
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied"))
+                        .includes("bulk select applied")
                     ? "#099885 !important"
                     : undefined,
               },
@@ -1223,12 +1343,12 @@ export default function Representative(props) {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : (snackbarMessage
+                    : snackbarMessage
                         ?.toLowerCase()
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied"))
+                        .includes("bulk select applied")
                     ? "#099885 !important"
                     : undefined,
               },
