@@ -346,7 +346,7 @@ export default function Activity(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
-                {userRole === "admin" && (
+                {/* {userRole === "admin" && (
                   <Button
                     onClick={() => {
                       setIsAssignMode(!isAssignMode);
@@ -356,7 +356,7 @@ export default function Activity(props) {
                   >
                     {isAssignMode ? "Cancel Assign" : "Assign Activity"}
                   </Button>
-                )}
+                )} */}
                 {userRole === "admin" && (
                   <Button
                     onClick={() => navigate("/search-activities")}
