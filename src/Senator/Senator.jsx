@@ -1658,13 +1658,13 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
                       // border: "none",
                       height: "100%",
                       backgroundColor:
-                        currentOrFormerFilter === "current" ? "#173a5e " : "#fff",
+                        currentOrFormerFilter === "current" ? "#497bb2 " : "#fff",
                       color:
                         currentOrFormerFilter === "current" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "current"
-                            ? "#173a5e "
+                            ?"#497bb2 "
                             : "#f5f5f5",
                       },
                     }}
@@ -1688,13 +1688,13 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
                       // border: "none",
                       height: "100%",
                       backgroundColor:
-                        currentOrFormerFilter === "former" ? "#173a5e" : "#fff",
+                        currentOrFormerFilter === "former" ?  "#497bb2" : "#fff",
                       color:
                         currentOrFormerFilter === "former" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "former"
-                            ? "#173a5e"
+                            ? "#497bb2"
                             : "#f5f5f5",
                       },
                     }}

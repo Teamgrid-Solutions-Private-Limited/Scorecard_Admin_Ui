@@ -442,12 +442,12 @@ export default function Representative(props) {
       return;
     }
 
-  const { category, itemId, score } = payload;
-  
-  if (!category || !itemId || !score) {
-    showSnackbar("Invalid bulk payload", "error");
-    return;
-  }
+    const { category, itemId, score } = payload;
+
+    if (!category || !itemId || !score) {
+      showSnackbar("Invalid bulk payload", "error");
+      return;
+    }
 
     setFetching(true);
     try {
@@ -502,7 +502,9 @@ export default function Representative(props) {
       if (successCount === ids.length) {
         // All succeeded
         showSnackbar(
-          `Bulk select applied for ${successCount}/${ids.length} representative${successCount !== 1 ? "s" : ""}!`,
+          `Bulk select applied for ${successCount}/${
+            ids.length
+          } representative${successCount !== 1 ? "s" : ""}!`,
           "success"
         );
       } else if (successCount === 0) {
@@ -514,7 +516,9 @@ export default function Representative(props) {
       } else {
         // Partial success
         showSnackbar(
-          `Bulk select applied for ${successCount} of ${ids.length} representatives.${
+          `Bulk select applied for ${successCount} of ${
+            ids.length
+          } representatives.${
             failedCount > 0
               ? ` ${failedCount} failed (item not found for those representatives).`
               : ""
@@ -592,7 +596,10 @@ export default function Representative(props) {
     }
   };
 
-  const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
+  const handleBulkPublish = async ({
+    ids = [],
+    publishStatus = "published",
+  }) => {
     if (!ids.length) return;
 
     if (userRole !== "admin") {
@@ -618,7 +625,9 @@ export default function Representative(props) {
       await dispatch(getAllHouses());
 
       showSnackbar(
-        `Bulk publish applied for ${successCount}/${ids.length} representative${successCount !== 1 ? "s" : ""}!.`,
+        `Bulk publish applied for ${successCount}/${ids.length} representative${
+          successCount !== 1 ? "s" : ""
+        }!.`,
         successCount === ids.length ? "success" : "warning"
       );
     } catch (err) {
@@ -758,7 +767,7 @@ export default function Representative(props) {
                     },
                   }}
                 />
-   {/* Current/Former Toggle */}
+                {/* Current/Former Toggle */}
                 <Box
                   sx={{
                     display: "flex",
@@ -766,7 +775,7 @@ export default function Representative(props) {
                     borderRadius: "8px",
                     backgroundColor: "#fff",
                     height: "38px",
-                      minWidth: "150px", 
+                    minWidth: "150px",
                   }}
                 >
                   <Button
@@ -780,13 +789,15 @@ export default function Representative(props) {
                       // border: "none",
                       height: "100%",
                       backgroundColor:
-                        currentOrFormerFilter === "current" ? "#173a5e " : "#fff",
+                        currentOrFormerFilter === "current"
+                          ? "#497bb2 !important; "
+                          : "#fff",
                       color:
                         currentOrFormerFilter === "current" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "current"
-                            ? "#173a5e "
+                            ? "#497bb2 !important; "
                             : "#f5f5f5",
                       },
                     }}
@@ -804,13 +815,15 @@ export default function Representative(props) {
                       // border: "none",
                       height: "100%",
                       backgroundColor:
-                        currentOrFormerFilter === "former" ? "#173a5e " : "#fff",
+                        currentOrFormerFilter === "former"
+                          ? "#497bb2 !important; "
+                          : "#fff",
                       color:
                         currentOrFormerFilter === "former" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "former"
-                            ? "#173a5e "
+                            ? "#497bb2 !important; "
                             : "#f5f5f5",
                       },
                     }}
@@ -1249,8 +1262,6 @@ export default function Representative(props) {
                   )}
                 </Box>
 
-             
-
                 {/* {userRole === "admin" && (
                   <Button
                     variant="outlined"
@@ -1306,7 +1317,9 @@ export default function Representative(props) {
                   : snackbarMessage
                       ?.toLowerCase()
                       .includes("representatives fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk select applied")
+                    snackbarMessage
+                      ?.toLowerCase()
+                      .includes("bulk select applied")
                   ? "#daf4f0 !important"
                   : undefined,
 
@@ -1315,12 +1328,12 @@ export default function Representative(props) {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : (snackbarMessage
+                    : snackbarMessage
                         ?.toLowerCase()
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied"))
+                        .includes("bulk select applied")
                     ? "#099885 !important"
                     : undefined,
               },
@@ -1330,12 +1343,12 @@ export default function Representative(props) {
                   snackbarMessage ===
                   `${selectedRepresentative?.name} deleted successfully.`
                     ? "#cc563d !important"
-                    : (snackbarMessage
+                    : snackbarMessage
                         ?.toLowerCase()
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied"))
+                        .includes("bulk select applied")
                     ? "#099885 !important"
                     : undefined,
               },
