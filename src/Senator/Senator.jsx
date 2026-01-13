@@ -67,6 +67,7 @@ import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken } from "../utils/auth";
 import { useSnackbar } from "../hooks";
+import { SmsFailed } from "@mui/icons-material";
 
 export default function Senator(props) {
   const navigate = useNavigate();
@@ -1295,7 +1296,7 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
     if (successCount < totalCount && hasTermRequiredError) {
       showSnackbar(  `Bulk publish applied for ${successCount}/${totalCount} senator${
         successCount !== 1 ? "s" : ""
-      }.`+"Term is required ", "warning");
+      }.Failed${" : "} ${totalCount-successCount}`+" Term is required ", "warning");
       return;
     }
 
@@ -2228,7 +2229,8 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
                   : (snackbarMessage
                       ?.toLowerCase()
                       .includes("senators fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk select applied"))
+                    snackbarMessage?.toLowerCase().includes("bulk select applied") ||
+                    snackbarMessage?.toLowerCase().includes("bulk publish applied"))
                   ? "#daf4f0 !important"
                   : undefined,
  
@@ -2242,7 +2244,10 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied"))
+                        .includes("bulk select applied") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk publish applied"))
                     ? "#099885 !important"
                     : undefined,
               },
@@ -2257,7 +2262,10 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
                         .includes("senators fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied"))
+                        .includes("bulk select applied") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk publish applied"))
                     ? "#099885 !important"
                     : undefined,
               },

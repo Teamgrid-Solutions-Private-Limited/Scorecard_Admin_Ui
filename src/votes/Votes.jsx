@@ -467,7 +467,7 @@ export default function Votes(props) {
                   variant="subtitle1"
                   sx={{ fontSize: { xs: "11px", md: "14px" } }}
                 >
-                  {selectedVotes.length} Vote(s) selected
+                  {selectedVotes.length <= 1 ? `${selectedVotes.length} Vote selected` : `${selectedVotes.length} Votes selected`}
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -506,7 +506,7 @@ export default function Votes(props) {
                   variant="subtitle1"
                   sx={{ fontSize: { xs: "11px", md: "14px" } }}
                 >
-                  {selectedVotes.length} Vote(s) selected
+                  {selectedVotes.length <= 1 ? `${selectedVotes.length} Vote selected` : `${selectedVotes.length} Votes selected`}
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">

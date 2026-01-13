@@ -5,6 +5,7 @@ import {
   getAllHouses,
   deleteHouse,
   updateRepresentativeStatus,
+  bulkPublishHouses,
 } from "../redux/reducer/houseSlice";
 import {
   Box,
@@ -608,31 +609,78 @@ export default function Representative(props) {
     }
 
     setFetching(true);
-    let successCount = 0;
 
     try {
-      for (const houseId of ids) {
-        try {
-          await dispatch(
-            updateRepresentativeStatus({ id: houseId, publishStatus })
-          ).unwrap();
-          successCount++;
-        } catch (err) {
-          console.error(`❌ Error publishing representative ${houseId}`, err);
+      const result = await dispatch(bulkPublishHouses(ids)).unwrap();
+      console.log("Bulk publish result:", result);
+      const successCount = result.successful || 0;
+      const failedCount = result.failed || 0;
+      const totalCount = result.totalRepresentatives || ids.length;
+
+      // Refresh the houses list
+      await dispatch(getAllHouses());
+
+      // Build error message if there are failures
+      let errorMessage = "";
+      if (result.errors && result.errors.length > 0) {
+        // Count unique error messages
+        const errorCounts = {};
+        result.errors.forEach((err) => {
+          const msg = err.message || "Unknown error";
+          errorCounts[msg] = (errorCounts[msg] || 0) + 1;
+        });
+
+        // Build unique error messages with counts
+        const uniqueErrors = Object.entries(errorCounts).map(
+          ([msg, count]) => count > 1 ? `${msg}` : msg
+        );
+
+        if (uniqueErrors.length > 0) {
+          errorMessage = uniqueErrors.join(", ");
         }
       }
 
-      await dispatch(getAllHouses());
-
-      showSnackbar(
-        `Bulk publish applied for ${successCount}/${ids.length} representative${
-          successCount !== 1 ? "s" : ""
-        }!.`,
-        successCount === ids.length ? "success" : "warning"
-      );
+      // Show appropriate snackbar based on success count
+      if (successCount === totalCount) {
+        // All succeeded
+        showSnackbar(
+          `Bulk publish applied for ${successCount}/${totalCount} representative${
+            successCount !== 1 ? "s" : ""
+          }!`,
+          "success"
+        );
+      } else if (successCount === 0) {
+        // All failed
+        const failMsg = errorMessage 
+          ? `Bulk publish failed. ${errorMessage}`
+          : `Bulk publish failed for all ${totalCount} representatives.`;
+        showSnackbar(failMsg, "error");
+      } else {
+        // Partial success
+        const partialMsg = errorMessage
+          ? `Bulk publish applied for ${successCount}/${totalCount} representatives.${failedCount } Failed: ${errorMessage}`
+          : `Bulk publish applied for ${successCount}/${totalCount} representative${
+              successCount !== 1 ? "s" : ""
+            }. ${failedCount} failed.`;
+        showSnackbar(partialMsg, "warning");
+      }
     } catch (err) {
       console.error("❌ Bulk publish failed", err);
-      showSnackbar("Bulk publish failed.", "error");
+      // Handle both thunk rejection and other errors
+      let errorMsg = "Bulk publish failed.";
+      
+      if (err?.payload?.errors && err.payload.errors.length > 0) {
+        const errorMessages = err.payload.errors
+          .map((e) => e.message)
+          .filter(Boolean);
+        errorMsg = errorMessages.length > 0 
+          ? `Bulk publish failed. ${errorMessages.join(", ")}`
+          : errorMsg;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      
+      showSnackbar(errorMsg, "error");
     } finally {
       setFetching(false);
     }
@@ -1319,7 +1367,10 @@ export default function Representative(props) {
                       .includes("representatives fetched successfully!") ||
                     snackbarMessage
                       ?.toLowerCase()
-                      .includes("bulk select applied")
+                      .includes("bulk select applied") ||
+                    snackbarMessage
+                      ?.toLowerCase()
+                      .includes("bulk publish applied")
                   ? "#daf4f0 !important"
                   : undefined,
 
@@ -1333,7 +1384,10 @@ export default function Representative(props) {
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied")
+                        .includes("bulk select applied") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk publish applied")
                     ? "#099885 !important"
                     : undefined,
               },
@@ -1348,7 +1402,10 @@ export default function Representative(props) {
                         .includes("representatives fetched successfully!") ||
                       snackbarMessage
                         ?.toLowerCase()
-                        .includes("bulk select applied")
+                        .includes("bulk select applied") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk publish applied")
                     ? "#099885 !important"
                     : undefined,
               },

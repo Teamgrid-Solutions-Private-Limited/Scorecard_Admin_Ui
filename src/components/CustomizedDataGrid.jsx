@@ -917,7 +917,7 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-      {((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin") || (isSelectable && type !== "senator" && type !== "representative")) && (
+      {((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin") || (isSelectable && type !== "senator" && type !== "representative" && type !== "votes" && type !== "activities")) && (
         <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mb: 1 }}>
      {(hasManualSelections || hasUsedSelectAll) && (
   hasManualSelections ? (
