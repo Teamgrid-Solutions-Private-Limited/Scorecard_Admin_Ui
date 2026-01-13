@@ -65,13 +65,7 @@ export default function BulkEditModal({
 
   const handleSave = () => {
     if (!selectedItem || !score) {
-      console.log(
-        "❌ BulkEditModal: Cannot save - missing selectedItem or score",
-        {
-          selectedItem,
-          score,
-        }
-      );
+    
       return;
     }
 
@@ -88,17 +82,6 @@ export default function BulkEditModal({
       payload.activityDate = selectedItem.date;
     }
 
-    console.log("✅ BulkEditModal: Applying bulk edit", {
-      mode,
-      selectedItem: {
-        _id: selectedItem._id,
-        title: selectedItem.title,
-        date: selectedItem.date,
-        fullItem: selectedItem,
-      },
-      score,
-      payload,
-    });
 
     onApply && onApply(payload);
     onClose && onClose();

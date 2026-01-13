@@ -73,7 +73,6 @@ export const getSenatorDataBySenatorId = createAsyncThunk(
 export const updateSenatorData = createAsyncThunk(
   "senatorData/updateSenatorData",
   async ({ id, data }, { rejectWithValue }) => {
-    console.log("Updating senator data with ID:", id, "and data:", data);
     try {
       const response = await axios.put(
         `${API_URL}/api/v1/admin/senator-data/${id}`,

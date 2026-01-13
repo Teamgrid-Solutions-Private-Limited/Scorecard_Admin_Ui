@@ -575,7 +575,6 @@ export default function Votes(props) {
                                 showSnackbar("Failed to assign votes.", "error");
                               }
                             } catch (err) {
-                              console.error(err);
                               showSnackbar("Failed to assign votes.", "error");
                             } finally {
                               setFetching(false);

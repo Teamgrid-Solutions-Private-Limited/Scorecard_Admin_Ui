@@ -914,7 +914,6 @@ const handleTermChange = (e, termIndex) => {
       );
       setComponentKey((prev) => prev + 1);
     } catch (error) {
-      console.error("Discard failed:", error);
       const errorMessage = getErrorMessage(
         error,
         `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
@@ -1004,7 +1003,6 @@ const handleTermChange = (e, termIndex) => {
       return;
     }
     if (senatorData?.currentSenator?.length > 0) {
-      console.log("Pre-filling term data based on fetched senator data",senatorData?.currentSenator);
       const termsData = senatorData.currentSenator.map((term, termIndex) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
         if (!matchedTerm) {
@@ -1838,7 +1836,6 @@ if (  isBeforeCutoffDate) {
   } = useSnackbar();
   const preFillForm = () => {
     if (senator) {
-    console.log("Pre-filling form with senator data:", senator);
       const termId =
         senator.termId && terms.length > 0
           ? terms.find((term) => term._id === senator.termId)?._id || ""
@@ -2500,7 +2497,6 @@ if (  isBeforeCutoffDate) {
         );
       }
     } catch (error) {
-      console.error("Save failed:", error);
 
       let errorMessage = getErrorMessage(
         error,

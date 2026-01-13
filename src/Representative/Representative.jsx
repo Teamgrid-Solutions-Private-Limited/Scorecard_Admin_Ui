@@ -573,7 +573,6 @@ export default function Representative(props) {
         "success"
       );
     } catch (error) {
-      console.error("Error deleting representative:", error);
       showSnackbar("Error: Unable to delete representative.", "error");
     } finally {
       clearInterval(interval);
@@ -592,7 +591,6 @@ export default function Representative(props) {
 
       dispatch(getAllHouses());
     } catch (error) {
-      console.error("Failed to update status:", error);
       showSnackbar("Failed to update status.", "error");
     }
   };
@@ -612,7 +610,6 @@ export default function Representative(props) {
 
     try {
       const result = await dispatch(bulkPublishHouses(ids)).unwrap();
-      console.log("Bulk publish result:", result);
       const successCount = result.successful || 0;
       const failedCount = result.failed || 0;
       const totalCount = result.totalRepresentatives || ids.length;
@@ -665,7 +662,6 @@ export default function Representative(props) {
         showSnackbar(partialMsg, "warning");
       }
     } catch (err) {
-      console.error("❌ Bulk publish failed", err);
       // Handle both thunk rejection and other errors
       let errorMsg = "Bulk publish failed.";
       
@@ -732,7 +728,6 @@ export default function Representative(props) {
         throw new Error("Failed to fetch representatives from Quorum");
       }
     } catch (error) {
-      console.error("Error fetching representatives:", error);
       showSnackbar("Error: Unable to fetch representatives.", "error");
     } finally {
       clearInterval(interval);

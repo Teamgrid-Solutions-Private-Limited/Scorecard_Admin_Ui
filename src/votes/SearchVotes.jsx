@@ -145,7 +145,6 @@ export default function SearchVotes(params) {
         showSnackbar("No votes found matching your search", "info");
       }
     } catch (error) {
-      console.error("Error searching votes:", error);
       const errorMessage = getErrorMessage(error, "Failed to search votes");
       showSnackbar(errorMessage, "error");
       setSearchResults([]);
@@ -161,7 +160,6 @@ export default function SearchVotes(params) {
         (existingVote) =>
           String(existingVote.quorumId) === String(vote.quorumId || vote.voteId)
       );
-      console.log("isDuplicate:", isDuplicate);
       if (isDuplicate) {
         showSnackbar("Vote already exists", "info");
         setLoading(false);
@@ -193,7 +191,6 @@ export default function SearchVotes(params) {
         console.error("voteId (_id) is missing in the API response.");
       }
     } catch (error) {
-      console.error("Error saving vote:", error);
       showSnackbar("Failed to save vote", "error");
     } finally {
       setLoading(false);

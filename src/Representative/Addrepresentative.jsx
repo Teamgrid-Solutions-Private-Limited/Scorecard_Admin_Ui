@@ -1069,7 +1069,6 @@ export default function Addrepresentative(props) {
         );
       }
     } catch (error) {
-      console.error("Save failed:", error);
 
       let errorMessage = getErrorMessage(
         error,
@@ -1220,7 +1219,6 @@ export default function Addrepresentative(props) {
       );
       setComponentKey((prev) => prev + 1);
     } catch (error) {
-      console.error("Discard failed:", error);
       const errorMessage = getErrorMessage(
         error,
         `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`

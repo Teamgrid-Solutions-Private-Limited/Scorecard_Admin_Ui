@@ -215,7 +215,6 @@ export default function Activity(props) {
      
       dispatch(getAllActivity());
     } catch (error) {
-      console.error("Bulk update failed:", error);
       const errorMessage = getErrorMessage(error, "Failed to update activities");
       showSnackbar(errorMessage, "error");
     } finally {
