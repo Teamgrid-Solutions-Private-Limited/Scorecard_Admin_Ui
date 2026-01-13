@@ -1429,10 +1429,6 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
          throw new Error("Failed to fetch senators from Quorum");
        }
      } catch (error) {
-       showSnackbar("Error: Unable to fetch senators.", "error");
-     } finally {
-       clearInterval(interval);
-       setFetching(false);
        setProgress(100); // Ensure it completes
        setTimeout(() => setProgress(0), 500); // Re
      }
