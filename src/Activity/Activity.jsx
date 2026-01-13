@@ -373,7 +373,7 @@ export default function Activity(props) {
                 <Typography variant="subtitle1"
                   sx={{ fontSize: { xs: "11px", md: "14px" } }}
                 >
-                  {selectedTrackActivity.length} activity(ies) selected
+                  {selectedTrackActivity.length === 1 ? "1 Activity selected" : `${selectedTrackActivity.length} Activities selected`}
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -408,7 +408,7 @@ export default function Activity(props) {
                 <Typography variant="subtitle1"
                   sx={{ fontSize: { xs: "11px", md: "14px" } }}
                 >
-                  {selectedTrackActivity.length} activity(ies) selected
+                  {selectedTrackActivity.length <= 1 ? `${selectedTrackActivity.length} Activity selected` : `${selectedTrackActivity.length} Activities selected`}
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">

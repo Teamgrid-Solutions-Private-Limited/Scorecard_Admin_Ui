@@ -158,6 +158,51 @@ export const discardHouseChanges = createAsyncThunk(
   }
 );
 
+// Bulk publish representatives
+export const bulkPublishHouses = createAsyncThunk(
+  "house/bulkPublish",
+  async (houseIds, { rejectWithValue }) => {
+    try {
+      const token = getToken();
+      if (!token) {
+        return rejectWithValue({
+          message: "Authentication token not found",
+        });
+      }
+
+      // Decode token to get user role
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
+
+      if (userRole !== "admin") {
+        return rejectWithValue({
+          message: "You are not authorized to bulk publish houses.",
+        });
+      }
+
+      const response = await axios.post(
+        `${API_URL}/api/v1/admin/house-data/bulk-publish`,
+        { houseIds },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          validateStatus: () => true, // Don't throw on any status code
+        }
+      );
+
+      // Return response data regardless of status code
+      // The component will handle success/failure based on the data
+      return response.data;
+    } catch (error) {
+      console.error("Bulk publish error:", error);
+      return rejectWithValue(
+        error.response?.data || { message: "Bulk publish failed" }
+      );
+    }
+  }
+);
+
 // Initial state
 const initialState = {
   houses: [],
@@ -298,6 +343,30 @@ const houseSlice = createSlice({
       state.loading = false;
       state.error = action.payload?.message || "Failed to discard changes";
     });
+
+    // Bulk publish representatives
+    builder
+      .addCase(bulkPublishHouses.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bulkPublishHouses.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update the published representatives in state
+        const results = action.payload.results || [];
+        results.forEach((result) => {
+          const index = state.houses.findIndex(
+            (h) => h._id === result.houseId
+          );
+          if (index !== -1) {
+            state.houses[index].publishStatus = "published";
+          }
+        });
+      })
+      .addCase(bulkPublishHouses.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
