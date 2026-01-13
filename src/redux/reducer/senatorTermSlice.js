@@ -102,6 +102,30 @@ export const deleteSenatorData = createAsyncThunk(
   }
 );
 
+export const bulkPublishSenators = createAsyncThunk(
+  "senatorData/bulkPublishSenators",
+  async ({ senatorIds = [], publishStatus = "published" }, { rejectWithValue }) => {
+    try {
+      console.log("Bulk publishing senators with IDs:", senatorIds, "to status:", publishStatus);
+      const response = await axios.post(
+        `${API_URL}/api/v1/admin/bulk-publish`,
+        { senatorIds, publishStatus },
+           {
+          headers: { "x-protected-key": API_PROTECTED_KEY },
+        }
+      );
+
+      return {
+        ...response.data,
+        successCount: response.data.successCount ,
+        totalCount: senatorIds.length,
+      };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 // Initial state
 const initialState = {
   senatorData: [],
@@ -195,6 +219,18 @@ const senatorDataSlice = createSlice({
         state.loading = false;
       })
       .addCase(deleteSenatorData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Bulk Publish Senators
+      .addCase(bulkPublishSenators.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bulkPublishSenators.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(bulkPublishSenators.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

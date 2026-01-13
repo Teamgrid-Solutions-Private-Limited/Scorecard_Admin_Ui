@@ -10,6 +10,7 @@ import {
   getAllSenatorData,
   getSenatorDataBySenatorId,
   updateSenatorData,
+  bulkPublishSenators,
 } from "../redux/reducer/senatorTermSlice";
 
 import { getErrorMessage } from "../utils/errorHandler";
@@ -111,6 +112,8 @@ export default function Senator(props) {
     rating: "",
     year: "",
   });
+  const [currentOrFormerFilter, setCurrentOrFormerFilter] = useState("current");
+
   const toggleFilter = () => {
     setFilterOpen(!filterOpen);
     if (!filterOpen) {
@@ -1222,6 +1225,38 @@ const handleBulkApply = async ({ ids = [], payload }) => {
 //   }
 // };
 
+// const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
+//   if (!ids.length) return;
+
+//   if (userRole !== "admin") {
+//     showSnackbar("Bulk publish is for admins only", "error");
+//     return;
+//   }
+
+//   setFetching(true);
+
+//   try {
+//     const result = await dispatch(
+//       bulkPublishSenators({ senatorIds: ids, publishStatus })
+//     ).unwrap();
+
+//     const successCount = result.successCount || ids.length;
+//     const totalCount = result.totalCount || ids.length;
+
+//     await dispatch(getAllSenators());
+
+//     showSnackbar(
+//       `Bulk publish applied for ${successCount}/${totalCount} senator${successCount !== 1 ? "s" : ""}!.`,
+//       successCount === totalCount ? "success" : "warning"
+//     );
+//   } catch (err) {
+//     console.error("❌ Bulk publish failed", err);
+//     const errorMessage = err?.message || "Bulk publish failed.";
+//     showSnackbar(errorMessage, "error");
+//   } finally {
+//     setFetching(false);
+//   }
+// };
 const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
   if (!ids.length) return;
 
@@ -1231,29 +1266,49 @@ const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
   }
 
   setFetching(true);
-  let successCount = 0;
 
   try {
-    for (const senatorId of ids) {
-      try {
-        await dispatch(
-          updateSenatorStatus({ id: senatorId, publishStatus })
-        ).unwrap();
-        successCount++;
-      } catch (err) {
-        console.error(`❌ Error publishing senator ${senatorId}`, err);
-      }
-    }
+    const result = await dispatch(
+      bulkPublishSenators({ senatorIds: ids, publishStatus })
+    ).unwrap();
+
+    const successCount = result.successCount ?? 0;
+    const totalCount = result.totalCount ?? ids.length;
+    const errors = result.errors || [];
+
+    // 🔴 Extract "Term is required" errors
+    const hasTermRequiredError = errors.some(
+      e =>
+        e.message?.toLowerCase().includes("term is required") ||
+        e.details?.some(d => d.toLowerCase().includes("term is required"))
+    );
 
     await dispatch(getAllSenators());
+    console.log("Bulk publish result:", result);
+console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRequiredError:", hasTermRequiredError);
+    // 🧠 PRIORITY-BASED SNACKBAR LOGIC
+    if (successCount === 0 && hasTermRequiredError) {
+      showSnackbar("Term is required", "error");
+      return;
+    }
 
+    if (successCount < totalCount && hasTermRequiredError) {
+      showSnackbar(  `Bulk publish applied for ${successCount}/${totalCount} senator${
+        successCount !== 1 ? "s" : ""
+      }.`+"Term is required ", "warning");
+      return;
+    }
+
+    // ✅ Full success only
     showSnackbar(
-      `Bulk publish applied for ${successCount}/${ids.length} senator${successCount !== 1 ? "s" : ""}!.`,
-      successCount === ids.length ? "success" : "warning"
+      `Bulk publish applied for ${successCount}/${totalCount} senator${
+        successCount !== 1 ? "s" : ""
+      }.`,
+      "success"
     );
   } catch (err) {
     console.error("❌ Bulk publish failed", err);
-    showSnackbar("Bulk publish failed.", "error");
+    showSnackbar(err?.message || "Bulk publish failed.", "error");
   } finally {
     setFetching(false);
   }
@@ -1434,6 +1489,13 @@ const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
   };
 
   const filteredSenators = mergedSenators.filter((senator) => {
+    // Current/Former toggle filter - based on status field
+    if (currentOrFormerFilter === "current") {
+      if (senator.status !== "active") return false;
+    } else if (currentOrFormerFilter === "former") {
+      if (senator.status !== "former") return false;
+    }
+
     // Term filter logic - check all terms
     if (termFilter === "current") {
       if (!senator.hasCurrentTerm) return false;
@@ -1573,7 +1635,73 @@ const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
                   }}
                   className="custom-search"
                 />
-
+  {/* Current/Former Toggle */}
+                <Box
+                  
+                  sx={{
+                    display: "flex",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    height: "38px",
+                    minWidth: "150px",  
+                  }}
+                >
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("current")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "8px 0 0 8px",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "current" ? "#173a5e " : "#fff",
+                      color:
+                        currentOrFormerFilter === "current" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "current"
+                            ? "#173a5e "
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Current
+                  </Button>
+                  {/* <Box
+                    sx={{
+                      width: "1px",
+                      backgroundColor: "#ccc",
+                    }}
+                  /> */}
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("former")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "0 8px 8px   0",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "former" ? "#173a5e" : "#fff",
+                      color:
+                        currentOrFormerFilter === "former" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "former"
+                            ? "#173a5e"
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Former
+                  </Button>
+                </Box>
                 <Box
                   sx={{
                     position: "relative",
@@ -2040,7 +2168,8 @@ const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
                   )}
                 </Box>
 
-                {/* Desktop: Show Fetch button inside search/filter stack */}
+              
+
                 {/* Desktop: Show Fetch button inside search/filter stack */}
                 {userRole === "admin" && (
                   <Button

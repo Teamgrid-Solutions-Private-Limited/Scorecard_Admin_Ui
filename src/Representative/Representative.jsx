@@ -98,6 +98,7 @@ export default function Representative(props) {
     rating: "",
     congress: "",
   });
+  const [currentOrFormerFilter, setCurrentOrFormerFilter] = useState("current");
   const { terms } = useSelector((state) => state.term);
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
@@ -294,6 +295,13 @@ export default function Representative(props) {
 
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
+      // Current/Former toggle filter - based on status field (case-insensitive)
+      if (currentOrFormerFilter === "current") {
+        if (transformedHouse.status?.toLowerCase() !== "active") return false;
+      } else if (currentOrFormerFilter === "former") {
+        if (transformedHouse.status?.toLowerCase() !== "former") return false;
+      }
+
       if (termFilter === "current") {
         if (transformedHouse.currentTerm !== true) return false;
       } else if (termFilter === "past") {
@@ -750,7 +758,66 @@ export default function Representative(props) {
                     },
                   }}
                 />
-
+   {/* Current/Former Toggle */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    height: "38px",
+                      minWidth: "150px", 
+                  }}
+                >
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("current")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "8px 0 0 8px",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "current" ? "#173a5e " : "#fff",
+                      color:
+                        currentOrFormerFilter === "current" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "current"
+                            ? "#173a5e "
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Current
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("former")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "0 8px 8px 0",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "former" ? "#173a5e " : "#fff",
+                      color:
+                        currentOrFormerFilter === "former" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "former"
+                            ? "#173a5e "
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Former
+                  </Button>
+                </Box>
                 <Box
                   sx={{
                     position: "relative",
@@ -1181,6 +1248,8 @@ export default function Representative(props) {
                     </ClickAwayListener>
                   )}
                 </Box>
+
+             
 
                 {/* {userRole === "admin" && (
                   <Button
