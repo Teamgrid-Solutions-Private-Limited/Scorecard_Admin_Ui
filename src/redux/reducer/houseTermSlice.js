@@ -100,15 +100,13 @@ export const updateHouseScores = createAsyncThunk(
   "houseData/updateHouseScores",
   async (updates, { rejectWithValue }) => {
     try {
-      console.log("Sending updates to server:", updates);
-      console.log("Request body being sent:", { updates });
+   
       
       const response = await axios.put(
         `${API_URL}/api/v1/admin/house-data/scores/update`,
         { updates }
       );
       
-      console.log("Server response:", response.data);
       return response.data;
     } catch (error) {
       console.error("API Error:", {

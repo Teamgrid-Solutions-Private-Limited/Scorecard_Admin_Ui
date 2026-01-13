@@ -480,7 +480,6 @@ export default function AddBill(props) {
       }
 
     } catch (error) {
-      console.error("Save error:", error);
       const errorMessage = getErrorMessage(error, "Operation failed");
       showSnackbar(errorMessage, "error");
     } finally {
@@ -507,7 +506,6 @@ export default function AddBill(props) {
         "success"
       );
     } catch (error) {
-      console.error("Discard failed:", error);
       const errorMessage = getErrorMessage(
         error,
         `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`

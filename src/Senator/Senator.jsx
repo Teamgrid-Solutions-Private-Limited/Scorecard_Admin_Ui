@@ -1308,7 +1308,6 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
       "success"
     );
   } catch (err) {
-    console.error("❌ Bulk publish failed", err);
     showSnackbar(err?.message || "Bulk publish failed.", "error");
   } finally {
     setFetching(false);
@@ -1430,11 +1429,6 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
          throw new Error("Failed to fetch senators from Quorum");
        }
      } catch (error) {
-       console.error("Error fetching senators:", error);
-       showSnackbar("Error: Unable to fetch senators.", "error");
-     } finally {
-       clearInterval(interval);
-       setFetching(false);
        setProgress(100); // Ensure it completes
        setTimeout(() => setProgress(0), 500); // Re
      }
@@ -1576,7 +1570,6 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
         dispatch(getAllSenators());
       })
       .catch((error) => {
-        console.error("Status update failed:", error);
         showSnackbar("Failed to update status.", "error");
       });
   };

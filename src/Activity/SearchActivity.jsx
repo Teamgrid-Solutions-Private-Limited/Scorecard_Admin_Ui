@@ -171,7 +171,6 @@ const handleAddActivity = async (activity) => {
       editorInfo,
     };
 
-    console.log("Sending:", activityData);
 
     const response = await axios.post(
       `${API_URL}/api/v1/activities/save`,
@@ -181,7 +180,6 @@ const handleAddActivity = async (activity) => {
       }
     );
 
-    console.log("Saved:", response.data);
 
     if (response.data.exists) {
       showSnackbar("Activity already exists", "warning");
