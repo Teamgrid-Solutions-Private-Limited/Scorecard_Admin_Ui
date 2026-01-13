@@ -2215,7 +2215,7 @@ console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRe
           onClose={hideSnackbar}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-         <Alert
+        <Alert
             onClose={hideSnackbar}
             severity={snackbarSeverity}
             sx={{
