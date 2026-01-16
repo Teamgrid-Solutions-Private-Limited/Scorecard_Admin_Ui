@@ -1404,8 +1404,8 @@ export default function Addrepresentative(props) {
                             Select a rating
                           </MenuItem>
                           {rating.map((rate, index) => (
-                            <MenuItem key={index} value={rate}>
-                              {rate}
+                            <MenuItem key={index} value={rate.value}>
+                              {rate.label}
                             </MenuItem>
                           ))}
                         </Select>
