@@ -53,5 +53,5 @@ export const states = [
   "Wyoming",
 ];
 
-export const rating = ["A+", "A", "B", "C", "D", "F"];
+export const rating = ["A+", "A", "B", "C", "D", "F", "No Rating"];
 
