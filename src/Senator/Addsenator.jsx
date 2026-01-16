@@ -1996,7 +1996,7 @@ if (  isBeforeCutoffDate) {
         return;
       }
 
-      const currentEditor = getCurrentEditor;
+      const currentEditor = getCurrentEditor();
 
       if (deletedTermIds.length > 0) {
         await Promise.all(
