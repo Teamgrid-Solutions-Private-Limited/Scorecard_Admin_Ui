@@ -96,6 +96,28 @@ export const deleteHouseData = createAsyncThunk(
     }
   }
 );
+export const updateHouseScores = createAsyncThunk(
+  "houseData/updateHouseScores",
+  async (updates, { rejectWithValue }) => {
+    try {
+   
+      
+      const response = await axios.put(
+        `${API_URL}/api/v1/admin/house-data/scores/update`,
+        { updates }
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error("API Error:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 // Initial state
 const initialState = {
@@ -190,6 +212,18 @@ const houseDataSlice = createSlice({
         state.loading = false;
       })
       .addCase(deleteHouseData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Update House Scores (Bulk)
+      .addCase(updateHouseScores.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateHouseScores.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(updateHouseScores.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

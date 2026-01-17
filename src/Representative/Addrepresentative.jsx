@@ -26,7 +26,14 @@ import {
   Button,
   Switch,
 } from "@mui/material";
-import { useSnackbar, useAuth, useFileUpload, useTermItemManager, useEntityData, useFormChangeTracker } from "../hooks";
+import {
+  useSnackbar,
+  useAuth,
+  useFileUpload,
+  useTermItemManager,
+  useEntityData,
+  useFormChangeTracker,
+} from "../hooks";
 import { getAllVotes } from "../redux/reducer/voteSlice";
 import { getErrorMessage } from "../utils/errorHandler";
 import { validateTermData } from "../helpers/validationHelpers";
@@ -80,7 +87,6 @@ export default function Addrepresentative(props) {
     message: "",
     type: "",
   });
-
   const navigate = useNavigate();
 
   // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)
@@ -115,8 +121,9 @@ export default function Addrepresentative(props) {
   const getFieldDisplayName = (field) => {
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
     }
     return fieldLabels[field] || field;
   };
@@ -126,7 +133,8 @@ export default function Addrepresentative(props) {
     district: "",
     party: "",
     photo: null,
-    status: "Active",
+    status: "active",
+    isNew: false,
     publishStatus: "",
   });
 
@@ -153,12 +161,12 @@ export default function Addrepresentative(props) {
   // Use centralized term item managers for votes and activities
   // These must be declared after all state variables (formData, houseTermData, etc.)
   const voteManager = useTermItemManager({
-    type: 'vote',
-    dataPath: 'votesScore',
-    idField: 'voteId',
-    fieldKeyPrefix: 'ScoredVote',
+    type: "vote",
+    dataPath: "votesScore",
+    idField: "voteId",
+    fieldKeyPrefix: "ScoredVote",
     allItems: votes,
-    removedItemsKey: 'votes',
+    removedItemsKey: "votes",
     termData: houseTermData,
     setTermData: setHouseTermData,
     originalTermData: originalTermData,
@@ -174,12 +182,12 @@ export default function Addrepresentative(props) {
   });
 
   const activityManager = useTermItemManager({
-    type: 'activity',
-    dataPath: 'activitiesScore',
-    idField: 'activityId',
-    fieldKeyPrefix: 'TrackedActivity',
+    type: "activity",
+    dataPath: "activitiesScore",
+    idField: "activityId",
+    fieldKeyPrefix: "TrackedActivity",
     allItems: houseActivities,
-    removedItemsKey: 'activities',
+    removedItemsKey: "activities",
     termData: houseTermData,
     setTermData: setHouseTermData,
     originalTermData: originalTermData,
@@ -355,33 +363,32 @@ export default function Addrepresentative(props) {
         isNew: true,
       },
     ]);
-    
   };
 
-const handleRemoveTerm = (termIndex) => {
-  setHouseTermData((prev) => {
-    const removed = prev[termIndex];
-    const removalId = `Term_${termIndex + 1} Removed`;
-        if (!removed.isNew) {
-      if (removed && removed._id) {
-        setDeletedTermIds((ids) => [...ids, removed._id]);
-        if (!localChanges.includes(removalId)) {
-          setLocalChanges((prev) => [...prev, removalId]);
-        }
-      } else {
-        if (!localChanges.includes(removalId)) {
-          setLocalChanges((prev) => [...prev, removalId]);
+  const handleRemoveTerm = (termIndex) => {
+    setHouseTermData((prev) => {
+      const removed = prev[termIndex];
+      const removalId = `Term_${termIndex + 1} Removed`;
+      if (!removed.isNew) {
+        if (removed && removed._id) {
+          setDeletedTermIds((ids) => [...ids, removed._id]);
+          if (!localChanges.includes(removalId)) {
+            setLocalChanges((prev) => [...prev, removalId]);
+          }
+        } else {
+          if (!localChanges.includes(removalId)) {
+            setLocalChanges((prev) => [...prev, removalId]);
+          }
         }
       }
-    }
-    
-    setLocalChanges((prevChanges) =>
-      prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
-    );
-    
-    return prev.filter((_, index) => index !== termIndex);
-  });
-};
+
+      setLocalChanges((prevChanges) =>
+        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+      );
+
+      return prev.filter((_, index) => index !== termIndex);
+    });
+  };
 
   // Note: This component uses a different compareValues that handles objects
   // Keeping it local as it has different behavior than the centralized version
@@ -393,7 +400,6 @@ const handleRemoveTerm = (termIndex) => {
 
   const termPreFill = () => {
     if (houseData?.currentHouse?.length > 0) {
-
       const termsData = houseData.currentHouse.map((term) => {
         const matchedTerm = terms?.find((t) => {
           if (
@@ -402,11 +408,9 @@ const handleRemoveTerm = (termIndex) => {
             term.termId.name
           ) {
             return t.name === term.termId.name;
-          }
-          else if (typeof term.termId === "string") {
+          } else if (typeof term.termId === "string") {
             return t.name === term.termId;
-          }
-          else if (
+          } else if (
             term.termId &&
             mongoose.Types.ObjectId.isValid(term.termId)
           ) {
@@ -417,27 +421,26 @@ const handleRemoveTerm = (termIndex) => {
         let votesScore =
           Array.isArray(term.votesScore) && term.votesScore.length > 0
             ? term.votesScore.map((vote) => {
-              let scoreValue = "";
-              const dbScore = vote.score?.toLowerCase();
-              if (dbScore?.includes("yea")) {
-                scoreValue = "yea";
-              } else if (dbScore?.includes("nay")) {
-                scoreValue = "nay";
-              } else if (dbScore?.includes("other")) {
-                scoreValue = "other";
-              } else {
-                scoreValue = vote.score || "";
-              }
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase();
+                if (dbScore?.includes("yea")) {
+                  scoreValue = "yea";
+                } else if (dbScore?.includes("nay")) {
+                  scoreValue = "nay";
+                } else if (dbScore?.includes("other")) {
+                  scoreValue = "other";
+                } else {
+                  scoreValue = vote.score || "";
+                }
 
-              return {
-                voteId: vote.voteId?._id || vote.voteId || "",
-                score: scoreValue,
-                title: vote.voteId?.title || vote.title || "",
-                _id: vote._id || undefined,
-              };
-            })
+                return {
+                  voteId: vote.voteId?._id || vote.voteId || "",
+                  score: scoreValue,
+                  title: vote.voteId?.title || vote.title || "",
+                  _id: vote._id || undefined,
+                };
+              })
             : [{ voteId: "", score: "" }];
-
 
         if (
           votesScore.length === 0 ||
@@ -460,18 +463,24 @@ const handleRemoveTerm = (termIndex) => {
           activitiesScore:
             term.activitiesScore?.length > 0
               ? term.activitiesScore.map((activity) => ({
-                activityId:
-                  activity.activityId?._id || activity.activityId || null,
-                score: activity.score || "",
-                title: activity.activityId?.title || activity.title || "",
-                _id: activity._id || undefined,
-              }))
+                  activityId:
+                    activity.activityId?._id || activity.activityId || null,
+                  score: activity.score || "",
+                  title: activity.activityId?.title || activity.title || "",
+                  _id: activity._id || undefined,
+                }))
               : [{ activityId: "", score: "" }],
         };
       });
 
-      setHouseTermData(termsData);
-      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
+      // Force the first term (index 0) to be the current term and clear
+      // `currentTerm` on all other terms regardless of backend values.
+      const adjustedTerms = termsData.map((t, idx) => ({
+        ...t,
+        currentTerm: idx === 0,
+      }));
+      setHouseTermData(adjustedTerms);
+      setOriginalTermData(JSON.parse(JSON.stringify(adjustedTerms)));
     } else {
       const defaultTerm = [
         {
@@ -505,7 +514,6 @@ const handleRemoveTerm = (termIndex) => {
     }
   }, [formData, originalFormData]);
 
-
   useEffect(() => {
     if (originalFormData && formData && originalTermData && houseTermData) {
       const changes = [];
@@ -517,7 +525,6 @@ const handleRemoveTerm = (termIndex) => {
         }
       });
 
-
       houseTermData.forEach((term, termIndex) => {
         if (term.isNew) {
           Object.keys(term).forEach((key) => {
@@ -528,6 +535,7 @@ const handleRemoveTerm = (termIndex) => {
                 "editedFields",
                 "fieldEditors",
                 "isNew",
+                "currentTerm",
               ].includes(key)
             )
               return;
@@ -585,7 +593,7 @@ const handleRemoveTerm = (termIndex) => {
   }, [id, houseData, isDataFetching]);
 
   const [loading, setLoading] = useState(false);
-  
+
   // Use centralized snackbar hook
   const {
     open: openSnackbar,
@@ -602,7 +610,8 @@ const handleRemoveTerm = (termIndex) => {
         district: house.district || "",
         party: house.party || "",
         photo: house.photo || null,
-        status: house.status || "Active",
+        status: house.status || "active",
+        isNew: house.isNew || false,
         publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
@@ -612,7 +621,6 @@ const handleRemoveTerm = (termIndex) => {
       setOriginalFormData(JSON.parse(JSON.stringify(newFormData)));
     }
   };
-
 
   // Additional cleanup for house data state
   useEffect(() => {
@@ -626,8 +634,6 @@ const handleRemoveTerm = (termIndex) => {
       preFillForm();
     }
   }, [house, terms, isDataFetching]);
-
-
 
   // Use centralized form change tracker hook
   const { handleChange } = useFormChangeTracker({
@@ -648,373 +654,440 @@ const handleRemoveTerm = (termIndex) => {
     fieldName: "photo",
   });
 
- const handleSave = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleSave = async (publishFlag = false, e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setLoading(true);
 
-  try {
-    // Validate term data using centralized validation
-    const termValidation = validateTermData(houseTermData);
-    if (!termValidation.isValid) {
-      setLoading(false);
-      handleSnackbarOpen(termValidation.message, "error");
-      return;
-    }
-
-    // Check for local changes including removal markers
-    const hasLocalChanges =
-      localChanges.length > 0 ||
-      deletedTermIds.length > 0 ||
-      (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
-
-    if (userRole === "editor" && !hasLocalChanges) {
-      setLoading(false);
-      handleSnackbarOpen("No changes detected. Nothing to update.", "info");
-      return;
-    }
-
-    const currentEditor = getCurrentEditor();
-
-    // Delete removed terms first
-    if (deletedTermIds.length > 0) {
-      await Promise.all(
-        deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
-      );
-      setDeletedTermIds([]);
-    }
-
-    const existingEditedFields = Array.isArray(formData.editedFields)
-      ? formData.editedFields
-      : [];
-    const existingFieldsMap = new Map();
-    existingEditedFields.forEach((field) => {
-      let fieldKey;
-      if (
-        Array.isArray(field.field) &&
-        field.field[0] === "votesScore" &&
-        field.name
-      ) {
-        fieldKey = `votesScore_${sanitizeKey(field.name)}`;
-      } else if (
-        Array.isArray(field.field) &&
-        field.field[0] === "activitiesScore" &&
-        field.name
-      ) {
-        fieldKey = `activitiesScore_${sanitizeKey(field.name)}`;
-      } else {
-        fieldKey = Array.isArray(field.field) ? field.field[0] : field;
+    try {
+      // Validate term data using centralized validation
+      const termValidation = validateTermData(houseTermData);
+      if (!termValidation.isValid) {
+        setLoading(false);
+        handleSnackbarOpen(termValidation.message, "error");
+        return;
       }
-      existingFieldsMap.set(fieldKey, { ...field });
-    });
 
-    const processedChanges = [];
+      // Check for local changes including removal markers
+      const hasLocalChanges =
+        localChanges.length > 0 ||
+        deletedTermIds.length > 0 ||
+        (formData?.fieldEditors &&
+          Object.keys(formData.fieldEditors).length > 0);
 
-    // Process vote changes
-    const hasVoteChanged = (termIndex, voteIndex, vote) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-      return (
-        vote.voteId !== originalVote.voteId ||
-        vote.score !== originalVote.score
-      );
-    };
+      // Allow admins to save/publish even if there are no local changes
+      if (!hasLocalChanges && userRole !== "admin") {
+        setLoading(false);
+        handleSnackbarOpen("No changes detected. Nothing to update.", "info");
+        return;
+      }
 
-    // Process activity changes
-    const hasActivityChanged = (termIndex, activityIndex, activity) => {
-      const originalTerm = originalTermData[termIndex] || {};
-      const originalActivity = originalTerm.activitiesScore?.[activityIndex] || {};
-      return (
-        activity.activityId !== originalActivity.activityId ||
-        activity.score !== originalActivity.score
-      );
-    };
+      const currentEditor = getCurrentEditor();
 
-    // Process all term data changes
-    houseTermData.forEach((term, termIndex) => {
-      // Process votes
-      term.votesScore.forEach((vote, voteIndex) => {
-        if (vote.voteId && vote.voteId.toString().trim() !== "") {
-          if (hasVoteChanged(termIndex, voteIndex, vote)) {
-            const voteItem = votes.find((v) => v._id === vote.voteId);
-            if (voteItem) {
-              const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1}`,
-                field: ["votesScore"],
-                name: voteItem.title,
-                termIndex,
-                voteIndex,
-              });
+      // Delete removed terms first
+      if (deletedTermIds.length > 0) {
+        await Promise.all(
+          deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
+        );
+        setDeletedTermIds([]);
+      }
+
+      const existingEditedFields = Array.isArray(formData.editedFields)
+        ? formData.editedFields
+        : [];
+      const existingFieldsMap = new Map();
+      existingEditedFields.forEach((field) => {
+        let fieldKey;
+        if (
+          Array.isArray(field.field) &&
+          field.field[0] === "votesScore" &&
+          field.name
+        ) {
+          fieldKey = `votesScore_${sanitizeKey(field.name)}`;
+        } else if (
+          Array.isArray(field.field) &&
+          field.field[0] === "activitiesScore" &&
+          field.name
+        ) {
+          fieldKey = `activitiesScore_${sanitizeKey(field.name)}`;
+        } else {
+          fieldKey = Array.isArray(field.field) ? field.field[0] : field;
+        }
+        existingFieldsMap.set(fieldKey, { ...field });
+      });
+
+      const processedChanges = [];
+
+      // Process vote changes
+      const hasVoteChanged = (termIndex, voteIndex, vote) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalVotes = originalTerm.votesScore || [];
+        const newVoteId = vote.voteId?._id || vote.voteId;
+
+        if (!newVoteId) {
+          // new/empty vote — treat as changed only if it has a score
+          return !!(vote.score && vote.score !== "");
+        }
+
+        const matchingOriginal = originalVotes.find((ov) => {
+          const ovId = ov.voteId?._id || ov.voteId;
+          return ovId && ovId.toString() === newVoteId.toString();
+        });
+
+        if (matchingOriginal) {
+          return (vote.score || "") !== (matchingOriginal.score || "");
+        }
+
+        // If it's not in original, it's an added vote => changed
+        return true;
+      };
+
+      // Process activity changes
+      const hasActivityChanged = (termIndex, activityIndex, activity) => {
+        const originalTerm = originalTermData[termIndex] || {};
+        const originalActivities = originalTerm.activitiesScore || [];
+        const newActId = activity.activityId?._id || activity.activityId;
+
+        if (!newActId) {
+          return !!(activity.score && activity.score !== "");
+        }
+
+        const matchingOriginal = originalActivities.find((oa) => {
+          const oaId = oa.activityId?._id || oa.activityId;
+          return oaId && oaId.toString() === newActId.toString();
+        });
+
+        if (matchingOriginal) {
+          return (activity.score || "") !== (matchingOriginal.score || "");
+        }
+
+        return true;
+      };
+
+      // Process all term data changes
+      houseTermData.forEach((term, termIndex) => {
+        // Process votes
+        term.votesScore.forEach((vote, voteIndex) => {
+          if (vote.voteId && vote.voteId.toString().trim() !== "") {
+            if (hasVoteChanged(termIndex, voteIndex, vote)) {
+              const voteItem = votes.find((v) => v._id === vote.voteId);
+              if (voteItem) {
+                const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Scored Vote ${
+                    voteIndex + 1
+                  }`,
+                  field: ["votesScore"],
+                  name: voteItem.title,
+                  termIndex,
+                  voteIndex,
+                });
+              }
             }
           }
+        });
+
+        // Process activities
+        term.activitiesScore.forEach((activity, activityIndex) => {
+          if (
+            activity.activityId &&
+            activity.activityId.toString().trim() !== ""
+          ) {
+            if (hasActivityChanged(termIndex, activityIndex, activity)) {
+              const activityItem = houseActivities.find(
+                (a) => a._id === activity.activityId
+              );
+              if (activityItem) {
+                const uniqueId = `activitiesScore_${sanitizeKey(
+                  activityItem.title
+                )}`;
+                processedChanges.push({
+                  uniqueId,
+                  displayName: `Term ${termIndex + 1}: Tracked Activity ${
+                    activityIndex + 1
+                  }`,
+                  field: ["activitiesScore"],
+                  name: activityItem.title,
+                  termIndex,
+                  activityIndex,
+                });
+              }
+            }
+          }
+        });
+      });
+
+      // Process local changes (including removal markers)
+      localChanges.forEach((change) => {
+        // Handle removal markers
+        if (change.endsWith("_removed")) {
+          const removalMatch = change.match(
+            /^term(\d+)_(ScoredVote|TrackedActivity)_(\d+)_removed$/
+          );
+          if (removalMatch) {
+            const [, termIndex, type, itemIndex] = removalMatch;
+            const displayName =
+              type === "ScoredVote"
+                ? `Term ${
+                    parseInt(termIndex) + 1
+                  }: Scored Vote ${itemIndex} - Removed`
+                : `Term ${
+                    parseInt(termIndex) + 1
+                  }: Tracked Activity ${itemIndex} - Removed`;
+
+            processedChanges.push({
+              uniqueId: change,
+              displayName,
+              field: [change],
+              name: displayName,
+            });
+          }
+        } else if (
+          !change.includes("votesScore_") &&
+          !change.includes("activitiesScore_") &&
+          !change.startsWith("term")
+        ) {
+          // Handle other basic field changes
+          processedChanges.push({
+            uniqueId: change,
+            displayName: getFieldDisplayName(change),
+            field: [change],
+            name: getFieldDisplayName(change),
+          });
         }
       });
 
-      // Process activities
-      term.activitiesScore.forEach((activity, activityIndex) => {
-        if (activity.activityId && activity.activityId.toString().trim() !== "") {
-          if (hasActivityChanged(termIndex, activityIndex, activity)) {
+      // Process term-level changes
+      const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+      const hasNonDefaultValue = (field, value) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string" && value.trim() === "") return false;
+        if (field === "currentTerm" && value === false) return false;
+        return true;
+      };
+
+      houseTermData.forEach((term, termIndex) => {
+        const originalTerm = originalTermData?.[termIndex] || {};
+        const termFields = ["summary", "rating", "termId"];
+
+        termFields.forEach((field) => {
+          const newValue = term[field];
+          const oldValue = originalTerm[field];
+
+          if (
+            !isEqual(newValue, oldValue) &&
+            hasNonDefaultValue(field, newValue)
+          ) {
+            const fieldName = `term${termIndex}_${field}`;
+            processedChanges.push({
+              uniqueId: fieldName,
+              displayName: `Term ${termIndex + 1}: ${
+                fieldLabels[field] || field
+              }`,
+              field: [fieldName],
+              name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
+            });
+          }
+        });
+      });
+
+      // Update existing fields map with processed changes
+      processedChanges.forEach((change) => {
+        const existingField = existingFieldsMap.get(change.uniqueId);
+        if (!existingField || existingField.name !== change.name) {
+          existingFieldsMap.set(change.uniqueId, {
+            field: change.field,
+            name: change.name,
+            updatedAt: new Date().toISOString(),
+            fromQuorum: existingField?.fromQuorum || false,
+            _id: existingField?._id,
+          });
+        } else {
+          existingFieldsMap.set(change.uniqueId, {
+            ...existingField,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      });
+
+      const allChanges = Array.from(existingFieldsMap.values());
+      const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
+
+      // Update field editors for all changes
+      localChanges.forEach((change) => {
+        let editorKey;
+
+        const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
+        if (voteMatch) {
+          const [, termIndex, voteIndex] = voteMatch;
+          const term = houseTermData[parseInt(termIndex)];
+          const vote = term?.votesScore?.[parseInt(voteIndex)];
+          if (vote && vote.voteId) {
+            const voteItem = votes.find((v) => v._id === vote.voteId);
+            if (voteItem && voteItem.title) {
+              editorKey = `votesScore_${sanitizeKey(voteItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
+            }
+          }
+          return;
+        }
+
+        const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
+        if (activityMatch) {
+          const [, termIndex, activityIndex] = activityMatch;
+          const term = houseTermData[parseInt(termIndex)];
+          const activity = term?.activitiesScore?.[parseInt(activityIndex)];
+          if (activity && activity.activityId) {
             const activityItem = houseActivities.find(
               (a) => a._id === activity.activityId
             );
-            if (activityItem) {
-              const uniqueId = `activitiesScore_${sanitizeKey(activityItem.title)}`;
-              processedChanges.push({
-                uniqueId,
-                displayName: `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1}`,
-                field: ["activitiesScore"],
-                name: activityItem.title,
-                termIndex,
-                activityIndex,
-              });
+            if (activityItem && activityItem.title) {
+              editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
+              updatedFieldEditors[editorKey] = currentEditor;
             }
           }
+          return;
+        }
+
+        // Handle removal markers
+        if (change.endsWith("_removed")) {
+          editorKey = change;
+          updatedFieldEditors[editorKey] = currentEditor;
+        } else {
+          editorKey = change;
+          updatedFieldEditors[editorKey] = currentEditor;
         }
       });
-    });
 
-    // Process local changes (including removal markers)
-    localChanges.forEach((change) => {
-      // Handle removal markers
-      if (change.endsWith('_removed')) {
-        const removalMatch = change.match(/^term(\d+)_(ScoredVote|TrackedActivity)_(\d+)_removed$/);
-        if (removalMatch) {
-          const [, termIndex, type, itemIndex] = removalMatch;
-          const displayName = type === 'ScoredVote' 
-            ? `Term ${parseInt(termIndex) + 1}: Scored Vote ${itemIndex} - Removed`
-            : `Term ${parseInt(termIndex) + 1}: Tracked Activity ${itemIndex} - Removed`;
-          
-          processedChanges.push({
-            uniqueId: change,
-            displayName,
-            field: [change],
-            name: displayName,
-          });
-        }
-      } else if (
-        !change.includes("votesScore_") &&
-        !change.includes("activitiesScore_") &&
-        !change.startsWith("term")
-      ) {
-        // Handle other basic field changes
-        processedChanges.push({
-          uniqueId: change,
-          displayName: getFieldDisplayName(change),
-          field: [change],
-          name: getFieldDisplayName(change),
-        });
-      }
-    });
-
-    // Process term-level changes
-    const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-    const hasNonDefaultValue = (field, value) => {
-      if (value === null || value === undefined) return false;
-      if (typeof value === "string" && value.trim() === "") return false;
-      if (field === "currentTerm" && value === false) return false;
-      return true;
-    };
-
-    houseTermData.forEach((term, termIndex) => {
-      const originalTerm = originalTermData?.[termIndex] || {};
-      const termFields = ["summary", "rating", "currentTerm", "termId"];
-
-      termFields.forEach((field) => {
-        const newValue = term[field];
-        const oldValue = originalTerm[field];
-
-        if (!isEqual(newValue, oldValue) && hasNonDefaultValue(field, newValue)) {
-          const fieldName = `term${termIndex}_${field}`;
-          processedChanges.push({
-            uniqueId: fieldName,
-            displayName: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
-            field: [fieldName],
-            name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
-          });
+      // Ensure all processed changes have field editors
+      processedChanges.forEach((change) => {
+        if (!updatedFieldEditors[change.uniqueId]) {
+          updatedFieldEditors[change.uniqueId] = currentEditor;
         }
       });
-    });
 
-    // Update existing fields map with processed changes
-    processedChanges.forEach((change) => {
-      const existingField = existingFieldsMap.get(change.uniqueId);
-      if (!existingField || existingField.name !== change.name) {
-        existingFieldsMap.set(change.uniqueId, {
-          field: change.field,
-          name: change.name,
-          updatedAt: new Date().toISOString(),
-          fromQuorum: existingField?.fromQuorum || false,
-          _id: existingField?._id,
-        });
-      } else {
-        existingFieldsMap.set(change.uniqueId, {
-          ...existingField,
-          updatedAt: new Date().toISOString(),
-        });
-      }
-    });
-
-    const allChanges = Array.from(existingFieldsMap.values());
-    const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
-
-    // Update field editors for all changes
-    localChanges.forEach((change) => {
-      let editorKey;
-
-      const voteMatch = change.match(/^term(\d+)_ScoredVote_(\d+)$/);
-      if (voteMatch) {
-        const [, termIndex, voteIndex] = voteMatch;
-        const term = houseTermData[parseInt(termIndex)];
-        const vote = term?.votesScore?.[parseInt(voteIndex)];
-        if (vote && vote.voteId) {
-          const voteItem = votes.find((v) => v._id === vote.voteId);
-          if (voteItem && voteItem.title) {
-            editorKey = `votesScore_${sanitizeKey(voteItem.title)}`;
-            updatedFieldEditors[editorKey] = currentEditor;
-          }
-        }
-        return;
-      }
-
-      const activityMatch = change.match(/^term(\d+)_TrackedActivity_(\d+)$/);
-      if (activityMatch) {
-        const [, termIndex, activityIndex] = activityMatch;
-        const term = houseTermData[parseInt(termIndex)];
-        const activity = term?.activitiesScore?.[parseInt(activityIndex)];
-        if (activity && activity.activityId) {
-          const activityItem = houseActivities.find(
-            (a) => a._id === activity.activityId
-          );
-          if (activityItem && activityItem.title) {
-            editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
-            updatedFieldEditors[editorKey] = currentEditor;
-          }
-        }
-        return;
-      }
-
-      // Handle removal markers
-      if (change.endsWith('_removed')) {
-        editorKey = change;
-        updatedFieldEditors[editorKey] = currentEditor;
-      } else {
-        editorKey = change;
-        updatedFieldEditors[editorKey] = currentEditor;
-      }
-    });
-
-    // Ensure all processed changes have field editors
-    processedChanges.forEach((change) => {
-      if (!updatedFieldEditors[change.uniqueId]) {
-        updatedFieldEditors[change.uniqueId] = currentEditor;
-      }
-    });
-
-    const representativeUpdate = {
-      ...formData,
-      editedFields: allChanges,
-      fieldEditors: updatedFieldEditors,
-      publishStatus: userRole === "admin" ? "published" : "under review",
-    };
-
-    if (representativeUpdate.publishStatus === "published") {
-      representativeUpdate.editedFields = [];
-      representativeUpdate.fieldEditors = {};
-    }
-
-    // Update house data
-    if (id) {
-      const formDataToSend = new FormData();
-      Object.entries(representativeUpdate).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          if (typeof value === "object" && !(value instanceof File)) {
-            formDataToSend.append(key, JSON.stringify(value));
-          } else {
-            formDataToSend.append(key, value);
-          }
-        }
-      });
-      await dispatch(updateHouse({ id, formData: formDataToSend })).unwrap();
-    }
-
-    // Update house term data
-    const termPromises = houseTermData.map((term, index) => {
-      const cleanVotesScore = term.votesScore
-        .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
-        .map((vote) => ({
-          voteId: vote.voteId.toString(),
-          score: vote.score,
-          title: vote.title || "",
-        }));
-
-      const cleanActivitiesScore = term.activitiesScore
-        .filter(
-          (activity) =>
-            activity.activityId && activity.activityId.toString().trim() !== ""
-        )
-        .map((activity) => ({
-          activityId: activity.activityId.toString(),
-          score: activity.score,
-        }));
-
-      const termSpecificChanges = allChanges.filter((f) => {
-        const fieldName = typeof f === "string" ? f : Array.isArray(f.field) ? f.field[0] : f.field;
-        return fieldName.startsWith(`term${index}_`);
-      });
-
-      const termUpdate = {
-        ...term,
-        votesScore: cleanVotesScore,
-        activitiesScore: cleanActivitiesScore,
-        isNew: false,
-        houseId: id,
-        editedFields: termSpecificChanges,
+      const representativeUpdate = {
+        ...formData,
+        editedFields: allChanges,
         fieldEditors: updatedFieldEditors,
+        publishStatus: publishFlag
+          ? "published"
+          : userRole === "admin"
+          ? "under review"
+          : "under review",
       };
 
-      return term._id
-        ? dispatch(updateHouseData({ id: term._id, data: termUpdate })).unwrap()
-        : dispatch(createHouseData(termUpdate)).unwrap();
-    });
+      if (representativeUpdate.publishStatus === "published") {
+        representativeUpdate.editedFields = [];
+        representativeUpdate.fieldEditors = {};
+      }
 
-    await Promise.all(termPromises);
+      // Update house data
+      if (id) {
+        const formDataToSend = new FormData();
+        Object.entries(representativeUpdate).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (typeof value === "object" && !(value instanceof File)) {
+              formDataToSend.append(key, JSON.stringify(value));
+            } else {
+              formDataToSend.append(key, value);
+            }
+          }
+        });
+        await dispatch(updateHouse({ id, formData: formDataToSend })).unwrap();
+      }
 
-    // Refresh data
-    await dispatch(getHouseDataByHouseId(id)).unwrap();
-    await dispatch(getHouseById(id)).unwrap();
+      // Update house term data
+      const termPromises = houseTermData.map((term, index) => {
+        const cleanVotesScore = term.votesScore
+          .filter((vote) => vote.voteId && vote.voteId.toString().trim() !== "")
+          .map((vote) => ({
+            voteId: vote.voteId.toString(),
+            score: vote.score,
+            title: vote.title || "",
+          }));
 
-    // Reset states
-    setOriginalFormData(JSON.parse(JSON.stringify(formData)));
-    setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
-    setLocalChanges([]);
-    setDeletedTermIds([]);
+        const cleanActivitiesScore = term.activitiesScore
+          .filter(
+            (activity) =>
+              activity.activityId &&
+              activity.activityId.toString().trim() !== ""
+          )
+          .map((activity) => ({
+            activityId: activity.activityId.toString(),
+            score: activity.score,
+          }));
 
-    userRole === "admin"
-      ? handleSnackbarOpen("Changes published successfully!", "success")
-      : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
+        const termSpecificChanges = allChanges.filter((f) => {
+          const fieldName =
+            typeof f === "string"
+              ? f
+              : Array.isArray(f.field)
+              ? f.field[0]
+              : f.field;
+          return fieldName.startsWith(`term${index}_`);
+        });
+
+        const termUpdate = {
+          ...term,
+          votesScore: cleanVotesScore,
+          activitiesScore: cleanActivitiesScore,
+          isNew: false,
+          houseId: id,
+          editedFields: termSpecificChanges,
+          fieldEditors: updatedFieldEditors,
+        };
+
+        return term._id
+          ? dispatch(
+              updateHouseData({ id: term._id, data: termUpdate })
+            ).unwrap()
+          : dispatch(createHouseData(termUpdate)).unwrap();
+      });
+
+      await Promise.all(termPromises);
+
+      // Refresh data
+      await dispatch(getHouseDataByHouseId(id)).unwrap();
+      await dispatch(getHouseById(id)).unwrap();
+
+      // Reset states
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setOriginalTermData(JSON.parse(JSON.stringify(houseTermData)));
+      setLocalChanges([]);
+      setDeletedTermIds([]);
+
+      if (publishFlag) {
+        handleSnackbarOpen("Changes published successfully!", "success");
+      } else if (userRole === "admin") {
+        handleSnackbarOpen("Changes saved (draft).", "success");
+      } else {
+        handleSnackbarOpen(
+          'Status changed to "Draft" for admin to moderate.',
           "info"
         );
-  } catch (error) {
-    console.error("Save failed:", error);
-    
-    let errorMessage = getErrorMessage(error, "Operation failed. Please try again.");
-    if (error?.code === 11000) {
-      errorMessage = "Duplicate entry: This house term already exists.";
-    } else if (error?.config?.url?.includes("updateHouse")) {
-      errorMessage = "Failed to update house data.";
-    } else if (error?.config?.url?.includes("updateHouseData")) {
-      errorMessage = "Failed to update house term.";
-    } else if (error?.config?.url?.includes("createHouseData")) {
-      errorMessage = "Failed to create house term.";
+      }
+    } catch (error) {
+
+      let errorMessage = getErrorMessage(
+        error,
+        "Operation failed. Please try again."
+      );
+      if (error?.code === 11000) {
+        errorMessage = "Duplicate entry: This house term already exists.";
+      } else if (error?.config?.url?.includes("updateHouse")) {
+        errorMessage = "Failed to update house data.";
+      } else if (error?.config?.url?.includes("updateHouseData")) {
+        errorMessage = "Failed to update house term.";
+      } else if (error?.config?.url?.includes("createHouseData")) {
+        errorMessage = "Failed to create house term.";
+      }
+
+      handleSnackbarOpen(errorMessage, "error");
+    } finally {
+      setLoading(false);
     }
-    
-    handleSnackbarOpen(errorMessage, "error");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const getFilteredVotes = (termIndex) => {
     const term = houseTermData[termIndex];
@@ -1022,7 +1095,6 @@ const handleRemoveTerm = (termIndex) => {
 
     const selectedTerm = terms.find((t) => t._id === term.termId);
     if (!selectedTerm || !selectedTerm.congresses) return votes || [];
-  
 
     return (votes || []).filter(
       (vote) =>
@@ -1086,30 +1158,30 @@ const handleRemoveTerm = (termIndex) => {
         descColor: "#1976D2",
       },
       "under review": {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Under Review",
+        title: "Saved Draft",
         description:
           editedFields.length > 0
             ? `Waiting approval for ${editedFields.length} changes`
             : "No changes pending review",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
       published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
     };
 
@@ -1125,9 +1197,7 @@ const handleRemoveTerm = (termIndex) => {
 
   const handleDiscard = () => {
     if (!id) {
-      setSnackbarMessage("No house selected");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
+      handleSnackbarOpen("No house selected", "error");
       return;
     }
     setOpenDiscardDialog(true);
@@ -1142,21 +1212,18 @@ const handleRemoveTerm = (termIndex) => {
       navigate(0);
       await dispatch(getHouseById(id));
       await dispatch(getHouseDataByHouseId(id));
-      setSnackbarMessage(
-        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      handleSnackbarOpen(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
+        "success"
       );
-      setSnackbarSeverity("success");
       setComponentKey((prev) => prev + 1);
     } catch (error) {
-      console.error("Discard failed:", error);
       const errorMessage = getErrorMessage(
         error,
         `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
       );
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
+      handleSnackbarOpen(errorMessage, "error");
     } finally {
-      setOpenSnackbar(true);
       setLoading(false);
     }
   };
@@ -1189,7 +1256,11 @@ const handleRemoveTerm = (termIndex) => {
               gap: 1,
             }}
           >
-            <ActionButtons onDiscard={handleDiscard} onSave={handleSave} userRole={userRole} />
+            <ActionButtons
+              onDiscard={handleDiscard}
+              onSave={handleSave}
+              userRole={userRole}
+            />
             <StatusDisplay
               userRole={userRole}
               formData={formData}
@@ -1200,7 +1271,12 @@ const handleRemoveTerm = (termIndex) => {
             />
 
             <Paper className="customPaper">
-              <DialogBox userRole={userRole} openDiscardDialog={openDiscardDialog} setOpenDiscardDialog={setOpenDiscardDialog} handleConfirmDiscard={handleConfirmDiscard} />
+              <DialogBox
+                userRole={userRole}
+                openDiscardDialog={openDiscardDialog}
+                setOpenDiscardDialog={setOpenDiscardDialog}
+                handleConfirmDiscard={handleConfirmDiscard}
+              />
 
               <BasicInfo
                 formData={formData}
@@ -1297,16 +1373,16 @@ const handleRemoveTerm = (termIndex) => {
                       size={isMobile ? 6 : 2.1}
                       sx={{ alignContent: "center" }}
                     >
-                      <InputLabel className="label">Current Term</InputLabel>
+                      {/* <InputLabel className="label">Current Term</InputLabel> */}
                     </Grid>
                     <Grid size={isMobile ? 6 : 0}>
-                      <Switch
+                      {/* <Switch
                         {...label}
                         name="currentTerm"
                         checked={term.currentTerm}
                         onChange={(e) => handleSwitchChange(e, termIndex)}
                         color="warning"
-                      />
+                      /> */}
                     </Grid>
 
                     <Grid size={isMobile ? 6 : 2.39}>
@@ -1327,8 +1403,8 @@ const handleRemoveTerm = (termIndex) => {
                             Select a rating
                           </MenuItem>
                           {rating.map((rate, index) => (
-                            <MenuItem key={index} value={rate}>
-                              {rate}
+                            <MenuItem key={index} value={rate.value}>
+                              {rate.label}
                             </MenuItem>
                           ))}
                         </Select>
@@ -1369,7 +1445,7 @@ const handleRemoveTerm = (termIndex) => {
                             return prev;
                           });
                         }}
-                        onBlur={() => { }}
+                        onBlur={() => {}}
                         init={{
                           base_url: "/scorecard/admin/tinymce",
                           height: 250,

@@ -50,7 +50,10 @@ const xThemeComponents = {
 };
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
-import { getToken, getUserRole } from "../utils/auth";
+import axios from "axios";
+import { API_URL } from "../redux/API";
+import { jwtDecode } from "jwt-decode";
+import { getToken, getUserRole, getUser } from "../utils/auth";
 import { useSnackbar } from "../hooks";
 
 
@@ -77,10 +80,12 @@ export default function Activity(props) {
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
-  const statusOptions = ["published", "draft", "under review"];
+  const statusOptions = ["published", "draft"];
   const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); 
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
   const [bulkTrackActivity, setBulkTrackActivity] = useState("");
+  const [isAssignMode, setIsAssignMode] = useState(false);
+  const [assignTarget, setAssignTarget] = useState("auto");
 
   
   useEffect(() => {
@@ -95,7 +100,8 @@ export default function Activity(props) {
  
     const statusMatch =
       statusFilter.length === 0 ||
-      (activity.status && statusFilter.includes(activity.status));
+      (activity.status && statusFilter.includes(activity.status)) ||
+      (statusFilter.includes("draft") && activity.status === "under review");
 
     const searchMatch =
       !searchQuery ||
@@ -209,7 +215,6 @@ export default function Activity(props) {
      
       dispatch(getAllActivity());
     } catch (error) {
-      console.error("Bulk update failed:", error);
       const errorMessage = getErrorMessage(error, "Failed to update activities");
       showSnackbar(errorMessage, "error");
     } finally {
@@ -340,6 +345,17 @@ export default function Activity(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
+                {/* {userRole === "admin" && (
+                  <Button
+                    onClick={() => {
+                      setIsAssignMode(!isAssignMode);
+                      if (!isAssignMode) setIsBulkEditMode(false);
+                    }}
+                    className={`bulkEditBtn ${isAssignMode ? "active" : ""}`}
+                  >
+                    {isAssignMode ? "Cancel Assign" : "Assign Activity"}
+                  </Button>
+                )} */}
                 {userRole === "admin" && (
                   <Button
                     onClick={() => navigate("/search-activities")}
@@ -353,8 +369,10 @@ export default function Activity(props) {
             </Box>
             {isBulkEditMode && (
               <Box className="bulkEditContainer">
-                <Typography variant="subtitle1">
-                  {selectedTrackActivity.length} activity(ies) selected
+                <Typography variant="subtitle1"
+                  sx={{ fontSize: { xs: "11px", md: "14px" } }}
+                >
+                  {selectedTrackActivity.length === 1 ? "1 Activity selected" : `${selectedTrackActivity.length} Activities selected`}
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -384,6 +402,88 @@ export default function Activity(props) {
               </Box>
             )}
 
+            {isAssignMode && (
+              <Box className="bulkEditContainer">
+                <Typography variant="subtitle1"
+                  sx={{ fontSize: { xs: "11px", md: "14px" } }}
+                >
+                  {selectedTrackActivity.length <= 1 ? `${selectedTrackActivity.length} Activity selected` : `${selectedTrackActivity.length} Activities selected`}
+                </Typography>
+
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <TextField
+                    select
+                    value={assignTarget}
+                    onChange={(e) => setAssignTarget(e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 160 }}
+                  >
+                    <MenuItem value="auto">Populate Missing Legislators</MenuItem>
+                  </TextField>
+
+                  <Button
+                    disabled={!selectedTrackActivity.length}
+                    onClick={async () => {
+                      setFetching(true);
+                      try {
+                        const selectedActivityObjects = activities.filter((a) =>
+                          selectedTrackActivity.includes(a._id || String(a._id))
+                        );
+
+                        if (!selectedActivityObjects.length) {
+                          showSnackbar("No valid activities selected.", "warning");
+                          setFetching(false);
+                          return;
+                        }
+
+                        const ids = selectedActivityObjects.map((a) => a._id || String(a._id));
+
+                        const getEditorInfo = () => {
+                          try {
+                            if (!token) return null;
+                            const decoded = jwtDecode(token);
+                            const user = getUser();
+                            return {
+                              editorId: decoded.userId || decoded.id || "unknown",
+                              editorName: user || decoded.name || decoded.username || "Unknown Editor",
+                              editedAt: new Date().toISOString(),
+                            };
+                          } catch (e) {
+                            return { editorId: "unknown", editorName: "Unknown Editor", editedAt: new Date().toISOString() };
+                          }
+                        };
+
+                        const editorInfo = getEditorInfo();
+
+                        const response = await axios.post(
+                          `${API_URL}/api/v1/admin/activities/populate-sponsors`,
+                          { billIds: ids, editorInfo },
+                          { headers: { Authorization: `Bearer ${token}` } }
+                        );
+
+                        if (response && response.data) {
+                          await dispatch(getAllActivity());
+                          showSnackbar("Assigned/populated activities successfully.", "success");
+                          setSelectedTrackActivity([]);
+                          setIsAssignMode(false);
+                        } else {
+                          showSnackbar("Failed to assign activities.", "error");
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        showSnackbar("Failed to assign activities.", "error");
+                      } finally {
+                        setFetching(false);
+                      }
+                    }}
+                    className="applyBtn"
+                  >
+                    Apply
+                  </Button>
+                </Stack>
+              </Box>
+            )}
+
             <MainGrid
               type="activities"
               data={activitiesData}
@@ -391,7 +491,7 @@ export default function Activity(props) {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               handleToggleStatusAct={handleToggleStatusAct}
-              isSelectable={isBulkEditMode}
+              isSelectable={isBulkEditMode || isAssignMode}
               onSelectionChange={setSelectedTrackActivity}
               selectedItems={selectedTrackActivity}
             />

@@ -39,7 +39,15 @@ import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
 import HourglassTop from "@mui/icons-material/HourglassTop";
 import { Drafts } from "@mui/icons-material";
 import { List, ListItem, ListItemText } from "@mui/material";
-import { useSnackbar, useAuth, useFileUpload, useFormChangeTracker, useEntityData } from "../hooks";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import {
+  useSnackbar,
+  useAuth,
+  useFileUpload,
+  useFormChangeTracker,
+  useEntityData,
+} from "../hooks";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -48,6 +56,7 @@ import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import DialogBox from "../components/DialogBox";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { jwtDecode } from "jwt-decode";
 const Alert = React.forwardRef(function Alert(props, ref) {
   const { ownerState, ...alertProps } = props;
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...alertProps} />;
@@ -62,6 +71,7 @@ export default function AddActivity(props) {
     type: "",
     title: "",
     shortDesc: "",
+    longDesc: "",
     date: "",
     congress: "",
     readMore: "",
@@ -71,12 +81,17 @@ export default function AddActivity(props) {
   const [fieldEditors, setFieldEditors] = useState({});
   const [openDiscardDialog, setOpenDiscardDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [editorsInitialized, setEditorsInitialized] = useState({
+    shortDesc: false,
+    longDesc: false,
+  });
   // Use centralized auth hook
-  const { token, userRole, getCurrentEditor } = useAuth();
+  const { token, userRole } = useAuth();
 
   // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // mobile detect
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
@@ -95,7 +110,8 @@ export default function AddActivity(props) {
   const fieldLabels = {
     type: "Type",
     title: "Title",
-    shortDesc: "Activity Details",
+    shortDesc: "Short Description",
+    longDesc: "Long Description",
     congress: "Congress",
     date: "Date",
     readMore: "Read More URL",
@@ -123,6 +139,7 @@ export default function AddActivity(props) {
             : "",
         title: selectedActivity.title || "",
         shortDesc: selectedActivity.shortDesc || "",
+        longDesc: selectedActivity.longDesc || "",
         congress: selectedActivity.congress || "",
         date: selectedActivity.date ? selectedActivity.date.split("T")[0] : "",
         readMore: selectedActivity.readMore || "",
@@ -214,16 +231,30 @@ export default function AddActivity(props) {
   });
 
   const handleEditorChange = (content, fieldName) => {
-    if (!hasLocalChanges) {
-      setHasLocalChanges(true);
+    if (!editorsInitialized[fieldName]) {
+      setEditorsInitialized((prev) => ({
+        ...prev,
+        [fieldName]: true,
+      }));
+      return;
     }
+    if (content === formData[fieldName]) {
+      return;
+    }
+
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: content };
 
       if (originalFormData) {
-        const changes = Object.keys(newData).filter((key) =>
-          compareValues(newData[key], originalFormData[key])
-        );
+        const changes = Object.keys(newData).filter((key) => {
+          const newValue = newData[key];
+          const oldValue = originalFormData[key];
+          if (typeof newValue === "string" && typeof oldValue === "string") {
+            return newValue.trim() !== oldValue.trim();
+          }
+          return newValue !== oldValue;
+        });
+
         setEditedFields(changes);
       }
 
@@ -250,7 +281,7 @@ export default function AddActivity(props) {
     }
   };
   const [loading, setLoading] = useState(false);
-  
+
   // Use centralized snackbar hook
   const {
     open: openSnackbar,
@@ -260,7 +291,7 @@ export default function AddActivity(props) {
     hideSnackbar: handleSnackbarClose,
   } = useSnackbar();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (publishFlag = false) => {
     setLoading(true);
     try {
       const formDataToSend = new FormData();
@@ -283,7 +314,12 @@ export default function AddActivity(props) {
       const mergedEditedFields = Array.from(
         new Set([...backendEditedFields, ...editedFields])
       );
-      const currentEditor = getCurrentEditor();
+      const decodedToken = jwtDecode(token);
+      const currentEditor = {
+        editorId: decodedToken.userId,
+        editorName: localStorage.getItem("user") || "Unknown Editor",
+        editedAt: new Date(),
+      };
 
       // Create updated fieldEditors map
       const updatedFieldEditors = { ...(selectedActivity?.fieldEditors || {}) };
@@ -298,8 +334,12 @@ export default function AddActivity(props) {
         JSON.stringify(updatedFieldEditors)
       );
 
-      // Add status ONLY ONCE
-      const finalStatus = userRole === "admin" ? "published" : "under review";
+      // Add status based on publishFlag
+      const finalStatus = publishFlag
+        ? "published"
+        : userRole === "admin"
+        ? "under review"
+        : "under review";
       formDataToSend.append("status", finalStatus);
 
       if (id) {
@@ -325,7 +365,7 @@ export default function AddActivity(props) {
         ).unwrap();
         if (readMoreType === "url") {
           setFormData((prev) => ({ ...prev, readMore: formData.readMore }));
-          setReadMoreType("url"); 
+          setReadMoreType("url");
         } else if (readMoreType === "file" && selectedFile) {
           setFormData((prev) => ({
             ...prev,
@@ -335,12 +375,16 @@ export default function AddActivity(props) {
         }
         await dispatch(getActivityById(id)).unwrap();
 
-        showSnackbar(
-          userRole === "admin"
-            ? "Changes published successfully!"
-            : 'Status changed to "Under Review" for admin to moderate.',
-          "success"
-        );
+        if (publishFlag) {
+          showSnackbar("Changes published successfully!", "success");
+        } else if (userRole === "admin") {
+          showSnackbar("Changes saved (draft).", "success");
+        } else {
+          showSnackbar(
+            'Status changed to "Draft" for admin to moderate.',
+            "info"
+          );
+        }
 
         if (userRole !== "admin") {
           setFormData((prev) => ({ ...prev, status: "under review" }));
@@ -350,10 +394,15 @@ export default function AddActivity(props) {
           }
         }
       } else {
-        if (!formData.type || !formData.title || !formData.shortDesc) {
-        showSnackbar("Please fill all fields!", "warning");
-        setLoading(false);
-        return;
+        if (
+          !formData.type ||
+          !formData.title ||
+          !formData.shortDesc ||
+          !formData.longDesc
+        ) {
+          showSnackbar("Please fill all fields!", "warning");
+          setLoading(false);
+          return;
         }
 
         const result = await dispatch(createActivity(formDataToSend)).unwrap();
@@ -378,12 +427,11 @@ export default function AddActivity(props) {
           console.error("Activity (_id) is missing in the API response.");
         }
 
-        setHasLocalChanges(false); 
+        setHasLocalChanges(false);
         setEditedFields([]);
 
         setOriginalFormData({ ...formData, status: finalStatus });
       }
-
     } catch (error) {
       console.error("Save error:", error);
       const errorMessage = getErrorMessage(error, "Operation failed");
@@ -439,37 +487,39 @@ export default function AddActivity(props) {
         descColor: "#1976D2",
       },
       "under review": {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Under Review",
+        title: "Saved Draft",
         description:
           editedFields.length > 0
             ? `Edited fields: ${editedFields
                 .map((f) => fieldLabels[f] || f)
                 .join(", ")}`
             : "No recent changes",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
       published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
     };
 
     return configs[currentStatus];
   };
+
+
 
   const currentStatus =
     formData.status || (userRole === "admin" ? "published" : "");
@@ -573,27 +623,57 @@ export default function AddActivity(props) {
               }}
             >
               {/* Show Discard button only for existing activities */}
-              {id && (
-                <Button
-                  variant="outlined"
-                  onClick={handleDiscard}
-                  className="discardBtn"
-                >
-                  {userRole === "admin" ? "Discard" : "Undo"}
-                </Button>
-              )}
-
               <Button
                 variant="outlined"
-                onClick={handleSubmit}
-                className="publishBtn"
+                onClick={handleDiscard}
+                className="discardBtn"
               >
-                {id
-                  ? userRole === "admin"
-                    ? "Publish"
-                    : "Save Changes"
-                  : "Create"}
+                Discard
+                {/* {userRole === "admin" ? "Discard" : "Undo"} */}
               </Button>
+
+              {id ? (
+                userRole === "admin" ? (
+                  <>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleSubmit(false)}
+                      className="publishBtn"
+                    >
+                      Save Draft
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleSubmit(true)}
+                      sx={{
+                        backgroundColor: "#2E7D32 !important",
+                        color: "white !important",
+                        padding: "0.5rem 1.5rem",
+                        marginLeft: "0.5rem",
+                        "&:hover": { backgroundColor: "#216A2A !important" },
+                      }}
+                    >
+                      Publish
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleSubmit(false)}
+                    className="publishBtn"
+                  >
+                    Save Draft
+                  </Button>
+                )
+              ) : (
+                <Button
+                  variant="outlined"
+                  onClick={() => handleSubmit(false)}
+                  className="publishBtn"
+                >
+                  Create
+                </Button>
+              )}
             </Stack>
             {userRole &&
               statusData &&
@@ -604,7 +684,7 @@ export default function AddActivity(props) {
                     p: 2,
                     backgroundColor: statusData.backgroundColor,
                     borderLeft: `4px solid ${statusData.borderColor}`,
-                    borderRadius: "0 8px 8px 0",
+                    borderRadius: "8px 8px 8px 8px",
                     boxShadow: 1,
                     mb: 2,
                   }}
@@ -621,9 +701,9 @@ export default function AddActivity(props) {
                           formData.status === "draft"
                             ? "66, 165, 245"
                             : formData.status === "under review"
-                            ? "230, 81, 0"
+                            ? "66, 165, 245"
                             : formData.status === "published"
-                            ? "76, 175, 80"
+                            ? "66, 165, 245"
                             : "244, 67, 54"
                         }, 0.2)`,
                         display: "grid",
@@ -657,6 +737,38 @@ export default function AddActivity(props) {
                         >
                           {statusData.title}
                         </Typography>
+                        {formData.status !== "draft" && (
+                          <Button
+                            variant="outlined"
+                            onClick={() => setShowHistory((s) => !s)}
+                            startIcon={
+                              showHistory ? (
+                                <VisibilityOffIcon />
+                              ) : (
+                                <VisibilityIcon />
+                              )
+                            }
+                            sx={{
+                              backgroundColor: showHistory
+                                ? "transparent"
+                                : "#173A5E !important",
+                              color: showHistory
+                                ? "text.primary"
+                                : "white !important",
+                              padding: "0.35rem 0.8rem",
+                              fontSize: "0.8rem",
+                              textTransform: "none",
+                              borderColor: "divider",
+                              "&:hover": {
+                                backgroundColor: showHistory
+                                  ? "rgba(0,0,0,0.04)"
+                                  : "#1E4C80 !important",
+                              },
+                            }}
+                          >
+                            {showHistory ? "Hide History" : "Show History"}
+                          </Button>
+                        )}
                       </Box>
 
                       {/* Pending / New fields list */}
@@ -695,7 +807,7 @@ export default function AddActivity(props) {
                           return (
                             <>
                               {/* Backend pending changes */}
-                              {backendChanges.length > 0 && (
+                              {showHistory && backendChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "#fff",
@@ -706,12 +818,12 @@ export default function AddActivity(props) {
                                     mb: 2,
                                   }}
                                 >
-                                  <Typography
+                                  {/* <Typography
                                     variant="overline"
                                     sx={{ color: "text.secondary", mb: 1 }}
                                   >
                                     {id ? "Saved Changes" : "New Fields"}
-                                  </Typography>
+                                  </Typography> */}
                                   <List dense sx={{ py: 0 }}>
                                     {backendChanges.map((field) => {
                                       const editorInfo =
@@ -781,7 +893,7 @@ export default function AddActivity(props) {
                               )}
 
                               {/* Local unsaved changes - now matches senator style */}
-                              {localChanges.length > 0 && (
+                              {showHistory && localChanges.length > 0 && (
                                 <Box
                                   sx={{
                                     backgroundColor: "#fff",
@@ -797,7 +909,7 @@ export default function AddActivity(props) {
                                   >
                                     {formData.status === "published"
                                       ? ""
-                                      : "Unsaved Changes"}
+                                      : "Unsaved Draft"}
                                   </Typography>
                                   <List dense sx={{ py: 0 }}>
                                     {localChanges.map((field) => (
@@ -902,7 +1014,7 @@ export default function AddActivity(props) {
                   </Grid>
 
                   <Grid size={isMobile ? 12 : 2}>
-                    <InputLabel className="label">Activity Details</InputLabel>
+                    <InputLabel className="label">Short Description</InputLabel>
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
@@ -913,6 +1025,54 @@ export default function AddActivity(props) {
                         handleEditorChange(content, "shortDesc")
                       }
                       init={{
+                        base_url: "/scorecard/admin/tinymce",
+                        suffix: ".min",
+                        height: 250,
+                        menubar: false,
+                        plugins: [
+                          "advlist",
+                          "autolink",
+                          "lists",
+                          "link",
+                          "image",
+                          "charmap",
+                          "preview",
+                          "anchor",
+                          "searchreplace",
+                          "visualblocks",
+                          "code",
+                          "fullscreen",
+                          "insertdatetime",
+                          "media",
+                          "table",
+                          "code",
+                          "help",
+                          "wordcount",
+                        ],
+                        toolbar:
+                          "undo redo | bold italic | alignleft aligncenter alignright | code",
+                        skin: "oxide",
+                        content_css: "default",
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid size={isMobile ? 12 : 2}>
+                    <InputLabel className="label">Long Description</InputLabel>
+                  </Grid>
+                  <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
+                    <Editor
+                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
+                      value={formData.longDesc}
+                      onEditorChange={(content) =>
+                        handleEditorChange(content, "longDesc")
+                      }
+                      init={{
+                        base_url: "/scorecard/admin/tinymce",
+                        suffix: ".min",
                         height: 250,
                         menubar: false,
                         plugins: [

@@ -49,7 +49,6 @@ export const getAllSenators = createAsyncThunk(
 
       return senators;
     } catch (error) {
-      console.error("Error in getAllSenators:", error);
       console.error("Error details:", {
         message: error.message,
         response: error.response?.data,

@@ -5,6 +5,7 @@ import {
   getAllHouses,
   deleteHouse,
   updateRepresentativeStatus,
+  bulkPublishHouses,
 } from "../redux/reducer/houseSlice";
 import {
   Box,
@@ -50,8 +51,13 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
-import { getAllHouseData } from "../redux/reducer/houseTermSlice";
+import {
+  getAllHouseData,
+  updateHouseScores,
+} from "../redux/reducer/houseTermSlice";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import { getAllVotes } from "../redux/reducer/voteSlice";
+import { getAllActivity } from "../redux/reducer/activitySlice";
 import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";
@@ -61,7 +67,13 @@ export default function Representative(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
-  const { open: snackbarOpen, message: snackbarMessage, severity: snackbarSeverity, showSnackbar, hideSnackbar } = useSnackbar();
+  const {
+    open: snackbarOpen,
+    message: snackbarMessage,
+    severity: snackbarSeverity,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
   const { houses, loading } = useSelector((state) => state.house);
   const [fetching, setFetching] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -79,17 +91,20 @@ export default function Representative(props) {
   const [termFilter, setTermFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedFilter, setExpandedFilter] = useState(null);
+  const [openFetchDialog, setOpenFetchDialog] = useState(false);
+  const [fetchType, setFetchType] = useState("active");
   const [searchTerms, setSearchTerms] = useState({
     party: "",
     district: "",
     rating: "",
     congress: "",
   });
+  const [currentOrFormerFilter, setCurrentOrFormerFilter] = useState("current");
   const { terms } = useSelector((state) => state.term);
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
   const [statusFilter, setStatusFilter] = useState([]);
-  const statusOptions = ["published", "under review", "draft"];
+  const statusOptions = ["published", "draft"];
 
   const getOrdinalSuffix = (num) => {
     const n = Number(num);
@@ -111,6 +126,8 @@ export default function Representative(props) {
     dispatch(getAllHouses());
     dispatch(getAllHouseData());
     dispatch(getAllTerms());
+    dispatch(getAllVotes());
+    dispatch(getAllActivity());
   }, [dispatch]);
 
   useEffect(() => {
@@ -132,7 +149,7 @@ export default function Representative(props) {
           termId = currentTermData.termId;
           rating =
             currentTermData.rating !== undefined &&
-              currentTermData.rating !== null
+            currentTermData.rating !== null
               ? currentTermData.rating
               : "N/A";
           currentTerm = true;
@@ -200,14 +217,14 @@ export default function Representative(props) {
             const termObj = terms.find((t) => t._id === rec.termId);
             return termObj
               ? {
-                termId: rec.termId,
-                termName: termObj.name || "",
-                currentTerm: rec.currentTerm || false,
-                rating: rec.rating,
-                congresses: Array.isArray(termObj.congresses)
-                  ? termObj.congresses
-                  : [],
-              }
+                  termId: rec.termId,
+                  termName: termObj.name || "",
+                  currentTerm: rec.currentTerm || false,
+                  rating: rec.rating,
+                  congresses: Array.isArray(termObj.congresses)
+                    ? termObj.congresses
+                    : [],
+                }
               : null;
           })
           .filter(Boolean);
@@ -279,6 +296,13 @@ export default function Representative(props) {
 
   const filteredRepresentative = transformedHouses.filter(
     (transformedHouse) => {
+      // Current/Former toggle filter - based on status field (case-insensitive)
+      if (currentOrFormerFilter === "current") {
+        if (transformedHouse.status?.toLowerCase() !== "active") return false;
+      } else if (currentOrFormerFilter === "former") {
+        if (transformedHouse.status?.toLowerCase() !== "former") return false;
+      }
+
       if (termFilter === "current") {
         if (transformedHouse.currentTerm !== true) return false;
       } else if (termFilter === "past") {
@@ -318,7 +342,9 @@ export default function Representative(props) {
       const statusMatch =
         statusFilter.length === 0 ||
         (transformedHouse.publishStatus &&
-          statusFilter.includes(transformedHouse.publishStatus));
+          statusFilter.includes(transformedHouse.publishStatus)) ||
+        (statusFilter.includes("draft") &&
+          transformedHouse.publishStatus === "under review");
 
       return (
         nameMatch && partyMatch && districtMatch && ratingMatch && statusMatch
@@ -397,42 +423,133 @@ export default function Representative(props) {
   };
 
   const handleEdit = (row) => {
+    // Don't navigate if it's a bulk operation
+    if (row && row.bulk) {
+      return;
+    }
+    // Don't navigate if _id is missing or undefined
+    if (!row || !row._id) {
+      console.warn("⚠️ handleEdit: Missing _id, skipping navigation", row);
+      return;
+    }
     navigate(`/edit-representative/${row._id}`);
   };
-
-  const fetchRepresentativeFromQuorum = async () => {
-    setFetching(true);
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
-    }, 1000);
-
-    try {
-      const response = await axios.post(
-        `${API_URL}/fetch-quorum/store-data`,
-        { type: "representative" },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        showSnackbar("Success: Representatives fetched successfully!", "success");
-        await dispatch(getAllHouses());
-      } else {
-        throw new Error("Failed to fetch representatives from Quorum.");
-      }
-    } catch (error) {
-      console.error("Error fetching representatives from Quorum:", error);
-      showSnackbar("Error: Unable to fetch representatives.", "error");
-    } finally {
-      clearInterval(interval);
-      setFetching(false);
-      setProgress(100);
-      setTimeout(() => setProgress(0), 500);
+  const handleBulkApply = async ({ ids = [], payload }) => {
+    if (!ids || ids.length === 0 || !payload) {
+      return;
     }
+    if (userRole !== "admin") {
+      showSnackbar("Bulk edit is for admins only", "error");
+      return;
+    }
+
+    const { category, itemId, score } = payload;
+
+    if (!category || !itemId || !score) {
+      showSnackbar("Invalid bulk payload", "error");
+      return;
+    }
+
+    setFetching(true);
+    try {
+      // Build updates array for the bulk update endpoint
+      const updates = ids.map((houseId) => {
+        const update = {
+          houseId: houseId,
+        };
+
+        if (category === "vote") {
+          update.votesScore = [
+            {
+              voteId: itemId,
+              score: score,
+            },
+          ];
+        } else if (category === "activity") {
+          update.activitiesScore = [
+            {
+              activityId: itemId,
+              score: score,
+            },
+          ];
+        }
+
+        return update;
+      });
+
+      const result = await dispatch(updateHouseScores(updates)).unwrap();
+
+      // Check if no representative had the item
+      if (
+        result.message &&
+        result.message.includes("was not found for any of the representatives")
+      ) {
+        showSnackbar(result.message, "error");
+        setFetching(false);
+        return;
+      }
+
+      const successCount = result.successful || 0;
+      const failedCount = result.failed || 0;
+
+      if (result.errors && result.errors.length > 0) {
+        console.warn(`⚠️ Some updates failed:`, result.errors);
+      }
+
+      await dispatch(getAllHouseData());
+      await dispatch(getAllHouses());
+
+      // Show appropriate snackbar based on success count
+      if (successCount === ids.length) {
+        // All succeeded
+        showSnackbar(
+          `Bulk select applied for ${successCount}/${
+            ids.length
+          } representative${successCount !== 1 ? "s" : ""}!`,
+          "success"
+        );
+      } else if (successCount === 0) {
+        // All failed
+        showSnackbar(
+          `Bulk select failed for all ${ids.length} representatives.`,
+          "error"
+        );
+      } else {
+        // Partial success
+        showSnackbar(
+          `Bulk select applied for ${successCount} of ${
+            ids.length
+          } representatives.${
+            failedCount > 0
+              ? ` ${failedCount} failed (item not found for those representatives).`
+              : ""
+          }`,
+          "warning"
+        );
+      }
+    } catch (err) {
+      console.error("❌ Bulk apply failed:", {
+        error: err,
+        errorMessage: err?.message,
+        errorStack: err?.stack,
+        fullError: err,
+      });
+
+      // Check for the specific "not found for any" error
+      if (
+        err?.message?.includes("was not found for any of the representatives")
+      ) {
+        showSnackbar(err.message, "error");
+      } else {
+        showSnackbar("Bulk apply failed.");
+      }
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const handleFetchClick = () => {
+    setOpenFetchDialog(true);
   };
 
   const handleDeleteClick = (row) => {
@@ -456,7 +573,6 @@ export default function Representative(props) {
         "success"
       );
     } catch (error) {
-      console.error("Error deleting representative:", error);
       showSnackbar("Error: Unable to delete representative.", "error");
     } finally {
       clearInterval(interval);
@@ -475,8 +591,94 @@ export default function Representative(props) {
 
       dispatch(getAllHouses());
     } catch (error) {
-      console.error("Failed to update status:", error);
       showSnackbar("Failed to update status.", "error");
+    }
+  };
+
+  const handleBulkPublish = async ({
+    ids = [],
+    publishStatus = "published",
+  }) => {
+    if (!ids.length) return;
+
+    if (userRole !== "admin") {
+      showSnackbar("Bulk publish is for admins only", "error");
+      return;
+    }
+
+    setFetching(true);
+
+    try {
+      const result = await dispatch(bulkPublishHouses(ids)).unwrap();
+      const successCount = result.successful || 0;
+      const failedCount = result.failed || 0;
+      const totalCount = result.totalRepresentatives || ids.length;
+
+      // Refresh the houses list
+      await dispatch(getAllHouses());
+
+      // Build error message if there are failures
+      let errorMessage = "";
+      if (result.errors && result.errors.length > 0) {
+        // Count unique error messages
+        const errorCounts = {};
+        result.errors.forEach((err) => {
+          const msg = err.message || "Unknown error";
+          errorCounts[msg] = (errorCounts[msg] || 0) + 1;
+        });
+
+        // Build unique error messages with counts
+        const uniqueErrors = Object.entries(errorCounts).map(
+          ([msg, count]) => count > 1 ? `${msg}` : msg
+        );
+
+        if (uniqueErrors.length > 0) {
+          errorMessage = uniqueErrors.join(", ");
+        }
+      }
+
+      // Show appropriate snackbar based on success count
+      if (successCount === totalCount) {
+        // All succeeded
+        showSnackbar(
+          `Bulk publish applied for ${successCount}/${totalCount} representative${
+            successCount !== 1 ? "s" : ""
+          }!`,
+          "success"
+        );
+      } else if (successCount === 0) {
+        // All failed
+        const failMsg = errorMessage 
+          ? `Bulk publish failed. ${errorMessage}`
+          : `Bulk publish failed for all ${totalCount} representatives.`;
+        showSnackbar(failMsg, "error");
+      } else {
+        // Partial success
+        const partialMsg = errorMessage
+          ? `Bulk publish applied for ${successCount}/${totalCount} representatives.${failedCount } Failed: ${errorMessage}`
+          : `Bulk publish applied for ${successCount}/${totalCount} representative${
+              successCount !== 1 ? "s" : ""
+            }. ${failedCount} failed.`;
+        showSnackbar(partialMsg, "warning");
+      }
+    } catch (err) {
+      // Handle both thunk rejection and other errors
+      let errorMsg = "Bulk publish failed.";
+      
+      if (err?.payload?.errors && err.payload.errors.length > 0) {
+        const errorMessages = err.payload.errors
+          .map((e) => e.message)
+          .filter(Boolean);
+        errorMsg = errorMessages.length > 0 
+          ? `Bulk publish failed. ${errorMessages.join(", ")}`
+          : errorMsg;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      
+      showSnackbar(errorMsg, "error");
+    } finally {
+      setFetching(false);
     }
   };
 
@@ -487,7 +689,53 @@ export default function Representative(props) {
     congressFilter.length +
     (termFilter ? 1 : 0) +
     statusFilter.length;
+  const fetchRepresentativeFromQuorum = async (status = "active") => {
+    setOpenFetchDialog(false);
+    setFetching(true);
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
+    }, 1000);
 
+    try {
+      const requestBody = {
+        type: "representative",
+      };
+
+      // Use different endpoints based on status
+      const endpoint =
+        status === "former"
+          ? `${API_URL}/fetch-quorum/save-former`
+          : `${API_URL}/fetch-quorum/store-data`;
+
+      const response = await axios.post(endpoint, requestBody, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        const statusText = status === "active" ? "active" : "former";
+        showSnackbar(
+          `Success: ${
+            statusText.charAt(0).toUpperCase() + statusText.slice(1)
+          } representatives fetched successfully!`,
+          "success"
+        );
+        await dispatch(getAllHouses());
+        setFetching(false);
+      } else {
+        throw new Error("Failed to fetch representatives from Quorum");
+      }
+    } catch (error) {
+      showSnackbar("Error: Unable to fetch representatives.", "error");
+    } finally {
+      clearInterval(interval);
+      setFetching(false);
+      setProgress(100);
+      setTimeout(() => setProgress(0), 500);
+    }
+  };
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <LoadingOverlay loading={loading || fetching} />
@@ -503,12 +751,23 @@ export default function Representative(props) {
                   <Button
                     variant="outlined"
                     className="fetchBtn"
-                    onClick={fetchRepresentativeFromQuorum}
+                    onClick={handleFetchClick}
+                  >
+                    Fetch Representatives from Quorum
+                  </Button>
+                </Box>
+              )}
+              {/* {userRole === "admin" && (
+                <Box className="adminBox">
+                  <Button
+                    variant="outlined"
+                    className="fetchBtn"
+                    onClick={handleFetchClick}
                   >
                     Fetch Senators from Quorum
                   </Button>
                 </Box>
-              )}
+              )} */}
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
@@ -551,7 +810,70 @@ export default function Representative(props) {
                     },
                   }}
                 />
-
+                {/* Current/Former Toggle */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    height: "38px",
+                    minWidth: "150px",
+                  }}
+                >
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("current")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "8px 0 0 8px",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "current"
+                          ? "#497bb2 !important; "
+                          : "#fff",
+                      color:
+                        currentOrFormerFilter === "current" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "current"
+                            ? "#497bb2 !important; "
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Current
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentOrFormerFilter("former")}
+                    sx={{
+                      flex: 1,
+                      borderRadius: "0 8px 8px 0",
+                      padding: "7px 10px",
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      // border: "none",
+                      height: "100%",
+                      backgroundColor:
+                        currentOrFormerFilter === "former"
+                          ? "#497bb2 !important; "
+                          : "#fff",
+                      color:
+                        currentOrFormerFilter === "former" ? "#fff" : "#333",
+                      "&:hover": {
+                        backgroundColor:
+                          currentOrFormerFilter === "former"
+                            ? "#497bb2 !important; "
+                            : "#f5f5f5",
+                      },
+                    }}
+                  >
+                    Former
+                  </Button>
+                </Box>
                 <Box
                   sx={{
                     position: "relative",
@@ -595,8 +917,9 @@ export default function Representative(props) {
                         </Box>
 
                         <Box
-                          className={`filter-section ${expandedFilter === "party" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "party" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -650,8 +973,9 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${expandedFilter === "district" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "district" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -727,8 +1051,9 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${expandedFilter === "rating" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "rating" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -781,8 +1106,9 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${expandedFilter === "congress" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "congress" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -842,14 +1168,16 @@ export default function Representative(props) {
                                       >
                                         {congressYearMap[congress]
                                           ? `${getOrdinalSuffix(
-                                            congress
-                                          )} Congress (${congressYearMap[congress]
-                                            .startYear
-                                          }-${congressYearMap[congress].endYear
-                                          })`
+                                              congress
+                                            )} Congress (${
+                                              congressYearMap[congress]
+                                                .startYear
+                                            }-${
+                                              congressYearMap[congress].endYear
+                                            })`
                                           : `${getOrdinalSuffix(
-                                            congress
-                                          )} Congress`}
+                                              congress
+                                            )} Congress`}
                                       </Typography>
                                     </Box>
                                   ))
@@ -867,8 +1195,9 @@ export default function Representative(props) {
                           )}
                         </Box>
                         <Box
-                          className={`filter-section ${expandedFilter === "term" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "term" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -911,8 +1240,9 @@ export default function Representative(props) {
                         </Box>
 
                         <Box
-                          className={`filter-section ${expandedFilter === "status" ? "active" : ""
-                            }`}
+                          className={`filter-section ${
+                            expandedFilter === "status" ? "active" : ""
+                          }`}
                         >
                           <Box
                             className="filter-title"
@@ -975,11 +1305,20 @@ export default function Representative(props) {
                   )}
                 </Box>
 
+                {/* {userRole === "admin" && (
+                  <Button
+                    variant="outlined"
+                    className="fetch-btn"
+                    onClick={handleFetchClick}
+                  >
+                    Fetch Representatives from Quorum
+                  </Button>
+                )} */}
                 {userRole === "admin" && (
                   <Button
                     variant="outlined"
                     className="fetch-btn"
-                    onClick={fetchRepresentativeFromQuorum}
+                    onClick={handleFetchClick}
                   >
                     Fetch Representatives from Quorum
                   </Button>
@@ -994,6 +1333,9 @@ export default function Representative(props) {
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               handleToggleStatusHouse={handleToggleStatusHouse}
+              isSelectable={userRole === "admin"}
+              onBulkApply={handleBulkApply}
+              onBulkPublish={handleBulkPublish}
             />
           </Stack>
         </Box>
@@ -1013,33 +1355,54 @@ export default function Representative(props) {
               width: "100%",
               bgcolor:
                 snackbarMessage ===
-                  `${selectedRepresentative?.name} deleted successfully.`
-                  ? "#fde8e4"
-                  : snackbarMessage ===
-                    "Success: Representatives fetched successfully!"
-                    ? "#daf4f0"
-                    : undefined,
+                `${selectedRepresentative?.name} deleted successfully.`
+                  ? "#fde8e4 !important"
+                  : snackbarMessage
+                      ?.toLowerCase()
+                      .includes("representatives fetched successfully!") ||
+                    snackbarMessage
+                      ?.toLowerCase()
+                      .includes("bulk select applied") ||
+                    snackbarMessage
+                      ?.toLowerCase()
+                      .includes("bulk publish applied")
+                  ? "#daf4f0 !important"
+                  : undefined,
 
               "& .MuiAlert-icon": {
                 color:
                   snackbarMessage ===
-                    `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#cc563d"
-                    : snackbarMessage ===
-                      "Success: Representatives fetched successfully!"
-                      ? "#099885"
-                      : undefined,
+                  `${selectedRepresentative?.name} deleted successfully.`
+                    ? "#cc563d !important"
+                    : snackbarMessage
+                        ?.toLowerCase()
+                        .includes("representatives fetched successfully!") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk select applied") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk publish applied")
+                    ? "#099885 !important"
+                    : undefined,
               },
 
               "& .MuiAlert-message": {
                 color:
                   snackbarMessage ===
-                    `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#cc563d"
-                    : snackbarMessage ===
-                      "Success: Representatives fetched successfully!"
-                      ? "#099885"
-                      : undefined,
+                  `${selectedRepresentative?.name} deleted successfully.`
+                    ? "#cc563d !important"
+                    : snackbarMessage
+                        ?.toLowerCase()
+                        .includes("representatives fetched successfully!") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk select applied") ||
+                      snackbarMessage
+                        ?.toLowerCase()
+                        .includes("bulk publish applied")
+                    ? "#099885 !important"
+                    : undefined,
               },
               "& .MuiAlert-action": {
                 display: "flex",
@@ -1093,6 +1456,66 @@ export default function Representative(props) {
                 Delete
               </Button>
             </Stack>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openFetchDialog}
+          onClose={() => setOpenFetchDialog(false)}
+          PaperProps={{
+            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
+          }}
+        >
+          <DialogTitle className="dialogBox">
+            Fetch Representatives from Quorum
+          </DialogTitle>
+
+          <DialogContent>
+            <DialogContentText className="dialogTitle">
+              Select the type of representatives you want to fetch:
+            </DialogContentText>
+            <Stack spacing={2} sx={{ mt: 2 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                }}
+                onClick={() => fetchRepresentativeFromQuorum("active")}
+              >
+                Active Representatives
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                }}
+                onClick={() => fetchRepresentativeFromQuorum("former")}
+              >
+                Former Representatives
+              </Button>
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setOpenFetchDialog(false)}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderRadius: 2, paddingX: 3 }}
+            >
+              Cancel
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>

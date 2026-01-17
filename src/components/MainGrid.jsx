@@ -14,7 +14,9 @@ export default function MainGrid({
   handleToggleStatusHouse,
   isSelectable = false, 
   onSelectionChange, 
-  selectedItems = []
+  selectedItems = [],
+  onBulkApply,
+  onBulkPublish
 }) {
   const title =
     type === "votes"
@@ -38,11 +40,13 @@ export default function MainGrid({
             onDelete={onDelete}
             onToggleStatus={onToggleStatus}
             handleToggleStatusAct={handleToggleStatusAct}
-             isSelectable={isSelectable} 
+            isSelectable={isSelectable} 
             onSelectionChange={onSelectionChange}
             selectedItems={selectedItems}
             handleToggleStatusSenator={handleToggleStatusSenator}
             handleToggleStatusHouse={handleToggleStatusHouse}
+            onBulkApply={onBulkApply}
+            onBulkPublish={onBulkPublish}
          />
         </Grid>
       </Grid>

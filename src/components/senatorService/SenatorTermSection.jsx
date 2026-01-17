@@ -94,15 +94,10 @@ export default function SenatorTermSection({
         </Grid>
 
         <Grid size={isMobile ? 6 : 2.1} sx={{ alignContent: "center" }}>
-          <InputLabel className="label">Current Term</InputLabel>
+          {/* <InputLabel className="label">Current Term</InputLabel> */}
         </Grid>
         <Grid size={isMobile ? 6 : 0}>
-          <Switch
-            name="currentTerm"
-            checked={term.currentTerm}
-            onChange={(e) => handleSwitchChange(e, termIndex)}
-            color="warning"
-          />
+          {/* <Switch name="currentTerm" checked={term.currentTerm} disabled color="warning" /> */}
         </Grid>
 
         <Grid size={isMobile ? 6 : 2.39}>
@@ -121,8 +116,8 @@ export default function SenatorTermSection({
                 Select a rating
               </MenuItem>
               {rating.map((rate, index) => (
-                <MenuItem key={index} value={rate}>
-                  {rate}
+                <MenuItem key={index} value={rate.value}>
+                  {rate.label}
                 </MenuItem>
               ))}
             </Select>

@@ -53,5 +53,14 @@ export const states = [
   "Wyoming",
 ];
 
-export const rating = ["A+",  "B", "C", "D",  "F"];
+export const rating = [
+  { label: "A+", value: "A+" },
+  { label: "A", value: "A" },
+  { label: "B", value: "B" },
+  { label: "C", value: "C" },
+  { label: "D", value: "D" },
+  { label: "F", value: "F" },
+  { label: "No Rating", value: "N/A" }
+];
+
 

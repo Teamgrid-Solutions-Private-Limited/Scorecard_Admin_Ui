@@ -1,4 +1,4 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Table,
   TableBody,
@@ -6,9 +6,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { getAllVotes } from "../redux/reducer/voteSlice";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getErrorMessage } from "../utils/errorHandler";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -34,6 +38,7 @@ import { useSnackbar } from "../hooks";
 
 export default function SearchVotes(params) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCongress, setSelectedCongress] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false);
@@ -41,6 +46,7 @@ export default function SearchVotes(params) {
   const navigate = useNavigate();
   const token = getToken();
   const user = getUser();
+  const { votes } = useSelector((state) => state.vote);
 
   // Use centralized snackbar hook
   const {
@@ -50,6 +56,18 @@ export default function SearchVotes(params) {
     showSnackbar,
     hideSnackbar: handleSnackbarClose,
   } = useSnackbar();
+
+  // Fetch votes on mount to get congress options
+  useEffect(() => {
+    dispatch(getAllVotes());
+  }, [dispatch]);
+
+  // Extract unique congress values from votes
+  const congressOptions = [
+    ...new Set(
+      votes.filter((vote) => vote.congress).map((vote) => String(vote.congress))
+    ),
+  ].sort((a, b) => parseInt(b) - parseInt(a));
 
   const handleSearch = async () => {
     setLoading(true);
@@ -82,13 +100,17 @@ export default function SearchVotes(params) {
         } else {
           numberOnly = rollCallMatchNumberOnly[1];
         }
+
+        const additionalParams = { number: numberOnly };
+        if (selectedCongress) {
+          additionalParams.congress = selectedCongress;
+        }
+
         response = await axios.post(
           `${API_URL}/fetch-quorum/store-data`,
           {
             type: "votes",
-            additionalParams: {
-              number: numberOnly,
-            },
+            additionalParams: additionalParams,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -99,13 +121,16 @@ export default function SearchVotes(params) {
         return;
       }
       const trySearch = async (fieldName) => {
+        const additionalParams = { [fieldName]: searchTerm };
+        if (selectedCongress) {
+          additionalParams.congress = selectedCongress;
+        }
+
         const res = await axios.post(
           `${API_URL}/fetch-quorum/store-data`,
           {
             type: "votes",
-            additionalParams: {
-              [fieldName]: searchTerm,
-            },
+            additionalParams: additionalParams,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -120,7 +145,6 @@ export default function SearchVotes(params) {
         showSnackbar("No votes found matching your search", "info");
       }
     } catch (error) {
-      console.error("Error searching votes:", error);
       const errorMessage = getErrorMessage(error, "Failed to search votes");
       showSnackbar(errorMessage, "error");
       setSearchResults([]);
@@ -133,9 +157,9 @@ export default function SearchVotes(params) {
     try {
       const allVotes = await dispatch(getAllVotes()).unwrap();
       const isDuplicate = allVotes.some(
-        (existingVote) => String(existingVote.quorumId) === String(vote.quorumId || vote.voteId)
+        (existingVote) =>
+          String(existingVote.quorumId) === String(vote.quorumId || vote.voteId)
       );
-      console.log("isDuplicate:", isDuplicate);
       if (isDuplicate) {
         showSnackbar("Vote already exists", "info");
         setLoading(false);
@@ -145,15 +169,15 @@ export default function SearchVotes(params) {
       const voteData = vote.quorumId
         ? vote
         : {
-          quorumId: vote.voteId,
-          title: vote.question,
-          type: "vote",
-          date: vote.date,
-          rollCallNumber: vote.rollCallNumber,
-          chamber: vote.chamber,
-          result: vote.result,
-          relatedBill: vote.relatedBill,
-        };
+            quorumId: vote.voteId,
+            title: vote.question,
+            type: "vote",
+            date: vote.date,
+            rollCallNumber: vote.rollCallNumber,
+            chamber: vote.chamber,
+            result: vote.result,
+            relatedBill: vote.relatedBill,
+          };
 
       const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
         bills: [voteData],
@@ -167,7 +191,6 @@ export default function SearchVotes(params) {
         console.error("voteId (_id) is missing in the API response.");
       }
     } catch (error) {
-      console.error("Error saving vote:", error);
       showSnackbar("Failed to save vote", "error");
     } finally {
       setLoading(false);
@@ -279,7 +302,7 @@ export default function SearchVotes(params) {
                       display: "flex",
                       alignItems: "center",
                       flexDirection: { xs: "column", md: "row" },
-                      gap: { xs: 2, md: 1 },
+                      gap: { xs: 2, md: 3 },
                       width: "100%",
                       mt: 5,
                     }}
@@ -294,7 +317,7 @@ export default function SearchVotes(params) {
                       }}
                       fullWidth
                       sx={{
-                        maxWidth: { xs: "100%", md: "800px" },
+                        maxWidth: { xs: "100%", md: "600px" },
                         "& .MuiOutlinedInput-root": {
                           "&:hover .MuiOutlinedInput-notchedOutline": {
                             borderColor: "gray !important",
@@ -309,6 +332,52 @@ export default function SearchVotes(params) {
                       }}
                     />
 
+                    <FormControl
+                      variant="outlined"
+                      sx={{
+                        minWidth: { xs: "100%", md: "140px" },
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "gray !important",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          top: "-7px",
+                          left: "15px",
+                        },
+                        "& .MuiInputLabel-shrink": {
+                          top: "-12px",
+                          left: "30px",
+                        },
+                      }}
+                    >
+                      <InputLabel>Congress</InputLabel>
+                      <Select
+                        value={selectedCongress}
+                        onChange={(e) => setSelectedCongress(e.target.value)}
+                        label="Congress"
+                      >
+                        <MenuItem value="">
+                          <em style={{ textAlign: "center", width: "100%" }}>
+                            Select Congress
+                          </em>
+                        </MenuItem>
+                        {congressOptions.map((congress) => (
+                          <MenuItem
+                            key={congress}
+                            value={congress}
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              textAlign: "center",
+                            }}
+                          >
+                            {congress}th Congress
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
                     <Button
                       onClick={handleSearch}
                       sx={{
@@ -317,7 +386,6 @@ export default function SearchVotes(params) {
                         backgroundColor: "#173A5E !important",
                         color: "white !important",
                         padding: "0.5rem 1rem",
-                        marginLeft: "0.5rem",
                         "&:hover": {
                           backgroundColor: "#1E4C80 !important",
                         },

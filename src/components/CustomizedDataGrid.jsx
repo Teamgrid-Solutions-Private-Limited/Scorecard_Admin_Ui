@@ -2,8 +2,10 @@ import * as React from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { Avatar, Box } from "@mui/material";
+import { Avatar, Box, Button } from "@mui/material";
 import Typography from "@mui/material/Typography";
+import BulkEditModal from "./BulkEditModal";
+import BulkPublishModal from "./BulkPublishModal";
 import { useNavigate } from "react-router-dom";
 import { GridOverlay } from "@mui/x-data-grid";
 import { getAllSenatorData } from "../redux/reducer/senatorTermSlice";
@@ -12,10 +14,13 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme, useMediaQuery, Chip } from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
+import {getAllVotes} from "../redux/reducer/voteSlice";
+import {getAllActivity} from "../redux/reducer/activitySlice";
 import { get } from "lodash";
 import { API_URL } from "../redux/API";
 import { getToken, getUserRole } from "../utils/auth";
 import { getItem, setItem, STORAGE_KEYS } from "../utils/storage";
+import { Snackbar, Alert } from "@mui/material";
 const CustomNoRowsOverlay = () => (
   <GridOverlay>
     <Typography variant="body1" sx={{ color: "gray", mt: 2 }}>
@@ -33,6 +38,8 @@ export default function CustomizedDataGrid({
   isSelectable = false,
   onSelectionChange,
   selectedItems = [],
+  onBulkApply, // optional callback for bulk operations
+  onBulkPublish, // optional callback for bulk publish operations
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
@@ -41,11 +48,23 @@ export default function CustomizedDataGrid({
   const token = getToken();
   const userRole = getUserRole();
   const { terms } = useSelector((state) => state.term);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("warning");
+const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
+
+  const showSnackbar = (message, severity = "warning") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
 
   useEffect(() => {
     dispatch(getAllSenatorData());
     dispatch(getAllHouseData());
     dispatch(getAllTerms());
+    dispatch(getAllVotes());
+    dispatch(getAllActivity());
   }, [dispatch]);
 
   useEffect(() => {
@@ -164,12 +183,21 @@ export default function CustomizedDataGrid({
     const lowerStatus = status.toLowerCase();
     if (lowerStatus.includes("published")) return "success";
     if (lowerStatus.includes("draft")) return "default";
-    if (lowerStatus.includes("review")) return "warning";
+    if (lowerStatus.includes("review")) return "default";
 
     return "default";
   };
 
   const navigate = useNavigate();
+
+  const allVotes = useSelector((state) => state.vote.votes);
+  const allActivities = useSelector((state) => state.activity.activities);
+
+  const [selectionModel, setSelectionModel] = useState(selectedItems || []);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [showCheckboxes, setShowCheckboxes] = useState(false);
+  const [bulkPublishOpen, setBulkPublishOpen] = useState(false);
+  const [hasManualSelections, setHasManualSelections] = useState(false);
 
   // Map type to storage key constant
   const getPaginationStorageKey = (type) => {
@@ -305,7 +333,7 @@ export default function CustomizedDataGrid({
 
             renderCell: (params) => {
               const status = params?.row?.status;
-              const displayStatus = status
+              let displayStatus = status
                 ? status
                     .split(" ")
                     .map(
@@ -315,6 +343,11 @@ export default function CustomizedDataGrid({
                     )
                     .join(" ")
                 : "N/A";
+              
+              // Show "Draft" for "under review" status
+              if (status && status.toLowerCase() === "under review") {
+                displayStatus = "Draft";
+              }
 
               return (
                 <Chip
@@ -439,7 +472,7 @@ export default function CustomizedDataGrid({
             ),
             renderCell: (params) => {
               const status = params?.row?.status;
-              const displayStatus = status
+              let displayStatus = status
                 ? status
                     .split(" ")
                     .map(
@@ -449,6 +482,11 @@ export default function CustomizedDataGrid({
                     )
                     .join(" ")
                 : "N/A";
+              
+              // Show "Draft" for "under review" status
+              if (status && status.toLowerCase() === "under review") {
+                displayStatus = "Draft";
+              }
 
               return (
                 <Chip
@@ -775,7 +813,7 @@ export default function CustomizedDataGrid({
 
                   renderCell: (params) => {
                     const status = params?.row?.publishStatus;
-                    const displayStatus = status
+                    let displayStatus = status
                       ? status
                           .split(" ")
                           .map(
@@ -785,6 +823,11 @@ export default function CustomizedDataGrid({
                           )
                           .join(" ")
                       : "N/A";
+                    
+                    // Show "Draft" for "under review" status
+                    if (status && status.toLowerCase() === "under review") {
+                      displayStatus = "Draft";
+                    }
 
                     return (
                       <Chip
@@ -809,7 +852,7 @@ export default function CustomizedDataGrid({
                   ),
                   renderCell: (params) => {
                     const status = params?.row?.publishStatus;
-                    const displayStatus = status
+                    let displayStatus = status
                       ? status
                           .split(" ")
                           .map(
@@ -819,6 +862,11 @@ export default function CustomizedDataGrid({
                           )
                           .join(" ")
                       : "N/A";
+                    
+                    // Show "Draft" for "under review" status
+                    if (status && status.toLowerCase() === "under review") {
+                      displayStatus = "Draft";
+                    }
 
                     return (
                       <Chip
@@ -869,6 +917,146 @@ export default function CustomizedDataGrid({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+      {((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin") || (isSelectable && type !== "senator" && type !== "representative" && type !== "votes" && type !== "activities")) && (
+        <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mb: 1 }}>
+     {(hasManualSelections || hasUsedSelectAll) && (
+  hasManualSelections ? (
+    <Typography
+      variant="subtitle1"
+      sx={{
+        fontSize: { xs: "11px", md: "14px" },
+        pl: 1,
+        mr: "auto",
+        alignSelf: "center",
+      }}
+    >
+      {selectionModel.length}{" "}
+      {type === "senator"
+        ? selectionModel.length === 1
+          ? "Senator"
+          : "Senators"
+        : type === "representative"
+        ? selectionModel.length === 1
+          ? "Representative"
+          : "Representatives"
+        : selectionModel.length === 1
+        ? "Item"
+        : "Items"}{" "}
+      selected
+    </Typography>
+  ) : (
+    <Typography
+      variant="subtitle1"
+      sx={{
+        fontSize: { xs: "11px", md: "14px" },
+        mr: "auto",
+        alignSelf: "center",
+      }}
+    >
+      0{" "}
+      {type === "senator"
+        ? "Senator"
+        : type === "representative"
+        ? "Representative"
+        : "Items"}{" "}
+      selected
+    </Typography>
+  )
+)}
+
+
+          <Button
+            variant="outlined"
+           onClick={() => {
+  const hasSelection = selectionModel.length > 0;
+  const allIds = mergedRows.map((r) => r._id);
+  const next = hasSelection ? [] : allIds;
+
+  setSelectionModel(next);
+  onSelectionChange && onSelectionChange(next);
+
+  // ✅ correct state control
+  setHasUsedSelectAll(!hasSelection);
+  setHasManualSelections(false);
+
+  // checkbox visibility logic (unchanged)
+  if ((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin")) {
+    setShowCheckboxes(!hasSelection);
+  } else {
+    setShowCheckboxes(!hasSelection);
+  }
+}}
+
+          >
+            {selectionModel.length > 0 ? "Clear selection" : "Select all"}
+          </Button>
+          {(((type === "senator" && userRole === "admin" && showCheckboxes) || (type === "representative" && userRole === "admin" && showCheckboxes)) || (isSelectable && type !== "senator" && type !== "representative")) && selectionModel.length > 0 && (
+            <>
+              <Button 
+                variant="outlined"
+                className="bulkEditBtn"
+                onClick={() => {
+                  if (!hasManualSelections) {
+                    showSnackbar("Select at least one member to perform bulk select.", "warning");
+                    return;
+                  }
+                  setBulkOpen(true);
+                }}
+                sx={{
+                  backgroundColor: "#173A5E !important",
+                  color: "white !important",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  padding: "8px 24px",
+                  border: "none !important",
+                  "&:hover": {
+                    backgroundColor: "#1E4C80 !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                  "&:active": {
+                    backgroundColor: "#173A5E !important",
+                  },
+                }}
+              >
+                Bulk Select
+              </Button>
+              <Button 
+                variant="outlined"
+                className="bulkPublishBtn"
+                onClick={() => {
+                  if (!hasManualSelections) {
+                    showSnackbar("Select at least one member to perform bulk publish.", "warning");
+                    return;
+                  }
+                  setBulkPublishOpen(true);
+                }}
+                sx={{
+                  backgroundColor: "#2E7D32 !important",
+                  color: "white !important",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  padding: "8px 24px",
+                  border: "none !important",
+                  "&:hover": {
+                    backgroundColor: "#388E3C !important",
+                    color: "white !important",
+                    border: "none !important",
+                  },
+                  "&:active": {
+                    backgroundColor: "#2E7D32 !important",
+                  },
+                }}
+              >
+                Bulk Publish
+              </Button>
+            </>
+          )}
+        </Box>
+      )}
+
       <DataGrid
         rows={mergedRows}
         columns={columns}
@@ -886,13 +1074,30 @@ export default function CustomizedDataGrid({
         slots={{
           noRowsOverlay: CustomNoRowsOverlay,
         }}
-        checkboxSelection={isSelectable}
-        onRowSelectionModelChange={
-          isSelectable
-            ? (ids) => onSelectionChange && onSelectionChange(ids)
-            : undefined
+        checkboxSelection={
+          // For senator and representative admin view: only show when user explicitly clicked Select all
+          ((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin")) ? showCheckboxes : (isSelectable || showCheckboxes)
         }
-        selectionModel={isSelectable ? selectedItems : []}
+      onRowSelectionModelChange={(ids) => {
+  const next = ids.map((i) =>
+    typeof i === "object" && i.id ? i.id : i
+  );
+
+  setSelectionModel(next);
+  onSelectionChange && onSelectionChange(next);
+
+  // ✅ manual selection logic
+  if (next.length > 0) {
+    setHasManualSelections(true);
+    setHasUsedSelectAll(false); // 👈 reset select-all
+  } else {
+    setHasManualSelections(false);
+    setHasUsedSelectAll(false);
+    setShowCheckboxes(false);
+  }
+}}
+
+        selectionModel={(isSelectable || showCheckboxes) ? selectionModel : []}
         sx={{
           ...(isMobile && {
             overflowX: "auto",
@@ -923,6 +1128,82 @@ export default function CustomizedDataGrid({
           },
         }}
       />
+
+      <BulkEditModal
+        open={bulkOpen}
+        onClose={() => setBulkOpen(false)}
+        votes={
+          type === "senator"
+            ? (allVotes || []).filter(
+                (vote) =>
+                  vote.type &&
+                  vote.type.toLowerCase().includes("senate")
+              )
+            : type === "representative"
+            ? (allVotes || []).filter(
+                (vote) =>
+                  vote.type &&
+                  vote.type.toLowerCase().includes("house")
+              )
+            : allVotes
+        }
+        activities={
+          type === "senator"
+            ? (allActivities || []).filter(
+                (activity) =>
+                  activity.type &&
+                  (activity.type === "senate" ||
+                    activity.type.toLowerCase().includes("senate"))
+              )
+            : type === "representative"
+            ? (allActivities || []).filter(
+                (activity) =>
+                  activity.type &&
+                  (activity.type === "house" ||
+                    activity.type.toLowerCase().includes("house"))
+              )
+            : allActivities
+        }
+        onApply={(payload) => {
+          const data = { ids: selectionModel, payload };
+         
+          if (onBulkApply) {
+            onBulkApply(data);
+          } else if (typeof onEdit === "function") {
+            // Only call onEdit if it's not a bulk operation to avoid navigation
+            console.warn("⚠️ CustomizedDataGrid: onBulkApply not provided, but bulk edit was attempted");
+          } else {
+            console.error("❌ CustomizedDataGrid: Neither onBulkApply nor onEdit provided");
+          }
+        }}
+      />
+
+      <BulkPublishModal
+        open={bulkPublishOpen}
+        onClose={() => setBulkPublishOpen(false)}
+        selectedCount={selectionModel.length}
+        type={type}
+        onApply={(payload) => {
+          if (onBulkPublish) {
+            onBulkPublish({ ids: selectionModel, publishStatus: payload.publishStatus });
+          }
+        }}
+      />
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

@@ -1,5 +1,7 @@
-import React from "react";
-import { Box, Typography, List, ListItem, ListItemText } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Typography, List, ListItem, ListItemText, Button } from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { sanitizeKey } from "../helpers/fieldHelpers";
 
 const StatusDisplay = ({
@@ -445,10 +447,17 @@ const StatusDisplay = ({
     return field;
   };
 
+  const displayTitle =
+    formData?.publishStatus === "under review" ? "Saved Draft" : statusData.title;
+
+  const [showHistory, setShowHistory] = useState(false);
+
   const backendChanges = Array.isArray(formData?.editedFields)
     ? formData.editedFields
     : [];
-
+const visibleBackendChanges = backendChanges
+  .map((field, index) => formatFieldName(field, index))
+  .filter(Boolean);
   const hasChanges = backendChanges.length > 0 || localChanges.length > 0;
 
   if (!hasChanges) {
@@ -472,10 +481,10 @@ const StatusDisplay = ({
               backgroundColor: `rgba(${
                 formData.publishStatus === "draft"
                   ? "66, 165, 245"
-                  : formData.publishStatus === "under review"
-                  ? "230, 81, 0"
+                  : formData.publishStatus === "Saved Draft"
+                  ? "66, 165, 245"
                   : formData.publishStatus === "published"
-                  ? "76, 175, 80"
+                  ? "66, 165, 245"
                   : "244, 67, 54"
               }, 0.2)`,
               display: "grid",
@@ -483,7 +492,7 @@ const StatusDisplay = ({
               flexShrink: 0,
             }}
           >
-            {React.cloneElement(statusData.icon, {
+           { React.cloneElement(statusData.icon, {
               sx: { color: statusData.iconColor },
             })}
           </Box>
@@ -497,7 +506,7 @@ const StatusDisplay = ({
                 mb: 0.5,
               }}
             >
-              {statusData.title}
+              {displayTitle}
             </Typography>
             <Typography variant="body2" sx={{ color: "text.disabled" }}>
               No pending changes
@@ -515,7 +524,7 @@ const StatusDisplay = ({
         p: 2,
         backgroundColor: statusData.backgroundColor,
         borderLeft: `4px solid ${statusData.borderColor}`,
-        borderRadius: "0 8px 8px 0",
+        borderRadius: "8px 8px 8px 8px",
         boxShadow: 1,
         mb: 2,
       }}
@@ -529,9 +538,9 @@ const StatusDisplay = ({
               formData.publishStatus === "draft"
                 ? "66, 165, 245"
                 : formData.publishStatus === "under review"
-                ? "230, 81, 0"
+                ? "66, 165, 245"
                 : formData.publishStatus === "published"
-                ? "76, 175, 80"
+                ?"66, 165, 245"
                 : "244, 67, 54"
             }, 0.2)`,
             display: "grid",
@@ -562,11 +571,31 @@ const StatusDisplay = ({
                 gap: 1,
               }}
             >
-              {statusData.title}
+              {displayTitle}
             </Typography>
+            {formData.publishStatus !== "draft" && (
+              <Button
+                variant="outlined"
+                onClick={() => setShowHistory((s) => !s)}
+                startIcon={showHistory ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                sx={{
+                  backgroundColor: showHistory ? "transparent" : "#173A5E !important",
+                  color: showHistory ? "text.primary"  : "white !important",
+                  padding: "0.35rem 0.8rem",
+                  fontSize: "0.8rem",
+                  textTransform: "none",
+                  borderColor: "divider",
+                  '&:hover': {
+                    backgroundColor: showHistory ?'rgba(0,0,0,0.04)'  :  '#1E4C80 !important'
+                  }
+                }}
+              >
+                {showHistory ? 'Hide History' : 'Show History'}
+              </Button>
+            )}
           </Box>
           <Box sx={{ mt: 1.5 }}>
-            {backendChanges.length > 0 && (
+            {showHistory && backendChanges.length > 0 && (
               <Box
                 sx={{
                   backgroundColor: "#fff",
@@ -581,8 +610,18 @@ const StatusDisplay = ({
                   variant="overline"
                   sx={{ color: "text.secondary", mb: 1 }}
                 >
-                  Saved Changes
                 </Typography>
+                 {visibleBackendChanges.length === 0 &&
+      formData.publishStatus === "under review" && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ px: 1 }}
+        >
+          Select the next term to see the changes
+        </Typography>
+      )}
+      {visibleBackendChanges.length > 0 && (
                 <List dense sx={{ py: 0 }}>
                   {backendChanges.map((field, index) => {
                     const fieldLabel = formatFieldName(field, index);
@@ -650,9 +689,10 @@ const StatusDisplay = ({
                     );
                   })}
                 </List>
+      )}
               </Box>
             )}
-            {localChanges.length > 0 && (
+            {showHistory && localChanges.length > 0 && (
               <Box
                 sx={{
                   backgroundColor: "#fff",
@@ -668,7 +708,7 @@ const StatusDisplay = ({
                 >
                   {formData.publishStatus === "published"
                     ? ""
-                    : "Unsaved Changes"}
+                    : "Unsaved Draft"}
                 </Typography>
                 <List dense sx={{ py: 0 }}>
                   {localChanges.map((field, index) => (

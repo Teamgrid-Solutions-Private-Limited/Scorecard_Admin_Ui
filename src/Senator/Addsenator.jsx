@@ -2,10 +2,18 @@ import * as React from "react";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { alpha, styled, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Box, Paper, Stack, Button } from "@mui/material";
-import { useSnackbar, useAuth, useTermItemManager, useFileUpload, useEntityData, useFormChangeTracker } from "../hooks";
+import {
+  useSnackbar,
+  useAuth,
+  useTermItemManager,
+  useFileUpload,
+  useEntityData,
+  useFormChangeTracker,
+} from "../hooks";
 import {
   CloudUpload as CloudUploadIcon,
   DeleteForever as DeleteForeverIcon,
@@ -26,6 +34,7 @@ import SenatorTermSection from "../components/senatorService/SenatorTermSection"
 import StatusDisplay from "../components/StatusDisplay";
 import SnackbarComponent from "../components/SnackbarComponent";
 import ActionButtons from "../components/ActionButtons";
+import Typography from "@mui/material/Typography";
 import {
   getSenatorDataBySenatorId,
   createSenatorData,
@@ -48,6 +57,10 @@ import {
   discardSenatorChanges,
 } from "../redux/reducer/senatorSlice";
 import {
+  getVoteById,
+  clearVoteState,
+  updateVote,
+  createVote,
   getAllVotes,
 } from "../redux/reducer/voteSlice";
 import { getAllActivity } from "../redux/reducer/activitySlice";
@@ -73,7 +86,6 @@ export default function AddSenator(props) {
   const [componentKey, setComponentKey] = useState(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
-
   const [votesLoaded, setVotesLoaded] = useState(false);
   const [activitiesLoaded, setActivitiesLoaded] = useState(false);
   const [termsLoaded, setTermsLoaded] = useState(false);
@@ -81,7 +93,7 @@ export default function AddSenator(props) {
   const [removedItems, setRemovedItems] = useState({
     votes: [],
     activities: [],
-    pastVotes: []
+    pastVotes: [],
   });
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -99,7 +111,12 @@ export default function AddSenator(props) {
   };
 
   const validateActivityInTermRangeWrapper = (activityId, termId) => {
-    return validateActivityInTermRange(activityId, termId, allActivities, terms);
+    return validateActivityInTermRange(
+      activityId,
+      termId,
+      allActivities,
+      terms
+    );
   };
 
   const allActivities = useSelector((state) => state.activity.activities);
@@ -136,19 +153,25 @@ export default function AddSenator(props) {
     });
   });
 
-  const doesVoteBelongToTerm = (voteData, term) => {
-    if (!voteData || !term) return false;
+ const doesVoteBelongToTerm = (voteData, term) => {
+  if (!voteData || !term) return false;
 
-    const voteDate = new Date(voteData.date);
-    const termStart = new Date(`${term.startYear}-01-03`);
-    const termEnd = new Date(`${term.endYear}-01-02`);
+  const voteDate = new Date(voteData.date);
 
-    const inDateRange = voteDate >= termStart && voteDate <= termEnd;
+  // 🚫 HARD STOP: these votes must NEVER go into votesScore
+  const CUTOFF_DATE = new Date("2019-01-02");
+  if (voteDate <= CUTOFF_DATE) {
+    return false;
+  }
 
-    const inCongress = term.congresses.includes(Number(voteData.congress));
+  const termStart = new Date(`${term.startYear}-01-03`);
+  const termEnd = new Date(`${term.endYear}-01-02`);
 
-    return inDateRange && inCongress;
-  };
+  const inDateRange = voteDate >= termStart && voteDate <= termEnd;
+  const inCongress = term.congresses.includes(Number(voteData.congress));
+
+  return inDateRange && inCongress;
+};
 
   const doesActivityBelongToTerm = (activityData, term) => {
     if (!activityData || !term) return false;
@@ -223,8 +246,9 @@ export default function AddSenator(props) {
   const getFieldDisplayName = (field) => {
     if (field.includes("_")) {
       const [termPrefix, actualField] = field.split("_");
-      return `${termPrefix.replace("term", "Term ")}: ${fieldLabels[actualField] || actualField
-        }`;
+      return `${termPrefix.replace("term", "Term ")}: ${
+        fieldLabels[actualField] || actualField
+      }`;
     }
     return fieldLabels[field] || field;
   };
@@ -254,12 +278,12 @@ export default function AddSenator(props) {
   // Use centralized term item managers for votes, activities, and pastVotes
   // These must be declared after all state variables (formData, senatorTermData, etc.)
   const voteManager = useTermItemManager({
-    type: 'vote',
-    dataPath: 'votesScore',
-    idField: 'voteId',
-    fieldKeyPrefix: 'ScoredVote',
+    type: "vote",
+    dataPath: "votesScore",
+    idField: "voteId",
+    fieldKeyPrefix: "ScoredVote",
     allItems: allVotes,
-    removedItemsKey: 'votes',
+    removedItemsKey: "votes",
     termData: senatorTermData,
     setTermData: setSenatorTermData,
     originalTermData: originalTermData,
@@ -275,12 +299,12 @@ export default function AddSenator(props) {
   });
 
   const activityManager = useTermItemManager({
-    type: 'activity',
-    dataPath: 'activitiesScore',
-    idField: 'activityId',
-    fieldKeyPrefix: 'TrackedActivity',
+    type: "activity",
+    dataPath: "activitiesScore",
+    idField: "activityId",
+    fieldKeyPrefix: "TrackedActivity",
     allItems: allActivities,
-    removedItemsKey: 'activities',
+    removedItemsKey: "activities",
     termData: senatorTermData,
     setTermData: setSenatorTermData,
     originalTermData: originalTermData,
@@ -296,12 +320,12 @@ export default function AddSenator(props) {
   });
 
   const pastVoteManager = useTermItemManager({
-    type: 'pastVote',
-    dataPath: 'pastVotesScore',
-    idField: 'voteId',
-    fieldKeyPrefix: 'pastVotesScore',
+    type: "pastVote",
+    dataPath: "pastVotesScore",
+    idField: "voteId",
+    fieldKeyPrefix: "pastVotesScore",
     allItems: allVotes,
-    removedItemsKey: 'pastVotes',
+    removedItemsKey: "pastVotes",
     termData: senatorTermData,
     setTermData: setSenatorTermData,
     originalTermData: originalTermData,
@@ -316,12 +340,242 @@ export default function AddSenator(props) {
     getCurrentEditor: getCurrentEditor,
   });
 
-  const handleTermChange = (e, termIndex) => {
+  // const handleTermChange = (e, termIndex) => {
+  //   const { name, value } = e.target;
+  //   const fieldName = `term${termIndex}_${e.target.name}`;
+  //   setSenatorTermData((prev) => {
+  //     const newTerms = prev.map((term, index) => {
+  //       if (index !== termIndex) return term;
+
+  //       let updatedTerm = { ...term, [name]: value };
+
+  //       if (name === "termId" && value) {
+  //         const selectedTerm = terms?.find((t) => t._id === value);
+
+  //         if (selectedTerm) {
+  //           const newTermStart = new Date(`${selectedTerm.startYear}-01-03`);
+  //           const newTermEnd = new Date(`${selectedTerm.endYear}-01-02`);
+
+  //           const newFilteredVotes = allVotes.filter((vote) => {
+  //             const voteDate = new Date(vote.date);
+  //  const cutoffDate = new Date("2019-01-02");
+  //               const isBeforeCutoffDate = voteDate < cutoffDate;
+                
+  //               // Skip votes before cutoff date
+  //               if (isBeforeCutoffDate) return;
+  //             const inTerm =
+  //               voteDate >= newTermStart &&
+  //               voteDate <= newTermEnd &&
+  //               selectedTerm.congresses.includes(Number(vote.congress));
+
+  //             if (!inTerm) return false;
+  //             return senatorVotes.some((v) => {
+  //               if (!v?.score || v.score.trim() === "") return false;
+
+  //               const vId =
+  //                 typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+
+  //               return (
+  //                 vId === vote._id ||
+  //                 v.quorumId === vote.quorumId ||
+  //                 (v.billNumber &&
+  //                   vote.billNumber &&
+  //                   v.billNumber === vote.billNumber)
+  //               );
+  //             });
+  //           });
+
+  //           const existingVoteScores = term.votesScore || [];
+
+  //           updatedTerm.votesScore = newFilteredVotes.map((vote) => {
+  //             const senatorVote = senatorVotes.find((v) => {
+  //               const vId =
+  //                 typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+  //               return (
+  //                 vId === vote._id ||
+  //                 v.quorumId === vote.quorumId ||
+  //                 (v.billNumber &&
+  //                   vote.billNumber &&
+  //                   v.billNumber === vote.billNumber)
+  //               );
+  //             });
+
+  //             let scoreValue = "";
+  //             if (senatorVote?.score) {
+  //               const voteScore = senatorVote.score.toLowerCase();
+  //               if (voteScore.includes("yea")) {
+  //                 scoreValue = "yea";
+  //               } else if (voteScore.includes("nay")) {
+  //                 scoreValue = "nay";
+  //               } else if (voteScore.includes("other")) {
+  //                 scoreValue = "other";
+  //               } else {
+  //                 scoreValue = senatorVote.score;
+  //               }
+  //             }
+
+  //             return {
+  //               voteId: vote._id,
+  //               score: scoreValue,
+  //               title: vote.title,
+  //             };
+  //           });
+
+  //           if (updatedTerm.votesScore.length === 0) {
+  //             updatedTerm.votesScore = [{ voteId: "", score: "" }];
+  //           }
+
+  //           const newParticipatedActivities = allActivities.filter(
+  //             (activity) => {
+  //               const activityDate = new Date(activity.date);
+
+  //               const inTerm =
+  //                 activityDate >= newTermStart &&
+  //                 activityDate <= newTermEnd &&
+  //                 selectedTerm.congresses.includes(
+  //                   Number(activity.congress || 0)
+  //                 );
+
+  //               if (!inTerm) return false;
+  //               return senatorActivities.some((a) => {
+  //                 if (!a?.score || a.score.trim() === "") return false;
+
+  //                 const aId =
+  //                   typeof a.activityId === "object"
+  //                     ? a.activityId?._id
+  //                     : a.activityId;
+
+  //                 return aId === activity._id;
+  //               });
+  //             }
+  //           );
+
+  //           updatedTerm.activitiesScore = newParticipatedActivities.map(
+  //             (activity) => {
+  //               const senAct = senatorActivities.find((a) => {
+  //                 const aId =
+  //                   typeof a.activityId === "object"
+  //                     ? a.activityId?._id
+  //                     : a.activityId;
+  //                 return aId === activity._id;
+  //               });
+
+  //               let mappedScore = "";
+  //               if (senAct?.score) {
+  //                 const s = String(senAct.score).toLowerCase();
+  //                 if (s.includes("yea") || s === "yes") mappedScore = "yes";
+  //                 else if (s.includes("nay") || s === "no") mappedScore = "no";
+  //                 else if (s.includes("other")) mappedScore = "other";
+  //                 else mappedScore = senAct.score;
+  //               }
+
+  //               return {
+  //                 activityId: activity._id,
+  //                 score: mappedScore,
+  //                 title: activity.title,
+  //               };
+  //             }
+  //           );
+
+  //           if (updatedTerm.activitiesScore.length === 0) {
+  //             updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
+  //           }
+
+  //           const newPastVotes = allVotes.filter((vote) => {
+  //             return vote.isImportantPastVote === true;
+  //           });
+
+  //           updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
+  //             const senatorPastVote = senatorVotes.find((v) => {
+  //               const vId =
+  //                 typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+  //               return vId === vote._id;
+  //             });
+
+  //             return {
+  //               voteId: vote._id,
+  //               score: senatorPastVote?.score || "",
+  //               title: vote.title,
+  //             };
+  //           });
+
+  //           if (updatedTerm.pastVotesScore.length === 0) {
+  //             updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
+  //           }
+  //           // Automatically set currentTerm for the selected term.
+  //           // Use current year dynamically (not hardcoded) and also allow
+  //           // selecting a future term (e.g., 2026-2027) to become the current
+  //           // term if it is the newest term selected.
+  //           const now = new Date();
+  //           const currentYear = now.getFullYear();
+  //           const jan3ThisYear = new Date(`${2025}-01-03`);
+  //           const isAfterJan3 = now >= jan3ThisYear;
+
+  //           // Default behavior: mark currentTerm true if today is on/after Jan 3
+  //           // and today's date falls within the selected term range.
+  //           if (isAfterJan3 && now >= newTermStart && now <= newTermEnd) {
+  //             updatedTerm.currentTerm = true;
+  //           }
+
+  //           // If the selected term starts in the future (startYear > currentYear),
+  //           // mark it as the current term and clear currentTerm on other terms.
+  //           if (selectedTerm && Number(selectedTerm.startYear) > currentYear) {
+  //             updatedTerm.currentTerm = true;
+  //             // Ensure other terms will not be marked current later when we return
+  //             // from the mapper by setting a marker on the updated term. We'll
+  //             // clear others after the setState completes by using the returned
+  //             // newTerms in the outer setState (handled below by returning newTerms).
+  //           }
+  //         }
+  //       }
+
+  //       return updatedTerm;
+  //     });
+  //     const originalTerm = originalTermData[termIndex] || {};
+  //     const isActualChange = compareValues(value, originalTerm[name]);
+
+  //     if (isActualChange && !localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => [...prev, fieldName]);
+  //     } else if (!isActualChange && localChanges.includes(fieldName)) {
+  //       setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
+  //     }
+
+  //     // If the selected term is a future term, ensure it's the only term marked
+  //     // as currentTerm. Find the most recent (highest startYear) selected term
+  //     // among the updated terms and set currentTerm accordingly.
+  //     const currentYear = new Date().getFullYear();
+  //     const futureTerms = newTerms
+  //       .map((t, idx) => {
+  //         const tStart = t.termId
+  //           ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))
+  //               ?.startYear
+  //           : null;
+  //         return { idx, startYear: tStart ? Number(tStart) : null };
+  //       })
+  //       .filter((t) => t.startYear && t.startYear > currentYear);
+
+  //     if (futureTerms.length > 0) {
+  //       const newest = futureTerms.reduce((a, b) =>
+  //         a.startYear > b.startYear ? a : b
+  //       );
+  //       return newTerms.map((t, i) => ({
+  //         ...t,
+  //         currentTerm: i === newest.idx,
+  //       }));
+  //     }
+
+  //     return newTerms;
+  //   });
+  // };
+const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
+
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, index) => {
-        if (index !== termIndex) return term;
+        if (index !== termIndex) {
+          return term;
+        }
 
         let updatedTerm = { ...term, [name]: value };
 
@@ -334,43 +588,101 @@ export default function AddSenator(props) {
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
+              const cutoffDate = new Date("2019-01-02");
+              const isBeforeCutoffDate = voteDate < cutoffDate;
+              
+              // Skip votes before cutoff date
+              if (isBeforeCutoffDate) {
+                return false;
+              }
+              
+              const inTerm = voteDate >= newTermStart && voteDate <= newTermEnd;
+              
+              if (!inTerm) {
+                return false;
+              }
 
-              const inTerm =
-                voteDate >= newTermStart &&
-                voteDate <= newTermEnd &&
-                selectedTerm.congresses.includes(Number(vote.congress));
-
-              if (!inTerm) return false;
-              return senatorVotes.some((v) => {
-                if (!v?.score || v.score.trim() === "") return false;
-
-                const vId =
-                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-
-                return (
-                  vId === vote._id ||
-                  v.quorumId === vote.quorumId ||
-                  (v.billNumber &&
-                    vote.billNumber &&
-                    v.billNumber === vote.billNumber)
-                );
+              // FIRST: Try exact voteId match
+              const exactMatch = senatorVotes.find((v) => {
+                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                return vId === vote._id;
               });
+
+              if (exactMatch) {
+                return true;
+              }
+
+              // SECOND: If no exact match, check for quorumId match (but only if vote has a quorumId)
+              if (vote.quorumId) {
+                const quorumMatch = senatorVotes.find((v) => {
+                  // Only match by quorumId if the senator vote has a quorumId
+                  if (!v.quorumId) return false;
+                  
+                  // Check if quorumIds match
+                  const matches = v.quorumId === vote.quorumId;
+                  
+                  // Also check if this senator vote already has a voteId assigned
+                  // If it does, we shouldn't match it to another vote by quorumId
+                  const hasVoteId = v.voteId?._id || v.voteId;
+                  if (hasVoteId) {
+                    return false;
+                  }
+                  
+                  return matches;
+                });
+
+                if (quorumMatch) {
+                  return true;
+                }
+              }
+
+              // THIRD: Check billNumber match (only if both have bill numbers)
+              if (vote.billNumber) {
+                const billMatch = senatorVotes.find((v) => {
+                  // Only match by billNumber if both have bill numbers
+                  if (!v.billNumber || !vote.billNumber) return false;
+                  
+                  // Check if billNumbers match
+                  const matches = v.billNumber === vote.billNumber;
+                  
+                  // Also check if this senator vote already has a voteId assigned
+                  const hasVoteId = v.voteId?._id || v.voteId;
+                  if (hasVoteId) {
+                    return false;
+                  }
+                  
+                  return matches;
+                });
+
+                if (billMatch) {
+                  return true;
+                }
+              }
+
+              return false;
             });
 
             const existingVoteScores = term.votesScore || [];
 
             updatedTerm.votesScore = newFilteredVotes.map((vote) => {
-              const senatorVote = senatorVotes.find((v) => {
-                const vId =
-                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
-                return (
-                  vId === vote._id ||
-                  v.quorumId === vote.quorumId ||
-                  (v.billNumber &&
-                    vote.billNumber &&
-                    v.billNumber === vote.billNumber)
-                );
+              // Find the matching senator vote
+              let senatorVote = null;
+              
+              // Try exact voteId match first
+              senatorVote = senatorVotes.find((v) => {
+                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                return vId === vote._id;
               });
+
+              // If no exact match, try quorumId match
+              if (!senatorVote && vote.quorumId) {
+                senatorVote = senatorVotes.find((v) => v.quorumId === vote.quorumId);
+              }
+
+              // If still no match, try billNumber match
+              if (!senatorVote && vote.billNumber) {
+                senatorVote = senatorVotes.find((v) => v.billNumber === vote.billNumber);
+              }
 
               let scoreValue = "";
               if (senatorVote?.score) {
@@ -397,40 +709,39 @@ export default function AddSenator(props) {
               updatedTerm.votesScore = [{ voteId: "", score: "" }];
             }
 
+            // [Rest of the code remains the same...]
+            
+
             const newParticipatedActivities = allActivities.filter(
               (activity) => {
                 const activityDate = new Date(activity.date);
-
-                const inTerm =
-                  activityDate >= newTermStart &&
-                  activityDate <= newTermEnd &&
-                  selectedTerm.congresses.includes(
-                    Number(activity.congress || 0)
-                  );
-
-                if (!inTerm) return false;
-                return senatorActivities.some((a) => {
-                  if (!a?.score || a.score.trim() === "") return false;
-
-                  const aId =
-                    typeof a.activityId === "object"
-                      ? a.activityId?._id
-                      : a.activityId;
-
+                const inTerm = activityDate >= newTermStart && activityDate <= newTermEnd;
+                if (!inTerm) {
+                  return false;
+                }
+                
+                // Try exact activityId match first
+                const exactMatch = senatorActivities.find((a) => {
+                  const aId = typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
                   return aId === activity._id;
                 });
+
+                if (exactMatch) {
+                  return true;
+                }
+
+                return false;
               }
             );
 
             updatedTerm.activitiesScore = newParticipatedActivities.map(
               (activity) => {
                 const senAct = senatorActivities.find((a) => {
-                  const aId =
-                    typeof a.activityId === "object"
-                      ? a.activityId?._id
-                      : a.activityId;
+                  const aId = typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
                   return aId === activity._id;
                 });
+
+               
 
                 let mappedScore = "";
                 if (senAct?.score) {
@@ -439,6 +750,8 @@ export default function AddSenator(props) {
                   else if (s.includes("nay") || s === "no") mappedScore = "no";
                   else if (s.includes("other")) mappedScore = "other";
                   else mappedScore = senAct.score;
+                } else {
+                  console.error(`      ⚠️ No senator activity found or no score`);
                 }
 
                 return {
@@ -453,16 +766,18 @@ export default function AddSenator(props) {
               updatedTerm.activitiesScore = [{ activityId: "", score: "" }];
             }
 
+            // Past votes filtering - only include votes marked as important past votes
             const newPastVotes = allVotes.filter((vote) => {
               return vote.isImportantPastVote === true;
             });
 
             updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
+              // Only match by exact voteId for past votes
               const senatorPastVote = senatorVotes.find((v) => {
-                const vId =
-                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
                 return vId === vote._id;
               });
+
 
               return {
                 voteId: vote._id,
@@ -473,12 +788,18 @@ export default function AddSenator(props) {
 
             if (updatedTerm.pastVotesScore.length === 0) {
               updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
-            }
+            }            
+            // [Rest of the currentTerm logic remains the same...]
+          } else {
+            console.error(`   ❌ Selected term not found in terms list`);
           }
+        } else {
+          console.error(`   📝 Simple field update (not termId)`);
         }
 
         return updatedTerm;
       });
+
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(value, originalTerm[name]);
 
@@ -488,10 +809,34 @@ export default function AddSenator(props) {
         setLocalChanges((prev) => prev.filter((f) => f !== fieldName));
       }
 
+      // Future term currentTerm logic
+      const currentYear = new Date().getFullYear();
+      const futureTerms = newTerms
+        .map((t, idx) => {
+          const tStart = t.termId
+            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))?.startYear
+            : null;
+          return { idx, startYear: tStart ? Number(tStart) : null };
+        })
+        .filter((t) => t.startYear && t.startYear > currentYear);
+
+
+      if (futureTerms.length > 0) {
+        const newest = futureTerms.reduce((a, b) =>
+          a.startYear > b.startYear ? a : b
+        );
+        
+        const result = newTerms.map((t, i) => ({
+          ...t,
+          currentTerm: i === newest.idx,
+        }));
+        
+        
+        return result;
+      }
       return newTerms;
     });
   };
-
   const handleSwitchChange = (e, termIndex) => {
     const { name, checked } = e.target;
     const fieldName = `term${termIndex}_${name}`;
@@ -563,21 +908,18 @@ export default function AddSenator(props) {
 
       await dispatch(getSenatorById(id));
       await dispatch(getSenatorDataBySenatorId(id));
-      setSnackbarMessage(
-        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`
+      handleSnackbarOpen(
+        `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
+        "success"
       );
-      setSnackbarSeverity("success");
       setComponentKey((prev) => prev + 1);
     } catch (error) {
-      console.error("Discard failed:", error);
       const errorMessage = getErrorMessage(
         error,
         `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
       );
-      setSnackbarMessage(errorMessage);
-      setSnackbarSeverity("error");
+      handleSnackbarOpen(errorMessage, "error");
     } finally {
-      setOpenSnackbar(true);
       setLoading(false);
     }
   };
@@ -600,9 +942,7 @@ export default function AddSenator(props) {
   const handlePastVoteChange = pastVoteManager.handleChange;
 
   const contentRefs = useRef([]);
-  useEffect(() => {
-    // console.log('=== localChanges state updated ===', localChanges);
-  }, [localChanges]);
+  useEffect(() => {}, [localChanges]);
   const handleAddTerm = () => {
     setSenatorTermData((prev) => [
       ...prev,
@@ -663,7 +1003,7 @@ export default function AddSenator(props) {
       return;
     }
     if (senatorData?.currentSenator?.length > 0) {
-      const termsData = senatorData.currentSenator.map((term) => {
+      const termsData = senatorData.currentSenator.map((term, termIndex) => {
         const matchedTerm = terms?.find((t) => t.name === term.termId?.name);
         if (!matchedTerm) {
           return {
@@ -706,6 +1046,12 @@ export default function AddSenator(props) {
 
           termVotes = allVotes.filter((vote) => {
             const voteDate = new Date(vote.date);
+                        const cutoffDate = new Date("2019-01-02");
+            const isBeforeCutoffDate = voteDate < cutoffDate;
+            
+            // Skip votes before cutoff date
+            if (isBeforeCutoffDate) return false;
+
             const inTerm =
               voteDate >= termStart &&
               voteDate <= termEnd &&
@@ -743,6 +1089,11 @@ export default function AddSenator(props) {
               if (!voteData || !matchedTerm) return false;
 
               const voteDate = new Date(voteData.date);
+                 const cutoffDate = new Date("2019-01-02");
+              const isBeforeCutoffDate = voteDate < cutoffDate;
+              
+              if (isBeforeCutoffDate) return false;
+
               const termStart = new Date(`${matchedTerm.startYear}-01-03`);
               const termEnd = new Date(`${matchedTerm.endYear}-01-02`);
 
@@ -787,6 +1138,12 @@ export default function AddSenator(props) {
                 matchedTerm &&
                 doesVoteBelongToTerm(voteData, matchedTerm)
               ) {
+                   const cutoffDate = new Date("2019-01-02");
+                const voteDate = new Date(voteData.date);
+                const isBeforeCutoffDate = voteDate < cutoffDate;
+                
+                // Skip votes before cutoff date
+                if (isBeforeCutoffDate) return;
                 const alreadyIncluded = votesScore.some(
                   (v) => v.voteId === voteId
                 );
@@ -840,6 +1197,7 @@ export default function AddSenator(props) {
           }
         });
         let orphanVotes = [];
+        const cutoffDate = new Date("2019-01-02");
 
         if (Array.isArray(term.votesScore) && term.votesScore.length > 0) {
           term.votesScore.forEach((vote) => {
@@ -848,6 +1206,9 @@ export default function AddSenator(props) {
 
             const voteData = allVotes.find((v) => v._id === voteId);
             if (!voteData) return;
+
+            const voteDate = new Date(voteData.date);
+            const isBeforeCutoffDate = voteDate < cutoffDate;
 
             const belongsToAnyTerm = senatorData.currentSenator.some(
               (otherTerm) => {
@@ -860,20 +1221,26 @@ export default function AddSenator(props) {
               }
             );
 
-            if (!belongsToAnyTerm) {
-              let scoreValue = "";
-              const dbScore = vote.score?.toLowerCase();
-              if (dbScore?.includes("yea")) scoreValue = "yea";
-              else if (dbScore?.includes("nay")) scoreValue = "nay";
-              else if (dbScore?.includes("other")) scoreValue = "other";
-              else scoreValue = vote.score || "";
+            // Add to orphanVotes if vote doesn't belong to any term OR if vote date is before Jan 2, 2019
+           // Add to orphanVotes ONLY if vote doesn't belong to any term
+// AND vote date is before Jan 2, 2019
+if (  isBeforeCutoffDate) {
+  const alreadyAdded = orphanVotes.some((ov) => ov.voteId === voteId);
+  if (!alreadyAdded) {
+    let scoreValue = "";
+    const dbScore = vote.score?.toLowerCase();
+    if (dbScore?.includes("yea")) scoreValue = "yea";
+    else if (dbScore?.includes("nay")) scoreValue = "nay";
+    else if (dbScore?.includes("other")) scoreValue = "other";
+    else scoreValue = vote.score || "";
 
-              orphanVotes.push({
-                voteId: voteId,
-                score: scoreValue,
-                title: vote.voteId?.title || vote.title || "",
-                _id: vote._id || undefined,
-              });
+                orphanVotes.push({
+                  voteId: voteId,
+                  score: scoreValue,
+                  title: vote.voteId?.title || vote.title || "",
+                  _id: vote._id || undefined,
+                });
+              }
             }
           });
         }
@@ -994,7 +1361,6 @@ export default function AddSenator(props) {
                     }
                   }
                 }
-
               }
             }
           });
@@ -1275,12 +1641,35 @@ export default function AddSenator(props) {
           activitiesScore = [{ activityId: "", score: "" }];
         }
 
+        // Determine automatic currentTerm: use dynamic current year (not hardcoded)
+        // and set true when today is on/after Jan 3 of the current year AND the
+        // current date falls within the term's actual date range. Future terms
+        // will be adjusted after building all terms so the newest future term
+        // can be marked current.
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const jan3ThisYear = new Date(`${2025}-01-03`);
+        const isAfterJan3 = now >= jan3ThisYear;
+        const termStart = matchedTerm
+          ? new Date(`${matchedTerm.startYear}-01-03`)
+          : null;
+        const termEnd = matchedTerm
+          ? new Date(`${matchedTerm.endYear}-01-02`)
+          : null;
+
+        const autoCurrentTerm =
+          isAfterJan3 &&
+          termStart &&
+          termEnd &&
+          now >= termStart &&
+          now <= termEnd;
+
         return {
           _id: term._id,
           summary: term.summary || "",
           rating: term.rating || "",
           termId: matchedTerm?._id || "",
-          currentTerm: term.currentTerm || false,
+          currentTerm: autoCurrentTerm || term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
           isNew: false,
@@ -1289,8 +1678,32 @@ export default function AddSenator(props) {
           pastVotesScore,
         };
       });
-      setSenatorTermData(termsData);
-      setOriginalTermData(JSON.parse(JSON.stringify(termsData)));
+      // If there are future terms (startYear > currentYear), mark the newest
+      // one as the current term and clear the flag on others.
+      const currentYear = new Date().getFullYear();
+      const futureTerms = termsData
+        .map((t, idx) => {
+          const start = t.termId
+            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))
+                ?.startYear
+            : null;
+          return { idx, startYear: start ? Number(start) : null };
+        })
+        .filter((t) => t.startYear && t.startYear > currentYear);
+
+      let adjustedTerms = termsData;
+      if (futureTerms.length > 0) {
+        const newest = futureTerms.reduce((a, b) =>
+          a.startYear > b.startYear ? a : b
+        );
+        adjustedTerms = termsData.map((t, i) => ({
+          ...t,
+          currentTerm: i === newest.idx,
+        }));
+      }
+
+      setSenatorTermData(adjustedTerms);
+      setOriginalTermData(JSON.parse(JSON.stringify(adjustedTerms)));
     } else {
       const defaultTerm = [
         {
@@ -1410,8 +1823,7 @@ export default function AddSenator(props) {
     setEditedFields(changes);
   }, [formData, originalFormData, senatorTermData, originalTermData]);
 
-useEffect(() => {
-  
+  useEffect(() => {
     termPreFill();
   }, [id, senatorData]);
   // Use centralized snackbar hook
@@ -1431,13 +1843,14 @@ useEffect(() => {
 
       const newFormData = {
         name: senator.name || "",
-        status: senator.status || "Active",
+        status: senator.status || "active",
         state: senator.state || "",
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
+        isNew: senator.isNew || false,
         publishStatus: senator.publishStatus || "",
-        editedFields: senator.editedFields || [],
+        editedFields: senator.editedFields || {},
         fieldEditors: senator.fieldEditors || {},
       };
 
@@ -1512,8 +1925,7 @@ useEffect(() => {
 
   useEffect(() => {
     preFillForm();
-  
-}, [senator, terms]);
+  }, [senator, terms]);
 
   // Use centralized form change tracker hook
   const { handleChange } = useFormChangeTracker({
@@ -1555,10 +1967,9 @@ useEffect(() => {
     });
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
+  const handleSave = async (publishFlag = false, e) => {
+    if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
-
 
     try {
       // Validate term data using centralized validation
@@ -1575,15 +1986,17 @@ useEffect(() => {
         removedItems.votes.length > 0 ||
         removedItems.activities.length > 0 ||
         removedItems.pastVotes.length > 0 ||
-        (formData?.fieldEditors && Object.keys(formData.fieldEditors).length > 0);
+        (formData?.fieldEditors &&
+          Object.keys(formData.fieldEditors).length > 0);
 
-      if (userRole === "editor" && !hasLocalChanges) {
+      // Allow admins to save/publish even if there are no local changes
+      if (!hasLocalChanges && userRole !== "admin") {
         setLoading(false);
         handleSnackbarOpen("No changes detected. Nothing to update.", "info");
         return;
       }
 
-      const currentEditor = getCurrentEditor;
+      const currentEditor = getCurrentEditor();
 
       if (deletedTermIds.length > 0) {
         await Promise.all(
@@ -1626,30 +2039,65 @@ useEffect(() => {
 
       const hasVoteChanged = (termIndex, voteIndex, vote) => {
         const originalTerm = originalTermData[termIndex] || {};
-        const originalVote = originalTerm.votesScore?.[voteIndex] || {};
-        return (
-          vote.voteId !== originalVote.voteId ||
-          vote.score !== originalVote.score
-        );
+        const originalVotes = originalTerm.votesScore || [];
+        const newVoteId = vote.voteId?._id || vote.voteId;
+
+        if (!newVoteId) {
+          return !!(vote.score && vote.score !== "");
+        }
+
+        const matchingOriginal = originalVotes.find((ov) => {
+          const ovId = ov.voteId?._id || ov.voteId;
+          return ovId && ovId.toString() === newVoteId.toString();
+        });
+
+        if (matchingOriginal) {
+          return (vote.score || "") !== (matchingOriginal.score || "");
+        }
+
+        return true;
       };
 
       const hasActivityChanged = (termIndex, activityIndex, activity) => {
         const originalTerm = originalTermData[termIndex] || {};
-        const originalActivity =
-          originalTerm.activitiesScore?.[activityIndex] || {};
-        return (
-          activity.activityId !== originalActivity.activityId ||
-          activity.score !== originalActivity.score
-        );
+        const originalActivities = originalTerm.activitiesScore || [];
+        const newActId = activity.activityId?._id || activity.activityId;
+
+        if (!newActId) {
+          return !!(activity.score && activity.score !== "");
+        }
+
+        const matchingOriginal = originalActivities.find((oa) => {
+          const oaId = oa.activityId?._id || oa.activityId;
+          return oaId && oaId.toString() === newActId.toString();
+        });
+
+        if (matchingOriginal) {
+          return (activity.score || "") !== (matchingOriginal.score || "");
+        }
+
+        return true;
       };
 
       const hasPastVoteChanged = (termIndex, voteIndex, vote) => {
         const originalTerm = originalTermData[termIndex] || {};
-        const originalVote = originalTerm.pastVotesScore?.[voteIndex] || {};
-        return (
-          vote.voteId !== originalVote.voteId ||
-          vote.score !== originalVote.score
-        );
+        const originalPast = originalTerm.pastVotesScore || [];
+        const newVoteId = vote.voteId?._id || vote.voteId;
+
+        if (!newVoteId) {
+          return !!(vote.score && vote.score !== "");
+        }
+
+        const matchingOriginal = originalPast.find((pv) => {
+          const pvId = pv.voteId?._id || pv.voteId;
+          return pvId && pvId.toString() === newVoteId.toString();
+        });
+
+        if (matchingOriginal) {
+          return (vote.score || "") !== (matchingOriginal.score || "");
+        }
+
+        return true;
       };
 
       senatorTermData.forEach((term, termIndex) => {
@@ -1661,8 +2109,9 @@ useEffect(() => {
                 const uniqueId = `votesScore_${sanitizeKey(voteItem.title)}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Scored Vote ${voteIndex + 1
-                    }`,
+                  displayName: `Term ${termIndex + 1}: Scored Vote ${
+                    voteIndex + 1
+                  }`,
                   field: ["votesScore"],
                   name: voteItem.title,
                   termIndex,
@@ -1688,8 +2137,9 @@ useEffect(() => {
                 )}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Tracked Activity ${activityIndex + 1
-                    }`,
+                  displayName: `Term ${termIndex + 1}: Tracked Activity ${
+                    activityIndex + 1
+                  }`,
                   field: ["activitiesScore"],
                   name: activityItem.title,
                   termIndex,
@@ -1710,8 +2160,9 @@ useEffect(() => {
                 )}`;
                 processedChanges.push({
                   uniqueId,
-                  displayName: `Term ${termIndex + 1}: Important Past Vote ${voteIndex + 1
-                    }`,
+                  displayName: `Term ${termIndex + 1}: Important Past Vote ${
+                    voteIndex + 1
+                  }`,
                   field: ["pastVotesScore"],
                   name: voteItem.title,
                   termIndex,
@@ -1763,28 +2214,17 @@ useEffect(() => {
             const fieldName = `term${termIndex}_${field}`;
             processedChanges.push({
               uniqueId: fieldName,
-              displayName: `Term ${termIndex + 1}: ${fieldLabels[field] || field
-                }`,
+              displayName: `Term ${termIndex + 1}: ${
+                fieldLabels[field] || field
+              }`,
               field: [fieldName],
               name: `Term ${termIndex + 1}: ${fieldLabels[field] || field}`,
             });
           }
         });
 
-        if (
-          !(
-            originalTerm.currentTerm === undefined && term.currentTerm === false
-          ) &&
-          term.currentTerm !== originalTerm.currentTerm
-        ) {
-          const fieldName = `term${termIndex}_currentTerm`;
-          processedChanges.push({
-            uniqueId: fieldName,
-            displayName: `Term ${termIndex + 1}: Current Term`,
-            field: [fieldName],
-            name: `Term ${termIndex + 1}: Current Term`,
-          });
-        }
+        // Intentionally do not track changes to `currentTerm` in editedFields
+        // (skip adding term${termIndex}_currentTerm to processedChanges)
       });
 
       // Process removed items
@@ -1792,30 +2232,36 @@ useEffect(() => {
         const removedFields = [];
 
         // Process removed votes
-        removedItems.votes.forEach(removedVote => {
+        removedItems.votes.forEach((removedVote) => {
           removedFields.push({
             field: [removedVote.fieldKey],
-            name: `Term ${removedVote.termIndex + 1}: Scored Vote ${removedVote.voteIndex + 1} - Removed`,
+            name: `Term ${removedVote.termIndex + 1}: Scored Vote ${
+              removedVote.voteIndex + 1
+            } - Removed`,
             fromQuorum: false,
             // _id: `removed_vote_${removedVote.voteId}`
           });
         });
 
         // Process removed activities
-        removedItems.activities.forEach(removedActivity => {
+        removedItems.activities.forEach((removedActivity) => {
           removedFields.push({
             field: [removedActivity.fieldKey],
-            name: `Term ${removedActivity.termIndex + 1}: Tracked Activity ${removedActivity.activityIndex + 1} - Removed`,
+            name: `Term ${removedActivity.termIndex + 1}: Tracked Activity ${
+              removedActivity.activityIndex + 1
+            } - Removed`,
             fromQuorum: false,
             // _id: `removed_activity_${removedActivity.activityId}`
           });
         });
 
         // Process removed past votes
-        removedItems.pastVotes.forEach(removedPastVote => {
+        removedItems.pastVotes.forEach((removedPastVote) => {
           removedFields.push({
             field: [removedPastVote.fieldKey],
-            name: `Term ${removedPastVote.termIndex + 1}: Important Past Vote ${removedPastVote.voteIndex + 1} - Removed`,
+            name: `Term ${removedPastVote.termIndex + 1}: Important Past Vote ${
+              removedPastVote.voteIndex + 1
+            } - Removed`,
             fromQuorum: false,
             // _id: `removed_pastvote_${removedPastVote.voteId}`
           });
@@ -1845,7 +2291,10 @@ useEffect(() => {
       });
 
       // Combine existing changes with removed items
-      const allChanges = [...Array.from(existingFieldsMap.values()), ...removedFields];
+      const allChanges = [
+        ...Array.from(existingFieldsMap.values()),
+        ...removedFields,
+      ];
 
       const updatedFieldEditors = { ...(formData.fieldEditors || {}) };
       const changedFieldsInThisSession = new Set();
@@ -1909,15 +2358,15 @@ useEffect(() => {
       });
 
       // Also add field editors for removed items
-      removedItems.votes.forEach(removedVote => {
+      removedItems.votes.forEach((removedVote) => {
         updatedFieldEditors[removedVote.fieldKey] = currentEditor;
       });
 
-      removedItems.activities.forEach(removedActivity => {
+      removedItems.activities.forEach((removedActivity) => {
         updatedFieldEditors[removedActivity.fieldKey] = currentEditor;
       });
 
-      removedItems.pastVotes.forEach(removedPastVote => {
+      removedItems.pastVotes.forEach((removedPastVote) => {
         updatedFieldEditors[removedPastVote.fieldKey] = currentEditor;
       });
 
@@ -1932,7 +2381,11 @@ useEffect(() => {
         ...formData,
         editedFields: allChanges,
         fieldEditors: updatedFieldEditors,
-        publishStatus: userRole === "admin" ? "published" : "under review",
+        publishStatus: publishFlag
+          ? "published"
+          : userRole === "admin"
+          ? "under review"
+          : "under review",
       };
 
       if (senatorUpdate.publishStatus === "published") {
@@ -1978,14 +2431,14 @@ useEffect(() => {
 
         const cleanPastVotesScore = term.pastVotesScore
           ? term.pastVotesScore
-            .filter(
-              (vote) => vote.voteId && vote.voteId.toString().trim() !== ""
-            )
-            .map((vote) => ({
-              voteId: vote.voteId.toString(),
-              score: vote.score,
-              title: vote.title || "",
-            }))
+              .filter(
+                (vote) => vote.voteId && vote.voteId.toString().trim() !== ""
+              )
+              .map((vote) => ({
+                voteId: vote.voteId.toString(),
+                score: vote.score,
+                title: vote.title || "",
+              }))
           : [];
 
         const termSpecificChanges = allChanges.filter((f) => {
@@ -1993,8 +2446,8 @@ useEffect(() => {
             typeof f === "string"
               ? f
               : Array.isArray(f.field)
-                ? f.field[0]
-                : f.field;
+              ? f.field[0]
+              : f.field;
           return fieldName.startsWith(`term${index}_`);
         });
 
@@ -2011,8 +2464,8 @@ useEffect(() => {
         };
         return term._id
           ? dispatch(
-            updateSenatorData({ id: term._id, data: termUpdate })
-          ).unwrap()
+              updateSenatorData({ id: term._id, data: termUpdate })
+            ).unwrap()
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
 
@@ -2030,19 +2483,25 @@ useEffect(() => {
       setRemovedItems({
         votes: [],
         activities: [],
-        pastVotes: []
+        pastVotes: [],
       });
 
-      userRole === "admin"
-        ? handleSnackbarOpen("Changes published successfully!", "success")
-        : handleSnackbarOpen(
-          'Status changed to "Under Review" for admin to moderate.',
+      if (publishFlag) {
+        handleSnackbarOpen("Changes published successfully!", "success");
+      } else if (userRole === "admin") {
+        handleSnackbarOpen("Changes saved (draft).", "success");
+      } else {
+        handleSnackbarOpen(
+          'Status changed to "Draft" for admin to moderate.',
           "info"
         );
+      }
     } catch (error) {
-      console.error("Save failed:", error);
 
-      let errorMessage = getErrorMessage(error, "Operation failed. Please try again.");
+      let errorMessage = getErrorMessage(
+        error,
+        "Operation failed. Please try again."
+      );
 
       // Handle specific error codes
       if (error?.code === 11000) {
@@ -2091,30 +2550,30 @@ useEffect(() => {
         descColor: "#1976D2",
       },
       "under review": {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
         title: "Under Review",
         description:
           editedFields.length > 0
             ? `${editedFields.map((f) => fieldLabels[f] || f).join(", ")}`
             : "No recent changes",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
       published: {
-        backgroundColor: "rgba(255, 193, 7, 0.12)",
-        borderColor: "#FFC107",
-        iconColor: "#FFA000",
+        backgroundColor: "rgba(66, 165, 245, 0.12)",
+        borderColor: "#2196F3",
+        iconColor: "#1565C0",
         icon: <HourglassTop sx={{ fontSize: "20px" }} />,
-        title: "Unsaved Changes",
+        title: "Unsaved Draft",
         description:
           editedFields.length > 0
             ? `${editedFields.length} pending changes`
             : "Published and live",
-        titleColor: "#5D4037",
-        descColor: "#795548",
+        titleColor: "#0D47A1",
+        descColor: "#1976D2",
       },
     };
     return configs[currentStatus];
@@ -2172,15 +2631,15 @@ useEffect(() => {
             {!(
               formData.publishStatus === "under review" && !hasSelectedTerms()
             ) && (
-                <StatusDisplay
-                  userRole={userRole}
-                  formData={formData}
-                  localChanges={localChanges}
-                  statusData={statusData}
-                  termData={senatorTermData}
-                  mode="senator"
-                />
-              )}
+              <StatusDisplay
+                userRole={userRole}
+                formData={formData}
+                localChanges={localChanges}
+                statusData={statusData}
+                termData={senatorTermData}
+                mode="senator"
+              />
+            )}
 
             <Paper className="customPaper">
               <DialogBox
@@ -2228,7 +2687,9 @@ useEffect(() => {
                   handleRemoveVote={handleRemoveVote}
                   handleAddVote={handleAddVote}
                   allActivities={allActivities}
-                  validateActivityInTermRange={validateActivityInTermRangeWrapper}
+                  validateActivityInTermRange={
+                    validateActivityInTermRangeWrapper
+                  }
                   handleActivityChange={handleActivityChange}
                   handleRemoveActivity={handleRemoveActivity}
                   handleAddActivity={handleAddActivity}

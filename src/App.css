@@ -126,6 +126,21 @@ h6 {
 .fetchBtn:hover {
   background-color: #1e4c80 !important;
 }
+
+.bulkEditBtn {
+  padding: 8px 24px !important;
+  background-color: #173a5e !important;
+  color: white !important;
+  font-size: 14px !important;
+  border: none !important;
+}
+
+.bulkEditBtn:hover {
+  background-color: #1e4c80 !important;
+  color: white !important;
+  border: none !important;
+}
+
 .custom-search {
   width: 55% !important;
 }
