@@ -211,156 +211,7 @@ const findTermForDate = (terms = [], date) => {
   });
 };
 
-  // const handleBulkApply = async ({ ids = [], payload }) => {
-  //   if (!ids || ids.length === 0 || !payload) {
-  //     return;
-  //   }
-  //   if (userRole !== "admin") {
-  //     showSnackbar("Bulk edit is for admins only", "error");
-  //     return;
-  //   }
 
-  //   const { category, itemId, score } = payload;
-
-  //   if (!category || !itemId || !score) {
-  //     showSnackbar("Invalid bulk payload", "error");
-  //     return;
-  //   }
-
-  //   setFetching(true);
-  //   let successCount = 0;
-  //   try {
-  //     for (const sid of ids) {
-  //       try {
-  //         const termRecords = await dispatch(
-  //           getSenatorDataBySenatorId(sid)
-  //         ).unwrap();
-
-  //         if (!Array.isArray(termRecords)) {
-  //           continue;
-  //         }
-
-  //         const updatePromises = [];
-  //         termRecords.forEach((term) => {
-  // let modified = false;
-  // const newTerm = { ...term };
-
-  // if (category === "vote") {
-  //   const votes = [...(newTerm.votesScore || [])];
-  //   const itemIdStr = itemId.toString();
-
-  //   const index = votes.findIndex((v) => {
-  //     const vid = v.voteId?._id || v.voteId;
-  //     return vid?.toString() === itemIdStr;
-  //   });
-
-  //   if (index > -1) {
-  //     // ✅ UPDATE existing vote
-  //     votes[index] = { ...votes[index], score };
-  //   } else {
-  //     // ✅ INSERT new vote
-  //     votes.push({
-  //       voteId: itemId,
-  //       score,
-  //     });
-  //   }
-
-  //   newTerm.votesScore = votes;
-  //   modified = true;
-  // }
-
-  // if (category === "activity") {
-  //   const acts = [...(newTerm.activitiesScore || [])];
-  //   const itemIdStr = itemId.toString();
-
-  //   const index = acts.findIndex((a) => {
-  //     const aid = a.activityId?._id || a.activityId;
-  //     return aid?.toString() === itemIdStr;
-  //   });
-
-  //   if (index > -1) {
-  //     // ✅ UPDATE existing activity
-  //     acts[index] = { ...acts[index], score };
-  //   } else {
-  //     // ✅ INSERT new activity
-  //     acts.push({
-  //       activityId: itemId,
-  //       score,
-  //     });
-  //   }
-
-  //   newTerm.activitiesScore = acts;
-  //   modified = true;
-  // }
-
-  // if (modified) {
-  //   const payloadData = {
-  //     ...newTerm,
-  //     votesScore: newTerm.votesScore?.map((v) => ({
-  //       voteId: v.voteId?._id || v.voteId,
-  //       score: v.score,
-  //     })),
-  //     activitiesScore: newTerm.activitiesScore?.map((a) => ({
-  //       activityId: a.activityId?._id || a.activityId,
-  //       score: a.score,
-  //     })),
-  //   };
-
-  //   updatePromises.push(
-  //     dispatch(updateSenatorData({ id: term._id, data: payloadData })).unwrap()
-  //                 .then((result) => {
-  //                   return result;
-  //                 })
-  //                 .catch((error) => {
-  //                   console.error(
-  //                     `❌ updateSenatorData error for term ${term._id}:`,
-  //                     error
-  //                   );
-  //                   throw error;
-  //                 })
-  //             );
-  //           } else {
-  //             console.log(
-  //               `⏭️ Term ${term._id} not modified - no matching ${category} found`
-  //             );
-  //           }
-  //         });
-
-  //         if (updatePromises.length > 0) {
-  //           await Promise.all(updatePromises);
-  //           successCount += 1;
-  //           console.log(`✅ Successfully updated senator ${sid}`);
-  //         } else {
-  //           console.log(`⚠️ No updates needed for senator ${sid}`);
-  //         }
-  //       } catch (err) {
-  //         console.error(`❌ Bulk update error for senator ${sid}:`, {
-  //           error: err,
-  //           errorMessage: err?.message,
-  //           errorStack: err?.stack,
-  //           fullError: err,
-  //         });
-  //       }
-  //     }
-
-  //     await dispatch(getAllSenatorData());
-  //     await dispatch(getAllSenators());
-  //     console.log(
-  //       `✅ Bulk edit completed. Success count: ${successCount}/${ids.length}`
-  //     );
-  //     showSnackbar(`Bulk edit applied for ${successCount} members.`, "success");
-  //   } catch (err) {
-  //     console.error("❌ Bulk apply failed:", {
-  //       error: err,
-  //       errorMessage: err?.message,
-  //       errorStack: err?.stack,
-  //       fullError: err,
-  //     });
-  //     showSnackbar("Bulk apply failed. See console for details.", "error");
-  //   } finally {
-  //     setFetching(false);
-  //   }
-  // };
 const handleBulkApply = async ({ ids = [], payload }) => {
   if (!ids.length || !payload) return;
 
@@ -508,7 +359,6 @@ const handleBulkApply = async ({ ids = [], payload }) => {
                     },
                   })
                 ).unwrap();
-                console.log(`   📝 Updated activity score to "${score}"`);
               }
               break;
             }
@@ -699,8 +549,8 @@ const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
     );
 
     await dispatch(getAllSenators());
-    console.log("Bulk publish result:", result);
-console.log("successCount:", successCount, "totalCount:", totalCount, "hasTermRequiredError:", hasTermRequiredError);
+  
+
     // 🧠 PRIORITY-BASED SNACKBAR LOGIC
     if (successCount === 0 && hasTermRequiredError) {
       showSnackbar("Term is required", "error");

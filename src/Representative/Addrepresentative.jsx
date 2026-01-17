@@ -87,7 +87,6 @@ export default function Addrepresentative(props) {
     message: "",
     type: "",
   });
-  console.log("Render Addrepresentative", houseData);
   const navigate = useNavigate();
 
   // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)

@@ -105,7 +105,6 @@ export const bulkPublishSenators = createAsyncThunk(
   "senatorData/bulkPublishSenators",
   async ({ senatorIds = [], publishStatus = "published" }, { rejectWithValue }) => {
     try {
-      console.log("Bulk publishing senators with IDs:", senatorIds, "to status:", publishStatus);
       const response = await axios.post(
         `${API_URL}/api/v1/admin/bulk-publish`,
         { senatorIds, publishStatus },
