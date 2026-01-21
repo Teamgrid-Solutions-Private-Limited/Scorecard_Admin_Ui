@@ -751,7 +751,7 @@ const handleTermChange = (e, termIndex) => {
                   else if (s.includes("other")) mappedScore = "other";
                   else mappedScore = senAct.score;
                 } else {
-                  console.log(`      ⚠️ No senator activity found or no score`);
+                  console.error(`      ⚠️ No senator activity found or no score`);
                 }
 
                 return {
@@ -791,10 +791,10 @@ const handleTermChange = (e, termIndex) => {
             }            
             // [Rest of the currentTerm logic remains the same...]
           } else {
-            console.log(`   ❌ Selected term not found in terms list`);
+            console.error(`   ❌ Selected term not found in terms list`);
           }
         } else {
-          console.log(`   📝 Simple field update (not termId)`);
+          console.error(`   📝 Simple field update (not termId)`);
         }
 
         return updatedTerm;
