@@ -591,13 +591,16 @@ const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
     ...new Set(senators.map((senator) => senator.state)),
   ].filter(Boolean);
 
-  const filteredPartyOptions = partyOptions.filter((party) =>
-    party.toLowerCase().includes(searchTerms.party)
-  );
-
-  const filteredStateOptions = stateOptions.filter((state) =>
-    state.toLowerCase().includes(searchTerms.state)
-  );
+const filteredPartyOptions = partyOptions.filter(
+      (party) =>
+        party.toLowerCase() !== "unknown" &&
+        party.toLowerCase().includes(searchTerms.party),
+    );
+    const filteredStateOptions = stateOptions.filter(
+      (state) =>
+        state.toLowerCase() !== "unknown" &&
+            state.toLowerCase().includes(searchTerms.state),
+    );
 
   const filteredRatingOptions = ratingOptions.filter((rating) =>
     rating.toLowerCase().includes(searchTerms.rating)

@@ -256,13 +256,16 @@ export default function Representative(props) {
     ...new Set(transformedHouses.map((rep) => rep.district)),
   ].filter(Boolean);
 
-  const filteredPartyOptions = partyOptions.filter((party) =>
-    party.toLowerCase().includes(searchTerms.party)
-  );
-
-  const filteredDistrictOptions = districtOptions.filter((district) =>
-    district.toLowerCase().includes(searchTerms.district)
-  );
+   const filteredPartyOptions = partyOptions.filter(
+     (party) =>
+       party.toLowerCase() !== "unknown" &&
+       party.toLowerCase().includes(searchTerms.party),
+   );
+   const filteredDistrictOptions = districtOptions.filter(
+     (district) =>
+       district.toLowerCase() !== "unknown" &&
+       district.toLowerCase().includes(searchTerms.district),
+   );
 
   const filteredRatingOptions = ratingOptions.filter((rating) =>
     rating.toLowerCase().includes(searchTerms.rating)
