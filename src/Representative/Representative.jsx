@@ -15,11 +15,6 @@ import {
   TextField,
   Snackbar,
   Alert,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Badge,
   InputAdornment,
   IconButton,
@@ -62,7 +57,9 @@ import MobileHeader from "../components/MobileHeader";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken, getUserRole } from "../utils/auth";
 import { useSnackbar } from "../hooks";
-
+import FetchFromQuorumDialog from "../components/FetchFromQuorumDialog";
+import SnackbarComponent from "../components/SnackbarComponent";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 export default function Representative(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -1307,16 +1304,6 @@ export default function Representative(props) {
                     </ClickAwayListener>
                   )}
                 </Box>
-
-                {/* {userRole === "admin" && (
-                  <Button
-                    variant="outlined"
-                    className="fetch-btn"
-                    onClick={handleFetchClick}
-                  >
-                    Fetch Representatives from Quorum
-                  </Button>
-                )} */}
                 {userRole === "admin" && (
                   <Button
                     variant="outlined"
@@ -1343,184 +1330,28 @@ export default function Representative(props) {
           </Stack>
         </Box>
 
-        <Snackbar
+        <SnackbarComponent
           open={snackbarOpen}
-          autoHideDuration={5000}
           onClose={hideSnackbar}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        >
-          <Alert
-            onClose={hideSnackbar}
-            severity={snackbarSeverity}
-            sx={{
-              border: "none",
-              boxShadow: "none",
-              width: "100%",
-              bgcolor:
-                snackbarMessage ===
-                `${selectedRepresentative?.name} deleted successfully.`
-                  ? "#fde8e4 !important"
-                  : snackbarMessage
-                      ?.toLowerCase()
-                      .includes("representatives fetched successfully!") ||
-                    snackbarMessage
-                      ?.toLowerCase()
-                      .includes("bulk select applied") ||
-                    snackbarMessage
-                      ?.toLowerCase()
-                      .includes("bulk publish applied")
-                  ? "#daf4f0 !important"
-                  : undefined,
+          message={snackbarMessage}
+          severity={snackbarSeverity}
+        />
 
-              "& .MuiAlert-icon": {
-                color:
-                  snackbarMessage ===
-                  `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#cc563d !important"
-                    : snackbarMessage
-                        ?.toLowerCase()
-                        .includes("representatives fetched successfully!") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk select applied") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk publish applied")
-                    ? "#099885 !important"
-                    : undefined,
-              },
-
-              "& .MuiAlert-message": {
-                color:
-                  snackbarMessage ===
-                  `${selectedRepresentative?.name} deleted successfully.`
-                    ? "#cc563d !important"
-                    : snackbarMessage
-                        ?.toLowerCase()
-                        .includes("representatives fetched successfully!") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk select applied") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk publish applied")
-                    ? "#099885 !important"
-                    : undefined,
-              },
-              "& .MuiAlert-action": {
-                display: "flex",
-                alignItems: "center",
-                paddingTop: 0,
-                paddingBottom: 0,
-              },
-            }}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
-
-        <Dialog
+        <DeleteConfirmationDialog
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}
-          PaperProps={{
-            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
-          }}
-        >
-          <DialogTitle className="dialogBox">Confirm Deletion</DialogTitle>
+          onConfirm={handleConfirmDelete}
+          itemName={selectedRepresentative?.name}
+          itemType="representative"
+        />
 
-          <DialogContent>
-            <DialogContentText className="dialogTitle">
-              Are you sure you want to delete{" "}
-              <strong>{selectedRepresentative?.name}</strong>?
-            </DialogContentText>
-          </DialogContent>
-
-          <DialogActions>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
-            >
-              <Button
-                onClick={() => setOpenDeleteDialog(false)}
-                variant="outlined"
-                color="secondary"
-                sx={{ borderRadius: 2, paddingX: 3 }}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                onClick={handleConfirmDelete}
-                variant="contained"
-                color="error"
-                sx={{ borderRadius: 2, paddingX: 3 }}
-              >
-                Delete
-              </Button>
-            </Stack>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
+        <FetchFromQuorumDialog
           open={openFetchDialog}
           onClose={() => setOpenFetchDialog(false)}
-          PaperProps={{
-            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
-          }}
-        >
-          <DialogTitle className="dialogBox">
-            Fetch Representatives from Quorum
-          </DialogTitle>
-
-          <DialogContent>
-            <DialogContentText className="dialogTitle">
-              Select the type of representatives you want to fetch:
-            </DialogContentText>
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <Button
-                variant="outlined"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                    color: "white !important",
-                    border: "none !important",
-                  },
-                }}
-                onClick={() => fetchRepresentativeFromQuorum("active")}
-              >
-                Active Representatives
-              </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                    color: "white !important",
-                    border: "none !important",
-                  },
-                }}
-                onClick={() => fetchRepresentativeFromQuorum("former")}
-              >
-                Former Representatives
-              </Button>
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setOpenFetchDialog(false)}
-              variant="outlined"
-              color="secondary"
-              sx={{ borderRadius: 2, paddingX: 3 }}
-            >
-              Cancel
-            </Button>
-          </DialogActions>
-        </Dialog>
+          onActive={() => fetchRepresentativeFromQuorum("active")}
+          onFormer={() => fetchRepresentativeFromQuorum("former")}
+          type="Representative"
+        />
       </Box>
     </AppTheme>
   );

@@ -22,11 +22,6 @@ import {
   Snackbar,
   Alert,
   TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   Paper,
   IconButton,
   ClickAwayListener,
@@ -68,7 +63,9 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import { getToken } from "../utils/auth";
 import { useSnackbar } from "../hooks";
 import { SmsFailed } from "@mui/icons-material";
-
+import FetchFromQuorumDialog from "../components/FetchFromQuorumDialog";
+import SnackbarComponent from "../components/SnackbarComponent";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 export default function Senator(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -1469,178 +1466,28 @@ const filteredPartyOptions = partyOptions.filter(
           </Stack>
         </Box>
 
-        <Snackbar
+        <SnackbarComponent
           open={snackbarOpen}
-          autoHideDuration={4000}
           onClose={hideSnackbar}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        >
-        <Alert
-            onClose={hideSnackbar}
-            severity={snackbarSeverity}
-            sx={{
-              border: "none",
-              boxShadow: "none",
-              width: "100%",
-              bgcolor:
-                snackbarMessage ===
-                `${selectedSenator?.name} deleted successfully.`
-                  ? "#fde8e4 !important"
-                  : (snackbarMessage
-                      ?.toLowerCase()
-                      .includes("senators fetched successfully!") ||
-                    snackbarMessage?.toLowerCase().includes("bulk select applied") ||
-                    snackbarMessage?.toLowerCase().includes("bulk publish applied"))
-                  ? "#daf4f0 !important"
-                  : undefined,
- 
-              "& .MuiAlert-icon": {
-                color:
-                  snackbarMessage ===
-                  `${selectedSenator?.name} deleted successfully.`
-                    ? "#cc563d !important"
-                    : (snackbarMessage
-                        ?.toLowerCase()
-                        .includes("senators fetched successfully!") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk select applied") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk publish applied"))
-                    ? "#099885 !important"
-                    : undefined,
-              },
- 
-              "& .MuiAlert-message": {
-                color:
-                  snackbarMessage ===
-                  `${selectedSenator?.name} deleted successfully.`
-                    ? "#cc563d !important"
-                    : (snackbarMessage
-                        ?.toLowerCase()
-                        .includes("senators fetched successfully!") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk select applied") ||
-                      snackbarMessage
-                        ?.toLowerCase()
-                        .includes("bulk publish applied"))
-                    ? "#099885 !important"
-                    : undefined,
-              },
-              "& .MuiAlert-action": {
-                display: "flex",
-                alignItems: "center",
-                paddingTop: 0,
-                paddingBottom: 0,
-              },
-            }}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+          message={snackbarMessage}
+          severity={snackbarSeverity}
+        />
 
-        <Dialog
+        <FetchFromQuorumDialog
           open={openFetchDialog}
           onClose={() => setOpenFetchDialog(false)}
-          PaperProps={{
-            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
-          }}
-        >
-          <DialogTitle className="dialogBox">
-            Fetch Senators from Quorum
-          </DialogTitle>
+          onActive={() => fetchSenatorsFromQuorum("active")}
+          onFormer={() => fetchSenatorsFromQuorum("former")}
+          type="Senator"
+        />
 
-          <DialogContent>
-            <DialogContentText className="dialogTitle">
-              Select the type of senators you want to fetch:
-            </DialogContentText>
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <Button
-                variant="outlined"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                    color: "white !important",
-                    border: "none !important",
-                  },
-                }}
-                onClick={() => fetchSenatorsFromQuorum("active")}
-              >
-                Active Senators
-              </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                    color: "white !important",
-                    border: "none !important",
-                  },
-                }}
-                onClick={() => fetchSenatorsFromQuorum("former")}
-              >
-                Former Senators
-              </Button>
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setOpenFetchDialog(false)}
-              variant="outlined"
-              color="secondary"
-              sx={{ borderRadius: 2, paddingX: 3 }}
-            >
-              Cancel
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
+        <DeleteConfirmationDialog
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}
-          PaperProps={{
-            sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
-          }}
-        >
-          <DialogTitle className="dialogBox">Confirm Deletion</DialogTitle>
-
-          <DialogContent>
-            <DialogContentText className="dialogTitle">
-              Are you sure you want to delete{" "}
-              <strong>{selectedSenator?.name}</strong>?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ width: "100%", justifyContent: "center", paddingBottom: 2 }}
-            >
-              <Button
-                onClick={() => setOpenDeleteDialog(false)}
-                variant="outlined"
-                color="secondary"
-                sx={{ borderRadius: 2, paddingX: 3 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmDelete}
-                variant="contained"
-                color="error"
-                sx={{ borderRadius: 2, paddingX: 3 }}
-              >
-                Delete
-              </Button>
-            </Stack>
-          </DialogActions>
-        </Dialog>
+          onConfirm={handleConfirmDelete}
+          itemName={selectedSenator?.name}
+          itemType="senator"
+        />
       </Box>
     </AppTheme>
   );

@@ -38,8 +38,8 @@ export default function CustomizedDataGrid({
   isSelectable = false,
   onSelectionChange,
   selectedItems = [],
-  onBulkApply, // optional callback for bulk operations
-  onBulkPublish, // optional callback for bulk publish operations
+  onBulkApply, 
+  onBulkPublish,
 }) {
   const dispatch = useDispatch();
   const { senatorData } = useSelector((state) => state.senatorData);
