@@ -4,9 +4,9 @@
  * error handling, and request/response transformation
  */
 
-import axios from 'axios';
-import { API_URL } from '../redux/API';
-import { getToken, isTokenExpired, logout } from './auth';
+import axios from "axios";
+import { API_URL } from "../redux/API";
+import { getToken, isTokenExpired, logout } from "./auth";
 
 /**
  * Create axios instance with default configuration
@@ -15,7 +15,7 @@ const apiClient = axios.create({
   baseURL: API_URL,
   timeout: 30000, // 30 seconds
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -25,26 +25,30 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token = getToken();
-    
-    // Add token to headers if available
-    if (token) {
+
+    // Add token to headers if available and not already set (e.g., tempToken for OTP verification)
+    if (token && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Check if token is expired before making request
-    if (token && isTokenExpired()) {
+
+    // Check if token is expired before making request (skip for requests with custom Authorization)
+    if (
+      token &&
+      !config.headers.Authorization?.includes("Bearer ") &&
+      isTokenExpired()
+    ) {
       // Token expired, clear auth and redirect to login
       logout();
-      window.location.href = '/scorecard/admin/login';
-      return Promise.reject(new Error('Token expired'));
+      window.location.href = "/scorecard/admin/login";
+      return Promise.reject(new Error("Token expired"));
     }
-    
+
     return config;
   },
   (error) => {
-    console.error('Request interceptor error:', error);
+    console.error("Request interceptor error:", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 /**
@@ -60,39 +64,49 @@ apiClient.interceptors.response.use(
     if (error.response) {
       // Server responded with error status
       const { status, data } = error.response;
-      
+
       // Handle 401 Unauthorized - token invalid or expired
       if (status === 401) {
         logout();
-        window.location.href = '/scorecard/admin/login';
-        return Promise.reject(new Error('Unauthorized - Please login again'));
+        window.location.href = "/scorecard/admin/login";
+        return Promise.reject(new Error("Unauthorized - Please login again"));
       }
-      
+
       // Handle 403 Forbidden - insufficient permissions
       if (status === 403) {
-        return Promise.reject(new Error(data?.message || 'Access denied: Insufficient permissions'));
+        return Promise.reject(
+          new Error(data?.message || "Access denied: Insufficient permissions"),
+        );
       }
-      
+
       // Handle 404 Not Found
       if (status === 404) {
-        return Promise.reject(new Error(data?.message || 'Resource not found'));
+        return Promise.reject(new Error(data?.message || "Resource not found"));
       }
-      
+
       // Handle 500 Server Error
       if (status >= 500) {
-        return Promise.reject(new Error(data?.message || 'Server error - Please try again later'));
+        return Promise.reject(
+          new Error(data?.message || "Server error - Please try again later"),
+        );
       }
-      
-      // Return error with message from server
-      return Promise.reject(new Error(data?.message || `Request failed with status ${status}`));
+
+      // For 400/429 and other errors, attach the full data object to the error
+      const err = new Error(
+        data?.message || `Request failed with status ${status}`,
+      );
+      err.response = { data };
+      return Promise.reject(err);
     } else if (error.request) {
       // Request made but no response received
-      return Promise.reject(new Error('Network error - Please check your connection'));
+      return Promise.reject(
+        new Error("Network error - Please check your connection"),
+      );
     } else {
       // Error in request setup
       return Promise.reject(error);
     }
-  }
+  },
 );
 
 /**
@@ -157,4 +171,3 @@ export const api = {
  * Export the axios instance for advanced usage
  */
 export default apiClient;
-

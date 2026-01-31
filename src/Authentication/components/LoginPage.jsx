@@ -104,10 +104,17 @@ export default function LoginPage() {
     e.preventDefault();
 
     try {
-      const res = await api.post("/otp/verify-otp", {
-        otp,
-        tempToken,
-      });
+      const res = await api.post(
+        "/auth/otp/verify",
+        {
+          otp,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${tempToken}`,
+          },
+        },
+      );
       setToken(res.data.token);
       setUser(res.data.user.fullName);
 
@@ -118,14 +125,37 @@ export default function LoginPage() {
       }, 1500);
     } catch (err) {
       console.error(err);
-      showSnackbar(err?.message || "OTP verification failed", "error");
+      const message = err?.response?.data?.message || "OTP verification failed";
+      const backendAttempts = err?.response?.data?.attemptsRemaining;
+
+      // Display: "Invalid OTP (3 attempts remaining)"
+      const finalMessage =
+        backendAttempts !== undefined
+          ? `${message} (${backendAttempts} attempt${backendAttempts !== 1 ? "s" : ""} remaining)`
+          : message;
+
+      // If no attempts remaining, disable verify button and start timer
+      if (backendAttempts === 0) {
+        setOtp("");
+        setResendTimer(60);
+      }
+
+      showSnackbar(finalMessage, "error");
     }
   };
   const handleResendOtp = async () => {
     try {
       setResending(true);
 
-      const res = await api.post("/otp/resend-otp", { tempToken });
+      const res = await api.post(
+        "/auth/otp/resend",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${tempToken}`,
+          },
+        },
+      );
 
       showSnackbar(res.data.message || "OTP resent", "success");
       setResendTimer(60);
