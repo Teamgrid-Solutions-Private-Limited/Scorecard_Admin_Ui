@@ -11,7 +11,6 @@ import Senator from '../src/Senator/Senator';
 import Representative from '../src/Representative/Representative';
 import SaveRepresentative from '../src/Representative/Addrepresentative';
 import Vote from './votes/Votes';
-import SignIn from '../src/Authentication/components/SignIn';
 import AddVote from './votes/AddVote';
 import SearchVote from './votes/SearchVotes';
 import ManageTerm from "../src/Manageterm/ManageTerm";
