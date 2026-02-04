@@ -220,4 +220,14 @@ export const isTokenExpired = () => {
     return true;
   }
 };
+export const setRefreshToken = (token) => {
+  localStorage.setItem('refreshToken', token);
+};
 
+export const getRefreshToken = () => {
+  return localStorage.getItem('refreshToken');
+};
+
+export const clearRefreshToken = () => {
+  localStorage.removeItem('refreshToken');
+};
