@@ -20,9 +20,15 @@ import { api } from "../../utils/apiClient";
 import { setToken, setUser, setRefreshToken } from "../../utils/auth";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import { Visibility, VisibilityOff, ContentCopy, CheckCircle } from "@mui/icons-material";
+import {
+  Visibility,
+  VisibilityOff,
+  ContentCopy,
+  CheckCircle,
+} from "@mui/icons-material";
 import { useSnackbar } from "../../hooks"; // Make sure this hook exists
 import "../../styles/LoginPage.css";
+import TwoFactorAuthModal from "./TwoFactorAuthModal";
 
 export default function LoginPage() {
   const nav = useNavigate();
@@ -42,7 +48,8 @@ export default function LoginPage() {
   const [copied, setCopied] = useState(false);
   const [backupCodes, setBackupCodes] = useState([]);
   const [showBackupCodes, setShowBackupCodes] = useState(false);
-  
+  const [is2FAModalOpen, set2FAModalOpen] = useState(false);
+
   // Local snackbar state (if the hook doesn't work properly)
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -69,7 +76,7 @@ export default function LoginPage() {
 
   // Handle local snackbar close
   const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
     setSnackbarOpen(false);
@@ -115,7 +122,7 @@ export default function LoginPage() {
     } catch (err) {
       showSnackbar(
         err?.response?.data?.message || "Invalid credentials",
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -147,9 +154,9 @@ export default function LoginPage() {
         } catch (err) {
           showSnackbar(
             err?.response?.data?.message || "Failed to load QR code",
-            "error"
+            "error",
           );
-          setStep("LOGIN");
+          // setStep("LOGIN");
         } finally {
           setLoading(false);
         }
@@ -167,110 +174,175 @@ export default function LoginPage() {
   };
 
   const handleVerify2FA = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    e.preventDefault();
 
-  try {
-    let res;
-    
-    if (step === "SETUP_2FA") {
-      // First-time setup
-      res = await api.post(
-        "/auth/2fa/setup",
-        { 
-          token: otp, 
-          secret: manualEntryKey // Use the manualEntryKey as secret
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${tempToken}`,
-          },
-        }
-      );
-
-      // Check if backup codes are returned
-      if (res.data.data && res.data.data.backupCodes) {
-        setBackupCodes(res.data.data.backupCodes);
-        setShowBackupCodes(true);
-      } else if (res.data.backupCodes) {
-        setBackupCodes(res.data.backupCodes);
-        setShowBackupCodes(true);
-      }
-    } else {
-      // Regular verification
-      res = await api.post(
-        "/auth/2fa/verify",
-        { token: otp },
-        {
-          headers: {
-            Authorization: `Bearer ${tempToken}`,
-          },
-        }
-      );
+    // Validate OTP format
+    if (otp.length !== 6 || isNaN(otp)) {
+      showSnackbar("Please enter a valid 6-digit code", "error");
+      return;
     }
 
-    // Check the response structure based on your API
-    if (res.data.success) {
-      // Extract tokens from the data object
-      const accessToken = res.data.data?.accessToken || res.data.accessToken;
-      const refreshToken = res.data.data?.refreshToken || res.data.refreshToken;
+    setLoading(true);
 
-      if (accessToken) {
-        setToken(accessToken);
-        
-        if (refreshToken) {
-          setRefreshToken(refreshToken);
-        }
+    try {
+      let res;
 
-        // Since user data is not in the response, we need to fetch it
-        // OR decode it from the token if it contains user info
-        try {
-          // Decode the JWT token to get user info
-          const tokenParts = accessToken.split('.');
-          if (tokenParts.length === 3) {
-            const payload = JSON.parse(atob(tokenParts[1]));
-            if (payload.fullName) {
-              setUser(payload.fullName);
-            } else if (payload.email) {
-              // Use email as fallback
-              setUser(payload.email);
+      if (step === "SETUP_2FA") {
+        // First-time setup
+        res = await api.post(
+          "/auth/2fa/setup",
+          {
+            token: otp,
+            secret: manualEntryKey,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${tempToken}`,
+            },
+          },
+        );
+
+        // Check if backup codes are returned
+        if (res.data.data && res.data.data.backupCodes) {
+          setBackupCodes(res.data.data.backupCodes);
+
+          // ✅ Save tokens if they're included
+          if (res.data.data.accessToken) {
+            setToken(res.data.data.accessToken);
+            if (res.data.data.refreshToken) {
+              setRefreshToken(res.data.data.refreshToken);
             }
           }
-        } catch (error) {
-          console.error("Failed to decode token:", error);
-          // Set a default user name
-          setUser("User");
-        }
 
-        if (showBackupCodes) {
-          showSnackbar("2FA setup complete! Save your backup codes.", "success");
-        } else {
-          showSnackbar("Login successful", "success");
+          set2FAModalOpen(false); // Close 2FA modal
+          setTimeout(() => {
+            setShowBackupCodes(true); // Show backup codes modal
+          }, 300);
+        } else if (res.data.backupCodes) {
+          setBackupCodes(res.data.backupCodes);
+
+          // ✅ Save tokens if they're included
+          if (res.data.accessToken) {
+            setToken(res.data.accessToken);
+            if (res.data.refreshToken) {
+              setRefreshToken(res.data.refreshToken);
+            }
+          }
+
+          set2FAModalOpen(false); // Close 2FA modal
+          setTimeout(() => {
+            setShowBackupCodes(true); // Show backup codes modal
+          }, 300);
         }
-        
-        // Delay navigation
-        setTimeout(() => {
-          nav("/");
-        }, 1000);
+      } else {
+        // Regular verification
+        res = await api.post(
+          "/auth/2fa/verify",
+          { token: otp },
+          {
+            headers: {
+              Authorization: `Bearer ${tempToken}`,
+            },
+          },
+        );
+
+        // ✅ Handle successful regular verification
+        if (res.data.success && res.data.data?.accessToken) {
+          const accessToken = res.data.data.accessToken;
+          const refreshToken = res.data.data.refreshToken;
+
+          setToken(accessToken);
+          if (refreshToken) {
+            setRefreshToken(refreshToken);
+          }
+
+          // Decode token to get user info
+          try {
+            const tokenParts = accessToken.split(".");
+            if (tokenParts.length === 3) {
+              const payload = JSON.parse(atob(tokenParts[1]));
+              if (payload.fullName) {
+                setUser(payload.fullName);
+              } else if (payload.email) {
+                setUser(payload.email);
+              }
+            }
+          } catch (error) {
+            console.error("Failed to decode token:", error);
+            setUser("User");
+          }
+
+          showSnackbar("Login successful", "success");
+          setTimeout(() => {
+            nav("/");
+          }, 1000);
+        }
       }
-    } else {
-      showSnackbar(res.data.message || "Verification failed", "error");
+
+      // Check the response structure based on your API
+      if (res.data.success) {
+        // For 2FA setup, tokens might already be saved above
+        if (step === "SETUP_2FA" && res.data.data?.accessToken) {
+          // Tokens already saved above, just show success message
+          showSnackbar(
+            "2FA setup complete! Save your backup codes.",
+            "success",
+          );
+        } else if (step === "SETUP_2FA") {
+          // Handle case where tokens might not be in response (shouldn't happen with updated backend)
+          showSnackbar(
+            "2FA setup complete! Save your backup codes.",
+            "success",
+          );
+        }
+      } else {
+        showSnackbar(res.data.message || "Verification failed", "error");
+      }
+    } catch (err) {
+      showSnackbar(
+        err?.response?.data?.message || "Invalid authentication code",
+        "error",
+      );
+      if (step === "VERIFY_2FA") {
+        setStep("VERIFY_2FA");
+      }
+    } finally {
+      setLoading(false);
+      setOtp(""); // Clear OTP for retry
     }
-  } catch (err) {
-    showSnackbar(
-      err?.response?.data?.message || "Invalid authentication code",
-      "error"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleProceedWithoutSaving = () => {
     setShowBackupCodes(false);
     showSnackbar("Proceeding without saving backup codes", "warning");
     setTimeout(() => nav("/"), 500);
   };
+  const handleProceedToDashboard = () => {
+    // Make sure tokens are saved before navigating
+    if (localStorage.getItem("token")) {
+      setShowBackupCodes(false);
+      showSnackbar("Proceeding to dashboard", "success");
+      setTimeout(() => nav("/"), 500);
+    } else {
+      // If tokens aren't saved, show an error
+      showSnackbar(
+        "Authentication error. Please try logging in again.",
+        "error",
+      );
+      setShowBackupCodes(false);
+      setStep("LOGIN");
+    }
+  };
+  // Open 2FA modal
+  const open2FAModal = () => set2FAModalOpen(true);
+  const close2FAModal = () => set2FAModalOpen(false);
+
+  // Trigger the modal to open when needed
+  useEffect(() => {
+    if (step === "SETUP_2FA") {
+      open2FAModal();
+    }
+  }, [step]);
 
   return (
     <>
@@ -282,13 +354,16 @@ export default function LoginPage() {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <MuiAlert
-          onClose={snackbarHook ? snackbarHook.hideSnackbar : handleSnackbarClose}
+          onClose={
+            snackbarHook ? snackbarHook.hideSnackbar : handleSnackbarClose
+          }
           severity={snackbarHook ? snackbarHook.severity : snackbarSeverity}
           sx={{
             width: "100%",
             backgroundColor:
-              (snackbarHook ? snackbarHook.severity : snackbarSeverity) === "success" 
-                ? "#173A5E" 
+              (snackbarHook ? snackbarHook.severity : snackbarSeverity) ===
+              "success"
+                ? "#173A5E"
                 : undefined,
             color: "#fff",
           }}
@@ -309,7 +384,7 @@ export default function LoginPage() {
             right: 0,
             bottom: 0,
             backgroundColor: "rgba(0,0,0,0.8)",
-            zIndex: 9999,
+            zIndex: 10000,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -326,7 +401,7 @@ export default function LoginPage() {
             <Typography variant="h6" gutterBottom align="center">
               🔒 Save Your Backup Codes
             </Typography>
-            
+
             <Alert severity="warning" sx={{ mb: 3 }}>
               These codes are shown only once. Save them in a secure location.
               You will need them if you lose access to your authenticator app.
@@ -357,40 +432,40 @@ export default function LoginPage() {
                 ))}
               </Grid>
             </Box>
-
             <Button
               variant="contained"
               fullWidth
               onClick={() => {
                 // Create a text file with backup codes
-                const text = `SBA Scorecard - Backup Codes\n\nIMPORTANT: Save these codes in a secure location.\nYou will need them if you lose access to your authenticator app.\n\n${backupCodes.join('\n')}\n\nGenerated on: ${new Date().toLocaleString()}`;
-                const blob = new Blob([text], { type: 'text/plain' });
+                const text = `SBA Scorecard - Backup Codes\n\nIMPORTANT: Save these codes in a secure location.\nYou will need them if you lose access to your authenticator app.\n\n${backupCodes.join("\n")}\n\nGenerated on: ${new Date().toLocaleString()}`;
+                const blob = new Blob([text], { type: "text/plain" });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                const a = document.createElement("a");
                 a.href = url;
-                a.download = 'sba-backup-codes.txt';
+                a.download = "sba-backup-codes.txt";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                
+
                 showSnackbar("Backup codes downloaded", "success");
                 setShowBackupCodes(false);
-                setTimeout(() => nav("/"), 1000);
+                handleProceedToDashboard();
+                // Don't navigate immediately, let user save codes first
               }}
               sx={{ mb: 2 }}
             >
               📥 Download Backup Codes
             </Button>
-
             <Button
               variant="outlined"
               fullWidth
               onClick={() => {
                 // Copy to clipboard
-                const text = backupCodes.join('\n');
+                const text = backupCodes.join("\n");
                 navigator.clipboard.writeText(text);
                 showSnackbar("Backup codes copied to clipboard", "success");
+                handleProceedToDashboard();
               }}
               sx={{ mb: 2 }}
             >
@@ -400,7 +475,7 @@ export default function LoginPage() {
             <Button
               variant="text"
               fullWidth
-              onClick={handleProceedWithoutSaving}
+              onClick={handleProceedToDashboard}
               color="warning"
             >
               I've saved them, proceed to dashboard
@@ -408,6 +483,24 @@ export default function LoginPage() {
           </Paper>
         </Box>
       )}
+
+      {/* Two-Factor Authentication Modal */}
+      {/* Two-Factor Authentication Modal */}
+      {step === "SETUP_2FA" &&
+        !showBackupCodes && ( // ✅ Add !showBackupCodes check
+          <TwoFactorAuthModal
+            open={is2FAModalOpen}
+            onClose={close2FAModal}
+            qrCode={qrCode}
+            manualEntryKey={manualEntryKey}
+            otp={otp}
+            setOtp={setOtp}
+            handleVerify2FA={handleVerify2FA}
+            loading={loading}
+            handleCopySecret={handleCopySecret}
+            copied={copied}
+          />
+        )}
 
       <Grid container className="login-main-container">
         <Grid
@@ -447,7 +540,7 @@ export default function LoginPage() {
           </Box>
 
           {/* Right Side - Login Form */}
-          {step === "LOGIN" && (
+          {step === "LOGIN"  && (
             <Box
               component="form"
               onSubmit={handleSubmit}
@@ -564,163 +657,6 @@ export default function LoginPage() {
             </Box>
           )}
 
-          {step === "SETUP_2FA" && (
-            <Box
-  component="form"
-  onSubmit={handleVerify2FA}
-  className="login-form-side"
-  sx={{
-    height: "100%",
-    overflowY: "auto",
-    display: "flex",
-    alignItems: "center",
-  }}
->
-
-<Box
-  className="login-form-inner"
-  sx={{
-    width: "100%",
-    maxHeight: "100%",
-    py: 4,
-  }}
->
-                <Typography variant="h6" fontWeight="bold" align="center">
-                  Set up Two-Factor Authentication
-                </Typography>
-
-                <Typography align="center" mb={2} variant="body2" color="text.secondary">
-                  Scan the QR code or enter the key manually in your authenticator app
-                </Typography>
-
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  Download Google Authenticator or Microsoft Authenticator from your app store
-                </Alert>
-
-                {loading ? (
-                  <Box display="flex" justifyContent="center" my={4}>
-                    <CircularProgress />
-                  </Box>
-                ) : (
-                  <>
-                    {/* QR Code Display */}
-                    {qrCode && (
-                      <Box 
-                        display="flex" 
-                        flexDirection="column" 
-                        alignItems="center" 
-                        mb={3}
-                      >
-                        <Typography variant="subtitle2" gutterBottom>
-                          Scan QR Code:
-                        </Typography>
-                        <img 
-                          src={qrCode} 
-                          alt="2FA QR Code" 
-                          style={{ 
-                            width: 200, 
-                            height: 200,
-                            border: "1px solid #e0e0e0",
-                            borderRadius: "8px",
-                            padding: "8px",
-                            backgroundColor: "white"
-                          }} 
-                        />
-                      </Box>
-                    )}
-
-                    {/* Manual Entry Option */}
-                    {manualEntryKey && (
-                      <Box mb={3}>
-                        <Typography variant="subtitle2" gutterBottom>
-                          Or enter this key manually:
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                            backgroundColor: "#f5f5f5",
-                            p: 1.5,
-                            borderRadius: 1,
-                            border: "1px solid #e0e0e0",
-                          }}
-                        >
-                          <Typography
-                            sx={{
-                              fontFamily: "monospace",
-                              flexGrow: 1,
-                              fontSize: "0.9rem",
-                              wordBreak: "break-all",
-                            }}
-                          >
-                            {manualEntryKey}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            onClick={handleCopySecret}
-                            color={copied ? "success" : "default"}
-                          >
-                            {copied ? <CheckCircle fontSize="small" /> : <ContentCopy fontSize="small" />}
-                          </IconButton>
-                        </Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-                          Click the copy icon to copy the secret key
-                        </Typography>
-                      </Box>
-                    )}
-
-                    {/* OTP Input */}
-                    <TextField
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      placeholder="Enter 6-digit code from app"
-                      fullWidth
-                      size="small"
-                      inputProps={{ 
-                        maxLength: 6,
-                        inputMode: "numeric",
-                        pattern: "[0-9]*"
-                      }}
-                      sx={{ mb: 2 }}
-                      disabled={loading}
-                      autoFocus
-                    />
-
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      fullWidth
-                      disabled={otp.length !== 6 || loading}
-                      sx={{
-                        bgcolor: "#173A5E",
-                        "&:hover": { bgcolor: "#1E4C80" },
-                        borderRadius: "10px",
-                        py: 1.2,
-                      }}
-                    >
-                      {loading ? <CircularProgress size={24} /> : "Verify & Continue"}
-                    </Button>
-
-                    <Button
-                      onClick={() => {
-                        setStep("LOGIN");
-                        setOtp("");
-                        setLoading(false);
-                      }}
-                      variant="text"
-                      fullWidth
-                      sx={{ mt: 2 }}
-                      disabled={loading}
-                    >
-                      Back to Login
-                    </Button>
-                  </>
-                )}
-              </Box>
-            </Box>
-          )}
-
           {step === "VERIFY_2FA" && (
             <Box
               component="form"
@@ -732,71 +668,80 @@ export default function LoginPage() {
                   Two-Factor Authentication
                 </Typography>
 
-                <Typography align="center" mb={3} variant="body2" color="text.secondary">
+                <Typography
+                  align="center"
+                  mb={3}
+                  variant="body2"
+                  color="text.secondary"
+                >
                   Open your authenticator app and enter the 6-digit code
                 </Typography>
 
                 <TextField
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                   placeholder="Enter 6-digit code"
                   fullWidth
                   size="small"
-                  inputProps={{ 
+                  inputProps={{
                     maxLength: 6,
                     inputMode: "numeric",
-                    pattern: "[0-9]*"
-                      }}
-                      sx={{ mb: 3 }}
-                      disabled={loading}
-                      autoFocus
-                    />
+                    pattern: "[0-9]*",
+                  }}
+                  sx={{ mb: 3 }}
+                  disabled={loading}
+                  autoFocus
+                />
 
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      fullWidth
-                      disabled={otp.length !== 6 || loading}
-                      sx={{
-                        bgcolor: "#173A5E",
-                        "&:hover": { bgcolor: "#1E4C80" },
-                        borderRadius: "10px",
-                        py: 1.2,
-                      }}
-                    >
-                      {loading ? <CircularProgress size={24} /> : "Verify & Continue"}
-                    </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  disabled={otp.length !== 6 || loading}
+                  sx={{
+                    bgcolor: "#173A5E",
+                    "&:hover": { bgcolor: "#1E4C80" },
+                    borderRadius: "10px",
+                    py: 1.2,
+                  }}
+                >
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    "Verify & Continue"
+                  )}
+                </Button>
 
-                    <Button
-                      onClick={() => {
-                        setStep("LOGIN");
-                        setOtp("");
-                        setLoading(false);
-                      }}
-                      variant="text"
-                      fullWidth
-                      sx={{ mt: 2 }}
-                      disabled={loading}
-                    >
-                      Back to Login
-                    </Button>
+                <Button
+                  onClick={() => {
+                    setStep("LOGIN");
+                    setOtp("");
+                    setLoading(false);
+                  }}
+                  variant="text"
+                  fullWidth
+                  sx={{ mt: 2 }}
+                  disabled={loading}
+                >
+                  Back to Login
+                </Button>
 
-                    <Typography 
-                      variant="caption" 
-                      align="center" 
-                      sx={{ 
-                        mt: 3, 
-                        display: "block",
-                        color: "text.secondary"
-                      }}
-                    >
-                      Having trouble? Make sure your device time is synchronized.
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-            </Grid>
-          </Grid>
-        </>
-      );
-    }
+                <Typography
+                  variant="caption"
+                  align="center"
+                  sx={{
+                    mt: 3,
+                    display: "block",
+                    color: "text.secondary",
+                  }}
+                >
+                  Having trouble? Make sure your device time is synchronized.
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </Grid>
+      </Grid>
+    </>
+  );
+}

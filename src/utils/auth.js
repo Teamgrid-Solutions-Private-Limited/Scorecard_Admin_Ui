@@ -196,6 +196,7 @@ export const getEditorInfo = () => {
  */
 export const logout = () => {
   clearAuthStorage();
+  clearRefreshToken()
   return true;
 };
 
