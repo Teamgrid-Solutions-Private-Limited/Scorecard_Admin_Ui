@@ -8,7 +8,7 @@ export const createSenatorData = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/senator-data/`,
+        `${API_URL}/v1/admin/senator-data/`,
         data
       );
 
@@ -24,7 +24,7 @@ export const getAllSenatorData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/v1/admin/senator-data/`,
+        `${API_URL}/v1/admin/senator-data/`,
         {
           headers: { "x-protected-key": API_PROTECTED_KEY },
         }
@@ -41,7 +41,7 @@ export const getSenatorDataById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/v1/admin/senator-data/viewID/${id}`,
+        `${API_URL}/v1/admin/senator-data/viewID/${id}`,
         {
           headers: { "x-protected-key": API_PROTECTED_KEY },
         }
@@ -58,7 +58,7 @@ export const getSenatorDataBySenatorId = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/v1/admin/senator-data/viewbysenator/${id}`,
+        `${API_URL}/v1/admin/senator-data/viewbysenator/${id}`,
         {
           headers: { "x-protected-key": API_PROTECTED_KEY },
         }
@@ -75,7 +75,7 @@ export const updateSenatorData = createAsyncThunk(
   async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/senator-data/${id}`,
+        `${API_URL}/v1/admin/senator-data/${id}`,
         data
       );
 
@@ -91,7 +91,7 @@ export const deleteSenatorData = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
-        `${API_URL}/api/v1/admin/senator-data/${id}`
+        `${API_URL}/v1/admin/senator-data/${id}`
       );
 
       return response.data;
@@ -106,7 +106,7 @@ export const bulkPublishSenators = createAsyncThunk(
   async ({ senatorIds = [], publishStatus = "published" }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/bulk-publish`,
+        `${API_URL}/v1/admin/bulk-publish`,
         { senatorIds, publishStatus },
            {
           headers: { "x-protected-key": API_PROTECTED_KEY },

@@ -437,19 +437,6 @@ export default function Votes(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
-
-                {/* {userRole === "admin" && (
-                  <Button
-                    onClick={() => {
-                      setIsAssignMode(!isAssignMode);
-                      if (!isAssignMode) setIsBulkEditMode(false);
-                    }}
-                    className={`bulkEditBtn ${isAssignMode ? "active" : ""}`}
-                  >
-                    {isAssignMode ? "Cancel Assign" : "Assign Vote"}
-                  </Button>
-                )} */}
-
                 {userRole === "admin" && (
                   <Button
                     onClick={() => navigate("/search-votes")}
@@ -561,7 +548,7 @@ export default function Votes(props) {
                               const editorInfo = getEditorInfo();
 
                               const response = await axios.post(
-                                `${API_URL}/api/v1/admin/votes/apply-quorum`,
+                                `${API_URL}/v1/admin/votes/apply-quorum`,
                                 { ids, editorInfo },
                                 { headers: { Authorization: `Bearer ${token}` } }
                               );

@@ -1007,14 +1007,14 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
-                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      tinymceScriptSrc="/tinymce/tinymce.min.js"
                       licenseKey="gpl"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
                       }
                       init={{
-                        base_url: "/scorecard/admin/tinymce",
+                        base_url: "/tinymce",
                         suffix: ".min",
                         height: 250,
                         menubar: false,
@@ -1053,14 +1053,14 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
-                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      tinymceScriptSrc="/tinymce/tinymce.min.js"
                       licenseKey="gpl"
                       value={formData.longDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "longDesc")
                       }
                       init={{
-                        base_url: "/scorecard/admin/tinymce",
+                        base_url: "/tinymce",
                         suffix: ".min",
                         height: 250,
                         menubar: false,

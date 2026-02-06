@@ -345,17 +345,6 @@ export default function Activity(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
-                {/* {userRole === "admin" && (
-                  <Button
-                    onClick={() => {
-                      setIsAssignMode(!isAssignMode);
-                      if (!isAssignMode) setIsBulkEditMode(false);
-                    }}
-                    className={`bulkEditBtn ${isAssignMode ? "active" : ""}`}
-                  >
-                    {isAssignMode ? "Cancel Assign" : "Assign Activity"}
-                  </Button>
-                )} */}
                 {userRole === "admin" && (
                   <Button
                     onClick={() => navigate("/search-activities")}
@@ -456,7 +445,7 @@ export default function Activity(props) {
                         const editorInfo = getEditorInfo();
 
                         const response = await axios.post(
-                          `${API_URL}/api/v1/admin/activities/populate-sponsors`,
+                          `${API_URL}/v1/admin/activities/populate-sponsors`,
                           { billIds: ids, editorInfo },
                           { headers: { Authorization: `Bearer ${token}` } }
                         );

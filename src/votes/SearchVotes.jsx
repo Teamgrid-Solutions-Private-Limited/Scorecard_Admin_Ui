@@ -107,7 +107,7 @@ export default function SearchVotes(params) {
         }
 
         response = await axios.post(
-          `${API_URL}/fetch-quorum/store-data`,
+          `${API_URL}/v1/fetch-quorum/store-data`,
           {
             type: "votes",
             additionalParams: additionalParams,
@@ -127,7 +127,7 @@ export default function SearchVotes(params) {
         }
 
         const res = await axios.post(
-          `${API_URL}/fetch-quorum/store-data`,
+          `${API_URL}/v1/fetch-quorum/store-data`,
           {
             type: "votes",
             additionalParams: additionalParams,
@@ -179,7 +179,7 @@ export default function SearchVotes(params) {
             relatedBill: vote.relatedBill,
           };
 
-      const response = await axios.post(`${API_URL}/fetch-quorum/votes/save`, {
+      const response = await axios.post(`${API_URL}/v1/fetch-quorum/votes/save`, {
         bills: [voteData],
         editorInfo: editorInfo,
       });

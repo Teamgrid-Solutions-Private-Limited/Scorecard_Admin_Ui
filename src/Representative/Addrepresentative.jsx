@@ -1416,7 +1416,7 @@ export default function Addrepresentative(props) {
                     </Grid>
                     <Grid className="textField" size={isMobile ? 11 : 9.05}>
                       <Editor
-                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        tinymceScriptSrc="/tinymce/tinymce.min.js"
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term.summary}
@@ -1447,7 +1447,7 @@ export default function Addrepresentative(props) {
                         }}
                         onBlur={() => {}}
                         init={{
-                          base_url: "/scorecard/admin/tinymce",
+                          base_url: "/tinymce",
                           height: 250,
                           menubar: false,
                           plugins: [
