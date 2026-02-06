@@ -6,7 +6,7 @@ import path from 'path';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base:'/scorecard/admin/',
+  base:'/',
   server: {
     host: 'localhost', // Change to '0.0.0.0' if you want external access
     port: 3001,

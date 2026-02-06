@@ -26,7 +26,7 @@ const ActivateAccount = () => {
   const verifyToken = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/verify-activation?token=${token}`
+        `${API_URL}/verify-activation?token=${token}`
       );
       const data = await response.json();
 
@@ -53,7 +53,7 @@ const ActivateAccount = () => {
     if (password !== confirmPassword) return setError("Passwords don't match");
 
     try {
-      const response = await fetch(`${API_URL}/api/activate-account`, {
+      const response = await fetch(`${API_URL}/activate-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
@@ -63,7 +63,7 @@ const ActivateAccount = () => {
 
       if (response.ok) {
         setSuccess("Account activated successfully!");
-        setTimeout(() => navigate("/scorecard/admin/login"), 2000);
+        setTimeout(() => navigate("/login"), 2000);
       } else {
         setError(data.message || "Unable to activate account");
       }
@@ -166,7 +166,7 @@ const ActivateAccount = () => {
         <div className="activate-footer">
           <p>
             Already have an account?{" "}
-            <button onClick={() => navigate("/scorecard/admin/login")}>
+            <button onClick={() => navigate("/login")}>
               Sign in
             </button>
           </p>

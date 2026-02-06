@@ -8,7 +8,7 @@ export const createHouseData = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/house-data/`,
+        `${API_URL}/v1/admin/house-data/`,
         data
       );
 
@@ -23,7 +23,7 @@ export const getAllHouseData = createAsyncThunk(
   "houseData/getAllHouseData",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/house-data/`, {
+      const response = await axios.get(`${API_URL}/v1/admin/house-data/`, {
         headers: { "x-protected-key": API_PROTECTED_KEY },
       });
       return response.data;
@@ -38,7 +38,7 @@ export const getHouseDataById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/v1/admin/house-data/viewID/${id}`,
+        `${API_URL}/v1/admin/house-data/viewID/${id}`,
         {
           headers: { "x-protected-key": API_PROTECTED_KEY },
         }
@@ -55,7 +55,7 @@ export const getHouseDataByHouseId = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/v1/admin/house-data/viewbyhouse/${id}`,
+        `${API_URL}/v1/admin/house-data/viewbyhouse/${id}`,
         {
           headers: { "x-protected-key": API_PROTECTED_KEY },
         }
@@ -72,7 +72,7 @@ export const updateHouseData = createAsyncThunk(
   async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/house-data/${id}`,
+        `${API_URL}/v1/admin/house-data/${id}`,
         data
       );
 
@@ -88,7 +88,7 @@ export const deleteHouseData = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
-        `${API_URL}/api/v1/admin/house-data/${id}`
+        `${API_URL}/v1/admin/house-data/${id}`
       );
       return response.data;
     } catch (error) {
@@ -103,7 +103,7 @@ export const updateHouseScores = createAsyncThunk(
    
       
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/house-data/scores/update`,
+        `${API_URL}/v1/admin/house-data/scores/update`,
         { updates }
       );
       

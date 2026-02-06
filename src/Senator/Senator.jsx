@@ -671,8 +671,8 @@ const filteredPartyOptions = partyOptions.filter(
        // Use different endpoints based on status
        const endpoint =
          status === "former"
-           ? `${API_URL}/fetch-quorum/save-former`
-           : `${API_URL}/fetch-quorum/store-data`;
+           ? `${API_URL}/v1/fetch-quorum/save-former`
+           : `${API_URL}/v1/fetch-quorum/store-data`;
 
        const response = await axios.post(endpoint, requestBody, {
          headers: {
@@ -849,17 +849,6 @@ const filteredPartyOptions = partyOptions.filter(
           <MobileHeader />
           <Stack spacing={2} className="stackBox">
             <Box className="actionsBox">
-              {/* {userRole === "admin" && (
-                <Box className="adminBox">
-                  <Button
-                    variant="outlined"
-                    className="fetchBtn"
-                    onClick={handleFetchClick}
-                  >
-                    Fetch Senators from Quorum
-                  </Button>
-                </Box>
-              )} */}
               {userRole === "admin" && (
                 <Box className="adminBox">
                   <Button
@@ -1440,18 +1429,6 @@ const filteredPartyOptions = partyOptions.filter(
                 )}
               </Stack>
             </Box>
-            {/* {userRole === "admin" && (
-                  <Button
-                    variant="outlined"
-                    className="fetch-btn"
-                    onClick={handleFetchClick}
-                  >
-                    Fetch Senators from Quorum
-                  </Button>
-                )}
-              </Stack>
-            </Box> */}
-
             <MainGrid
               type="senator"
               data={filteredSenators}

@@ -29,7 +29,7 @@ const PrivateRoute = ({ element }) => {
 
 export default function App() {
   return (
-    <Router basename="/scorecard/admin">
+    <Router basename="/">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />

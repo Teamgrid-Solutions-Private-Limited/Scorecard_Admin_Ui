@@ -705,8 +705,8 @@ export default function Representative(props) {
       // Use different endpoints based on status
       const endpoint =
         status === "former"
-          ? `${API_URL}/fetch-quorum/save-former`
-          : `${API_URL}/fetch-quorum/store-data`;
+          ? `${API_URL}/v1/fetch-quorum/save-former`
+          : `${API_URL}/v1/fetch-quorum/store-data`;
 
       const response = await axios.post(endpoint, requestBody, {
         headers: {
@@ -757,17 +757,7 @@ export default function Representative(props) {
                   </Button>
                 </Box>
               )}
-              {/* {userRole === "admin" && (
-                <Box className="adminBox">
-                  <Button
-                    variant="outlined"
-                    className="fetchBtn"
-                    onClick={handleFetchClick}
-                  >
-                    Fetch Senators from Quorum
-                  </Button>
-                </Box>
-              )} */}
+              
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
