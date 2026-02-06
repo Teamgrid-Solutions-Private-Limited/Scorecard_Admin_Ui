@@ -12,15 +12,11 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  CircularProgress,
-  Alert,
-  Chip,
 } from "@mui/material";
 import logo from "../../assets/image/logos/sba-logo3.svg";
 import bgImage from "../../assets/image/Rectangle.jpg";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../utils/apiClient";
-import { setToken, setUser, setRefreshToken } from "../../utils/auth";
 import { setToken, setUser, setRefreshToken } from "../../utils/auth";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
@@ -31,15 +27,7 @@ import {
   CheckCircle,
 } from "@mui/icons-material";
 import { useSnackbar } from "../../hooks"; // Make sure this hook exists
-import {
-  Visibility,
-  VisibilityOff,
-  ContentCopy,
-  CheckCircle,
-} from "@mui/icons-material";
-import { useSnackbar } from "../../hooks"; // Make sure this hook exists
 import "../../styles/LoginPage.css";
-import TwoFactorAuthModal from "./TwoFactorAuthModal";
 import TwoFactorAuthModal from "./TwoFactorAuthModal";
 
 export default function LoginPage() {
@@ -49,10 +37,6 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
-  const [step, setStep] = useState("LOGIN");
-  const [qrCode, setQrCode] = useState(null);
-  const [secret, setSecret] = useState(null);
-  const [manualEntryKey, setManualEntryKey] = useState("");
   const [step, setStep] = useState("LOGIN");
   const [qrCode, setQrCode] = useState(null);
   const [secret, setSecret] = useState(null);
@@ -106,7 +90,6 @@ const [useBackupCode, setUseBackupCode] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setLoading(true);
 
     try {
       const res = await api.post("v1/user/login", info);
@@ -121,31 +104,7 @@ const [useBackupCode, setUseBackupCode] = useState(false);
 
       // 2FA already enabled → verify
       if (res.data.requires2FA) {
-      // Force 2FA setup
-      if (res.data.requires2FASetup) {
         setTempToken(res.data.tempToken);
-        setStep("SETUP_2FA");
-        showSnackbar("Two-factor authentication setup required", "info");
-        return;
-      }
-
-      // 2FA already enabled → verify
-      if (res.data.requires2FA) {
-        setTempToken(res.data.tempToken);
-        setStep("VERIFY_2FA");
-        showSnackbar("Enter code from Authenticator app", "info");
-        return;
-      }
-
-      // Normal login (fallback)
-      if (res.data.token) {
-        setToken(res.data.token);
-        setUser(res.data.user.fullName);
-        if (res.data.refreshToken) {
-          setRefreshToken(res.data.refreshToken);
-        }
-        showSnackbar("Login successful", "success");
-        setTimeout(() => nav("/"), 1000);
         setStep("VERIFY_2FA");
         showSnackbar("Enter code from Authenticator app", "info");
         return;
@@ -164,11 +123,8 @@ const [useBackupCode, setUseBackupCode] = useState(false);
     } catch (err) {
       showSnackbar(
         err?.response?.data?.message || "Invalid credentials",
-        err?.response?.data?.message || "Invalid credentials",
         "error",
       );
-    } finally {
-      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -432,17 +388,11 @@ const handleVerify2FA = async (e) => {
       {/* Snackbar component - using either hook state or local state */}
       <Snackbar
         open={snackbarHook ? snackbarHook.open : snackbarOpen}
-        open={snackbarHook ? snackbarHook.open : snackbarOpen}
         autoHideDuration={6000}
-        onClose={snackbarHook ? snackbarHook.hideSnackbar : handleSnackbarClose}
         onClose={snackbarHook ? snackbarHook.hideSnackbar : handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <MuiAlert
-          onClose={
-            snackbarHook ? snackbarHook.hideSnackbar : handleSnackbarClose
-          }
-          severity={snackbarHook ? snackbarHook.severity : snackbarSeverity}
           onClose={
             snackbarHook ? snackbarHook.hideSnackbar : handleSnackbarClose
           }
@@ -454,147 +404,14 @@ const handleVerify2FA = async (e) => {
               "success"
                 ? "#173A5E"
                 : undefined,
-              (snackbarHook ? snackbarHook.severity : snackbarSeverity) ===
-              "success"
-                ? "#173A5E"
-                : undefined,
             color: "#fff",
           }}
           elevation={6}
           variant="filled"
         >
           {snackbarHook ? snackbarHook.message : snackbarMessage}
-          {snackbarHook ? snackbarHook.message : snackbarMessage}
         </MuiAlert>
       </Snackbar>
-
-      {/* Backup Codes Modal */}
-      {showBackupCodes && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.8)",
-            zIndex: 10000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Paper
-            sx={{
-              p: 4,
-              maxWidth: 500,
-              maxHeight: "80vh",
-              overflow: "auto",
-            }}
-          >
-            <Typography variant="h6" gutterBottom align="center">
-              🔒 Save Your Backup Codes
-            </Typography>
-
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              These codes are shown only once. Save them in a secure location.
-              You will need them if you lose access to your authenticator app.
-            </Alert>
-
-            <Box
-              sx={{
-                backgroundColor: "#f5f5f5",
-                p: 2,
-                borderRadius: 1,
-                mb: 3,
-                maxHeight: 300,
-                overflow: "auto",
-              }}
-            >
-              <Grid container spacing={1}>
-                {backupCodes.map((code, index) => (
-                  <Grid item xs={6} key={index}>
-                    <Chip
-                      label={code}
-                      sx={{
-                        fontFamily: "monospace",
-                        width: "100%",
-                        justifyContent: "center",
-                      }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => {
-                // Create a text file with backup codes
-                const text = `SBA Scorecard - Backup Codes\n\nIMPORTANT: Save these codes in a secure location.\nYou will need them if you lose access to your authenticator app.\n\n${backupCodes.join("\n")}\n\nGenerated on: ${new Date().toLocaleString()}`;
-                const blob = new Blob([text], { type: "text/plain" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "sba-backup-codes.txt";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                showSnackbar("Backup codes downloaded", "success");
-                setShowBackupCodes(false);
-                handleProceedToDashboard();
-                // Don't navigate immediately, let user save codes first
-              }}
-              sx={{ mb: 2 }}
-            >
-              📥 Download Backup Codes
-            </Button>
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={() => {
-                // Copy to clipboard
-                const text = backupCodes.join("\n");
-                navigator.clipboard.writeText(text);
-                showSnackbar("Backup codes copied to clipboard", "success");
-                handleProceedToDashboard();
-              }}
-              sx={{ mb: 2 }}
-            >
-              📋 Copy to Clipboard
-            </Button>
-
-            <Button
-              variant="text"
-              fullWidth
-              onClick={handleProceedToDashboard}
-              color="warning"
-            >
-              I've saved them, proceed to dashboard
-            </Button>
-          </Paper>
-        </Box>
-      )}
-
-      {/* Two-Factor Authentication Modal */}
-      {/* Two-Factor Authentication Modal */}
-      {step === "SETUP_2FA" &&
-        !showBackupCodes && ( // ✅ Add !showBackupCodes check
-          <TwoFactorAuthModal
-            open={is2FAModalOpen}
-            onClose={close2FAModal}
-            qrCode={qrCode}
-            manualEntryKey={manualEntryKey}
-            otp={otp}
-            setOtp={setOtp}
-            handleVerify2FA={handleVerify2FA}
-            loading={loading}
-            handleCopySecret={handleCopySecret}
-            copied={copied}
-          />
-        )}
 
       {/* Backup Codes Modal */}
       {showBackupCodes && (
@@ -863,7 +680,6 @@ const handleVerify2FA = async (e) => {
                   variant="contained"
                   fullWidth
                   disabled={loading}
-                  disabled={loading}
                   sx={{
                     mt: 3,
                     bgcolor: "#173A5E",
@@ -874,7 +690,6 @@ const handleVerify2FA = async (e) => {
                     py: 1.2,
                   }}
                 >
-                  {loading ? <CircularProgress size={24} /> : "Sign In"}
                   {loading ? <CircularProgress size={24} /> : "Sign In"}
                 </Button>
               </Box>
