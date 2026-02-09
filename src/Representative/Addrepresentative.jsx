@@ -1561,6 +1561,8 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
+                                  <MenuItem value="present">Present</MenuItem>
+                                  <MenuItem value="missed">Absent</MenuItem>
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1676,6 +1678,8 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
+                                  <MenuItem value="present">Present</MenuItem>
+                                  <MenuItem value="missed">Absent</MenuItem>
                                 </Select>
                               </FormControl>
                             </Grid>
