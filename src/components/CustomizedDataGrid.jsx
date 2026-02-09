@@ -14,8 +14,8 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme, useMediaQuery, Chip } from "@mui/material";
 import { getAllTerms } from "../redux/reducer/termSlice";
-import {getAllVotes} from "../redux/reducer/voteSlice";
-import {getAllActivity} from "../redux/reducer/activitySlice";
+import { getAllVotes } from "../redux/reducer/voteSlice";
+import { getAllActivity } from "../redux/reducer/activitySlice";
 import { get } from "lodash";
 import { API_URL } from "../redux/API";
 import { getToken, getUserRole } from "../utils/auth";
@@ -38,7 +38,7 @@ export default function CustomizedDataGrid({
   isSelectable = false,
   onSelectionChange,
   selectedItems = [],
-  onBulkApply, 
+  onBulkApply,
   onBulkPublish,
 }) {
   const dispatch = useDispatch();
@@ -51,7 +51,7 @@ export default function CustomizedDataGrid({
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("warning");
-const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
+  const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
 
   const showSnackbar = (message, severity = "warning") => {
     setSnackbarMessage(message);
@@ -81,11 +81,11 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
       } else if (type === "representative" && houseData) {
         const merged = rows.map((row) => {
           const houseRecords = houseData.filter(
-            (data) => data.houseId === row._id
+            (data) => data.houseId === row._id,
           );
 
           const currentTermData = houseRecords.find(
-            (rec) => rec.currentTerm === true
+            (rec) => rec.currentTerm === true,
           );
           let rating = "N/A";
           let termId = row.termId;
@@ -110,7 +110,7 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
                 });
 
               const valid = fallbackRecords.find(
-                (rec) => rec.rating && rec.rating !== ""
+                (rec) => rec.rating && rec.rating !== "",
               );
               if (valid) {
                 rating = valid.rating;
@@ -136,7 +136,7 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
 
             if (validRecords.length > 0) {
               const latest = validRecords.find(
-                (rec) => rec.rating && rec.rating !== ""
+                (rec) => rec.rating && rec.rating !== "",
               );
               if (latest) {
                 rating = latest.rating;
@@ -164,7 +164,7 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
           rows.map((row) => ({
             ...row,
             rating: row.rating || "N/A",
-          }))
+          })),
         );
       }
     }
@@ -186,6 +186,9 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
     if (lowerStatus.includes("review")) return "default";
 
     return "default";
+  };
+  const get2FAColor = (enabled) => {
+    return enabled ? "success" : "default";
   };
 
   const navigate = useNavigate();
@@ -319,7 +322,7 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
               </Box>
             ),
           },
-          
+
           {
             field: "status",
             headerName: "Status",
@@ -339,11 +342,11 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
                     .map(
                       (word) =>
                         word.charAt(0).toUpperCase() +
-                        word.slice(1).toLowerCase()
+                        word.slice(1).toLowerCase(),
                     )
                     .join(" ")
                 : "N/A";
-              
+
               // Show "Draft" for "under review" status
               if (status && status.toLowerCase() === "under review") {
                 displayStatus = "Draft";
@@ -395,665 +398,723 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
           },
         ]
       : type === "activities"
-      ? [
-          {
-            field: "date",
-            flex: 1,
-            headerName: "Date",
-            minWidth: 150,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-          },
-          {
-            field: "activity",
-            flex: 3,
-            headerName: "Title",
-            minWidth: 150,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  height: "100%",
-                  columnGap: "10px",
-                  "&:hover": {
-                    cursor: "pointer",
-                  },
-                }}
-                onClick={() => onEdit(params.row)}
-              >
-                <Typography
-                  sx={{
-                    transition: "color 0.3s ease-in-out",
-                    "&:hover": {
-                      color: "primary.main",
-                    },
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {params.row.activity}
+        ? [
+            {
+              field: "date",
+              flex: 1,
+              headerName: "Date",
+              minWidth: 150,
+              renderHeader: (params) => (
+                <Typography sx={{ fontWeight: "bold" }}>
+                  {params.colDef.headerName}
                 </Typography>
-              </Box>
-            ),
-          },
-          {
-            field: "activityType",
-            flex: 2,
-            headerName: "Type",
-            minWidth: 150,
-            headerAlign: "center",
-            align: "center",
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-          },
-          {
-            field: "status",
-            headerName: "Status",
-            flex: 1,
-            minWidth: 140,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => {
-              const status = params?.row?.status;
-              let displayStatus = status
-                ? status
-                    .split(" ")
-                    .map(
-                      (word) =>
-                        word.charAt(0).toUpperCase() +
-                        word.slice(1).toLowerCase()
-                    )
-                    .join(" ")
-                : "N/A";
-              
-              // Show "Draft" for "under review" status
-              if (status && status.toLowerCase() === "under review") {
-                displayStatus = "Draft";
-              }
-
-              return (
-                <Chip
-                  label={displayStatus}
-                  color={getStatusColor(status)}
-                  variant="outlined"
-                  size="small"
-                />
-              );
-
-              return (
+              ),
+            },
+            {
+              field: "activity",
+              flex: 3,
+              headerName: "Title",
+              minWidth: 150,
+              renderHeader: (params) => (
+                <Typography sx={{ fontWeight: "bold" }}>
+                  {params.colDef.headerName}
+                </Typography>
+              ),
+              renderCell: (params) => (
                 <Box
                   sx={{
                     display: "flex",
+                    flexDirection: "row",
                     alignItems: "center",
                     height: "100%",
-                  }}
-                >
-                  <Typography>{capitalized}</Typography>
-                </Box>
-              );
-            },
-          },
-          {
-            field: "action",
-            flex: 1,
-            headerName: "Action",
-            minWidth: 140,
-            headerAlign: "center",
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  height: "100%",
-                  alignItems: "center",
-                  columnGap: "10px",
-                }}
-              >
-                <EditIcon
-                  onClick={() => onEdit(params.row)}
-                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-                />
-                {userRole === "admin" && (
-                  <DeleteForeverIcon
-                    onClick={() => onDelete(params.row)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                  />
-                )}
-              </div>
-            ),
-          },
-        ]
-      : type === "user"
-      ? [
-          {
-            field: "fullName",
-            flex: 1.5,
-            headerName: "Name",
-            minWidth: 150,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => {
-              const name = params.value || "";
-              return (
-                <Typography
-                  sx={{ height: "100%", display: "flex", alignItems: "center" }}
-                >
-                  {name?.charAt(0).toUpperCase() + name?.slice(1)}
-                </Typography>
-              );
-            },
-          },
-          {
-            field: "nickName",
-            flex: 1.5,
-            headerName: "Nick Name",
-            minWidth: 140,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-
-            renderCell: (params) => {
-              const nickName = params.value || "";
-              return (
-                <Typography
-                  sx={{ height: "100%", display: "flex", alignItems: "center" }}
-                >
-                  {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
-                </Typography>
-              );
-            },
-          },
-          {
-            field: "email",
-            flex: 2,
-            headerName: "Email",
-            minWidth: 180,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-          },
-          {
-            field: "role",
-            flex: 1,
-            headerName: "Role",
-            minWidth: 110,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            valueGetter: (params) =>
-              params ? params.charAt(0).toUpperCase() + params.slice(1) : "",
-          },
-          {
-            field: "action",
-            flex: 1,
-            headerName: "Action",
-            minWidth: isMobile ? 130 : 60,
-            headerAlign: isMobile ? "center" : "right",
-            align: "right",
-            renderHeader: (params) => (
-              <Typography sx={{ paddingRight: "32px", fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: isMobile ? "center" : "flex-end",
-                  paddingRight: isMobile ? "0px" : "32px",
-                  columnGap: "10px",
-                  height: "100%",
-                }}
-              >
-                <EditIcon
-                  onClick={() => onEdit && onEdit(params.row)}
-                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-                />
-                {userRole === "admin" && (
-                  <DeleteForeverIcon
-                    onClick={() => onDelete && onDelete(params.row._id)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
-                  />
-                )}
-              </div>
-            ),
-          },
-        ]
-      : [
-          {
-            field: "name",
-            flex: 2,
-            headerName: type === "senator" ? "Senator" : "Representative",
-            minWidth: isMobile ? 180 : 150,
-            maxWidth: isMobile ? 200 : undefined,
-            minHeight: 200,
-            headerAlign: "left",
-            align: "left",
-            renderHeader: (params) => (
-              <Typography
-                sx={{
-                  paddingLeft: isMobile ? "12px" : "32px",
-                  fontWeight: "bold",
-                }}
-              >
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  columnGap: "10px",
-                  width: "fit-content",
-                  height: "100%",
-                  paddingLeft: isMobile ? "12px" : "32px",
-                  "&:hover": {
-                    cursor: "pointer",
-                  },
-                }}
-                onClick={() => {
-                  if (type === "senator" && params.row._id) {
-                    navigate(`edit-senator/${params.row._id}`);
-                  } else {
-                    navigate(`/edit-representative/${params.row._id}`);
-                  }
-                }}
-              >
-                <Box
-                  sx={{
-                    width: isMobile ? 36 : 50,
-                    height: isMobile ? 36 : 50,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: `2px solid ${getBorderColor(params.row.party)}`,
-                  }}
-                >
-                  <Avatar
-                    src={
-                      params.row.photo
-                        ? `${API_URL}/images/${
-                            type === "senator" ? "senator" : "house"
-                          }/${params.row.photo}`
-                        : "/default-avatar.png"
-                    }
-                    sx={{
-                      width: isMobile ? 32 : 45,
-                      height: isMobile ? 32 : 45,
-                    }}
-                  />
-                </Box>
-                <Typography
-                  sx={{
-                    transition: "color 0.3s ease-in-out",
+                    columnGap: "10px",
                     "&:hover": {
-                      color: getBorderColor(params.row.party),
+                      cursor: "pointer",
                     },
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: isMobile ? "90px" : undefined,
-                    minWidth: isMobile ? "40px" : undefined,
+                  }}
+                  onClick={() => onEdit(params.row)}
+                >
+                  <Typography
+                    sx={{
+                      transition: "color 0.3s ease-in-out",
+                      "&:hover": {
+                        color: "primary.main",
+                      },
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {params.row.activity}
+                  </Typography>
+                </Box>
+              ),
+            },
+            {
+              field: "activityType",
+              flex: 2,
+              headerName: "Type",
+              minWidth: 150,
+              headerAlign: "center",
+              align: "center",
+              renderHeader: (params) => (
+                <Typography sx={{ fontWeight: "bold" }}>
+                  {params.colDef.headerName}
+                </Typography>
+              ),
+            },
+            {
+              field: "status",
+              headerName: "Status",
+              flex: 1,
+              minWidth: 140,
+              renderHeader: (params) => (
+                <Typography sx={{ fontWeight: "bold" }}>
+                  {params.colDef.headerName}
+                </Typography>
+              ),
+              renderCell: (params) => {
+                const status = params?.row?.status;
+                let displayStatus = status
+                  ? status
+                      .split(" ")
+                      .map(
+                        (word) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1).toLowerCase(),
+                      )
+                      .join(" ")
+                  : "N/A";
+
+                // Show "Draft" for "under review" status
+                if (status && status.toLowerCase() === "under review") {
+                  displayStatus = "Draft";
+                }
+
+                return (
+                  <Chip
+                    label={displayStatus}
+                    color={getStatusColor(status)}
+                    variant="outlined"
+                    size="small"
+                  />
+                );
+
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      height: "100%",
+                    }}
+                  >
+                    <Typography>{capitalized}</Typography>
+                  </Box>
+                );
+              },
+            },
+            {
+              field: "action",
+              flex: 1,
+              headerName: "Action",
+              minWidth: 140,
+              headerAlign: "center",
+              renderHeader: (params) => (
+                <Typography sx={{ fontWeight: "bold" }}>
+                  {params.colDef.headerName}
+                </Typography>
+              ),
+              renderCell: (params) => (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    height: "100%",
+                    alignItems: "center",
+                    columnGap: "10px",
                   }}
                 >
-                  {params.row.name}
-                </Typography>
-              </Box>
-            ),
-          },
-          ...(type === "representative"
-            ? [
-                {
-                  field: "district",
-                  flex: 1,
-                  headerName: "District",
-                  minWidth: 120,
-                  renderHeader: (params) => (
-                    <Typography
-                      sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
-                    >
-                      {params.colDef.headerName}
-                    </Typography>
-                  ),
-                },
-              ]
-            : [
-                {
-                  field: "state",
-                  flex: 1,
-                  headerName: "State",
-                  minWidth: 120,
-                  renderHeader: (params) => (
-                    <Typography
-                      sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
-                    >
-                      {params.colDef.headerName}
-                    </Typography>
-                  ),
-                },
-              ]),
-          {
-            field: "party",
-            flex: 1,
-            headerName: "Party",
-            minWidth: 120,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            valueGetter: (params) => {
-              if (!params) return "N/A";
-              return (
-                params.charAt(0).toUpperCase() + params.slice(1).toLowerCase()
-              );
-            },
-          },
-          {
-            field: "rating",
-            headerName: "Rating",
-            minHeight: 200,
-            minWidth: 140,
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            valueGetter: (params) => {
-              return params || "N/A";
-            },
-          },
-          ...(type === "representative"
-            ? [
-                {
-                  field: "publishStatus",
-                  headerName: "Status",
-                  minWidth: 140,
-                  renderHeader: (params) => (
-                    <Typography sx={{ fontWeight: "bold" }}>
-                      {params.colDef.headerName}
-                    </Typography>
-                  ),
-
-                  renderCell: (params) => {
-                    const status = params?.row?.publishStatus;
-                    let displayStatus = status
-                      ? status
-                          .split(" ")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() +
-                              word.slice(1).toLowerCase()
-                          )
-                          .join(" ")
-                      : "N/A";
-                    
-                    // Show "Draft" for "under review" status
-                    if (status && status.toLowerCase() === "under review") {
-                      displayStatus = "Draft";
-                    }
-
-                    return (
-                      <Chip
-                        label={displayStatus}
-                        color={getStatusColor(status)}
-                        variant="outlined"
-                        size="small"
-                      />
-                    );
-                  },
-                },
-              ]
-            : [
-                {
-                  field: "publishStatus",
-                  headerName: "Status",
-                  minWidth: 140,
-                  renderHeader: (params) => (
-                    <Typography sx={{ fontWeight: "bold" }}>
-                      {params.colDef.headerName}
-                    </Typography>
-                  ),
-                  renderCell: (params) => {
-                    const status = params?.row?.publishStatus;
-                    let displayStatus = status
-                      ? status
-                          .split(" ")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() +
-                              word.slice(1).toLowerCase()
-                          )
-                          .join(" ")
-                      : "N/A";
-                    
-                    // Show "Draft" for "under review" status
-                    if (status && status.toLowerCase() === "under review") {
-                      displayStatus = "Draft";
-                    }
-
-                    return (
-                      <Chip
-                        label={displayStatus}
-                        color={getStatusColor(status)}
-                        variant="outlined"
-                        size="small"
-                      />
-                    );
-                  },
-                },
-              ]),
-
-          {
-            field: "action",
-            headerName: "Action",
-            minWidth: 140,
-            headerAlign: "center",
-            renderHeader: (params) => (
-              <Typography sx={{ fontWeight: "bold" }}>
-                {params.colDef.headerName}
-              </Typography>
-            ),
-            renderCell: (params) => (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  height: "100%",
-                  alignItems: "center",
-                  columnGap: "10px",
-                }}
-              >
-                <EditIcon
-                  onClick={() => onEdit(params.row)}
-                  sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
-                />
-                {userRole === "admin" && (
-                  <DeleteForeverIcon
-                    onClick={() => onDelete(params.row)}
-                    sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                  <EditIcon
+                    onClick={() => onEdit(params.row)}
+                    sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
                   />
-                )}
-              </Box>
-            ),
-          },
-        ];
+                  {userRole === "admin" && (
+                    <DeleteForeverIcon
+                      onClick={() => onDelete(params.row)}
+                      sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                    />
+                  )}
+                </div>
+              ),
+            },
+          ]
+        : type === "user"
+          ? [
+              {
+                field: "fullName",
+                flex: 1.5,
+                headerName: "Name",
+                minWidth: 150,
+                renderHeader: (params) => (
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+                renderCell: (params) => {
+                  const name = params.value || "";
+                  return (
+                    <Typography
+                      sx={{
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {name?.charAt(0).toUpperCase() + name?.slice(1)}
+                    </Typography>
+                  );
+                },
+              },
+              {
+                field: "nickName",
+                flex: 1.5,
+                headerName: "Nick Name",
+                minWidth: 140,
+                renderHeader: (params) => (
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+
+                renderCell: (params) => {
+                  const nickName = params.value || "";
+                  return (
+                    <Typography
+                      sx={{
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {nickName?.charAt(0).toUpperCase() + nickName?.slice(1)}
+                    </Typography>
+                  );
+                },
+              },
+              {
+                field: "email",
+                flex: 2,
+                headerName: "Email",
+                minWidth: 180,
+                renderHeader: (params) => (
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+              },
+              {
+                field: "twoFactorEnabled",
+                headerName: "2FA",
+                flex: 2,
+                minWidth: 100,
+                align: "center",
+                headerAlign: "center",
+                renderHeader: (params) => (
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+                renderCell: (params) => {
+                  const enabled = params.row?.twoFactorEnabled;
+
+                  return (
+                    <Chip
+                      label={enabled ? "Enabled" : "Disabled"}
+                      color={get2FAColor(enabled)}
+                      variant="outlined"
+                      size="small"
+                    />
+                  );
+                },
+              },
+
+              {
+                field: "role",
+                flex: 1,
+                headerName: "Role",
+                minWidth: 110,
+                renderHeader: (params) => (
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+                valueGetter: (params) =>
+                  params
+                    ? params.charAt(0).toUpperCase() + params.slice(1)
+                    : "",
+              },
+              {
+                field: "action",
+                flex: 1,
+                headerName: "Action",
+                minWidth: isMobile ? 130 : 60,
+                headerAlign: isMobile ? "center" : "right",
+                align: "right",
+                renderHeader: (params) => (
+                  <Typography sx={{ paddingRight: "32px", fontWeight: "bold" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+                renderCell: (params) => (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: isMobile ? "center" : "flex-end",
+                      paddingRight: isMobile ? "0px" : "32px",
+                      columnGap: "10px",
+                      height: "100%",
+                    }}
+                  >
+                    <EditIcon
+                      onClick={() => onEdit && onEdit(params.row)}
+                      sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                    />
+                    {userRole === "admin" && (
+                      <DeleteForeverIcon
+                        onClick={() => onDelete && onDelete(params.row._id)}
+                        sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                      />
+                    )}
+                  </div>
+                ),
+              },
+            ]
+          : [
+              {
+                field: "name",
+                flex: 2,
+                headerName: type === "senator" ? "Senator" : "Representative",
+                minWidth: isMobile ? 180 : 150,
+                maxWidth: isMobile ? 200 : undefined,
+                minHeight: 200,
+                headerAlign: "left",
+                align: "left",
+                renderHeader: (params) => (
+                  <Typography
+                    sx={{
+                      paddingLeft: isMobile ? "12px" : "32px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+                renderCell: (params) => (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      columnGap: "10px",
+                      width: "fit-content",
+                      height: "100%",
+                      paddingLeft: isMobile ? "12px" : "32px",
+                      "&:hover": {
+                        cursor: "pointer",
+                      },
+                    }}
+                    onClick={() => {
+                      if (type === "senator" && params.row._id) {
+                        navigate(`edit-senator/${params.row._id}`);
+                      } else {
+                        navigate(`/edit-representative/${params.row._id}`);
+                      }
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: isMobile ? 36 : 50,
+                        height: isMobile ? 36 : 50,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: `2px solid ${getBorderColor(params.row.party)}`,
+                      }}
+                    >
+                      <Avatar
+                        src={
+                          params.row.photo
+                            ? `${API_URL}/images/${
+                                type === "senator" ? "senator" : "house"
+                              }/${params.row.photo}`
+                            : "/default-avatar.png"
+                        }
+                        sx={{
+                          width: isMobile ? 32 : 45,
+                          height: isMobile ? 32 : 45,
+                        }}
+                      />
+                    </Box>
+                    <Typography
+                      sx={{
+                        transition: "color 0.3s ease-in-out",
+                        "&:hover": {
+                          color: getBorderColor(params.row.party),
+                        },
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: isMobile ? "90px" : undefined,
+                        minWidth: isMobile ? "40px" : undefined,
+                      }}
+                    >
+                      {params.row.name}
+                    </Typography>
+                  </Box>
+                ),
+              },
+              ...(type === "representative"
+                ? [
+                    {
+                      field: "district",
+                      flex: 1,
+                      headerName: "District",
+                      minWidth: 120,
+                      renderHeader: (params) => (
+                        <Typography
+                          sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
+                        >
+                          {params.colDef.headerName}
+                        </Typography>
+                      ),
+                    },
+                  ]
+                : [
+                    {
+                      field: "state",
+                      flex: 1,
+                      headerName: "State",
+                      minWidth: 120,
+                      renderHeader: (params) => (
+                        <Typography
+                          sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
+                        >
+                          {params.colDef.headerName}
+                        </Typography>
+                      ),
+                    },
+                  ]),
+              {
+                field: "party",
+                flex: 1,
+                headerName: "Party",
+                minWidth: 120,
+                renderHeader: (params) => (
+                  <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+                valueGetter: (params) => {
+                  if (!params) return "N/A";
+                  return (
+                    params.charAt(0).toUpperCase() +
+                    params.slice(1).toLowerCase()
+                  );
+                },
+              },
+              {
+                field: "rating",
+                headerName: "Rating",
+                minHeight: 200,
+                minWidth: 140,
+                renderHeader: (params) => (
+                  <Typography sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+                valueGetter: (params) => {
+                  return params || "N/A";
+                },
+              },
+              ...(type === "representative"
+                ? [
+                    {
+                      field: "publishStatus",
+                      headerName: "Status",
+                      minWidth: 140,
+                      renderHeader: (params) => (
+                        <Typography sx={{ fontWeight: "bold" }}>
+                          {params.colDef.headerName}
+                        </Typography>
+                      ),
+
+                      renderCell: (params) => {
+                        const status = params?.row?.publishStatus;
+                        let displayStatus = status
+                          ? status
+                              .split(" ")
+                              .map(
+                                (word) =>
+                                  word.charAt(0).toUpperCase() +
+                                  word.slice(1).toLowerCase(),
+                              )
+                              .join(" ")
+                          : "N/A";
+
+                        // Show "Draft" for "under review" status
+                        if (status && status.toLowerCase() === "under review") {
+                          displayStatus = "Draft";
+                        }
+
+                        return (
+                          <Chip
+                            label={displayStatus}
+                            color={getStatusColor(status)}
+                            variant="outlined"
+                            size="small"
+                          />
+                        );
+                      },
+                    },
+                  ]
+                : [
+                    {
+                      field: "publishStatus",
+                      headerName: "Status",
+                      minWidth: 140,
+                      renderHeader: (params) => (
+                        <Typography sx={{ fontWeight: "bold" }}>
+                          {params.colDef.headerName}
+                        </Typography>
+                      ),
+                      renderCell: (params) => {
+                        const status = params?.row?.publishStatus;
+                        let displayStatus = status
+                          ? status
+                              .split(" ")
+                              .map(
+                                (word) =>
+                                  word.charAt(0).toUpperCase() +
+                                  word.slice(1).toLowerCase(),
+                              )
+                              .join(" ")
+                          : "N/A";
+
+                        // Show "Draft" for "under review" status
+                        if (status && status.toLowerCase() === "under review") {
+                          displayStatus = "Draft";
+                        }
+
+                        return (
+                          <Chip
+                            label={displayStatus}
+                            color={getStatusColor(status)}
+                            variant="outlined"
+                            size="small"
+                          />
+                        );
+                      },
+                    },
+                  ]),
+
+              {
+                field: "action",
+                headerName: "Action",
+                minWidth: 140,
+                headerAlign: "center",
+                renderHeader: (params) => (
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {params.colDef.headerName}
+                  </Typography>
+                ),
+                renderCell: (params) => (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      height: "100%",
+                      alignItems: "center",
+                      columnGap: "10px",
+                    }}
+                  >
+                    <EditIcon
+                      onClick={() => onEdit(params.row)}
+                      sx={{ cursor: "pointer", "&:hover": { color: "blue" } }}
+                    />
+                    {userRole === "admin" && (
+                      <DeleteForeverIcon
+                        onClick={() => onDelete(params.row)}
+                        sx={{ cursor: "pointer", "&:hover": { color: "red" } }}
+                      />
+                    )}
+                  </Box>
+                ),
+              },
+            ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-      {((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin") || (isSelectable && type !== "senator" && type !== "representative" && type !== "votes" && type !== "activities")) && (
-        <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mb: 1 }}>
-     {(hasManualSelections || hasUsedSelectAll) && (
-  hasManualSelections ? (
-    <Typography
-      variant="subtitle1"
-      sx={{
-        fontSize: { xs: "11px", md: "14px" },
-        pl: 1,
-        mr: "auto",
-        alignSelf: "center",
-      }}
-    >
-      {selectionModel.length}{" "}
-      {type === "senator"
-        ? selectionModel.length === 1
-          ? "Senator"
-          : "Senators"
-        : type === "representative"
-        ? selectionModel.length === 1
-          ? "Representative"
-          : "Representatives"
-        : selectionModel.length === 1
-        ? "Item"
-        : "Items"}{" "}
-      selected
-    </Typography>
-  ) : (
-    <Typography
-      variant="subtitle1"
-      sx={{
-        fontSize: { xs: "11px", md: "14px" },
-        mr: "auto",
-        alignSelf: "center",
-      }}
-    >
-      0{" "}
-      {type === "senator"
-        ? "Senator"
-        : type === "representative"
-        ? "Representative"
-        : "Items"}{" "}
-      selected
-    </Typography>
-  )
-)}
-
+      {((type === "senator" && userRole === "admin") ||
+        (type === "representative" && userRole === "admin") ||
+        (isSelectable &&
+          type !== "senator" &&
+          type !== "representative" &&
+          type !== "votes" &&
+          type !== "activities")) && (
+        <Box
+          sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mb: 1 }}
+        >
+          {(hasManualSelections || hasUsedSelectAll) &&
+            (hasManualSelections ? (
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontSize: { xs: "11px", md: "14px" },
+                  pl: 1,
+                  mr: "auto",
+                  alignSelf: "center",
+                }}
+              >
+                {selectionModel.length}{" "}
+                {type === "senator"
+                  ? selectionModel.length === 1
+                    ? "Senator"
+                    : "Senators"
+                  : type === "representative"
+                    ? selectionModel.length === 1
+                      ? "Representative"
+                      : "Representatives"
+                    : selectionModel.length === 1
+                      ? "Item"
+                      : "Items"}{" "}
+                selected
+              </Typography>
+            ) : (
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontSize: { xs: "11px", md: "14px" },
+                  mr: "auto",
+                  alignSelf: "center",
+                }}
+              >
+                0{" "}
+                {type === "senator"
+                  ? "Senator"
+                  : type === "representative"
+                    ? "Representative"
+                    : "Items"}{" "}
+                selected
+              </Typography>
+            ))}
 
           <Button
             variant="outlined"
-           onClick={() => {
-  const hasSelection = selectionModel.length > 0;
-  const allIds = mergedRows.map((r) => r._id);
-  const next = hasSelection ? [] : allIds;
+            onClick={() => {
+              const hasSelection = selectionModel.length > 0;
+              const allIds = mergedRows.map((r) => r._id);
+              const next = hasSelection ? [] : allIds;
 
-  setSelectionModel(next);
-  onSelectionChange && onSelectionChange(next);
+              setSelectionModel(next);
+              onSelectionChange && onSelectionChange(next);
 
-  // ✅ correct state control
-  setHasUsedSelectAll(!hasSelection);
-  setHasManualSelections(false);
+              // ✅ correct state control
+              setHasUsedSelectAll(!hasSelection);
+              setHasManualSelections(false);
 
-  // checkbox visibility logic (unchanged)
-  if ((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin")) {
-    setShowCheckboxes(!hasSelection);
-  } else {
-    setShowCheckboxes(!hasSelection);
-  }
-}}
-
+              // checkbox visibility logic (unchanged)
+              if (
+                (type === "senator" && userRole === "admin") ||
+                (type === "representative" && userRole === "admin")
+              ) {
+                setShowCheckboxes(!hasSelection);
+              } else {
+                setShowCheckboxes(!hasSelection);
+              }
+            }}
           >
             {selectionModel.length > 0 ? "Clear selection" : "Select all"}
           </Button>
-          {(((type === "senator" && userRole === "admin" && showCheckboxes) || (type === "representative" && userRole === "admin" && showCheckboxes)) || (isSelectable && type !== "senator" && type !== "representative")) && selectionModel.length > 0 && (
-            <>
-              <Button 
-                variant="outlined"
-                className="bulkEditBtn"
-                onClick={() => {
-                  if (!hasManualSelections) {
-                    showSnackbar("Select at least one member to perform bulk select.", "warning");
-                    return;
-                  }
-                  setBulkOpen(true);
-                }}
-                sx={{
-                  backgroundColor: "#173A5E !important",
-                  color: "white !important",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  padding: "8px 24px",
-                  border: "none !important",
-                  "&:hover": {
-                    backgroundColor: "#1E4C80 !important",
-                    color: "white !important",
-                    border: "none !important",
-                  },
-                  "&:active": {
+          {((type === "senator" && userRole === "admin" && showCheckboxes) ||
+            (type === "representative" &&
+              userRole === "admin" &&
+              showCheckboxes) ||
+            (isSelectable &&
+              type !== "senator" &&
+              type !== "representative")) &&
+            selectionModel.length > 0 && (
+              <>
+                <Button
+                  variant="outlined"
+                  className="bulkEditBtn"
+                  onClick={() => {
+                    if (!hasManualSelections) {
+                      showSnackbar(
+                        "Select at least one member to perform bulk select.",
+                        "warning",
+                      );
+                      return;
+                    }
+                    setBulkOpen(true);
+                  }}
+                  sx={{
                     backgroundColor: "#173A5E !important",
-                  },
-                }}
-              >
-                Bulk Select
-              </Button>
-              <Button 
-                variant="outlined"
-                className="bulkPublishBtn"
-                onClick={() => {
-                  if (!hasManualSelections) {
-                    showSnackbar("Select at least one member to perform bulk publish.", "warning");
-                    return;
-                  }
-                  setBulkPublishOpen(true);
-                }}
-                sx={{
-                  backgroundColor: "#2E7D32 !important",
-                  color: "white !important",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  padding: "8px 24px",
-                  border: "none !important",
-                  "&:hover": {
-                    backgroundColor: "#388E3C !important",
                     color: "white !important",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    textTransform: "none",
+                    padding: "8px 24px",
                     border: "none !important",
-                  },
-                  "&:active": {
+                    "&:hover": {
+                      backgroundColor: "#1E4C80 !important",
+                      color: "white !important",
+                      border: "none !important",
+                    },
+                    "&:active": {
+                      backgroundColor: "#173A5E !important",
+                    },
+                  }}
+                >
+                  Bulk Select
+                </Button>
+                <Button
+                  variant="outlined"
+                  className="bulkPublishBtn"
+                  onClick={() => {
+                    if (!hasManualSelections) {
+                      showSnackbar(
+                        "Select at least one member to perform bulk publish.",
+                        "warning",
+                      );
+                      return;
+                    }
+                    setBulkPublishOpen(true);
+                  }}
+                  sx={{
                     backgroundColor: "#2E7D32 !important",
-                  },
-                }}
-              >
-                Bulk Publish
-              </Button>
-            </>
-          )}
+                    color: "white !important",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    textTransform: "none",
+                    padding: "8px 24px",
+                    border: "none !important",
+                    "&:hover": {
+                      backgroundColor: "#388E3C !important",
+                      color: "white !important",
+                      border: "none !important",
+                    },
+                    "&:active": {
+                      backgroundColor: "#2E7D32 !important",
+                    },
+                  }}
+                >
+                  Bulk Publish
+                </Button>
+              </>
+            )}
         </Box>
       )}
 
@@ -1076,28 +1137,30 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
         }}
         checkboxSelection={
           // For senator and representative admin view: only show when user explicitly clicked Select all
-          ((type === "senator" && userRole === "admin") || (type === "representative" && userRole === "admin")) ? showCheckboxes : (isSelectable || showCheckboxes)
+          (type === "senator" && userRole === "admin") ||
+          (type === "representative" && userRole === "admin")
+            ? showCheckboxes
+            : isSelectable || showCheckboxes
         }
-      onRowSelectionModelChange={(ids) => {
-  const next = ids.map((i) =>
-    typeof i === "object" && i.id ? i.id : i
-  );
+        onRowSelectionModelChange={(ids) => {
+          const next = ids.map((i) =>
+            typeof i === "object" && i.id ? i.id : i,
+          );
 
-  setSelectionModel(next);
-  onSelectionChange && onSelectionChange(next);
+          setSelectionModel(next);
+          onSelectionChange && onSelectionChange(next);
 
-  // ✅ manual selection logic
-  if (next.length > 0) {
-    setHasManualSelections(true);
-    setHasUsedSelectAll(false); // 👈 reset select-all
-  } else {
-    setHasManualSelections(false);
-    setHasUsedSelectAll(false);
-    setShowCheckboxes(false);
-  }
-}}
-
-        selectionModel={(isSelectable || showCheckboxes) ? selectionModel : []}
+          // ✅ manual selection logic
+          if (next.length > 0) {
+            setHasManualSelections(true);
+            setHasUsedSelectAll(false); // 👈 reset select-all
+          } else {
+            setHasManualSelections(false);
+            setHasUsedSelectAll(false);
+            setShowCheckboxes(false);
+          }
+        }}
+        selectionModel={isSelectable || showCheckboxes ? selectionModel : []}
         sx={{
           ...(isMobile && {
             overflowX: "auto",
@@ -1136,16 +1199,14 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
           type === "senator"
             ? (allVotes || []).filter(
                 (vote) =>
-                  vote.type &&
-                  vote.type.toLowerCase().includes("senate")
+                  vote.type && vote.type.toLowerCase().includes("senate"),
               )
             : type === "representative"
-            ? (allVotes || []).filter(
-                (vote) =>
-                  vote.type &&
-                  vote.type.toLowerCase().includes("house")
-              )
-            : allVotes
+              ? (allVotes || []).filter(
+                  (vote) =>
+                    vote.type && vote.type.toLowerCase().includes("house"),
+                )
+              : allVotes
         }
         activities={
           type === "senator"
@@ -1153,27 +1214,31 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
                 (activity) =>
                   activity.type &&
                   (activity.type === "senate" ||
-                    activity.type.toLowerCase().includes("senate"))
+                    activity.type.toLowerCase().includes("senate")),
               )
             : type === "representative"
-            ? (allActivities || []).filter(
-                (activity) =>
-                  activity.type &&
-                  (activity.type === "house" ||
-                    activity.type.toLowerCase().includes("house"))
-              )
-            : allActivities
+              ? (allActivities || []).filter(
+                  (activity) =>
+                    activity.type &&
+                    (activity.type === "house" ||
+                      activity.type.toLowerCase().includes("house")),
+                )
+              : allActivities
         }
         onApply={(payload) => {
           const data = { ids: selectionModel, payload };
-         
+
           if (onBulkApply) {
             onBulkApply(data);
           } else if (typeof onEdit === "function") {
             // Only call onEdit if it's not a bulk operation to avoid navigation
-            console.warn("⚠️ CustomizedDataGrid: onBulkApply not provided, but bulk edit was attempted");
+            console.warn(
+              "⚠️ CustomizedDataGrid: onBulkApply not provided, but bulk edit was attempted",
+            );
           } else {
-            console.error("❌ CustomizedDataGrid: Neither onBulkApply nor onEdit provided");
+            console.error(
+              "❌ CustomizedDataGrid: Neither onBulkApply nor onEdit provided",
+            );
           }
         }}
       />
@@ -1185,7 +1250,10 @@ const [hasUsedSelectAll, setHasUsedSelectAll] = useState(false);
         type={type}
         onApply={(payload) => {
           if (onBulkPublish) {
-            onBulkPublish({ ids: selectionModel, publishStatus: payload.publishStatus });
+            onBulkPublish({
+              ids: selectionModel,
+              publishStatus: payload.publishStatus,
+            });
           }
         }}
       />
