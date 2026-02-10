@@ -115,17 +115,17 @@ export default function AddSenator(props) {
       activityId,
       termId,
       allActivities,
-      terms
+      terms,
     );
   };
 
   const allActivities = useSelector((state) => state.activity.activities);
 
   const termStart = new Date(
-    `${senatorData?.currentSenator?.[0]?.termId?.startYear}-01-03`
+    `${senatorData?.currentSenator?.[0]?.termId?.startYear}-01-03`,
   );
   const termEnd = new Date(
-    `${senatorData?.currentSenator?.[0]?.termId?.endYear}-01-02`
+    `${senatorData?.currentSenator?.[0]?.termId?.endYear}-01-02`,
   );
 
   const senatorr = senatorData?.currentSenator?.[0];
@@ -153,25 +153,25 @@ export default function AddSenator(props) {
     });
   });
 
- const doesVoteBelongToTerm = (voteData, term) => {
-  if (!voteData || !term) return false;
+  const doesVoteBelongToTerm = (voteData, term) => {
+    if (!voteData || !term) return false;
 
-  const voteDate = new Date(voteData.date);
+    const voteDate = new Date(voteData.date);
 
-  // 🚫 HARD STOP: these votes must NEVER go into votesScore
-  const CUTOFF_DATE = new Date("2019-01-02");
-  if (voteDate <= CUTOFF_DATE) {
-    return false;
-  }
+    // 🚫 HARD STOP: these votes must NEVER go into votesScore
+    const CUTOFF_DATE = new Date("2019-01-02");
+    if (voteDate <= CUTOFF_DATE) {
+      return false;
+    }
 
-  const termStart = new Date(`${term.startYear}-01-03`);
-  const termEnd = new Date(`${term.endYear}-01-02`);
+    const termStart = new Date(`${term.startYear}-01-03`);
+    const termEnd = new Date(`${term.endYear}-01-02`);
 
-  const inDateRange = voteDate >= termStart && voteDate <= termEnd;
-  const inCongress = term.congresses.includes(Number(voteData.congress));
+    const inDateRange = voteDate >= termStart && voteDate <= termEnd;
+    const inCongress = term.congresses.includes(Number(voteData.congress));
 
-  return inDateRange && inCongress;
-};
+    return inDateRange && inCongress;
+  };
 
   const doesActivityBelongToTerm = (activityData, term) => {
     if (!activityData || !term) return false;
@@ -335,12 +335,12 @@ export default function AddSenator(props) {
     setFormData: setFormData,
     removedItems: removedItems,
     setRemovedItems: setRemovedItems,
-    validateInTermRange: null, 
+    validateInTermRange: null,
     setSelectionError: setSelectionError,
     getCurrentEditor: getCurrentEditor,
   });
 
-const handleTermChange = (e, termIndex) => {
+  const handleTermChange = (e, termIndex) => {
     const { name, value } = e.target;
     const fieldName = `term${termIndex}_${e.target.name}`;
 
@@ -363,21 +363,22 @@ const handleTermChange = (e, termIndex) => {
               const voteDate = new Date(vote.date);
               const cutoffDate = new Date("2019-01-02");
               const isBeforeCutoffDate = voteDate < cutoffDate;
-              
+
               // Skip votes before cutoff date
               if (isBeforeCutoffDate) {
                 return false;
               }
-              
+
               const inTerm = voteDate >= newTermStart && voteDate <= newTermEnd;
-              
+
               if (!inTerm) {
                 return false;
               }
 
               // FIRST: Try exact voteId match
               const exactMatch = senatorVotes.find((v) => {
-                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                const vId =
+                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
                 return vId === vote._id;
               });
 
@@ -390,17 +391,17 @@ const handleTermChange = (e, termIndex) => {
                 const quorumMatch = senatorVotes.find((v) => {
                   // Only match by quorumId if the senator vote has a quorumId
                   if (!v.quorumId) return false;
-                  
+
                   // Check if quorumIds match
                   const matches = v.quorumId === vote.quorumId;
-                  
+
                   // Also check if this senator vote already has a voteId assigned
                   // If it does, we shouldn't match it to another vote by quorumId
                   const hasVoteId = v.voteId?._id || v.voteId;
                   if (hasVoteId) {
                     return false;
                   }
-                  
+
                   return matches;
                 });
 
@@ -414,16 +415,16 @@ const handleTermChange = (e, termIndex) => {
                 const billMatch = senatorVotes.find((v) => {
                   // Only match by billNumber if both have bill numbers
                   if (!v.billNumber || !vote.billNumber) return false;
-                  
+
                   // Check if billNumbers match
                   const matches = v.billNumber === vote.billNumber;
-                  
+
                   // Also check if this senator vote already has a voteId assigned
                   const hasVoteId = v.voteId?._id || v.voteId;
                   if (hasVoteId) {
                     return false;
                   }
-                  
+
                   return matches;
                 });
 
@@ -440,21 +441,26 @@ const handleTermChange = (e, termIndex) => {
             updatedTerm.votesScore = newFilteredVotes.map((vote) => {
               // Find the matching senator vote
               let senatorVote = null;
-              
+
               // Try exact voteId match first
               senatorVote = senatorVotes.find((v) => {
-                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                const vId =
+                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
                 return vId === vote._id;
               });
 
               // If no exact match, try quorumId match
               if (!senatorVote && vote.quorumId) {
-                senatorVote = senatorVotes.find((v) => v.quorumId === vote.quorumId);
+                senatorVote = senatorVotes.find(
+                  (v) => v.quorumId === vote.quorumId,
+                );
               }
 
               // If still no match, try billNumber match
               if (!senatorVote && vote.billNumber) {
-                senatorVote = senatorVotes.find((v) => v.billNumber === vote.billNumber);
+                senatorVote = senatorVotes.find(
+                  (v) => v.billNumber === vote.billNumber,
+                );
               }
 
               let scoreValue = "";
@@ -483,19 +489,22 @@ const handleTermChange = (e, termIndex) => {
             }
 
             // [Rest of the code remains the same...]
-            
 
             const newParticipatedActivities = allActivities.filter(
               (activity) => {
                 const activityDate = new Date(activity.date);
-                const inTerm = activityDate >= newTermStart && activityDate <= newTermEnd;
+                const inTerm =
+                  activityDate >= newTermStart && activityDate <= newTermEnd;
                 if (!inTerm) {
                   return false;
                 }
-                
+
                 // Try exact activityId match first
                 const exactMatch = senatorActivities.find((a) => {
-                  const aId = typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+                  const aId =
+                    typeof a.activityId === "object"
+                      ? a.activityId?._id
+                      : a.activityId;
                   return aId === activity._id;
                 });
 
@@ -504,17 +513,18 @@ const handleTermChange = (e, termIndex) => {
                 }
 
                 return false;
-              }
+              },
             );
 
             updatedTerm.activitiesScore = newParticipatedActivities.map(
               (activity) => {
                 const senAct = senatorActivities.find((a) => {
-                  const aId = typeof a.activityId === "object" ? a.activityId?._id : a.activityId;
+                  const aId =
+                    typeof a.activityId === "object"
+                      ? a.activityId?._id
+                      : a.activityId;
                   return aId === activity._id;
                 });
-
-               
 
                 let mappedScore = "";
                 if (senAct?.score) {
@@ -524,7 +534,9 @@ const handleTermChange = (e, termIndex) => {
                   else if (s.includes("other")) mappedScore = "other";
                   else mappedScore = senAct.score;
                 } else {
-                  console.error(`      ⚠️ No senator activity found or no score`);
+                  console.error(
+                    `      ⚠️ No senator activity found or no score`,
+                  );
                 }
 
                 return {
@@ -532,7 +544,7 @@ const handleTermChange = (e, termIndex) => {
                   score: mappedScore,
                   title: activity.title,
                 };
-              }
+              },
             );
 
             if (updatedTerm.activitiesScore.length === 0) {
@@ -547,10 +559,10 @@ const handleTermChange = (e, termIndex) => {
             updatedTerm.pastVotesScore = newPastVotes.map((vote) => {
               // Only match by exact voteId for past votes
               const senatorPastVote = senatorVotes.find((v) => {
-                const vId = typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
+                const vId =
+                  typeof v.voteId === "object" ? v.voteId?._id : v.voteId;
                 return vId === vote._id;
               });
-
 
               return {
                 voteId: vote._id,
@@ -561,7 +573,7 @@ const handleTermChange = (e, termIndex) => {
 
             if (updatedTerm.pastVotesScore.length === 0) {
               updatedTerm.pastVotesScore = [{ voteId: "", score: "" }];
-            }            
+            }
             // [Rest of the currentTerm logic remains the same...]
           } else {
             console.error(`   ❌ Selected term not found in terms list`);
@@ -587,24 +599,23 @@ const handleTermChange = (e, termIndex) => {
       const futureTerms = newTerms
         .map((t, idx) => {
           const tStart = t.termId
-            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))?.startYear
+            ? terms?.find((tt) => tt._id === (t.termId?._id || t.termId))
+                ?.startYear
             : null;
           return { idx, startYear: tStart ? Number(tStart) : null };
         })
         .filter((t) => t.startYear && t.startYear > currentYear);
 
-
       if (futureTerms.length > 0) {
         const newest = futureTerms.reduce((a, b) =>
-          a.startYear > b.startYear ? a : b
+          a.startYear > b.startYear ? a : b,
         );
-        
+
         const result = newTerms.map((t, i) => ({
           ...t,
           currentTerm: i === newest.idx,
         }));
-        
-        
+
         return result;
       }
       return newTerms;
@@ -616,7 +627,7 @@ const handleTermChange = (e, termIndex) => {
 
     setSenatorTermData((prev) => {
       const newTerms = prev.map((term, index) =>
-        index === termIndex ? { ...term, [name]: checked } : term
+        index === termIndex ? { ...term, [name]: checked } : term,
       );
 
       const originalTerm = originalTermData[termIndex] || {};
@@ -633,7 +644,7 @@ const handleTermChange = (e, termIndex) => {
   };
   const hasSelectedTerms = () => {
     return senatorTermData.some(
-      (term) => term.termId && term.termId.toString().trim() !== ""
+      (term) => term.termId && term.termId.toString().trim() !== "",
     );
   };
   const handleSummaryChange = (termIndex, content) => {
@@ -683,13 +694,13 @@ const handleTermChange = (e, termIndex) => {
       await dispatch(getSenatorDataBySenatorId(id));
       handleSnackbarOpen(
         `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
-        "success"
+        "success",
       );
       setComponentKey((prev) => prev + 1);
     } catch (error) {
       const errorMessage = getErrorMessage(
         error,
-        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
+        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`,
       );
       handleSnackbarOpen(errorMessage, "error");
     } finally {
@@ -730,7 +741,7 @@ const handleTermChange = (e, termIndex) => {
         termId: null,
         editedFields: [],
         fieldEditors: {},
-        isNew: true,
+        isNewRecord: true,
       },
     ]);
   };
@@ -746,7 +757,7 @@ const handleTermChange = (e, termIndex) => {
         }
       }
       setLocalChanges((prevChanges) =>
-        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`)),
       );
       return prev.filter((_, index) => index !== termIndex);
     });
@@ -787,7 +798,7 @@ const handleTermChange = (e, termIndex) => {
             currentTerm: term.currentTerm || false,
             editedFields: term.editedFields || [],
             fieldEditors: term.fieldEditors || {},
-            isNew: false,
+            isNewRecord: false,
             votesScore: [{ voteId: "", score: "" }],
             activitiesScore: [{ activityId: "", score: "" }],
             pastVotesScore: [{ voteId: "", score: "" }],
@@ -801,7 +812,7 @@ const handleTermChange = (e, termIndex) => {
               v.voteId?._id === voteId ||
               (v.billNumber &&
                 participatedVotes.find((pv) => pv._id === voteId)
-                  ?.billNumber === v.billNumber)
+                  ?.billNumber === v.billNumber),
           );
 
           if (!senatorVote) return "";
@@ -819,9 +830,9 @@ const handleTermChange = (e, termIndex) => {
 
           termVotes = allVotes.filter((vote) => {
             const voteDate = new Date(vote.date);
-                        const cutoffDate = new Date("2019-01-02");
+            const cutoffDate = new Date("2019-01-02");
             const isBeforeCutoffDate = voteDate < cutoffDate;
-            
+
             // Skip votes before cutoff date
             if (isBeforeCutoffDate) return false;
 
@@ -862,9 +873,9 @@ const handleTermChange = (e, termIndex) => {
               if (!voteData || !matchedTerm) return false;
 
               const voteDate = new Date(voteData.date);
-                 const cutoffDate = new Date("2019-01-02");
+              const cutoffDate = new Date("2019-01-02");
               const isBeforeCutoffDate = voteDate < cutoffDate;
-              
+
               if (isBeforeCutoffDate) return false;
 
               const termStart = new Date(`${matchedTerm.startYear}-01-03`);
@@ -911,14 +922,14 @@ const handleTermChange = (e, termIndex) => {
                 matchedTerm &&
                 doesVoteBelongToTerm(voteData, matchedTerm)
               ) {
-                   const cutoffDate = new Date("2019-01-02");
+                const cutoffDate = new Date("2019-01-02");
                 const voteDate = new Date(voteData.date);
                 const isBeforeCutoffDate = voteDate < cutoffDate;
-                
+
                 // Skip votes before cutoff date
                 if (isBeforeCutoffDate) return;
                 const alreadyIncluded = votesScore.some(
-                  (v) => v.voteId === voteId
+                  (v) => v.voteId === voteId,
                 );
 
                 if (!alreadyIncluded) {
@@ -986,26 +997,28 @@ const handleTermChange = (e, termIndex) => {
             const belongsToAnyTerm = senatorData.currentSenator.some(
               (otherTerm) => {
                 const otherMatchedTerm = terms?.find(
-                  (t) => t.name === otherTerm.termId?.name
+                  (t) => t.name === otherTerm.termId?.name,
                 );
                 if (!otherMatchedTerm) return false;
 
                 return doesVoteBelongToTerm(voteData, otherMatchedTerm);
-              }
+              },
             );
 
             // Add to orphanVotes if vote doesn't belong to any term OR if vote date is before Jan 2, 2019
-           // Add to orphanVotes ONLY if vote doesn't belong to any term
-// AND vote date is before Jan 2, 2019
-if (  isBeforeCutoffDate) {
-  const alreadyAdded = orphanVotes.some((ov) => ov.voteId === voteId);
-  if (!alreadyAdded) {
-    let scoreValue = "";
-    const dbScore = vote.score?.toLowerCase();
-    if (dbScore?.includes("yea")) scoreValue = "yea";
-    else if (dbScore?.includes("nay")) scoreValue = "nay";
-    else if (dbScore?.includes("other")) scoreValue = "other";
-    else scoreValue = vote.score || "";
+            // Add to orphanVotes ONLY if vote doesn't belong to any term
+            // AND vote date is before Jan 2, 2019
+            if (isBeforeCutoffDate) {
+              const alreadyAdded = orphanVotes.some(
+                (ov) => ov.voteId === voteId,
+              );
+              if (!alreadyAdded) {
+                let scoreValue = "";
+                const dbScore = vote.score?.toLowerCase();
+                if (dbScore?.includes("yea")) scoreValue = "yea";
+                else if (dbScore?.includes("nay")) scoreValue = "nay";
+                else if (dbScore?.includes("other")) scoreValue = "other";
+                else scoreValue = vote.score || "";
 
                 orphanVotes.push({
                   voteId: voteId,
@@ -1034,7 +1047,7 @@ if (  isBeforeCutoffDate) {
           orphanVotes.forEach((orphanVote) => {
             if (orphanVote.voteId && orphanVote.voteId !== "") {
               const voteData = allVotes.find(
-                (v) => v._id === orphanVote.voteId
+                (v) => v._id === orphanVote.voteId,
               );
               if (voteData) {
                 const sanitizeKey = (str) => {
@@ -1045,24 +1058,24 @@ if (  isBeforeCutoffDate) {
                 };
 
                 const pastVoteEditorKey = `pastVotesScore_${sanitizeKey(
-                  voteData.title
+                  voteData.title,
                 )}`;
                 const regularVoteEditorKey = `votesScore_${sanitizeKey(
-                  voteData.title
+                  voteData.title,
                 )}`;
 
                 const existingPastVoteField = currentEditedFields.find(
                   (field) =>
                     field.name === voteData.title &&
                     Array.isArray(field.field) &&
-                    field.field[0] === "pastVotesScore"
+                    field.field[0] === "pastVotesScore",
                 );
 
                 const existingRegularVoteField = currentEditedFields.find(
                   (field) =>
                     field.name === voteData.title &&
                     Array.isArray(field.field) &&
-                    field.field[0] === "votesScore"
+                    field.field[0] === "votesScore",
                 );
 
                 if (!existingPastVoteField) {
@@ -1083,9 +1096,9 @@ if (  isBeforeCutoffDate) {
                       };
                     } else {
                       const existingEditorKey = Object.keys(
-                        currentFieldEditors
+                        currentFieldEditors,
                       ).find((key) =>
-                        key.includes(sanitizeKey(voteData.title))
+                        key.includes(sanitizeKey(voteData.title)),
                       );
 
                       if (
@@ -1116,7 +1129,7 @@ if (  isBeforeCutoffDate) {
                     };
                   } else {
                     const existingEditorKey = Object.keys(
-                      currentFieldEditors
+                      currentFieldEditors,
                     ).find((key) => key.includes(sanitizeKey(voteData.title)));
 
                     if (
@@ -1190,7 +1203,7 @@ if (  isBeforeCutoffDate) {
               }
 
               const voteData = allVotes.find(
-                (v) => v._id === (vote.voteId?._id || vote.voteId)
+                (v) => v._id === (vote.voteId?._id || vote.voteId),
               );
 
               return {
@@ -1226,7 +1239,7 @@ if (  isBeforeCutoffDate) {
               else scoreValue = vote.score || "";
 
               const voteData = allVotes.find(
-                (v) => v._id === (vote.voteId?._id || vote.voteId)
+                (v) => v._id === (vote.voteId?._id || vote.voteId),
               );
 
               return {
@@ -1302,7 +1315,7 @@ if (  isBeforeCutoffDate) {
                 activity.activityId?._id || activity.activityId;
               if (!activityId) return false;
               const activityData = allActivities.find(
-                (a) => a._id === activityId
+                (a) => a._id === activityId,
               );
               if (!activityData || !matchedTerm) return false;
 
@@ -1314,14 +1327,14 @@ if (  isBeforeCutoffDate) {
                 activityDate >= termStart &&
                 activityDate <= termEnd &&
                 matchedTerm.congresses.includes(
-                  Number(activityData.congress || 0)
+                  Number(activityData.congress || 0),
                 )
               );
             })
             .map((activity) => {
               const actualActivity = allActivities.find(
                 (a) =>
-                  a._id === (activity.activityId?._id || activity.activityId)
+                  a._id === (activity.activityId?._id || activity.activityId),
               );
 
               return {
@@ -1345,7 +1358,7 @@ if (  isBeforeCutoffDate) {
                 matchedTerm.congresses.includes(Number(activity.congress || 0));
 
               const alreadyIncluded = activitiesScore.some(
-                (a) => a.activityId === activity._id
+                (a) => a.activityId === activity._id,
               );
 
               const hasScore = !!getActivityScore(activity._id);
@@ -1377,7 +1390,7 @@ if (  isBeforeCutoffDate) {
               const activityId =
                 otherActivity.activityId?._id || otherActivity.activityId;
               const activityData = allActivities.find(
-                (a) => a._id === activityId
+                (a) => a._id === activityId,
               );
 
               if (
@@ -1386,7 +1399,7 @@ if (  isBeforeCutoffDate) {
                 doesActivityBelongToTerm(activityData, matchedTerm)
               ) {
                 const alreadyIncluded = activitiesScore.some(
-                  (a) => a.activityId === activityId
+                  (a) => a.activityId === activityId,
                 );
 
                 if (!alreadyIncluded) {
@@ -1445,7 +1458,7 @@ if (  isBeforeCutoffDate) {
           currentTerm: autoCurrentTerm || term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          isNew: false,
+          isNewRecord: false,
           votesScore,
           activitiesScore,
           pastVotesScore,
@@ -1467,7 +1480,7 @@ if (  isBeforeCutoffDate) {
       let adjustedTerms = termsData;
       if (futureTerms.length > 0) {
         const newest = futureTerms.reduce((a, b) =>
-          a.startYear > b.startYear ? a : b
+          a.startYear > b.startYear ? a : b,
         );
         adjustedTerms = termsData.map((t, i) => ({
           ...t,
@@ -1490,7 +1503,7 @@ if (  isBeforeCutoffDate) {
           termId: null,
           editedFields: [],
           fieldEditors: {},
-          isNew: true,
+          isNewRecord: true,
         },
       ];
 
@@ -1531,7 +1544,7 @@ if (  isBeforeCutoffDate) {
 
     senatorTermData.forEach((term, termIndex) => {
       const originalTerm = originalTermData[termIndex] || {};
-      const isNewTerm = term.isNew;
+      const isNewTerm = term.isNewRecord;
 
       Object.keys(term).forEach((key) => {
         if (
@@ -1540,7 +1553,7 @@ if (  isBeforeCutoffDate) {
             "senateId",
             "editedFields",
             "fieldEditors",
-            "isNew",
+            "isNewRecord",
             "publishStatus",
           ].includes(key)
         )
@@ -1557,10 +1570,10 @@ if (  isBeforeCutoffDate) {
           ["votesScore", "activitiesScore", "pastVotesScore"].includes(key)
         ) {
           const current = (term[key] || []).filter((item) =>
-            Object.values(item).some((val) => val !== "" && val !== null)
+            Object.values(item).some((val) => val !== "" && val !== null),
           );
           const original = (originalTerm[key] || []).filter((item) =>
-            Object.values(item).some((val) => val !== "" && val !== null)
+            Object.values(item).some((val) => val !== "" && val !== null),
           );
           if (JSON.stringify(current) !== JSON.stringify(original)) {
             changes.push(`term${termIndex}_${key}`);
@@ -1621,7 +1634,7 @@ if (  isBeforeCutoffDate) {
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
-        isNew: senator.isNew || false,
+        isNewRecord: senator.isNewRecord || false,
         publishStatus: senator.publishStatus || "",
         editedFields: senator.editedFields || {},
         fieldEditors: senator.fieldEditors || {},
@@ -1773,7 +1786,7 @@ if (  isBeforeCutoffDate) {
 
       if (deletedTermIds.length > 0) {
         await Promise.all(
-          deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap())
+          deletedTermIds.map((id) => dispatch(deleteSenatorData(id)).unwrap()),
         );
         setDeletedTermIds([]);
       }
@@ -1902,11 +1915,11 @@ if (  isBeforeCutoffDate) {
           ) {
             if (hasActivityChanged(termIndex, activityIndex, activity)) {
               const activityItem = activities.find(
-                (a) => a._id === activity.activityId
+                (a) => a._id === activity.activityId,
               );
               if (activityItem) {
                 const uniqueId = `activitiesScore_${sanitizeKey(
-                  activityItem.title
+                  activityItem.title,
                 )}`;
                 processedChanges.push({
                   uniqueId,
@@ -1929,7 +1942,7 @@ if (  isBeforeCutoffDate) {
               const voteItem = votes.find((v) => v._id === vote.voteId);
               if (voteItem) {
                 const uniqueId = `pastVotesScore_${sanitizeKey(
-                  voteItem.title
+                  voteItem.title,
                 )}`;
                 processedChanges.push({
                   uniqueId,
@@ -2098,7 +2111,7 @@ if (  isBeforeCutoffDate) {
           const activity = term?.activitiesScore?.[parseInt(activityIndex)];
           if (activity && activity.activityId) {
             const activityItem = activities.find(
-              (a) => a._id === activity.activityId
+              (a) => a._id === activity.activityId,
             );
             if (activityItem && activityItem.title) {
               editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
@@ -2157,8 +2170,8 @@ if (  isBeforeCutoffDate) {
         publishStatus: publishFlag
           ? "published"
           : userRole === "admin"
-          ? "under review"
-          : "under review",
+            ? "under review"
+            : "under review",
       };
 
       if (senatorUpdate.publishStatus === "published") {
@@ -2178,7 +2191,7 @@ if (  isBeforeCutoffDate) {
           }
         });
         await dispatch(
-          updateSenator({ id, formData: formDataToSend })
+          updateSenator({ id, formData: formDataToSend }),
         ).unwrap();
       }
 
@@ -2195,7 +2208,7 @@ if (  isBeforeCutoffDate) {
           .filter(
             (activity) =>
               activity.activityId &&
-              activity.activityId.toString().trim() !== ""
+              activity.activityId.toString().trim() !== "",
           )
           .map((activity) => ({
             activityId: activity.activityId.toString(),
@@ -2205,7 +2218,7 @@ if (  isBeforeCutoffDate) {
         const cleanPastVotesScore = term.pastVotesScore
           ? term.pastVotesScore
               .filter(
-                (vote) => vote.voteId && vote.voteId.toString().trim() !== ""
+                (vote) => vote.voteId && vote.voteId.toString().trim() !== "",
               )
               .map((vote) => ({
                 voteId: vote.voteId.toString(),
@@ -2219,8 +2232,8 @@ if (  isBeforeCutoffDate) {
             typeof f === "string"
               ? f
               : Array.isArray(f.field)
-              ? f.field[0]
-              : f.field;
+                ? f.field[0]
+                : f.field;
           return fieldName.startsWith(`term${index}_`);
         });
 
@@ -2229,7 +2242,7 @@ if (  isBeforeCutoffDate) {
           votesScore: cleanVotesScore,
           pastVotesScore: cleanPastVotesScore,
           activitiesScore: cleanActivitiesScore,
-          isNew: false,
+          isNewRecord: false,
           senateId: id,
           editedFields: termSpecificChanges,
           fieldEditors: updatedFieldEditors,
@@ -2237,7 +2250,7 @@ if (  isBeforeCutoffDate) {
         };
         return term._id
           ? dispatch(
-              updateSenatorData({ id: term._id, data: termUpdate })
+              updateSenatorData({ id: term._id, data: termUpdate }),
             ).unwrap()
           : dispatch(createSenatorData(termUpdate)).unwrap();
       });
@@ -2266,14 +2279,13 @@ if (  isBeforeCutoffDate) {
       } else {
         handleSnackbarOpen(
           'Status changed to "Draft" for admin to moderate.',
-          "info"
+          "info",
         );
       }
     } catch (error) {
-
       let errorMessage = getErrorMessage(
         error,
-        "Operation failed. Please try again."
+        "Operation failed. Please try again.",
       );
 
       // Handle specific error codes
@@ -2356,7 +2368,7 @@ if (  isBeforeCutoffDate) {
     formData.publishStatus || (userRole === "admin" ? "published" : "");
   const statusData = getStatusConfig(
     Array.isArray(editedFields) ? editedFields : [],
-    currentStatus
+    currentStatus,
   );
 
   const getValidTermId = (termId) => {
