@@ -730,7 +730,7 @@ const handleTermChange = (e, termIndex) => {
         termId: null,
         editedFields: [],
         fieldEditors: {},
-        isNew: true,
+        isNewRecord: true,
       },
     ]);
   };
@@ -787,7 +787,7 @@ const handleTermChange = (e, termIndex) => {
             currentTerm: term.currentTerm || false,
             editedFields: term.editedFields || [],
             fieldEditors: term.fieldEditors || {},
-            isNew: false,
+            isNewRecord: false,
             votesScore: [{ voteId: "", score: "" }],
             activitiesScore: [{ activityId: "", score: "" }],
             pastVotesScore: [{ voteId: "", score: "" }],
@@ -1445,7 +1445,7 @@ if (  isBeforeCutoffDate) {
           currentTerm: autoCurrentTerm || term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          isNew: false,
+          isNewRecord: false,
           votesScore,
           activitiesScore,
           pastVotesScore,
@@ -1490,7 +1490,7 @@ if (  isBeforeCutoffDate) {
           termId: null,
           editedFields: [],
           fieldEditors: {},
-          isNew: true,
+          isNewRecord: true,
         },
       ];
 
@@ -1531,7 +1531,7 @@ if (  isBeforeCutoffDate) {
 
     senatorTermData.forEach((term, termIndex) => {
       const originalTerm = originalTermData[termIndex] || {};
-      const isNewTerm = term.isNew;
+      const isNewTerm = term.isNewRecord;
 
       Object.keys(term).forEach((key) => {
         if (
@@ -1540,7 +1540,7 @@ if (  isBeforeCutoffDate) {
             "senateId",
             "editedFields",
             "fieldEditors",
-            "isNew",
+            "isNewRecord",
             "publishStatus",
           ].includes(key)
         )
@@ -1621,7 +1621,7 @@ if (  isBeforeCutoffDate) {
         party: senator.party || "",
         photo: senator.photo || null,
         term: termId,
-        isNew: senator.isNew || false,
+        isNewRecord: senator.isNewRecord || false,
         publishStatus: senator.publishStatus || "",
         editedFields: senator.editedFields || {},
         fieldEditors: senator.fieldEditors || {},
@@ -2229,7 +2229,7 @@ if (  isBeforeCutoffDate) {
           votesScore: cleanVotesScore,
           pastVotesScore: cleanPastVotesScore,
           activitiesScore: cleanActivitiesScore,
-          isNew: false,
+          isNewRecord: false,
           senateId: id,
           editedFields: termSpecificChanges,
           fieldEditors: updatedFieldEditors,

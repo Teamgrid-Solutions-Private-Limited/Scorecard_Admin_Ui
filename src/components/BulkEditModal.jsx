@@ -56,11 +56,16 @@ export default function BulkEditModal({
         { label: "Yea", value: "yea" },
         { label: "Nay", value: "nay" },
         { label: "Other", value: "other" },
+         { label: "Present", value: "present" },
+          { label: "Absent", value: "missed" },
+        {}
       ]
     : [
         { label: "Yea", value: "yes" },
         { label: "Nay", value: "no" },
         { label: "Other", value: "other" },
+          { label: "Present", value: "present" },
+          { label: "Absent", value: "missed" },
       ];
 
   const handleSave = () => {

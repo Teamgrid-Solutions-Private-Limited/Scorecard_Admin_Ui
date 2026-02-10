@@ -134,7 +134,7 @@ export default function Addrepresentative(props) {
     party: "",
     photo: null,
     status: "active",
-    isNew: false,
+    isNewRecord: false,
     publishStatus: "",
   });
 
@@ -360,7 +360,7 @@ export default function Addrepresentative(props) {
         termId: null,
         editedFields: [],
         fieldEditors: {},
-        isNew: true,
+        isNewRecord: true,
       },
     ]);
   };
@@ -369,7 +369,7 @@ export default function Addrepresentative(props) {
     setHouseTermData((prev) => {
       const removed = prev[termIndex];
       const removalId = `Term_${termIndex + 1} Removed`;
-      if (!removed.isNew) {
+      if (!removed.isNewRecord) {
         if (removed && removed._id) {
           setDeletedTermIds((ids) => [...ids, removed._id]);
           if (!localChanges.includes(removalId)) {
@@ -457,7 +457,7 @@ export default function Addrepresentative(props) {
           currentTerm: term.currentTerm || false,
           editedFields: term.editedFields || [],
           fieldEditors: term.fieldEditors || {},
-          isNew: false,
+          isNewRecord: false,
           votesScore,
 
           activitiesScore:
@@ -493,7 +493,7 @@ export default function Addrepresentative(props) {
           termId: null,
           editedFields: [],
           fieldEditors: {},
-          isNew: true,
+          isNewRecord: true,
         },
       ];
 
@@ -526,7 +526,7 @@ export default function Addrepresentative(props) {
       });
 
       houseTermData.forEach((term, termIndex) => {
-        if (term.isNew) {
+        if (term.isNewRecord) {
           Object.keys(term).forEach((key) => {
             if (
               [
@@ -534,7 +534,7 @@ export default function Addrepresentative(props) {
                 "houseId",
                 "editedFields",
                 "fieldEditors",
-                "isNew",
+                "isNewRecord",
                 "currentTerm",
               ].includes(key)
             )
@@ -611,7 +611,7 @@ export default function Addrepresentative(props) {
         party: house.party || "",
         photo: house.photo || null,
         status: house.status || "active",
-        isNew: house.isNew || false,
+        isNewRecord: house.isNewRecord || false,
         publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
@@ -1032,7 +1032,7 @@ export default function Addrepresentative(props) {
           ...term,
           votesScore: cleanVotesScore,
           activitiesScore: cleanActivitiesScore,
-          isNew: false,
+          isNewRecord: false,
           houseId: id,
           editedFields: termSpecificChanges,
           fieldEditors: updatedFieldEditors,
@@ -1561,6 +1561,8 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
+                                   <MenuItem value="present">Present</MenuItem>
+                                  <MenuItem value="missed">Absent</MenuItem>
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1676,6 +1678,8 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
+                                   <MenuItem value="present">Present</MenuItem>
+                                  <MenuItem value="missed">Absent</MenuItem>
                                 </Select>
                               </FormControl>
                             </Grid>
