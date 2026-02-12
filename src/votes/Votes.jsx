@@ -446,6 +446,17 @@ export default function Votes(props) {
                   </Button>
                 )}
               </Stack>
+              {/* {userRole === "admin" && (
+                  <Button
+                    onClick={() => {
+                      setIsAssignMode(!isAssignMode);
+                      if (!isAssignMode) setIsBulkEditMode(false);
+                    }}
+                    className={`bulkEditBtn ${isAssignMode ? "active" : ""}`}
+                  >
+                    {isAssignMode ? "Cancel Assign" : "Assign Vote"}
+                  </Button>
+                )} */}
             </Box>
 
             {isBulkEditMode && (

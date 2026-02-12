@@ -174,9 +174,76 @@ export default function SenatorBasicInfo({
             </Select>
           </FormControl>
         </Grid>
+        <Grid size={isMobile ? 12 : 2}>
+  <InputLabel className="label">
+    Alternate Profile
+  </InputLabel>
+</Grid>
+
+<Grid size={isMobile ? 12 : 4}>
+  <FormControlLabel
+    control={
+      <Switch
+        name="displayAlternateProfileLink"
+        checked={!!formData.displayAlternateProfileLink}
+        onChange={(e) =>
+          handleChange({
+            target: {
+              name: "displayAlternateProfileLink",
+              value: e.target.checked,
+            },
+          })
+        }
+      />
+    }
+    label="Display Link"
+  />
+</Grid>
+
+{formData.displayAlternateProfileLink && (
+  <>
+        <Grid size={isMobile ? 12 : 1} sx={{ alignContent: "center" ,minWidth:80}}>
+      <InputLabel className="label">Profile URL</InputLabel>
+    </Grid>
+
+    <Grid size={isMobile ? 12 : 4}>
+      <TextField
+        name="alternateProfileLink"
+        value={formData.alternateProfileLink || ""}
+        onChange={handleChange}
+        fullWidth
+        size="small"
+        variant="outlined"
+      />
+    </Grid>
+  </>
+)}
+ <Grid size={isMobile ? 12 : formData.displayAlternateProfileLink? 2:1} sx={{ alignContent: "center" }}>
+  <InputLabel className="label">Member</InputLabel>
+</Grid>
+
+<Grid size={isMobile ? 12 : 4}>
+  <FormControlLabel
+    control={
+      <Switch
+        name="isFormerMember"
+        checked={!!formData.isFormerMember}
+        onChange={(e) =>
+          handleChange({
+            target: {
+              name: "isFormerMember",
+              value: e.target.checked,
+            },
+          })
+        }
+      />
+    }
+    label="Mark as Former"
+  />
+</Grid>
         <Grid
-          size={isMobile ? 12 : 2}
-          sx={mode === "representative" ? { minWidth: 165 } : {}}
+          size={isMobile ? 12 : formData.displayAlternateProfileLink ? 1 : 2}
+          sx={mode === "representative" ? { minWidth: 165 } : {minWidth:120}}
         >
           <InputLabel className="label">
             {mode === "representative"
@@ -184,7 +251,7 @@ export default function SenatorBasicInfo({
               : "Senator's Photo"}
           </InputLabel>
         </Grid>
-        <Grid size={isMobile ? 10 : 8}>
+        <Grid size={isMobile ? 10 : 4}>
           <Box
             className="paddingLeft"
             sx={{ display: "flex", alignItems: "center", gap: 2 }}

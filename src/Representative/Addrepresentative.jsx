@@ -136,6 +136,9 @@ export default function Addrepresentative(props) {
     status: "active",
     isNewRecord: false,
     publishStatus: "",
+     displayAlternateProfileLink: false,
+    alternateProfileLink: "",
+    isFormerMember:false
   });
 
   const [houseTermData, setHouseTermData] = useState([
@@ -220,7 +223,7 @@ export default function Addrepresentative(props) {
               (ht.termId._id === newTermId ||
                 ht.termId === newTermId ||
                 (typeof ht.termId === "object" &&
-                  ht.termId.name === selectedTerm?.name))
+                  ht.termId.name === selectedTerm?.name)),
           );
 
           let votesScore = [];
@@ -264,7 +267,7 @@ export default function Addrepresentative(props) {
                 return true;
 
               const activityItem = houseActivities.find(
-                (a) => a._id === activity.activityId
+                (a) => a._id === activity.activityId,
               );
               if (!activityItem) return false;
 
@@ -316,7 +319,7 @@ export default function Addrepresentative(props) {
 
     setHouseTermData((prev) => {
       const newTerms = prev.map((term, index) =>
-        index === termIndex ? { ...term, [name]: checked } : term
+        index === termIndex ? { ...term, [name]: checked } : term,
       );
       const originalTerm = originalTermData[termIndex] || {};
       const isActualChange = compareValues(checked, originalTerm[name]);
@@ -383,7 +386,7 @@ export default function Addrepresentative(props) {
       }
 
       setLocalChanges((prevChanges) =>
-        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`))
+        prevChanges.filter((change) => !change.startsWith(`term${termIndex}_`)),
       );
 
       return prev.filter((_, index) => index !== termIndex);
@@ -543,7 +546,7 @@ export default function Addrepresentative(props) {
             if (key === "votesScore" || key === "activitiesScore") {
               if (
                 term[key].some((item) =>
-                  Object.values(item).some((val) => val !== "" && val !== null)
+                  Object.values(item).some((val) => val !== "" && val !== null),
                 )
               ) {
                 changes.push(`term${termIndex}_${key}`);
@@ -615,6 +618,9 @@ export default function Addrepresentative(props) {
         publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
+         displayAlternateProfileLink: house.displayAlternateProfileLink || false,
+        alternateProfileLink: house.alternateProfileLink || "",
+        isFormerMember: house.isFormerMember || false,
       };
 
       setFormData(newFormData);
@@ -686,7 +692,7 @@ export default function Addrepresentative(props) {
       // Delete removed terms first
       if (deletedTermIds.length > 0) {
         await Promise.all(
-          deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap())
+          deletedTermIds.map((id) => dispatch(deleteHouseData(id)).unwrap()),
         );
         setDeletedTermIds([]);
       }
@@ -795,11 +801,11 @@ export default function Addrepresentative(props) {
           ) {
             if (hasActivityChanged(termIndex, activityIndex, activity)) {
               const activityItem = houseActivities.find(
-                (a) => a._id === activity.activityId
+                (a) => a._id === activity.activityId,
               );
               if (activityItem) {
                 const uniqueId = `activitiesScore_${sanitizeKey(
-                  activityItem.title
+                  activityItem.title,
                 )}`;
                 processedChanges.push({
                   uniqueId,
@@ -822,7 +828,7 @@ export default function Addrepresentative(props) {
         // Handle removal markers
         if (change.endsWith("_removed")) {
           const removalMatch = change.match(
-            /^term(\d+)_(ScoredVote|TrackedActivity)_(\d+)_removed$/
+            /^term(\d+)_(ScoredVote|TrackedActivity)_(\d+)_removed$/,
           );
           if (removalMatch) {
             const [, termIndex, type, itemIndex] = removalMatch;
@@ -939,7 +945,7 @@ export default function Addrepresentative(props) {
           const activity = term?.activitiesScore?.[parseInt(activityIndex)];
           if (activity && activity.activityId) {
             const activityItem = houseActivities.find(
-              (a) => a._id === activity.activityId
+              (a) => a._id === activity.activityId,
             );
             if (activityItem && activityItem.title) {
               editorKey = `activitiesScore_${sanitizeKey(activityItem.title)}`;
@@ -973,8 +979,8 @@ export default function Addrepresentative(props) {
         publishStatus: publishFlag
           ? "published"
           : userRole === "admin"
-          ? "under review"
-          : "under review",
+            ? "under review"
+            : "under review",
       };
 
       if (representativeUpdate.publishStatus === "published") {
@@ -1011,7 +1017,7 @@ export default function Addrepresentative(props) {
           .filter(
             (activity) =>
               activity.activityId &&
-              activity.activityId.toString().trim() !== ""
+              activity.activityId.toString().trim() !== "",
           )
           .map((activity) => ({
             activityId: activity.activityId.toString(),
@@ -1023,8 +1029,8 @@ export default function Addrepresentative(props) {
             typeof f === "string"
               ? f
               : Array.isArray(f.field)
-              ? f.field[0]
-              : f.field;
+                ? f.field[0]
+                : f.field;
           return fieldName.startsWith(`term${index}_`);
         });
 
@@ -1040,7 +1046,7 @@ export default function Addrepresentative(props) {
 
         return term._id
           ? dispatch(
-              updateHouseData({ id: term._id, data: termUpdate })
+              updateHouseData({ id: term._id, data: termUpdate }),
             ).unwrap()
           : dispatch(createHouseData(termUpdate)).unwrap();
       });
@@ -1064,14 +1070,13 @@ export default function Addrepresentative(props) {
       } else {
         handleSnackbarOpen(
           'Status changed to "Draft" for admin to moderate.',
-          "info"
+          "info",
         );
       }
     } catch (error) {
-
       let errorMessage = getErrorMessage(
         error,
-        "Operation failed. Please try again."
+        "Operation failed. Please try again.",
       );
       if (error?.code === 11000) {
         errorMessage = "Duplicate entry: This house term already exists.";
@@ -1099,7 +1104,7 @@ export default function Addrepresentative(props) {
     return (votes || []).filter(
       (vote) =>
         vote.type?.toLowerCase().includes("house") &&
-        selectedTerm.congresses.includes(Number(vote.congress))
+        selectedTerm.congresses.includes(Number(vote.congress)),
     );
   };
   const getFilteredActivities = (termIndex) => {
@@ -1110,7 +1115,7 @@ export default function Addrepresentative(props) {
     if (!selectedTerm || !selectedTerm.congresses) return houseActivities || [];
 
     return (houseActivities || []).filter((activity) =>
-      selectedTerm.congresses.includes(Number(activity.congress))
+      selectedTerm.congresses.includes(Number(activity.congress)),
     );
   };
   // Snackbar handlers are now provided by useSnackbar hook
@@ -1192,7 +1197,7 @@ export default function Addrepresentative(props) {
     formData.publishStatus || (userRole === "admin" ? "published" : "");
   const statusData = getStatusConfig(
     Array.isArray(editedFields) ? editedFields : [],
-    currentStatus
+    currentStatus,
   );
 
   const handleDiscard = () => {
@@ -1214,13 +1219,13 @@ export default function Addrepresentative(props) {
       await dispatch(getHouseDataByHouseId(id));
       handleSnackbarOpen(
         `Changes ${userRole === "admin" ? "Discard" : "Undo"} successfully`,
-        "success"
+        "success",
       );
       setComponentKey((prev) => prev + 1);
     } catch (error) {
       const errorMessage = getErrorMessage(
         error,
-        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`
+        `Failed to ${userRole === "admin" ? "Discard" : "Undo"} changes`,
       );
       handleSnackbarOpen(errorMessage, "error");
     } finally {
@@ -1340,19 +1345,19 @@ export default function Addrepresentative(props) {
                                   t.startYear % 2 === 1 &&
                                   t.endYear % 2 === 0 &&
                                   t.startYear >= 2015 &&
-                                  t.endYear >= 2015
+                                  t.endYear >= 2015,
                               )
                               .filter(
                                 (t) =>
                                   Array.isArray(t.congresses) &&
-                                  t.congresses.length > 0
+                                  t.congresses.length > 0,
                               )
                               .filter(
                                 (t) =>
                                   !houseTermData.some(
                                     (ht, idx) =>
-                                      idx !== termIndex && ht.termId === t._id
-                                  )
+                                      idx !== termIndex && ht.termId === t._id,
+                                  ),
                               )
                               .sort((a, b) => a.congresses[0] - b.congresses[0])
                               .map((t) => (
@@ -1423,15 +1428,17 @@ export default function Addrepresentative(props) {
                         onEditorChange={(content) => {
                           setHouseTermData((prev) =>
                             prev.map((t, idx) =>
-                              idx === termIndex ? { ...t, summary: content } : t
-                            )
+                              idx === termIndex
+                                ? { ...t, summary: content }
+                                : t,
+                            ),
                           );
                           const fieldName = `term${termIndex}_summary`;
                           const originalTerm =
                             originalTermData[termIndex] || {};
                           const isActualChange = compareValues(
                             content,
-                            originalTerm.summary || ""
+                            originalTerm.summary || "",
                           );
                           setLocalChanges((prev) => {
                             if (isActualChange && !prev.includes(fieldName)) {
@@ -1506,7 +1513,7 @@ export default function Addrepresentative(props) {
                                 getOptionLabel={(option) => option.title || ""}
                                 value={
                                   getFilteredVotes(termIndex).find(
-                                    (v) => v._id === vote.voteId
+                                    (v) => v._id === vote.voteId,
                                   ) || null
                                 }
                                 onChange={(e, newValue) =>
@@ -1514,7 +1521,7 @@ export default function Addrepresentative(props) {
                                     termIndex,
                                     voteIndex,
                                     "voteId",
-                                    newValue?._id || ""
+                                    newValue?._id || "",
                                   )
                                 }
                                 renderInput={(params) => (
@@ -1553,7 +1560,7 @@ export default function Addrepresentative(props) {
                                       termIndex,
                                       voteIndex,
                                       "score",
-                                      event.target.value
+                                      event.target.value,
                                     )
                                   }
                                   sx={{ background: "#fff" }}
@@ -1561,7 +1568,7 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yea">Yea</MenuItem>
                                   <MenuItem value="nay">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-                                   <MenuItem value="present">Present</MenuItem>
+                                  <MenuItem value="present">Present</MenuItem>
                                   <MenuItem value="missed">Absent</MenuItem>
                                 </Select>
                               </FormControl>
@@ -1576,7 +1583,7 @@ export default function Addrepresentative(props) {
                             </Grid>
                           </Grid>
                         </Grid>
-                      ) : null
+                      ) : null,
                     )}
 
                     <Grid size={1}></Grid>
@@ -1618,7 +1625,7 @@ export default function Addrepresentative(props) {
                                 className="textField"
                                 value={
                                   getFilteredActivities(termIndex).find(
-                                    (a) => a._id === activity.activityId
+                                    (a) => a._id === activity.activityId,
                                   ) || null
                                 }
                                 onChange={(event, newValue) =>
@@ -1626,7 +1633,7 @@ export default function Addrepresentative(props) {
                                     termIndex,
                                     activityIndex,
                                     "activityId",
-                                    newValue ? newValue._id : ""
+                                    newValue ? newValue._id : "",
                                   )
                                 }
                                 options={getFilteredActivities(termIndex)}
@@ -1670,7 +1677,7 @@ export default function Addrepresentative(props) {
                                       termIndex,
                                       activityIndex,
                                       "score",
-                                      event.target.value
+                                      event.target.value,
                                     )
                                   }
                                   sx={{ background: "#fff" }}
@@ -1678,7 +1685,7 @@ export default function Addrepresentative(props) {
                                   <MenuItem value="yes">Yea</MenuItem>
                                   <MenuItem value="no">Nay</MenuItem>
                                   <MenuItem value="other">Other</MenuItem>
-                                   <MenuItem value="present">Present</MenuItem>
+                                  <MenuItem value="present">Present</MenuItem>
                                   <MenuItem value="missed">Absent</MenuItem>
                                 </Select>
                               </FormControl>
@@ -1693,7 +1700,7 @@ export default function Addrepresentative(props) {
                             </Grid>
                           </Grid>
                         </Grid>
-                      ) : null
+                      ) : null,
                     )}
                     <Grid size={1}></Grid>
                     <Grid size={10} sx={{ textAlign: "right" }}>
