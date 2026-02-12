@@ -260,6 +260,9 @@ export default function AddSenator(props) {
     photo: null,
     term: "",
     publishStatus: "",
+    displayAlternateProfileLink: false,
+    alternateProfileLink: "",
+    isFormerMember:false
   });
 
   const [senatorTermData, setSenatorTermData] = useState([
@@ -1625,6 +1628,9 @@ if (  isBeforeCutoffDate) {
         publishStatus: senator.publishStatus || "",
         editedFields: senator.editedFields || {},
         fieldEditors: senator.fieldEditors || {},
+        displayAlternateProfileLink: senator.displayAlternateProfileLink || false,
+        alternateProfileLink: senator.alternateProfileLink || "",
+        isFormerMember: senator.isFormerMember || false,  
       };
 
       setFormData((prev) => {
@@ -2427,6 +2433,7 @@ if (  isBeforeCutoffDate) {
                 handleStatusChange={handleStatusChange}
                 handleFileChange={handleFileChange}
                 isMobile={isMobile}
+                mode="senator"
               />
             </Paper>
 
