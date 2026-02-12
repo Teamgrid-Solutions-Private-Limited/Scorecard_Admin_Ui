@@ -659,9 +659,47 @@ export default function Addrepresentative(props) {
     originalFormData,
     fieldName: "photo",
   });
+// URL validation helper
+const isValidUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    return ["https:"].includes(parsed.protocol);
+  } catch (err) {
+    return false;
+  }
+};
 
+// Add this validation function
+const validateAlternateProfileLink = () => {
+  if (formData.displayAlternateProfileLink) {
+    const url = formData.alternateProfileLink?.trim();
+
+    if (!url) {
+      handleSnackbarOpen(
+        "Please enter a profile URL when Display Link is enabled",
+        "error"
+      );
+      return false;
+    }
+
+    if (!isValidUrl(url)) {
+      handleSnackbarOpen(
+        "Please enter a valid URL (must start with https://)",
+        "error"
+      );
+      return false;
+    }
+  }
+
+  return true;
+};
   const handleSave = async (publishFlag = false, e) => {
     if (e && e.preventDefault) e.preventDefault();
+    
+     if (!validateAlternateProfileLink()) {
+    setLoading(false);
+    return;
+  }
     setLoading(true);
 
     try {
