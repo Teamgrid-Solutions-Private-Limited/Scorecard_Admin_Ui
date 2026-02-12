@@ -54,6 +54,7 @@ export default function LoginPage() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("info");
+  const [useBackupCode, setUseBackupCode] = useState(false);
 
   // Use centralized snackbar hook if it exists, otherwise use local state
   let snackbarHook;
@@ -176,10 +177,20 @@ export default function LoginPage() {
   const handleVerify2FA = async (e) => {
     e.preventDefault();
 
-    // Validate OTP format
-    if (otp.length !== 6 || isNaN(otp)) {
-      showSnackbar("Please enter a valid 6-digit code", "error");
-      return;
+    // Remove the global OTP validation here
+    // We'll validate differently based on backup code usage
+    if (useBackupCode) {
+      // Validate backup code format (8 characters, alphanumeric)
+      if (otp.length !== 8 || !/^[A-Z0-9]+$/.test(otp)) {
+        showSnackbar("Please enter a valid backup code", "error");
+        return;
+      }
+    } else {
+      // Validate OTP format for regular authentication
+      if (otp.length !== 6 || isNaN(otp)) {
+        showSnackbar("Please enter a valid 6-digit code", "error");
+        return;
+      }
     }
 
     setLoading(true);
@@ -188,7 +199,7 @@ export default function LoginPage() {
       let res;
 
       if (step === "SETUP_2FA") {
-        // First-time setup
+        // First-time setup - only regular OTP, not backup codes
         res = await api.post(
           "/auth/2fa/setup",
           {
@@ -235,16 +246,30 @@ export default function LoginPage() {
           }, 300);
         }
       } else {
-        // Regular verification
-        res = await api.post(
-          "/auth/2fa/verify",
-          { token: otp },
-          {
-            headers: {
-              Authorization: `Bearer ${tempToken}`,
+        // Regular verification - can be either OTP or backup code
+        if (useBackupCode) {
+          // Send backup code to verify endpoint
+          res = await api.post(
+            "/auth/2fa/verify",
+            { backupCode: otp },
+            {
+              headers: {
+                Authorization: `Bearer ${tempToken}`,
+              },
             },
-          },
-        );
+          );
+        } else {
+          // Send OTP token to verify endpoint
+          res = await api.post(
+            "/auth/2fa/verify",
+            { token: otp },
+            {
+              headers: {
+                Authorization: `Bearer ${tempToken}`,
+              },
+            },
+          );
+        }
 
         // ✅ Handle successful regular verification
         if (res.data.success && res.data.data?.accessToken) {
@@ -272,7 +297,21 @@ export default function LoginPage() {
             setUser("User");
           }
 
-          showSnackbar("Login successful", "success");
+          showSnackbar(
+            useBackupCode
+              ? "Logged in with backup code successfully"
+              : "Login successful",
+            "success",
+          );
+
+          // Show warning if used backup code
+          if (res.data.data?.usedBackupCode) {
+            showSnackbar(
+              "You've used a backup code. Consider generating new backup codes.",
+              "warning",
+            );
+          }
+
           setTimeout(() => {
             nav("/");
           }, 1000);
@@ -540,7 +579,7 @@ export default function LoginPage() {
           </Box>
 
           {/* Right Side - Login Form */}
-          {step === "LOGIN"  && (
+          {step === "LOGIN" && (
             <Box
               component="form"
               onSubmit={handleSubmit}
@@ -668,54 +707,137 @@ export default function LoginPage() {
                   Two-Factor Authentication
                 </Typography>
 
-                <Typography
-                  align="center"
-                  mb={3}
-                  variant="body2"
-                  color="text.secondary"
-                >
-                  Open your authenticator app and enter the 6-digit code
-                </Typography>
+                {!useBackupCode ? (
+                  <>
+                    <Typography
+                      align="center"
+                      mb={3}
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      Open your authenticator app and enter the 6-digit code
+                    </Typography>
 
-                <TextField
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Enter 6-digit code"
-                  fullWidth
-                  size="small"
-                  inputProps={{
-                    maxLength: 6,
-                    inputMode: "numeric",
-                    pattern: "[0-9]*",
-                  }}
-                  sx={{ mb: 3 }}
-                  disabled={loading}
-                  autoFocus
-                />
+                    <TextField
+                      value={otp}
+                      onChange={(e) =>
+                        setOtp(e.target.value.replace(/\D/g, ""))
+                      }
+                      placeholder="Enter 6-digit code"
+                      fullWidth
+                      size="small"
+                      inputProps={{
+                        maxLength: 6,
+                        inputMode: "numeric",
+                        pattern: "[0-9]*",
+                      }}
+                      sx={{ mb: 2 }}
+                      disabled={loading}
+                      autoFocus
+                    />
 
-                <Button
-                  type="submit"
-                  variant="contained"
-                  fullWidth
-                  disabled={otp.length !== 6 || loading}
-                  sx={{
-                    bgcolor: "#173A5E",
-                    "&:hover": { bgcolor: "#1E4C80" },
-                    borderRadius: "10px",
-                    py: 1.2,
-                  }}
-                >
-                  {loading ? (
-                    <CircularProgress size={24} />
-                  ) : (
-                    "Verify & Continue"
-                  )}
-                </Button>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      fullWidth
+                      disabled={otp.length !== 6 || loading}
+                      sx={{
+                        bgcolor: "#173A5E",
+                        "&:hover": { bgcolor: "#1E4C80" },
+                        borderRadius: "10px",
+                        py: 1.2,
+                      }}
+                    >
+                      {loading ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        "Verify & Continue"
+                      )}
+                    </Button>
+
+                    {/* Add "Use Backup Code" option */}
+                    <Button
+                      onClick={() => setUseBackupCode(true)}
+                      variant="text"
+                      fullWidth
+                      sx={{ mt: 2, mb: 1 }}
+                      disabled={loading}
+                    >
+                      Lost access to authenticator? Use backup code
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Typography
+                      align="center"
+                      mb={3}
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      Enter one of your backup codes (e.g., QQC0ZF5L)
+                    </Typography>
+
+                    <TextField
+                      value={otp}
+                      onChange={(e) =>
+                        setOtp(
+                          e.target.value
+                            .toUpperCase()
+                            .replace(/[^A-Z0-9]/g, ""),
+                        )
+                      }
+                      placeholder="Enter backup code (e.g., QQC0ZF5L)"
+                      fullWidth
+                      size="small"
+                      inputProps={{
+                        maxLength: 8,
+                        pattern: "[A-Z0-9]*",
+                      }}
+                      sx={{ mb: 2 }}
+                      disabled={loading}
+                      autoFocus
+                    />
+
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      fullWidth
+                      disabled={otp.length < 8 || loading}
+                      sx={{
+                        bgcolor: "#173A5E",
+                        "&:hover": { bgcolor: "#1E4C80" },
+                        borderRadius: "10px",
+                        py: 1.2,
+                      }}
+                    >
+                      {loading ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        "Verify Backup Code"
+                      )}
+                    </Button>
+
+                    {/* Back to OTP option */}
+                    <Button
+                      onClick={() => {
+                        setUseBackupCode(false);
+                        setOtp("");
+                      }}
+                      variant="text"
+                      fullWidth
+                      sx={{ mt: 2, mb: 1 }}
+                      disabled={loading}
+                    >
+                      Back to OTP code
+                    </Button>
+                  </>
+                )}
 
                 <Button
                   onClick={() => {
                     setStep("LOGIN");
                     setOtp("");
+                    setUseBackupCode(false);
                     setLoading(false);
                   }}
                   variant="text"
@@ -735,7 +857,9 @@ export default function LoginPage() {
                     color: "text.secondary",
                   }}
                 >
-                  Having trouble? Make sure your device time is synchronized.
+                  {useBackupCode
+                    ? "Each backup code can only be used once. Save them in a secure location."
+                    : "Having trouble? Make sure your device time is synchronized."}
                 </Typography>
               </Box>
             </Box>
