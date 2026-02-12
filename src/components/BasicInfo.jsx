@@ -105,11 +105,11 @@ export default function SenatorBasicInfo({
             sx={{ ml: 2 }}
             control={
               <Switch
-                name="isNew"
-                checked={!!formData.isNew}
+                name="isNewRecord"
+                checked={!!formData.isNewRecord}
                 onChange={(e) =>
                   handleChange({
-                    target: { name: "isNew", value: e.target.checked },
+                    target: { name: "isNewRecord", value: e.target.checked },
                   })
                 }
               />
