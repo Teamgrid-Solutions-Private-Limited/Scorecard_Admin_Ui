@@ -1007,14 +1007,14 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
-                      tinymceScriptSrc="/tinymce/tinymce.min.js"
+                      tinymceScriptSrc={`${import.meta.env.BASE_URL}tinymce/tinymce.min.js`.replace(/\/+/g, '/')}
                       licenseKey="gpl"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
                       }
                       init={{
-                        base_url: "/tinymce",
+                        base_url: `${import.meta.env.BASE_URL}tinymce`.replace(/\/+/g, '/'),
                         suffix: ".min",
                         height: 250,
                         menubar: false,
@@ -1053,14 +1053,14 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
-                      tinymceScriptSrc="/tinymce/tinymce.min.js"
+                      tinymceScriptSrc={`${import.meta.env.BASE_URL}tinymce/tinymce.min.js`.replace(/\/+/g, '/')}
                       licenseKey="gpl"
                       value={formData.longDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "longDesc")
                       }
                       init={{
-                        base_url: "/tinymce",
+                        base_url: `${import.meta.env.BASE_URL}tinymce`.replace(/\/+/g, '/'),
                         suffix: ".min",
                         height: 250,
                         menubar: false,

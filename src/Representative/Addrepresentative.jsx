@@ -1459,7 +1459,7 @@ const validateAlternateProfileLink = () => {
                     </Grid>
                     <Grid className="textField" size={isMobile ? 11 : 9.05}>
                       <Editor
-                        tinymceScriptSrc="/tinymce/tinymce.min.js"
+                        tinymceScriptSrc={`${import.meta.env.BASE_URL}tinymce/tinymce.min.js`.replace(/\/+/g, '/')}
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term.summary}
@@ -1492,7 +1492,7 @@ const validateAlternateProfileLink = () => {
                         }}
                         onBlur={() => {}}
                         init={{
-                          base_url: "/tinymce",
+                          base_url: `${import.meta.env.BASE_URL}tinymce`.replace(/\/+/g, '/'),
                           height: 250,
                           menubar: false,
                           plugins: [

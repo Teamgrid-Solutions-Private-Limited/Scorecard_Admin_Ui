@@ -28,8 +28,10 @@ const PrivateRoute = ({ element }) => {
 };
 
 export default function App() {
+  const basename = import.meta.env.BASE_URL;
+
   return (
-    <Router basename="/">
+    <Router basename={basename}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />

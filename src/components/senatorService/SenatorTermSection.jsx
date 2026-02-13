@@ -129,14 +129,14 @@ export default function SenatorTermSection({
         </Grid>
         <Grid className="textField" size={isMobile ? 11 : 9.05}>
           <Editor
-            tinymceScriptSrc="/tinymce/tinymce.min.js"
+            tinymceScriptSrc={`${import.meta.env.BASE_URL}tinymce/tinymce.min.js`.replace(/\/+/g, '/')}
             licenseKey="gpl"
             value={term?.summary || ""}
             onEditorChange={(content) =>
               handleSummaryChange(termIndex, content)
             }
             init={{
-              base_url: "/tinymce",
+              base_url: `${import.meta.env.BASE_URL}tinymce`.replace(/\/+/g, '/'),
               height: 250,
               menubar: false,
               plugins: [
