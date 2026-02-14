@@ -262,7 +262,6 @@ export default function AddSenator(props) {
     publishStatus: "",
     displayAlternateProfileLink: false,
     alternateProfileLink: "",
-    isFormerMember:false
   });
 
   const [senatorTermData, setSenatorTermData] = useState([
@@ -1627,7 +1626,6 @@ if (  isBeforeCutoffDate) {
         fieldEditors: senator.fieldEditors || {},
         displayAlternateProfileLink: senator.displayAlternateProfileLink || false,
         alternateProfileLink: senator.alternateProfileLink || "",
-        isFormerMember: senator.isFormerMember || false,  
       };
 
       setFormData((prev) => {

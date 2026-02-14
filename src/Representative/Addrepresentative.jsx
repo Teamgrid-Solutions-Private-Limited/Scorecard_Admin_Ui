@@ -138,7 +138,6 @@ export default function Addrepresentative(props) {
     publishStatus: "",
      displayAlternateProfileLink: false,
     alternateProfileLink: "",
-    isFormerMember:false
   });
 
   const [houseTermData, setHouseTermData] = useState([
@@ -620,7 +619,6 @@ export default function Addrepresentative(props) {
         fieldEditors: house.fieldEditors || {},
          displayAlternateProfileLink: house.displayAlternateProfileLink || false,
         alternateProfileLink: house.alternateProfileLink || "",
-        isFormerMember: house.isFormerMember || false,
       };
 
       setFormData(newFormData);
