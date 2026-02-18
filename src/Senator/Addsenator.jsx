@@ -260,6 +260,8 @@ export default function AddSenator(props) {
     photo: null,
     term: "",
     publishStatus: "",
+    displayAlternateProfileLink: false,
+    alternateProfileLink: "",
   });
 
   const [senatorTermData, setSenatorTermData] = useState([
@@ -1427,9 +1429,6 @@ export default function AddSenator(props) {
           activitiesScore = [{ activityId: "", score: "" }];
         }
 
-        // Determine automatic currentTerm: use dynamic current year (not hardcoded)
-        // and set true when today is on/after Jan 3 of the current year AND the
-        // current date falls within the term's actual date range. Future terms
         // will be adjusted after building all terms so the newest future term
         // can be marked current.
         const now = new Date();
@@ -1638,6 +1637,8 @@ export default function AddSenator(props) {
         publishStatus: senator.publishStatus || "",
         editedFields: senator.editedFields || {},
         fieldEditors: senator.fieldEditors || {},
+        displayAlternateProfileLink: senator.displayAlternateProfileLink || false,
+        alternateProfileLink: senator.alternateProfileLink || "",
       };
 
       setFormData((prev) => {
@@ -1753,8 +1754,46 @@ export default function AddSenator(props) {
     });
   };
 
+// URL validation helper
+const isValidUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    return ["https:"].includes(parsed.protocol);
+  } catch (err) {
+    return false;
+  }
+};
+
+// Add this validation function
+const validateAlternateProfileLink = () => {
+  if (formData.displayAlternateProfileLink) {
+    const url = formData.alternateProfileLink?.trim();
+
+    if (!url) {
+      handleSnackbarOpen(
+        "Please enter a profile URL when Display Link is enabled",
+        "error"
+      );
+      return false;
+    }
+
+    if (!isValidUrl(url)) {
+      handleSnackbarOpen(
+        "Please enter a valid URL (must start with https://)",
+        "error"
+      );
+      return false;
+    }
+  }
+
+  return true;
+};
   const handleSave = async (publishFlag = false, e) => {
     if (e && e.preventDefault) e.preventDefault();
+     if (!validateAlternateProfileLink()) {
+    setLoading(false);
+    return;
+  }
     setLoading(true);
 
     try {
@@ -2439,6 +2478,7 @@ export default function AddSenator(props) {
                 handleStatusChange={handleStatusChange}
                 handleFileChange={handleFileChange}
                 isMobile={isMobile}
+                mode="senator"
               />
             </Paper>
 

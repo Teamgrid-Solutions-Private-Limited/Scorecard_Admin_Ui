@@ -136,6 +136,8 @@ export default function Addrepresentative(props) {
     status: "active",
     isNewRecord: false,
     publishStatus: "",
+     displayAlternateProfileLink: false,
+    alternateProfileLink: "",
   });
 
   const [houseTermData, setHouseTermData] = useState([
@@ -615,6 +617,8 @@ export default function Addrepresentative(props) {
         publishStatus: house.publishStatus || "",
         editedFields: house.editedFields || [],
         fieldEditors: house.fieldEditors || {},
+         displayAlternateProfileLink: house.displayAlternateProfileLink || false,
+        alternateProfileLink: house.alternateProfileLink || "",
       };
 
       setFormData(newFormData);
@@ -653,9 +657,47 @@ export default function Addrepresentative(props) {
     originalFormData,
     fieldName: "photo",
   });
+// URL validation helper
+const isValidUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    return ["https:"].includes(parsed.protocol);
+  } catch (err) {
+    return false;
+  }
+};
 
+// Add this validation function
+const validateAlternateProfileLink = () => {
+  if (formData.displayAlternateProfileLink) {
+    const url = formData.alternateProfileLink?.trim();
+
+    if (!url) {
+      handleSnackbarOpen(
+        "Please enter a profile URL when Display Link is enabled",
+        "error"
+      );
+      return false;
+    }
+
+    if (!isValidUrl(url)) {
+      handleSnackbarOpen(
+        "Please enter a valid URL (must start with https://)",
+        "error"
+      );
+      return false;
+    }
+  }
+
+  return true;
+};
   const handleSave = async (publishFlag = false, e) => {
     if (e && e.preventDefault) e.preventDefault();
+    
+     if (!validateAlternateProfileLink()) {
+    setLoading(false);
+    return;
+  }
     setLoading(true);
 
     try {
@@ -1415,7 +1457,7 @@ export default function Addrepresentative(props) {
                     </Grid>
                     <Grid className="textField" size={isMobile ? 11 : 9.05}>
                       <Editor
-                        tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                        tinymceScriptSrc={`${import.meta.env.BASE_URL}tinymce/tinymce.min.js`.replace(/\/+/g, '/')}
                         licenseKey="gpl"
                         onInit={(_evt, editor) => (editorRef.current = editor)}
                         value={term.summary}
@@ -1448,7 +1490,7 @@ export default function Addrepresentative(props) {
                         }}
                         onBlur={() => {}}
                         init={{
-                          base_url: "/scorecard/admin/tinymce",
+                          base_url: `${import.meta.env.BASE_URL}tinymce`.replace(/\/+/g, '/'),
                           height: 250,
                           menubar: false,
                           plugins: [

@@ -58,7 +58,6 @@ export default function BulkEditModal({
         { label: "Other", value: "other" },
         { label: "Present", value: "present" },
         { label: "Absent", value: "missed" },
-
       ]
     : [
         { label: "Yea", value: "yes" },

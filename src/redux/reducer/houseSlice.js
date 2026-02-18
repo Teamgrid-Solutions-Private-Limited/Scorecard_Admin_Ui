@@ -12,7 +12,7 @@ export const createHouse = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/houses/`,
+        `${API_URL}/v1/admin/houses/`,
         formData,
         {
           headers: {
@@ -33,7 +33,7 @@ export const getAllHouses = createAsyncThunk(
   "house/getAllHouses",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/houses/`, {
+      const response = await axios.get(`${API_URL}/v1/admin/houses/`, {
         headers: { "x-protected-key": API_PROTECTED_KEY },
       });
 
@@ -49,7 +49,7 @@ export const getHouseById = createAsyncThunk(
   "house/getHouseById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/houses/${id}`, {
+      const response = await axios.get(`${API_URL}/v1/admin/houses/${id}`, {
         headers: { "x-protected-key": API_PROTECTED_KEY },
       });
 
@@ -66,7 +66,7 @@ export const updateHouse = createAsyncThunk(
   async ({ id, formData }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/houses/update/${id}`,
+        `${API_URL}/v1/admin/houses/update/${id}`,
         formData,
         {
           headers: {
@@ -104,7 +104,7 @@ export const deleteHouse = createAsyncThunk(
       }
 
       const response = await axios.delete(
-        `${API_URL}/api/v1/admin/houses/${id}`,
+        `${API_URL}/v1/admin/houses/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -126,7 +126,7 @@ export const updateRepresentativeStatus = createAsyncThunk(
   async ({ id, publishStatus }, { rejectWithValue }) => {
     try {
       const response = await axios.patch(
-        `${API_URL}/api/v1/admin/houses/status/${id}`,
+        `${API_URL}/v1/admin/houses/status/${id}`,
         { publishStatus }
       );
       return response.data.representative;
@@ -143,7 +143,7 @@ export const discardHouseChanges = createAsyncThunk(
   async (houseId, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/houses/discard/${houseId}`
+        `${API_URL}/v1/admin/houses/discard/${houseId}`
       );
       return response.data;
     } catch (error) {
@@ -181,7 +181,7 @@ export const bulkPublishHouses = createAsyncThunk(
       }
 
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/house-data/bulk-publish`,
+        `${API_URL}/v1/admin/house-data/bulk-publish`,
         { houseIds },
         {
           headers: {

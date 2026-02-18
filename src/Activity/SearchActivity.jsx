@@ -73,7 +73,7 @@ export default function SearchActivity() {
       }
 
       const response = await axios.post(
-        `${API_URL}/fetch-quorum/store-data`,
+        `${API_URL}/v1/fetch-quorum/store-data`,
         {
           type: "bills",
           additionalParams: {
@@ -107,58 +107,6 @@ export default function SearchActivity() {
     }
   };
 
-
-  // ADD ACTIVITY
- 
-  // const handleAddActivity = async (activity) => {
-  //   setLoading(true);
-  //   try {
-  //     const editorInfo = getEditorInfo();
-
-  //     // Convert Quorum format to backend format
-  //     const activityData = {
-  //       billId: String(activity.quorumId), 
-  //       title: activity.title,
-  //       introduced: activity.date, 
-  //       congress: getCongressFromDate(activity.date),
-  //       editorInfo,
-  //     };
-
-    
-
-  //     const response = await axios.post(
-  //       `${API_URL}/api/v1/activities/save`,
-  //       activityData,
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       }
-  //     );
-
-    
-  //     if (response.data.exists) {
-  //       // Show already exists message
-  //       setSnackbarMessage("Activity already exists");
-  //       setSnackbarSeverity("warning");
-  //       setSnackbarOpen(true);
-
-  //       // Navigate to activities page
-  //       return;
-  //     }
-
-  //     if (response.data.savedCount > 0) {
-  //       navigate("/activities");
-  //     }
-  //   } catch (err) {
-  //     console.error("Save error:", err.response?.data || err);
-  //     setSnackbarMessage(
-  //       err.response?.data?.message || "Failed to save activity"
-  //     );
-  //     setSnackbarSeverity("error");
-  //     setSnackbarOpen(true);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 const handleAddActivity = async (activity) => {
   setLoading(true);
   try {
@@ -173,7 +121,7 @@ const handleAddActivity = async (activity) => {
 
 
     const response = await axios.post(
-      `${API_URL}/api/v1/activities/save`,
+      `${API_URL}/v1/activities/save`,
       activityData,
       {
         headers: { Authorization: `Bearer ${token}` },

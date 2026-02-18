@@ -129,14 +129,14 @@ export default function SenatorTermSection({
         </Grid>
         <Grid className="textField" size={isMobile ? 11 : 9.05}>
           <Editor
-            tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+            tinymceScriptSrc={`${import.meta.env.BASE_URL}tinymce/tinymce.min.js`.replace(/\/+/g, '/')}
             licenseKey="gpl"
             value={term?.summary || ""}
             onEditorChange={(content) =>
               handleSummaryChange(termIndex, content)
             }
             init={{
-              base_url: "/scorecard/admin/tinymce",
+              base_url: `${import.meta.env.BASE_URL}tinymce`.replace(/\/+/g, '/'),
               height: 250,
               menubar: false,
               plugins: [
@@ -190,7 +190,7 @@ export default function SenatorTermSection({
                       className="textField"
                       options={allVotes.filter(
                         (v) =>
-                          validateVoteInTermRange(v._id, term.termId).isValid
+                          validateVoteInTermRange(v._id, term.termId).isValid,
                       )}
                       getOptionLabel={(option) => option.title}
                       value={
@@ -201,7 +201,7 @@ export default function SenatorTermSection({
                           termIndex,
                           voteIndex,
                           "voteId",
-                          newValue?._id || ""
+                          newValue?._id || "",
                         )
                       }
                       renderInput={(params) => (
@@ -235,7 +235,7 @@ export default function SenatorTermSection({
                             termIndex,
                             voteIndex,
                             "score",
-                            event.target.value
+                            event.target.value,
                           )
                         }
                         sx={{ background: "#fff" }}
@@ -308,8 +308,8 @@ export default function SenatorTermSection({
                     <MenuItem value="yea">Yea</MenuItem>
                     <MenuItem value="nay">Nay</MenuItem>
                     <MenuItem value="other">Other</MenuItem>
-                    <MenuItem value="present">Present</MenuItem>
-                    <MenuItem value="missed">Absent</MenuItem>
+                     <MenuItem value="present">Present</MenuItem>
+                        <MenuItem value="missed">Absent</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -360,14 +360,14 @@ export default function SenatorTermSection({
                       options={allActivities.filter(
                         (a) =>
                           validateActivityInTermRange(a._id, term.termId)
-                            .isValid
+                            .isValid,
                       )}
                       getOptionLabel={(option) =>
                         option.title || "Untitled Activity"
                       }
                       value={
                         allActivities.find(
-                          (a) => a._id === activity.activityId
+                          (a) => a._id === activity.activityId,
                         ) || null
                       }
                       onChange={(e, newValue) =>
@@ -375,7 +375,7 @@ export default function SenatorTermSection({
                           termIndex,
                           activityIndex,
                           "activityId",
-                          newValue?._id || ""
+                          newValue?._id || "",
                         )
                       }
                       renderInput={(params) => (
@@ -407,7 +407,7 @@ export default function SenatorTermSection({
                             termIndex,
                             activityIndex,
                             "score",
-                            event.target.value
+                            event.target.value,
                           )
                         }
                         sx={{ background: "#fff" }}
@@ -415,7 +415,7 @@ export default function SenatorTermSection({
                         <MenuItem value="yes">Yea</MenuItem>
                         <MenuItem value="no">Nay</MenuItem>
                         <MenuItem value="other">Other</MenuItem>
-                        <MenuItem value="present">Present</MenuItem>
+                         <MenuItem value="present">Present</MenuItem>
                         <MenuItem value="missed">Absent</MenuItem>
                       </Select>
                     </FormControl>
@@ -482,8 +482,8 @@ export default function SenatorTermSection({
                     <MenuItem value="yes">Yea</MenuItem>
                     <MenuItem value="no">Nay</MenuItem>
                     <MenuItem value="other">Other</MenuItem>
-                    <MenuItem value="present">Present</MenuItem>
-                    <MenuItem value="missed">Absent</MenuItem>
+                     <MenuItem value="present">Present</MenuItem>
+                        <MenuItem value="missed">Absent</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -545,7 +545,7 @@ export default function SenatorTermSection({
                           termIndex,
                           voteIndex,
                           "voteId",
-                          newValue?._id || ""
+                          newValue?._id || "",
                         )
                       }
                       renderInput={(params) => (
@@ -575,7 +575,7 @@ export default function SenatorTermSection({
                             termIndex,
                             voteIndex,
                             "score",
-                            event.target.value
+                            event.target.value,
                           )
                         }
                         sx={{ background: "#fff" }}
@@ -583,7 +583,7 @@ export default function SenatorTermSection({
                         <MenuItem value="yea">Yea</MenuItem>
                         <MenuItem value="nay">Nay</MenuItem>
                         <MenuItem value="other">Other</MenuItem>
-                        <MenuItem value="present">Present</MenuItem>
+                         <MenuItem value="present">Present</MenuItem>
                         <MenuItem value="missed">Absent</MenuItem>
                       </Select>
                     </FormControl>
@@ -649,8 +649,8 @@ export default function SenatorTermSection({
                     <MenuItem value="yes">Yea</MenuItem>
                     <MenuItem value="no">Nay</MenuItem>
                     <MenuItem value="other">Other</MenuItem>
-                    <MenuItem value="present">Present</MenuItem>
-                    <MenuItem value="missed">Absent</MenuItem>
+                     <MenuItem value="present">Present</MenuItem>
+                        <MenuItem value="missed">Absent</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>

@@ -12,7 +12,7 @@ export const createVote = createAsyncThunk(
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/votes/`,
+        `${API_URL}/v1/admin/votes/`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -32,7 +32,7 @@ export const getAllVotes = createAsyncThunk(
   "votes/getAllVotes",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/votes/`, {
+      const response = await axios.get(`${API_URL}/v1/admin/votes/`, {
         headers: { "x-protected-key": API_PROTECTED_KEY },
       });
       return response.data;
@@ -47,7 +47,7 @@ export const getVoteById = createAsyncThunk(
   "votes/getVoteById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/votes/${id}`, {
+      const response = await axios.get(`${API_URL}/v1/votes/${id}`, {
         headers: { "x-protected-key": API_PROTECTED_KEY },
       });
       return response.data;
@@ -64,7 +64,7 @@ export const updateVote = createAsyncThunk(
 
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/votes/${id}`,
+        `${API_URL}/v1/admin/votes/${id}`,
         updatedData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -101,7 +101,7 @@ export const deleteVote = createAsyncThunk(
       }
 
       const response = await axios.delete(
-        `${API_URL}/api/v1/admin/votes/${id}`,
+        `${API_URL}/v1/admin/votes/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -122,7 +122,7 @@ export const updateVoteStatus = createAsyncThunk(
   async ({ id, status }, { rejectWithValue }) => {
     try {
       const response = await axios.patch(
-        `${API_URL}/api/v1/admin/votes/status/${id}`,
+        `${API_URL}/v1/admin/votes/status/${id}`,
         {
           status,
         }
@@ -145,7 +145,7 @@ export const bulkUpdateSbaPosition = createAsyncThunk(
             sbaPosition.slice(1).toLowerCase()
           : sbaPosition;
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/votes/bulk-update`,
+        `${API_URL}/v1/admin/votes/bulk-update`,
         { ids, sbaPosition: formattedSbaPosition },
         {
           headers: {
@@ -169,7 +169,7 @@ export const discardVoteChanges = createAsyncThunk(
   async (voteId, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/votes/discard/${voteId}`
+        `${API_URL}/v1/admin/votes/discard/${voteId}`
       );
       return response.data;
     } catch (error) {

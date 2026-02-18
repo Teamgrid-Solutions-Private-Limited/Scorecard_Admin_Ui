@@ -8,7 +8,7 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await api.post("/user/login", credentials);
+      const response = await api.post("v1/user/login", credentials);
 
       return response.data; // Includes token and user details
     } catch (error) {
@@ -30,7 +30,7 @@ export const getAllUsers = createAsyncThunk(
       if (userRole !== "admin") {
         return rejectWithValue("Access denied: Admins only");
       }
-      const response = await api.get("/user/users");
+      const response = await api.get("v1/user/users");
       return response.data;
     } catch (error) {
       if (error.message && error.message.includes("Access denied")) {
@@ -53,7 +53,7 @@ export const updateUser = createAsyncThunk(
       if (userRole !== "admin") {
         return rejectWithValue("You are not authorized to update users.");
       }
-      const response = await api.put(`/user/users/update/${userId}`, userData);
+      const response = await api.put(`v1/user/users/update/${userId}`, userData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to update user");
@@ -73,7 +73,7 @@ export const deleteUser = createAsyncThunk(
       if (userRole !== "admin") {
         return rejectWithValue("You are not authorized to delete users.");
       }
-      await api.delete(`/user/users/delete/${userId}`);
+      await api.delete(`v1/user/users/delete/${userId}`);
       return userId; // Return the deleted user's ID
     } catch (error) {
       return rejectWithValue(error.message || "Failed to delete user");
@@ -93,7 +93,7 @@ export const addUser = createAsyncThunk(
       if (userRole !== "admin") {
         return rejectWithValue("You are not authorized to add users.");
       }
-      const response = await api.post("/user/users/create", userData);
+      const response = await api.post("v1/user/users/create", userData);
       return response.data;
     } catch (error) {
       return rejectWithValue({

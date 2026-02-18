@@ -39,8 +39,8 @@ apiClient.interceptors.request.use(
     ) {
       // Token expired, clear auth and redirect to login
       logout();
-      window.location.href = "/scorecard/admin/login";
-      return Promise.reject(new Error("Token expired"));
+      window.location.href = '/login';
+      return Promise.reject(new Error('Token expired'));
     }
 
     return config;
@@ -68,8 +68,8 @@ apiClient.interceptors.response.use(
       // Handle 401 Unauthorized - token invalid or expired
       if (status === 401) {
         logout();
-        window.location.href = "/scorecard/admin/login";
-        return Promise.reject(new Error("Unauthorized - Please login again"));
+        window.location.href = '/login';
+        return Promise.reject(new Error('Unauthorized - Please login again'));
       }
 
       // Handle 403 Forbidden - insufficient permissions

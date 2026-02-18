@@ -63,7 +63,7 @@ export default function MenuContent() {
   const handleConfirmLogout = () => {
     logout();
     setOpenLogoutDialog(false);
-    window.location.href = "/scorecard/admin/login";
+    window.location.href = "/login";
   };
 
   const handleCancelLogout = () => {
