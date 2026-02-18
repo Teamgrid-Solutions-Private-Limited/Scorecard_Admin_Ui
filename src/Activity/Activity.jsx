@@ -346,7 +346,7 @@ export default function Activity(props) {
                   </Button>
                 )}
               </Stack>
-              {/* {userRole === "admin" && (
+              {userRole === "admin" && (
                 <Button
                   onClick={() => {
                     setIsAssignMode(!isAssignMode);
@@ -356,7 +356,7 @@ export default function Activity(props) {
                 >
                   {isAssignMode ? "Cancel Assign" : "Assign Activity"}
                 </Button>
-              )} */}
+              )} 
             </Box>
             {isBulkEditMode && (
               <Box className="bulkEditContainer">

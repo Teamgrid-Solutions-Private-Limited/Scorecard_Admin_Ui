@@ -99,6 +99,8 @@ export default function Senator(props) {
   const [ratingFilter, setRatingFilter] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
   const [hasPastVotesFilter, setHasPastVotesFilter] = useState(false);
+  const [isNewFilter, setIsNewFilter] = useState(false);
+  const [alternateProfileFilter, setAlternateProfileFilter] = useState(false);
   const [mergedSenators, setMergedSenators] = useState([]);
   const [termFilter, setTermFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -152,7 +154,7 @@ export default function Senator(props) {
         const dataEntries = senatorDataBySenateId[senator._id] || [];
 
         const hasPastVotesData = dataEntries.some(
-          (data) => data.pastVotesScore && data.pastVotesScore.length > 0
+          (data) => data.pastVotesScore && data.pastVotesScore.length > 0,
         );
 
         const allRatings = dataEntries
@@ -175,7 +177,7 @@ export default function Senator(props) {
         });
 
         const hasCurrentTerm = dataEntries.some(
-          (data) => data.currentTerm === true
+          (data) => data.currentTerm === true,
         );
 
         return {
@@ -191,389 +193,433 @@ export default function Senator(props) {
           pastVotesScore:
             dataEntries.length > 0 ? dataEntries[0].pastVotesScore : [],
           currentTerm: hasCurrentTerm,
+          isNewRecord: senator.isNewRecord || false,
+          displayAlternateProfileLink:
+            senator.displayAlternateProfileLink || false,
+          alternateProfileLink: senator.alternateProfileLink || "",
         };
       });
       setMergedSenators(merged);
     }
   }, [senators, senatorData, terms]);
-const findTermForDate = (terms = [], date) => {
-  if (!date) return null;
+  const findTermForDate = (terms = [], date) => {
+    if (!date) return null;
 
-  const targetDate = new Date(date);
+    const targetDate = new Date(date);
 
-  return terms.find((t) => {
-    const start = new Date(t.termId?.startDate);
-    const end = new Date(t.termId?.endDate);
-    return targetDate >= start && targetDate <= end;
-  });
-};
+    return terms.find((t) => {
+      const start = new Date(t.termId?.startDate);
+      const end = new Date(t.termId?.endDate);
+      return targetDate >= start && targetDate <= end;
+    });
+  };
 
+  const handleBulkApply = async ({ ids = [], payload }) => {
+    if (!ids.length || !payload) return;
 
-const handleBulkApply = async ({ ids = [], payload }) => {
-  if (!ids.length || !payload) return;
+    if (userRole !== "admin") {
+      showSnackbar("Bulk edit is for admins only", "error");
+      return;
+    }
 
-  if (userRole !== "admin") {
-    showSnackbar("Bulk edit is for admins only", "error");
-    return;
-  }
+    const { category, itemId, score, voteDate, activityDate } = payload;
+    if (!category || !itemId || !score) {
+      showSnackbar("Invalid bulk payload", "error");
+      return;
+    }
 
-  const { category, itemId, score, voteDate, activityDate } = payload;
-  if (!category || !itemId || !score) {
-    showSnackbar("Invalid bulk payload", "error");
-    return;
-  }
+    setFetching(true);
+    let successCount = 0;
 
-  setFetching(true);
-  let successCount = 0;
+    try {
+      for (const sid of ids) {
+        try {
+          const termRecords = await dispatch(
+            getSenatorDataBySenatorId(sid),
+          ).unwrap();
 
-  try {
-    for (const sid of ids) {
-      try {
-        const termRecords = await dispatch(
-          getSenatorDataBySenatorId(sid)
-        ).unwrap();
-
-        termRecords?.forEach((tr) => {
-          // Handle termId being either an object or string
-          const termId = typeof tr.termId === 'object' ? tr.termId._id : tr.termId;
-          const termName = typeof tr.termId === 'object' 
-            ? tr.termId.name 
-            : terms?.find((t) => t._id === termId)?.name || termId;
-        });
-
-        if (!Array.isArray(termRecords) || termRecords.length === 0) continue;
-
-        let foundExisting = false;
-        let targetTerm = null;
-
-        // 1️⃣ FIRST PASS → check if vote/activity exists anywhere
-        for (const term of termRecords) {
-          if (category === "vote") {
-            // 🔍 1. Check votesScore
-            const voteMatch = term.votesScore?.find(
-              (v) =>
-                (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
-            );
-
-            if (voteMatch) {
-              foundExisting = true;
-              const termId = typeof term.termId === 'object' ? term.termId._id : term.termId;
-              const termName = typeof term.termId === 'object' 
-                ? term.termId.name 
+          termRecords?.forEach((tr) => {
+            // Handle termId being either an object or string
+            const termId =
+              typeof tr.termId === "object" ? tr.termId._id : tr.termId;
+            const termName =
+              typeof tr.termId === "object"
+                ? tr.termId.name
                 : terms?.find((t) => t._id === termId)?.name || termId;
+          });
 
-              if (voteMatch.score !== score) {
-                const updatedVotes = term.votesScore.map((v) =>
-                  (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
-                    ? { ...v, score }
-                    : v
-                );
+          if (!Array.isArray(termRecords) || termRecords.length === 0) continue;
 
-                await dispatch(
-                  updateSenatorData({
-                    id: term._id,
-                    data: {
-                      ...term,
-                      votesScore: updatedVotes.map((v) => ({
-                        voteId: v.voteId?._id || v.voteId,
-                        score: v.score,
-                      })),
-                    },
-                  })
-                ).unwrap();
+          let foundExisting = false;
+          let targetTerm = null;
+
+          // 1️⃣ FIRST PASS → check if vote/activity exists anywhere
+          for (const term of termRecords) {
+            if (category === "vote") {
+              // 🔍 1. Check votesScore
+              const voteMatch = term.votesScore?.find(
+                (v) =>
+                  (v.voteId?._id || v.voteId)?.toString() === itemId.toString(),
+              );
+
+              if (voteMatch) {
+                foundExisting = true;
+                const termId =
+                  typeof term.termId === "object"
+                    ? term.termId._id
+                    : term.termId;
+                const termName =
+                  typeof term.termId === "object"
+                    ? term.termId.name
+                    : terms?.find((t) => t._id === termId)?.name || termId;
+
+                if (voteMatch.score !== score) {
+                  const updatedVotes = term.votesScore.map((v) =>
+                    (v.voteId?._id || v.voteId)?.toString() ===
+                    itemId.toString()
+                      ? { ...v, score }
+                      : v,
+                  );
+
+                  await dispatch(
+                    updateSenatorData({
+                      id: term._id,
+                      data: {
+                        ...term,
+                        votesScore: updatedVotes.map((v) => ({
+                          voteId: v.voteId?._id || v.voteId,
+                          score: v.score,
+                        })),
+                      },
+                    }),
+                  ).unwrap();
+                }
+                break;
               }
-              break;
+
+              // 🔍 2. Check pastVotesScore
+              const pastVoteMatch = term.pastVotesScore?.find(
+                (v) =>
+                  (v.voteId?._id || v.voteId)?.toString() === itemId.toString(),
+              );
+
+              if (pastVoteMatch) {
+                foundExisting = true;
+                const termId =
+                  typeof term.termId === "object"
+                    ? term.termId._id
+                    : term.termId;
+                const termName =
+                  typeof term.termId === "object"
+                    ? term.termId.name
+                    : terms?.find((t) => t._id === termId)?.name || termId;
+
+                if (pastVoteMatch.score !== score) {
+                  const updatedPastVotes = term.pastVotesScore.map((v) =>
+                    (v.voteId?._id || v.voteId)?.toString() ===
+                    itemId.toString()
+                      ? { ...v, score }
+                      : v,
+                  );
+
+                  await dispatch(
+                    updateSenatorData({
+                      id: term._id,
+                      data: {
+                        ...term,
+                        pastVotesScore: updatedPastVotes.map((v) => ({
+                          voteId: v.voteId?._id || v.voteId,
+                          score: v.score,
+                        })),
+                      },
+                    }),
+                  ).unwrap();
+                }
+                break;
+              }
             }
 
-            // 🔍 2. Check pastVotesScore
-            const pastVoteMatch = term.pastVotesScore?.find(
-              (v) =>
-                (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
-            );
-
-            if (pastVoteMatch) {
-              foundExisting = true;
-              const termId = typeof term.termId === 'object' ? term.termId._id : term.termId;
-              const termName = typeof term.termId === 'object' 
-                ? term.termId.name 
-                : terms?.find((t) => t._id === termId)?.name || termId;
-
-              if (pastVoteMatch.score !== score) {
-                const updatedPastVotes = term.pastVotesScore.map((v) =>
-                  (v.voteId?._id || v.voteId)?.toString() === itemId.toString()
-                    ? { ...v, score }
-                    : v
-                );
-
-                await dispatch(
-                  updateSenatorData({
-                    id: term._id,
-                    data: {
-                      ...term,
-                      pastVotesScore: updatedPastVotes.map((v) => ({
-                        voteId: v.voteId?._id || v.voteId,
-                        score: v.score,
-                      })),
-                    },
-                  })
-                ).unwrap();
-              }
-              break;
-            }
-          }
-
-          if (category === "activity") {
-            const match = term.activitiesScore?.find(
-              (a) =>
-                (a.activityId?._id || a.activityId)?.toString() ===
-                itemId.toString()
-            );
-
-            if (match) {
-              foundExisting = true;
-              const termId = typeof term.termId === 'object' ? term.termId._id : term.termId;
-              const termName = typeof term.termId === 'object' 
-                ? term.termId.name 
-                : terms?.find((t) => t._id === termId)?.name || termId;
-
-              if (match.score !== score) {
-                const updatedActs = term.activitiesScore.map((a) =>
+            if (category === "activity") {
+              const match = term.activitiesScore?.find(
+                (a) =>
                   (a.activityId?._id || a.activityId)?.toString() ===
-                  itemId.toString()
-                    ? { ...a, score }
-                    : a
-                );
+                  itemId.toString(),
+              );
+
+              if (match) {
+                foundExisting = true;
+                const termId =
+                  typeof term.termId === "object"
+                    ? term.termId._id
+                    : term.termId;
+                const termName =
+                  typeof term.termId === "object"
+                    ? term.termId.name
+                    : terms?.find((t) => t._id === termId)?.name || termId;
+
+                if (match.score !== score) {
+                  const updatedActs = term.activitiesScore.map((a) =>
+                    (a.activityId?._id || a.activityId)?.toString() ===
+                    itemId.toString()
+                      ? { ...a, score }
+                      : a,
+                  );
+
+                  await dispatch(
+                    updateSenatorData({
+                      id: term._id,
+                      data: {
+                        ...term,
+                        activitiesScore: updatedActs.map((a) => ({
+                          activityId: a.activityId?._id || a.activityId,
+                          score: a.score,
+                        })),
+                      },
+                    }),
+                  ).unwrap();
+                }
+                break;
+              }
+            }
+          }
+
+          // 2️⃣ SECOND PASS → insert only if NOT found
+          if (!foundExisting) {
+            // Determine the item date based on category
+            const itemDate = category === "vote" ? voteDate : activityDate;
+
+            // Find the term this item belongs to based on date
+            let matchingTerm = null;
+            let isPastVote = false;
+
+            if (itemDate && termRecords && termRecords.length > 0) {
+              const itemDateTime = new Date(itemDate);
+              // Check if vote is before Jan 2 (when terms start - Jan 3)
+              const termStartBoundary = new Date("2019-01-02T23:59:59Z");
+              if (itemDateTime <= termStartBoundary && category === "vote") {
+                isPastVote = true;
+                // Find the oldest term
+                const oldestTerm = termRecords.reduce((oldest, current) => {
+                  const oldestYear =
+                    typeof oldest.termId === "object"
+                      ? oldest.termId.startYear
+                      : 0;
+                  const currentYear =
+                    typeof current.termId === "object"
+                      ? current.termId.startYear
+                      : 0;
+                  return currentYear < oldestYear ? current : oldest;
+                });
+
+                matchingTerm = oldestTerm;
+                const termId =
+                  typeof matchingTerm.termId === "object"
+                    ? matchingTerm.termId._id
+                    : matchingTerm.termId;
+                const termName =
+                  typeof matchingTerm.termId === "object"
+                    ? matchingTerm.termId.name
+                    : terms?.find((t) => t._id === termId)?.name || termId;
+              } else {
+                // Normal date matching logic
+                for (const term of termRecords) {
+                  // Handle termId being either an object or string
+                  let termDef = null;
+                  if (typeof term.termId === "object" && term.termId._id) {
+                    // termId is already an object with term definition
+                    termDef = term.termId;
+                  } else {
+                    // termId is a string, look it up
+                    termDef = terms?.find((t) => t._id === term.termId);
+                  }
+
+                  if (!termDef) {
+                    const termIdDisplay =
+                      typeof term.termId === "object"
+                        ? term.termId._id
+                        : term.termId;
+                    continue;
+                  }
+
+                  const termStart = new Date(
+                    `${termDef.startYear}-01-03T00:00:00Z`,
+                  );
+                  const termEnd = new Date(
+                    `${termDef.endYear}-01-02T23:59:59Z`,
+                  );
+
+                  if (itemDateTime >= termStart && itemDateTime <= termEnd) {
+                    matchingTerm = term;
+                    break;
+                  }
+                }
+              }
+            }
+
+            // Fallback logic if no match found by date
+            if (!matchingTerm) {
+              matchingTerm = termRecords.find((t) => t.currentTerm);
+              if (!matchingTerm) {
+                matchingTerm = termRecords[0];
+              }
+              const termId =
+                typeof matchingTerm.termId === "object"
+                  ? matchingTerm.termId._id
+                  : matchingTerm.termId;
+              const termName =
+                typeof matchingTerm.termId === "object"
+                  ? matchingTerm.termId.name
+                  : terms?.find((t) => t._id === termId)?.name || termId;
+            }
+
+            targetTerm = matchingTerm;
+            const termId =
+              typeof targetTerm.termId === "object"
+                ? targetTerm.termId._id
+                : targetTerm.termId;
+            const selectedTermName =
+              typeof targetTerm.termId === "object"
+                ? targetTerm.termId.name
+                : terms?.find((t) => t._id === termId)?.name || termId;
+
+            if (category === "vote") {
+              if (isPastVote) {
+                // Insert into pastVotesScore
+                const pastVotes = [...(targetTerm.pastVotesScore || [])];
+                pastVotes.push({ voteId: itemId, score });
 
                 await dispatch(
                   updateSenatorData({
-                    id: term._id,
+                    id: targetTerm._id,
                     data: {
-                      ...term,
-                      activitiesScore: updatedActs.map((a) => ({
-                        activityId: a.activityId?._id || a.activityId,
-                        score: a.score,
+                      ...targetTerm,
+                      pastVotesScore: pastVotes.map((v) => ({
+                        voteId: v.voteId?._id || v.voteId,
+                        score: v.score,
                       })),
                     },
-                  })
+                  }),
+                ).unwrap();
+              } else {
+                // Insert into votesScore
+                const votes = [...(targetTerm.votesScore || [])];
+                votes.push({ voteId: itemId, score });
+
+                await dispatch(
+                  updateSenatorData({
+                    id: targetTerm._id,
+                    data: {
+                      ...targetTerm,
+                      votesScore: votes.map((v) => ({
+                        voteId: v.voteId?._id || v.voteId,
+                        score: v.score,
+                      })),
+                    },
+                  }),
                 ).unwrap();
               }
-              break;
             }
-          }
-        }
 
-        // 2️⃣ SECOND PASS → insert only if NOT found
-        if (!foundExisting) {
-          // Determine the item date based on category
-          const itemDate = category === "vote" ? voteDate : activityDate;
-
-          // Find the term this item belongs to based on date
-          let matchingTerm = null;
-          let isPastVote = false;
-
-          if (itemDate && termRecords && termRecords.length > 0) {
-            const itemDateTime = new Date(itemDate);
-            // Check if vote is before Jan 2 (when terms start - Jan 3)
-            const termStartBoundary = new Date('2019-01-02T23:59:59Z');
-            if (itemDateTime <= termStartBoundary && category === "vote") {
-              isPastVote = true;
-              // Find the oldest term
-              const oldestTerm = termRecords.reduce((oldest, current) => {
-                const oldestYear = typeof oldest.termId === 'object' ? oldest.termId.startYear : 0;
-                const currentYear = typeof current.termId === 'object' ? current.termId.startYear : 0;
-                return currentYear < oldestYear ? current : oldest;
-              });
-
-              matchingTerm = oldestTerm;
-              const termId = typeof matchingTerm.termId === 'object' ? matchingTerm.termId._id : matchingTerm.termId;
-              const termName = typeof matchingTerm.termId === 'object' 
-                ? matchingTerm.termId.name 
-                : terms?.find((t) => t._id === termId)?.name || termId;
-            } else {
-              // Normal date matching logic
-              for (const term of termRecords) {
-                // Handle termId being either an object or string
-                let termDef = null;
-                if (typeof term.termId === 'object' && term.termId._id) {
-                  // termId is already an object with term definition
-                  termDef = term.termId;
-                } else {
-                  // termId is a string, look it up
-                  termDef = terms?.find((t) => t._id === term.termId);
-                }
-
-                if (!termDef) {
-                  const termIdDisplay = typeof term.termId === 'object' ? term.termId._id : term.termId;
-                  continue;
-                }
-
-                const termStart = new Date(
-                  `${termDef.startYear}-01-03T00:00:00Z`
-                );
-                const termEnd = new Date(
-                  `${termDef.endYear}-01-02T23:59:59Z`
-                );
-
-                if (itemDateTime >= termStart && itemDateTime <= termEnd) {
-                  matchingTerm = term;
-                  break;
-                }
-              }
-            }
-          }
-
-          // Fallback logic if no match found by date
-          if (!matchingTerm) {
-            matchingTerm = termRecords.find((t) => t.currentTerm);
-            if (!matchingTerm) {
-              matchingTerm = termRecords[0];
-            }
-            const termId = typeof matchingTerm.termId === 'object' ? matchingTerm.termId._id : matchingTerm.termId;
-            const termName = typeof matchingTerm.termId === 'object' 
-              ? matchingTerm.termId.name 
-              : terms?.find((t) => t._id === termId)?.name || termId;
-          }
-
-          targetTerm = matchingTerm;
-          const termId = typeof targetTerm.termId === 'object' ? targetTerm.termId._id : targetTerm.termId;
-          const selectedTermName = typeof targetTerm.termId === 'object' 
-            ? targetTerm.termId.name 
-            : terms?.find((t) => t._id === termId)?.name || termId;
-
-          if (category === "vote") {
-            if (isPastVote) {
-              // Insert into pastVotesScore
-              const pastVotes = [...(targetTerm.pastVotesScore || [])];
-              pastVotes.push({ voteId: itemId, score });
+            if (category === "activity") {
+              const acts = [...(targetTerm.activitiesScore || [])];
+              acts.push({ activityId: itemId, score });
 
               await dispatch(
                 updateSenatorData({
                   id: targetTerm._id,
                   data: {
                     ...targetTerm,
-                    pastVotesScore: pastVotes.map((v) => ({
-                      voteId: v.voteId?._id || v.voteId,
-                      score: v.score,
+                    activitiesScore: acts.map((a) => ({
+                      activityId: a.activityId?._id || a.activityId,
+                      score: a.score,
                     })),
                   },
-                })
-              ).unwrap();
-            } else {
-              // Insert into votesScore
-              const votes = [...(targetTerm.votesScore || [])];
-              votes.push({ voteId: itemId, score });
-
-              await dispatch(
-                updateSenatorData({
-                  id: targetTerm._id,
-                  data: {
-                    ...targetTerm,
-                    votesScore: votes.map((v) => ({
-                      voteId: v.voteId?._id || v.voteId,
-                      score: v.score,
-                    })),
-                  },
-                })
+                }),
               ).unwrap();
             }
           }
 
-          if (category === "activity") {
-            const acts = [...(targetTerm.activitiesScore || [])];
-            acts.push({ activityId: itemId, score });
-
-            await dispatch(
-              updateSenatorData({
-                id: targetTerm._id,
-                data: {
-                  ...targetTerm,
-                  activitiesScore: acts.map((a) => ({
-                    activityId: a.activityId?._id || a.activityId,
-                    score: a.score,
-                  })),
-                },
-              })
-            ).unwrap();
-          }
+          successCount++;
+        } catch (err) {
+          console.error(`❌ Error updating senator ${sid}`, err);
         }
-
-        successCount++;
-      } catch (err) {
-        console.error(`❌ Error updating senator ${sid}`, err);
       }
+
+      await dispatch(getAllSenatorData());
+      await dispatch(getAllSenators());
+
+      showSnackbar(
+        `Bulk select applied for ${successCount}/${ids.length} senator${successCount !== 1 ? "s" : ""}!.`,
+        "success",
+      );
+    } catch (err) {
+      console.error("❌ Bulk apply failed", err);
+      showSnackbar("Bulk apply failed.", "error");
+    } finally {
+      setFetching(false);
     }
+  };
 
-    await dispatch(getAllSenatorData());
-    await dispatch(getAllSenators());
+  const handleBulkPublish = async ({
+    ids = [],
+    publishStatus = "published",
+  }) => {
+    if (!ids.length) return;
 
-    showSnackbar(
-      `Bulk select applied for ${successCount}/${ids.length} senator${successCount !== 1 ? "s" : ""}!.`,
-      "success"
-    );
-  } catch (err) {
-    console.error("❌ Bulk apply failed", err);
-    showSnackbar("Bulk apply failed.", "error");
-  } finally {
-    setFetching(false);
-  }
-};
-
-
-const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
-  if (!ids.length) return;
-
-  if (userRole !== "admin") {
-    showSnackbar("Bulk publish is for admins only", "error");
-    return;
-  }
-
-  setFetching(true);
-
-  try {
-    const result = await dispatch(
-      bulkPublishSenators({ senatorIds: ids, publishStatus })
-    ).unwrap();
-
-    const successCount = result.successCount ?? 0;
-    const totalCount = result.totalCount ?? ids.length;
-    const errors = result.errors || [];
-
-    // 🔴 Extract "Term is required" errors
-    const hasTermRequiredError = errors.some(
-      e =>
-        e.message?.toLowerCase().includes("term is required") ||
-        e.details?.some(d => d.toLowerCase().includes("term is required"))
-    );
-
-    await dispatch(getAllSenators());
-  
-
-    // 🧠 PRIORITY-BASED SNACKBAR LOGIC
-    if (successCount === 0 && hasTermRequiredError) {
-      showSnackbar("Term is required", "error");
+    if (userRole !== "admin") {
+      showSnackbar("Bulk publish is for admins only", "error");
       return;
     }
 
-    if (successCount < totalCount && hasTermRequiredError) {
-      showSnackbar(  `Bulk publish applied for ${successCount}/${totalCount} senator${
-        successCount !== 1 ? "s" : ""
-      }.Failed${" : "} ${totalCount-successCount}`+" Term is required ", "warning");
-      return;
-    }
+    setFetching(true);
 
-    // ✅ Full success only
-    showSnackbar(
-      `Bulk publish applied for ${successCount}/${totalCount} senator${
-        successCount !== 1 ? "s" : ""
-      }.`,
-      "success"
-    );
-  } catch (err) {
-    showSnackbar(err?.message || "Bulk publish failed.", "error");
-  } finally {
-    setFetching(false);
-  }
-};
+    try {
+      const result = await dispatch(
+        bulkPublishSenators({ senatorIds: ids, publishStatus }),
+      ).unwrap();
+
+      const successCount = result.successCount ?? 0;
+      const totalCount = result.totalCount ?? ids.length;
+      const errors = result.errors || [];
+
+      // 🔴 Extract "Term is required" errors
+      const hasTermRequiredError = errors.some(
+        (e) =>
+          e.message?.toLowerCase().includes("term is required") ||
+          e.details?.some((d) => d.toLowerCase().includes("term is required")),
+      );
+
+      await dispatch(getAllSenators());
+
+      // 🧠 PRIORITY-BASED SNACKBAR LOGIC
+      if (successCount === 0 && hasTermRequiredError) {
+        showSnackbar("Term is required", "error");
+        return;
+      }
+
+      if (successCount < totalCount && hasTermRequiredError) {
+        showSnackbar(
+          `Bulk publish applied for ${successCount}/${totalCount} senator${
+            successCount !== 1 ? "s" : ""
+          }.Failed${" : "} ${totalCount - successCount}` + " Term is required ",
+          "warning",
+        );
+        return;
+      }
+
+      // ✅ Full success only
+      showSnackbar(
+        `Bulk publish applied for ${successCount}/${totalCount} senator${
+          successCount !== 1 ? "s" : ""
+        }.`,
+        "success",
+      );
+    } catch (err) {
+      showSnackbar(err?.message || "Bulk publish failed.", "error");
+    } finally {
+      setFetching(false);
+    }
+  };
 
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -588,23 +634,23 @@ const handleBulkPublish = async ({ ids = [], publishStatus = "published" }) => {
     ...new Set(senators.map((senator) => senator.state)),
   ].filter(Boolean);
 
-const filteredPartyOptions = partyOptions.filter(
-      (party) =>
-        party.toLowerCase() !== "unknown" &&
-        party.toLowerCase().includes(searchTerms.party),
-    );
-    const filteredStateOptions = stateOptions.filter(
-      (state) =>
-        state.toLowerCase() !== "unknown" &&
-            state.toLowerCase().includes(searchTerms.state),
-    );
+  const filteredPartyOptions = partyOptions.filter(
+    (party) =>
+      party.toLowerCase() !== "unknown" &&
+      party.toLowerCase().includes(searchTerms.party),
+  );
+  const filteredStateOptions = stateOptions.filter(
+    (state) =>
+      state.toLowerCase() !== "unknown" &&
+      state.toLowerCase().includes(searchTerms.state),
+  );
 
   const filteredRatingOptions = ratingOptions.filter((rating) =>
-    rating.toLowerCase().includes(searchTerms.rating)
+    rating.toLowerCase().includes(searchTerms.rating),
   );
 
   const filteredYearOptions = years.filter((year) =>
-    year.toString().includes(searchTerms.year)
+    year.toString().includes(searchTerms.year),
   );
 
   const handleEdit = (row) => {
@@ -656,56 +702,56 @@ const filteredPartyOptions = partyOptions.filter(
     setOpenFetchDialog(true);
   };
 
-   const fetchSenatorsFromQuorum = async (status = "active") => {
-     setOpenFetchDialog(false);
-     setFetching(true);
-     setProgress(0);
-     const interval = setInterval(() => {
-       setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
-     }, 1000);
-     try {
-       const requestBody = {
-         type: "senator",
-       };
+  const fetchSenatorsFromQuorum = async (status = "active") => {
+    setOpenFetchDialog(false);
+    setFetching(true);
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 25));
+    }, 1000);
+    try {
+      const requestBody = {
+        type: "senator",
+      };
 
-       // Use different endpoints based on status
-       const endpoint =
-         status === "former"
-           ? `${API_URL}/v1/fetch-quorum/save-former`
-           : `${API_URL}/v1/fetch-quorum/store-data`;
+      // Use different endpoints based on status
+      const endpoint =
+        status === "former"
+          ? `${API_URL}/v1/fetch-quorum/save-former`
+          : `${API_URL}/v1/fetch-quorum/store-data`;
 
-       const response = await axios.post(endpoint, requestBody, {
-         headers: {
-           Authorization: `Bearer ${token}`,
-         },
-       });
-       if (response.status === 200) {
-            const statusText = status === "active" ? "active" : "former";
+      const response = await axios.post(endpoint, requestBody, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        const statusText = status === "active" ? "active" : "former";
         showSnackbar(
           `Success: ${
             statusText.charAt(0).toUpperCase() + statusText.slice(1)
           } senators fetched successfully!`,
-          "success"
+          "success",
         );
-         await dispatch(getAllSenators());
-         setFetching(false);
-       } else {
-         throw new Error("Failed to fetch senators from Quorum");
-       }
-     } catch (error) {
-       setProgress(100); // Ensure it completes
-       setTimeout(() => setProgress(0), 500); // Re
-     }
-   };
+        await dispatch(getAllSenators());
+        setFetching(false);
+      } else {
+        throw new Error("Failed to fetch senators from Quorum");
+      }
+    } catch (error) {
+      setProgress(100); // Ensure it completes
+      setTimeout(() => setProgress(0), 500); // Re
+    }
+  };
   const handlePartyFilter = (party) => {
     setPartyFilter((prev) =>
-      prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party]
+      prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party],
     );
   };
 
   const handleStateFilter = (state) => {
     setStateFilter((prev) =>
-      prev.includes(state) ? prev.filter((s) => s !== state) : [...prev, state]
+      prev.includes(state) ? prev.filter((s) => s !== state) : [...prev, state],
     );
   };
   const handlePastVotesFilter = () => {
@@ -716,20 +762,28 @@ const filteredPartyOptions = partyOptions.filter(
     setRatingFilter((prev) =>
       prev.includes(rating)
         ? prev.filter((r) => r !== rating)
-        : [...prev, rating]
+        : [...prev, rating],
     );
   };
   const handleYearFilter = (year) => {
     setSelectedYears((prev) =>
-      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
+      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year],
     );
   };
   const handleStatusFilter = (status) => {
     setStatusFilter((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
-        : [...prev, status]
+        : [...prev, status],
     );
+  };
+
+  const handleIsNewFilter = () => {
+    setIsNewFilter((prev) => !prev);
+  };
+
+  const handleAlternateProfileFilter = () => {
+    setAlternateProfileFilter((prev) => !prev);
   };
 
   const handleTermFilter = (term) => {
@@ -744,6 +798,8 @@ const filteredPartyOptions = partyOptions.filter(
     setTermFilter(null);
     setStatusFilter([]);
     setHasPastVotesFilter(false);
+    setIsNewFilter(false);
+    setAlternateProfileFilter(false);
     setSearchQuery("");
   };
 
@@ -793,7 +849,7 @@ const filteredPartyOptions = partyOptions.filter(
     const ratingMatch =
       ratingFilter.length === 0 ||
       senator.allTerms.some(
-        (term) => term.rating && ratingFilter.includes(term.rating)
+        (term) => term.rating && ratingFilter.includes(term.rating),
       );
 
     // Status filter
@@ -806,13 +862,22 @@ const filteredPartyOptions = partyOptions.filter(
     // Past votes score filter - check all terms
     const pastVotesMatch = !hasPastVotesFilter || senator.hasPastVotesData;
 
+    // Is New filter
+    const isNewMatch = !isNewFilter || senator.isNewRecord;
+
+    // Alternate Profile filter - show records that have alternateProfileLink value set
+    const alternateProfileMatch =
+      !alternateProfileFilter || !!senator.alternateProfileLink;
+
     return (
       nameMatch &&
       partyMatch &&
       stateMatch &&
       ratingMatch &&
       statusMatch &&
-      pastVotesMatch
+      pastVotesMatch &&
+      isNewMatch &&
+      alternateProfileMatch
     );
   });
 
@@ -823,7 +888,9 @@ const filteredPartyOptions = partyOptions.filter(
     selectedYears.length +
     (termFilter ? 1 : 0) +
     statusFilter.length +
-    (hasPastVotesFilter ? 1 : 0);
+    (hasPastVotesFilter ? 1 : 0) +
+    (isNewFilter ? 1 : 0) +
+    (alternateProfileFilter ? 1 : 0);
 
   const handleToggleStatusSenator = (senator) => {
     const newStatus =
@@ -882,16 +949,15 @@ const filteredPartyOptions = partyOptions.filter(
                   }}
                   className="custom-search"
                 />
-  {/* Current/Former Toggle */}
+                {/* Current/Former Toggle */}
                 <Box
-                  
                   sx={{
                     display: "flex",
                     border: "1px solid #ccc",
                     borderRadius: "8px",
                     backgroundColor: "#fff",
                     height: "38px",
-                    minWidth: "150px",  
+                    minWidth: "150px",
                   }}
                 >
                   <Button
@@ -905,13 +971,15 @@ const filteredPartyOptions = partyOptions.filter(
                       // border: "none",
                       height: "100%",
                       backgroundColor:
-                        currentOrFormerFilter === "current" ? "#497bb2 " : "#fff",
+                        currentOrFormerFilter === "current"
+                          ? "#497bb2 "
+                          : "#fff",
                       color:
                         currentOrFormerFilter === "current" ? "#fff" : "#333",
                       "&:hover": {
                         backgroundColor:
                           currentOrFormerFilter === "current"
-                            ?"#497bb2 "
+                            ? "#497bb2 "
                             : "#f5f5f5",
                       },
                     }}
@@ -935,7 +1003,7 @@ const filteredPartyOptions = partyOptions.filter(
                       // border: "none",
                       height: "100%",
                       backgroundColor:
-                        currentOrFormerFilter === "former" ?  "#497bb2" : "#fff",
+                        currentOrFormerFilter === "former" ? "#497bb2" : "#fff",
                       color:
                         currentOrFormerFilter === "former" ? "#fff" : "#333",
                       "&:hover": {
@@ -1229,7 +1297,7 @@ const filteredPartyOptions = partyOptions.filter(
                                       className="filter-option"
                                     >
                                       {selectedYears.includes(
-                                        year.toString()
+                                        year.toString(),
                                       ) ? (
                                         <CheckIcon
                                           color="primary"
@@ -1391,6 +1459,94 @@ const filteredPartyOptions = partyOptions.filter(
                           )}
                         </Box>
 
+                        {/* Is New Filter */}
+                        <Box
+                          className={`filter-section ${
+                            expandedFilter === "isNew" ? "active" : ""
+                          }`}
+                        >
+                          <Box
+                            className="filter-title"
+                            onClick={() => toggleFilterSection("isNew")}
+                          >
+                            <Typography variant="body1">Is New</Typography>
+                            {expandedFilter === "isNew" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "isNew" && (
+                            <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
+                                <Box
+                                  onClick={handleIsNewFilter}
+                                  className="filter-option"
+                                >
+                                  {isNewFilter ? (
+                                    <CheckIcon
+                                      color="primary"
+                                      fontSize="small"
+                                    />
+                                  ) : (
+                                    <Box sx={{ width: 24, height: 24 }} />
+                                  )}
+                                  <Typography variant="body2" sx={{ ml: 1 }}>
+                                    Yes
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Alternate Profile Filter */}
+                        <Box
+                          className={`filter-section ${
+                            expandedFilter === "alternateProfile"
+                              ? "active"
+                              : ""
+                          }`}
+                        >
+                          <Box
+                            className="filter-title"
+                            onClick={() =>
+                              toggleFilterSection("alternateProfile")
+                            }
+                          >
+                            <Typography variant="body1">
+                              Alternate Profile
+                            </Typography>
+                            {expandedFilter === "alternateProfile" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "alternateProfile" && (
+                            <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
+                                <Box
+                                  onClick={handleAlternateProfileFilter}
+                                  className="filter-option"
+                                >
+                                  {alternateProfileFilter ? (
+                                    <CheckIcon
+                                      color="primary"
+                                      fontSize="small"
+                                    />
+                                  ) : (
+                                    <Box sx={{ width: 24, height: 24 }} />
+                                  )}
+                                  <Typography variant="body2" sx={{ ml: 1 }}>
+                                    Yes
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
                         {/* Clear All Button */}
                         <Box>
                           <Button
@@ -1404,7 +1560,9 @@ const filteredPartyOptions = partyOptions.filter(
                               !selectedYears.length &&
                               !termFilter &&
                               !statusFilter.length &&
-                              !hasPastVotesFilter
+                              !hasPastVotesFilter &&
+                              !isNewFilter &&
+                              !alternateProfileFilter
                             }
                           >
                             Clear All Filters
@@ -1414,8 +1572,6 @@ const filteredPartyOptions = partyOptions.filter(
                     </ClickAwayListener>
                   )}
                 </Box>
-
-              
 
                 {/* Desktop: Show Fetch button inside search/filter stack */}
                 {userRole === "admin" && (

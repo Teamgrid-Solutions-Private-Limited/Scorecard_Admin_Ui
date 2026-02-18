@@ -101,6 +101,8 @@ export default function Representative(props) {
 
   const ratingOptions = ["A+", "B", "C", "D", "F"];
   const [statusFilter, setStatusFilter] = useState([]);
+  const [isNewFilter, setIsNewFilter] = useState(false);
+  const [alternateProfileFilter, setAlternateProfileFilter] = useState(false);
   const statusOptions = ["published", "draft"];
 
   const getOrdinalSuffix = (num) => {
@@ -131,10 +133,10 @@ export default function Representative(props) {
     if (houses && houseData && terms) {
       const merged = houses.map((house) => {
         const houseRecords = houseData.filter(
-          (data) => data.houseId === house._id
+          (data) => data.houseId === house._id,
         );
         const currentTermData = houseRecords.find(
-          (rec) => rec.currentTerm === true
+          (rec) => rec.currentTerm === true,
         );
 
         let termId;
@@ -165,7 +167,7 @@ export default function Representative(props) {
               });
 
             const valid = fallbackRecords.find(
-              (rec) => rec.rating && rec.rating.trim() !== ""
+              (rec) => rec.rating && rec.rating.trim() !== "",
             );
             if (valid) {
               rating = valid.rating;
@@ -190,7 +192,7 @@ export default function Representative(props) {
 
           if (validRecords.length > 0) {
             const latest = validRecords.find(
-              (rec) => rec.rating && rec.rating.trim() !== ""
+              (rec) => rec.rating && rec.rating.trim() !== "",
             );
             if (latest) {
               termId = latest.termId;
@@ -233,6 +235,10 @@ export default function Representative(props) {
           termName,
           currentTerm,
           allTerms,
+          isNewRecord: house.isNewRecord || false,
+          displayAlternateProfileLink:
+            house.displayAlternateProfileLink || false,
+          alternateProfileLink: house.alternateProfileLink || "",
         };
       });
 
@@ -253,19 +259,19 @@ export default function Representative(props) {
     ...new Set(transformedHouses.map((rep) => rep.district)),
   ].filter(Boolean);
 
-   const filteredPartyOptions = partyOptions.filter(
-     (party) =>
-       party.toLowerCase() !== "unknown" &&
-       party.toLowerCase().includes(searchTerms.party),
-   );
-   const filteredDistrictOptions = districtOptions.filter(
-     (district) =>
-       district.toLowerCase() !== "unknown" &&
-       district.toLowerCase().includes(searchTerms.district),
-   );
+  const filteredPartyOptions = partyOptions.filter(
+    (party) =>
+      party.toLowerCase() !== "unknown" &&
+      party.toLowerCase().includes(searchTerms.party),
+  );
+  const filteredDistrictOptions = districtOptions.filter(
+    (district) =>
+      district.toLowerCase() !== "unknown" &&
+      district.toLowerCase().includes(searchTerms.district),
+  );
 
   const filteredRatingOptions = ratingOptions.filter((rating) =>
-    rating.toLowerCase().includes(searchTerms.rating)
+    rating.toLowerCase().includes(searchTerms.rating),
   );
 
   const congressYearMap = (() => {
@@ -315,7 +321,7 @@ export default function Representative(props) {
         const matchesCongress = houseTerms.some(
           (t) =>
             Array.isArray(t.congresses) &&
-            t.congresses.some((num) => congressFilter.includes(num))
+            t.congresses.some((num) => congressFilter.includes(num)),
         );
         if (!matchesCongress) return false;
       }
@@ -346,10 +352,23 @@ export default function Representative(props) {
         (statusFilter.includes("draft") &&
           transformedHouse.publishStatus === "under review");
 
+      // Is New filter
+      const isNewMatch = !isNewFilter || !!transformedHouse.isNewRecord;
+
+      // Alternate Profile filter - show records that have alternateProfileLink value set
+      const alternateProfileMatch =
+        !alternateProfileFilter || !!transformedHouse.alternateProfileLink;
+
       return (
-        nameMatch && partyMatch && districtMatch && ratingMatch && statusMatch
+        nameMatch &&
+        partyMatch &&
+        districtMatch &&
+        ratingMatch &&
+        statusMatch &&
+        isNewMatch &&
+        alternateProfileMatch
       );
-    }
+    },
   );
 
   const toggleFilter = () => {
@@ -372,7 +391,7 @@ export default function Representative(props) {
 
   const handlePartyFilter = (party) => {
     setPartyFilter((prev) =>
-      prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party]
+      prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party],
     );
   };
 
@@ -380,7 +399,7 @@ export default function Representative(props) {
     setDistrictFilter((prev) =>
       prev.includes(district)
         ? prev.filter((s) => s !== district)
-        : [...prev, district]
+        : [...prev, district],
     );
   };
 
@@ -388,7 +407,7 @@ export default function Representative(props) {
     setCongressFilter((prev) =>
       prev.includes(congress)
         ? prev.filter((c) => c !== congress)
-        : [...prev, congress]
+        : [...prev, congress],
     );
   };
 
@@ -396,7 +415,7 @@ export default function Representative(props) {
     setRatingFilter((prev) =>
       prev.includes(rating)
         ? prev.filter((r) => r !== rating)
-        : [...prev, rating]
+        : [...prev, rating],
     );
   };
 
@@ -408,8 +427,16 @@ export default function Representative(props) {
     setStatusFilter((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
-        : [...prev, status]
+        : [...prev, status],
     );
+  };
+
+  const handleIsNewFilter = () => {
+    setIsNewFilter((prev) => !prev);
+  };
+
+  const handleAlternateProfileFilter = () => {
+    setAlternateProfileFilter((prev) => !prev);
   };
 
   const clearAllFilters = () => {
@@ -419,6 +446,8 @@ export default function Representative(props) {
     setCongressFilter([]);
     setTermFilter(null);
     setStatusFilter([]);
+    setIsNewFilter(false);
+    setAlternateProfileFilter(false);
     setSearchQuery("");
   };
 
@@ -506,13 +535,13 @@ export default function Representative(props) {
           `Bulk select applied for ${successCount}/${
             ids.length
           } representative${successCount !== 1 ? "s" : ""}!`,
-          "success"
+          "success",
         );
       } else if (successCount === 0) {
         // All failed
         showSnackbar(
           `Bulk select failed for all ${ids.length} representatives.`,
-          "error"
+          "error",
         );
       } else {
         // Partial success
@@ -524,7 +553,7 @@ export default function Representative(props) {
               ? ` ${failedCount} failed (item not found for those representatives).`
               : ""
           }`,
-          "warning"
+          "warning",
         );
       }
     } catch (err) {
@@ -570,7 +599,7 @@ export default function Representative(props) {
       await dispatch(getAllHouses());
       showSnackbar(
         `${selectedRepresentative?.name} deleted successfully.`,
-        "success"
+        "success",
       );
     } catch (error) {
       showSnackbar("Error: Unable to delete representative.", "error");
@@ -586,7 +615,7 @@ export default function Representative(props) {
       house.publishStatus === "published" ? "draft" : "published";
     try {
       await dispatch(
-        updateRepresentativeStatus({ id: house._id, publishStatus: newStatus })
+        updateRepresentativeStatus({ id: house._id, publishStatus: newStatus }),
       ).unwrap();
 
       dispatch(getAllHouses());
@@ -628,8 +657,8 @@ export default function Representative(props) {
         });
 
         // Build unique error messages with counts
-        const uniqueErrors = Object.entries(errorCounts).map(
-          ([msg, count]) => count > 1 ? `${msg}` : msg
+        const uniqueErrors = Object.entries(errorCounts).map(([msg, count]) =>
+          count > 1 ? `${msg}` : msg,
         );
 
         if (uniqueErrors.length > 0) {
@@ -644,18 +673,18 @@ export default function Representative(props) {
           `Bulk publish applied for ${successCount}/${totalCount} representative${
             successCount !== 1 ? "s" : ""
           }!`,
-          "success"
+          "success",
         );
       } else if (successCount === 0) {
         // All failed
-        const failMsg = errorMessage 
+        const failMsg = errorMessage
           ? `Bulk publish failed. ${errorMessage}`
           : `Bulk publish failed for all ${totalCount} representatives.`;
         showSnackbar(failMsg, "error");
       } else {
         // Partial success
         const partialMsg = errorMessage
-          ? `Bulk publish applied for ${successCount}/${totalCount} representatives.${failedCount } Failed: ${errorMessage}`
+          ? `Bulk publish applied for ${successCount}/${totalCount} representatives.${failedCount} Failed: ${errorMessage}`
           : `Bulk publish applied for ${successCount}/${totalCount} representative${
               successCount !== 1 ? "s" : ""
             }. ${failedCount} failed.`;
@@ -664,18 +693,19 @@ export default function Representative(props) {
     } catch (err) {
       // Handle both thunk rejection and other errors
       let errorMsg = "Bulk publish failed.";
-      
+
       if (err?.payload?.errors && err.payload.errors.length > 0) {
         const errorMessages = err.payload.errors
           .map((e) => e.message)
           .filter(Boolean);
-        errorMsg = errorMessages.length > 0 
-          ? `Bulk publish failed. ${errorMessages.join(", ")}`
-          : errorMsg;
+        errorMsg =
+          errorMessages.length > 0
+            ? `Bulk publish failed. ${errorMessages.join(", ")}`
+            : errorMsg;
       } else if (err?.message) {
         errorMsg = err.message;
       }
-      
+
       showSnackbar(errorMsg, "error");
     } finally {
       setFetching(false);
@@ -688,7 +718,9 @@ export default function Representative(props) {
     ratingFilter.length +
     congressFilter.length +
     (termFilter ? 1 : 0) +
-    statusFilter.length;
+    statusFilter.length +
+    (isNewFilter ? 1 : 0) +
+    (alternateProfileFilter ? 1 : 0);
   const fetchRepresentativeFromQuorum = async (status = "active") => {
     setOpenFetchDialog(false);
     setFetching(true);
@@ -720,7 +752,7 @@ export default function Representative(props) {
           `Success: ${
             statusText.charAt(0).toUpperCase() + statusText.slice(1)
           } representatives fetched successfully!`,
-          "success"
+          "success",
         );
         await dispatch(getAllHouses());
         setFetching(false);
@@ -757,7 +789,7 @@ export default function Representative(props) {
                   </Button>
                 </Box>
               )}
-              
+
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
@@ -989,7 +1021,7 @@ export default function Representative(props) {
                                   onChange={(e) =>
                                     handleSearchChange(
                                       "district",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   InputProps={{
@@ -1122,7 +1154,7 @@ export default function Representative(props) {
                                   onChange={(e) =>
                                     handleSearchChange(
                                       "congress",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   InputProps={{
@@ -1158,7 +1190,7 @@ export default function Representative(props) {
                                       >
                                         {congressYearMap[congress]
                                           ? `${getOrdinalSuffix(
-                                              congress
+                                              congress,
                                             )} Congress (${
                                               congressYearMap[congress]
                                                 .startYear
@@ -1166,7 +1198,7 @@ export default function Representative(props) {
                                               congressYearMap[congress].endYear
                                             })`
                                           : `${getOrdinalSuffix(
-                                              congress
+                                              congress,
                                             )} Congress`}
                                       </Typography>
                                     </Box>
@@ -1273,6 +1305,94 @@ export default function Representative(props) {
                           )}
                         </Box>
 
+                        {/* Is New Filter */}
+                        <Box
+                          className={`filter-section ${
+                            expandedFilter === "isNew" ? "active" : ""
+                          }`}
+                        >
+                          <Box
+                            className="filter-title"
+                            onClick={() => toggleFilterSection("isNew")}
+                          >
+                            <Typography variant="body1">Is New</Typography>
+                            {expandedFilter === "isNew" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "isNew" && (
+                            <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
+                                <Box
+                                  onClick={handleIsNewFilter}
+                                  className="filter-option"
+                                >
+                                  {isNewFilter ? (
+                                    <CheckIcon
+                                      color="primary"
+                                      fontSize="small"
+                                    />
+                                  ) : (
+                                    <Box sx={{ width: 24, height: 24 }} />
+                                  )}
+                                  <Typography variant="body2" sx={{ ml: 1 }}>
+                                    Yes
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Alternate Profile Filter */}
+                        <Box
+                          className={`filter-section ${
+                            expandedFilter === "alternateProfile"
+                              ? "active"
+                              : ""
+                          }`}
+                        >
+                          <Box
+                            className="filter-title"
+                            onClick={() =>
+                              toggleFilterSection("alternateProfile")
+                            }
+                          >
+                            <Typography variant="body1">
+                              Alternate Profile
+                            </Typography>
+                            {expandedFilter === "alternateProfile" ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </Box>
+                          {expandedFilter === "alternateProfile" && (
+                            <Box sx={{ py: 1, pt: 0 }}>
+                              <Box className="filter-scroll">
+                                <Box
+                                  onClick={handleAlternateProfileFilter}
+                                  className="filter-option"
+                                >
+                                  {alternateProfileFilter ? (
+                                    <CheckIcon
+                                      color="primary"
+                                      fontSize="small"
+                                    />
+                                  ) : (
+                                    <Box sx={{ width: 24, height: 24 }} />
+                                  )}
+                                  <Typography variant="body2" sx={{ ml: 1 }}>
+                                    Yes
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+
                         <Box>
                           <Button
                             fullWidth
@@ -1284,7 +1404,9 @@ export default function Representative(props) {
                               !ratingFilter.length &&
                               !congressFilter.length &&
                               !termFilter &&
-                              !statusFilter.length
+                              !statusFilter.length &&
+                              !isNewFilter &&
+                              !alternateProfileFilter
                             }
                           >
                             Clear All Filters
