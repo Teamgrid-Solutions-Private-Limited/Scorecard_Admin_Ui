@@ -196,6 +196,7 @@ export const getEditorInfo = () => {
  */
 export const logout = () => {
   clearAuthStorage();
+  clearRefreshToken()
   return true;
 };
 
@@ -220,4 +221,14 @@ export const isTokenExpired = () => {
     return true;
   }
 };
+export const setRefreshToken = (token) => {
+  localStorage.setItem('refreshToken', token);
+};
 
+export const getRefreshToken = () => {
+  return localStorage.getItem('refreshToken');
+};
+
+export const clearRefreshToken = () => {
+  localStorage.removeItem('refreshToken');
+};

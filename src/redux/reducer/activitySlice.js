@@ -8,7 +8,7 @@ export const createActivity = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/activities/`,
+        `${API_URL}/v1/admin/activities/`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -26,7 +26,7 @@ export const getAllActivity = createAsyncThunk(
   "activity/getAllActivity",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/activities/`, {
+      const response = await axios.get(`${API_URL}/v1/admin/activities/`, {
         headers: { "x-protected-key": API_PROTECTED_KEY },
       });
       return response.data;
@@ -41,7 +41,7 @@ export const getActivityById = createAsyncThunk(
   "activity/getActivityById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/activities/${id}`, {
+      const response = await axios.get(`${API_URL}/v1/activities/${id}`, {
         headers: { "x-protected-key": API_PROTECTED_KEY },
       });
 
@@ -58,7 +58,7 @@ export const updateActivity = createAsyncThunk(
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/activities/${id}`,
+        `${API_URL}/v1/admin/activities/${id}`,
         updatedData
       );
       return response.data;
@@ -74,7 +74,7 @@ export const deleteActivity = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
-        `${API_URL}/api/v1/admin/activities/${id}`
+        `${API_URL}/v1/admin/activities/${id}`
       );
       return response.data;
     } catch (error) {
@@ -89,7 +89,7 @@ export const discardActivityChanges = createAsyncThunk(
   async (activityId, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/activities/discard/${activityId}`
+        `${API_URL}/v1/admin/activities/discard/${activityId}`
       );
       return response.data;
     } catch (error) {
@@ -110,7 +110,7 @@ export const updateActivityStatus = createAsyncThunk(
   async ({ id, status }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/activities/status/${id}`,
+        `${API_URL}/v1/admin/activities/status/${id}`,
         { status }
       );
       return response.data;
@@ -125,7 +125,7 @@ export const bulkUpdateTrackActivities = createAsyncThunk(
   async ({ ids, trackActivities }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/activities/update-track-activities`,
+        `${API_URL}/v1/admin/activities/update-track-activities`,
         { ids, trackActivities },
         {
           headers: {

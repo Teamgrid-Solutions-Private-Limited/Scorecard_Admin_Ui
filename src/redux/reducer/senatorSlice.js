@@ -12,7 +12,7 @@ export const createSenator = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/senators/`,
+        `${API_URL}/v1/admin/senators/`,
         formData,
         {
           headers: {
@@ -33,7 +33,7 @@ export const getAllSenators = createAsyncThunk(
   "senators/getAllSenators",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/v1/admin/senators/`, {
+      const response = await axios.get(`${API_URL}/v1/admin/senators/`, {
         headers: { "x-protected-key": API_PROTECTED_KEY },
       });
 
@@ -67,7 +67,7 @@ export const getSenatorById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/v1/admin/senators/${id}`,
+        `${API_URL}/v1/admin/senators/${id}`,
         {
           headers: { "x-protected-key": API_PROTECTED_KEY },
         }
@@ -85,7 +85,7 @@ export const updateSenator = createAsyncThunk(
   async ({ id, formData }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/senators/update/${id}`,
+        `${API_URL}/v1/admin/senators/update/${id}`,
         formData,
         {
           headers: {
@@ -121,7 +121,7 @@ export const deleteSenator = createAsyncThunk(
       }
 
       const response = await axios.delete(
-        `${API_URL}/api/v1/admin/senators/${id}`,
+        `${API_URL}/v1/admin/senators/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -142,7 +142,7 @@ export const updateSenatorStatus = createAsyncThunk(
   async ({ id, publishStatus }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/v1/admin/senators/status/${id}`,
+        `${API_URL}/v1/admin/senators/status/${id}`,
         { publishStatus }
       );
       return response.data.senator;
@@ -160,7 +160,7 @@ export const discardSenatorChanges = createAsyncThunk(
   async (senatorId, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/v1/admin/senators/discard/${senatorId}`
+        `${API_URL}/v1/admin/senators/discard/${senatorId}`
       );
       return response.data;
     } catch (error) {

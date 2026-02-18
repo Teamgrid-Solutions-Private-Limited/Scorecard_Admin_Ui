@@ -87,8 +87,6 @@ export default function AddActivity(props) {
   });
   // Use centralized auth hook
   const { token, userRole } = useAuth();
-
-  // 1. Add editedFields state and always use backend's value when available
   const [editedFields, setEditedFields] = useState([]);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
@@ -97,8 +95,6 @@ export default function AddActivity(props) {
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const [readMoreType, setReadMoreType] = useState("file"); // 'url' or 'file'
   const navigate = useNavigate();
-
-  // Use centralized data fetching hook (must be early, before any useEffect that uses isDataFetching)
   const { isDataFetching, setIsDataFetching } = useEntityData({
     dispatch,
     id,
@@ -149,20 +145,13 @@ export default function AddActivity(props) {
 
       setFormData(newFormData);
       setOriginalFormData(newFormData); // Store the original data
-
-      // Reset selectedFile when editing existing activity
       setSelectedFile(null);
-
-      // Reset editedFields when editing existing activity
       setEditedFields([]);
     }
   };
-
-  // 2. When selectedActivity changes, set editedFields from backend
   useEffect(() => {
     if (selectedActivity && !isDataFetching) {
       preFillForm();
-      // This prevents overwriting local unsaved changes
       if (isInitialLoad.current) {
         setEditedFields(
           Array.isArray(selectedActivity.editedFields)
@@ -1018,14 +1007,14 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
-                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      tinymceScriptSrc={`${import.meta.env.BASE_URL}tinymce/tinymce.min.js`.replace(/\/+/g, '/')}
                       licenseKey="gpl"
                       value={formData.shortDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "shortDesc")
                       }
                       init={{
-                        base_url: "/scorecard/admin/tinymce",
+                        base_url: `${import.meta.env.BASE_URL}tinymce`.replace(/\/+/g, '/'),
                         suffix: ".min",
                         height: 250,
                         menubar: false,
@@ -1064,14 +1053,14 @@ export default function AddActivity(props) {
                   </Grid>
                   <Grid className="paddingLeft" size={isMobile ? 12 : 10}>
                     <Editor
-                      tinymceScriptSrc="/scorecard/admin/tinymce/tinymce.min.js"
+                      tinymceScriptSrc={`${import.meta.env.BASE_URL}tinymce/tinymce.min.js`.replace(/\/+/g, '/')}
                       licenseKey="gpl"
                       value={formData.longDesc}
                       onEditorChange={(content) =>
                         handleEditorChange(content, "longDesc")
                       }
                       init={{
-                        base_url: "/scorecard/admin/tinymce",
+                        base_url: `${import.meta.env.BASE_URL}tinymce`.replace(/\/+/g, '/'),
                         suffix: ".min",
                         height: 250,
                         menubar: false,

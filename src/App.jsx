@@ -11,7 +11,6 @@ import Senator from '../src/Senator/Senator';
 import Representative from '../src/Representative/Representative';
 import SaveRepresentative from '../src/Representative/Addrepresentative';
 import Vote from './votes/Votes';
-import SignIn from '../src/Authentication/components/SignIn';
 import AddVote from './votes/AddVote';
 import SearchVote from './votes/SearchVotes';
 import ManageTerm from "../src/Manageterm/ManageTerm";
@@ -29,8 +28,10 @@ const PrivateRoute = ({ element }) => {
 };
 
 export default function App() {
+  const basename = import.meta.env.BASE_URL;
+
   return (
-    <Router basename="/scorecard/admin">
+    <Router basename={basename}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<PrivateRoute element={<Senator />} />} />

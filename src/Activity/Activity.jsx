@@ -9,7 +9,7 @@ import {
 } from "../redux/reducer/activitySlice";
 import { getErrorMessage } from "../utils/errorHandler";
 import AppTheme from "../../src/shared-theme/AppTheme";
-import { Box, Stack, Typography, Button ,InputAdornment,} from "@mui/material";
+import { Box, Stack, Typography, Button, InputAdornment } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
 import SideMenu from "../../src/components/SideMenu";
@@ -56,7 +56,6 @@ import { jwtDecode } from "jwt-decode";
 import { getToken, getUserRole, getUser } from "../utils/auth";
 import { useSnackbar } from "../hooks";
 
-
 export default function Activity(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -65,7 +64,7 @@ export default function Activity(props) {
   const [fetching, setFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  
+
   // Use centralized snackbar hook
   const {
     open: snackbarOpen,
@@ -81,13 +80,12 @@ export default function Activity(props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState([]);
   const statusOptions = ["published", "draft"];
-  const [selectedTrackActivity, setSelectedTrackActivity] = useState([]); 
+  const [selectedTrackActivity, setSelectedTrackActivity] = useState([]);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
   const [bulkTrackActivity, setBulkTrackActivity] = useState("");
   const [isAssignMode, setIsAssignMode] = useState(false);
   const [assignTarget, setAssignTarget] = useState("auto");
 
-  
   useEffect(() => {
     dispatch(getAllActivity());
   }, [dispatch]);
@@ -96,8 +94,7 @@ export default function Activity(props) {
     return new Date(isoDate).toISOString().split("T")[0];
   };
 
- const filteredActivities = activities.filter((activity) => {
- 
+  const filteredActivities = activities.filter((activity) => {
     const statusMatch =
       statusFilter.length === 0 ||
       (activity.status && statusFilter.includes(activity.status)) ||
@@ -107,7 +104,7 @@ export default function Activity(props) {
       !searchQuery ||
       (activity.title &&
         activity.title.toLowerCase().includes(searchQuery.toLowerCase()));
-      
+
     return statusMatch && searchMatch;
   });
   const activitiesData = filteredActivities.map((activity, index) => ({
@@ -118,12 +115,11 @@ export default function Activity(props) {
       ? activity.type.toLowerCase().includes("senate")
         ? "Senate"
         : activity.type.toLowerCase().includes("house")
-        ? "House"
-        : "Other"
+          ? "House"
+          : "Other"
       : "Other",
     status: activity.status,
   }));
-
 
   const toggleFilter = () => {
     setFilterOpen(!filterOpen);
@@ -133,7 +129,7 @@ export default function Activity(props) {
     setStatusFilter((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
-        : [...prev, status]
+        : [...prev, status],
     );
   };
 
@@ -147,8 +143,8 @@ export default function Activity(props) {
     navigate(`/edit-activity/${row._id}`);
   };
   const handleDeleteClick = (row) => {
-    setSelectedVote(row); 
-    setOpenDeleteDialog(true); 
+    setSelectedVote(row);
+    setOpenDeleteDialog(true);
   };
   const handleConfirmDelete = async () => {
     setOpenDeleteDialog(false);
@@ -183,7 +179,7 @@ export default function Activity(props) {
         showSnackbar("Failed to update status.", "error");
       });
   };
- 
+
   const handleBulkUpdate = async () => {
     if (!selectedTrackActivity.length || !bulkTrackActivity) {
       showSnackbar("Please select activities and a status", "warning");
@@ -192,30 +188,30 @@ export default function Activity(props) {
 
     setFetching(true);
     try {
-     
       const result = await dispatch(
         bulkUpdateTrackActivities({
           ids: selectedTrackActivity,
           trackActivities: bulkTrackActivity,
-        })
-      ).unwrap(); 
+        }),
+      ).unwrap();
 
       showSnackbar(
         `Successfully updated ${
           result.updatedActivities?.length || selectedTrackActivity.length
         } activities`,
-        "success"
+        "success",
       );
 
-     
       setSelectedTrackActivity([]);
       setBulkTrackActivity("");
       setIsBulkEditMode(false);
 
-     
       dispatch(getAllActivity());
     } catch (error) {
-      const errorMessage = getErrorMessage(error, "Failed to update activities");
+      const errorMessage = getErrorMessage(
+        error,
+        "Failed to update activities",
+      );
       showSnackbar(errorMessage, "error");
     } finally {
       setFetching(false);
@@ -225,36 +221,33 @@ export default function Activity(props) {
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <LoadingOverlay loading={loading || fetching} />
-     <Box className="container">
-        <SideMenu/>
-        <Box
-          className={`contentBox ${fetching ? "fetching" : "notFetching"}`}
-        >
+      <Box className="container">
+        <SideMenu />
+        <Box className={`contentBox ${fetching ? "fetching" : "notFetching"}`}>
           <FixedHeader />
-          <MobileHeader/>
-          <Stack spacing={2} className="stackBox" >
-
-            <Box className="actionsBox" >
-             <Stack
+          <MobileHeader />
+          <Stack spacing={2} className="stackBox">
+            <Box className="actionsBox">
+              <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
-                alignItems={{xs:"flex-start", sm:"center"}}
+                alignItems={{ xs: "flex-start", sm: "center" }}
                 sx={{ ml: "auto", width: { xs: "100%", sm: "auto" } }}
               >
                 <TextField
-                size="small"
-                variant="outlined"
-                placeholder="Search Activities"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              InputProps={{
-                                    startAdornment: (
-                                      <InputAdornment position="start">
-                                        <SearchIcon className="search-icon" />
-                                      </InputAdornment>
-                                    ),
-                                  }}
-                className="custom-search"
+                  size="small"
+                  variant="outlined"
+                  placeholder="Search Activities"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon className="search-icon" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  className="custom-search"
                 />
                 <Box
                   sx={{
@@ -280,7 +273,7 @@ export default function Activity(props) {
                       Filters
                     </Button>
                   </Badge>
- 
+
                   {filterOpen && (
                     <ClickAwayListener onClickAway={() => setFilterOpen(false)}>
                       <Paper className="billFilter-paper">
@@ -295,9 +288,9 @@ export default function Activity(props) {
                             </IconButton>
                           </Box>
                         </Box>
- 
+
                         {/* Status Filter */}
-                         <Box className="filter-scroll">
+                        <Box className="filter-scroll">
                           {statusOptions.map((status) => (
                             <Box
                               key={status}
@@ -316,8 +309,7 @@ export default function Activity(props) {
                             </Box>
                           ))}
                         </Box>
- 
-                      
+
                         <Box>
                           <Button
                             fullWidth
@@ -345,34 +337,36 @@ export default function Activity(props) {
                 >
                   {isBulkEditMode ? "Cancel Bulk Edit" : "Bulk Edit"}
                 </Button>
-                {/* {userRole === "admin" && (
-                  <Button
-                    onClick={() => {
-                      setIsAssignMode(!isAssignMode);
-                      if (!isAssignMode) setIsBulkEditMode(false);
-                    }}
-                    className={`bulkEditBtn ${isAssignMode ? "active" : ""}`}
-                  >
-                    {isAssignMode ? "Cancel Assign" : "Assign Activity"}
-                  </Button>
-                )} */}
                 {userRole === "admin" && (
                   <Button
                     onClick={() => navigate("/search-activities")}
                     className="addBillsBtn"
-                >
-                  Add Activity
-                </Button>
+                  >
+                    Add Activity
+                  </Button>
                 )}
               </Stack>
-
+              {/* {userRole === "admin" && (
+                <Button
+                  onClick={() => {
+                    setIsAssignMode(!isAssignMode);
+                    if (!isAssignMode) setIsBulkEditMode(false);
+                  }}
+                  className={`bulkEditBtn ${isAssignMode ? "active" : ""}`}
+                >
+                  {isAssignMode ? "Cancel Assign" : "Assign Activity"}
+                </Button>
+              )}  */}
             </Box>
             {isBulkEditMode && (
               <Box className="bulkEditContainer">
-                <Typography variant="subtitle1"
+                <Typography
+                  variant="subtitle1"
                   sx={{ fontSize: { xs: "11px", md: "14px" } }}
                 >
-                  {selectedTrackActivity.length === 1 ? "1 Activity selected" : `${selectedTrackActivity.length} Activities selected`}
+                  {selectedTrackActivity.length === 1
+                    ? "1 Activity selected"
+                    : `${selectedTrackActivity.length} Activities selected`}
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -394,7 +388,7 @@ export default function Activity(props) {
                       !selectedTrackActivity.length || !bulkTrackActivity
                     }
                     onClick={handleBulkUpdate}
-                     className="applyBtn"
+                    className="applyBtn"
                   >
                     Apply
                   </Button>
@@ -404,10 +398,13 @@ export default function Activity(props) {
 
             {isAssignMode && (
               <Box className="bulkEditContainer">
-                <Typography variant="subtitle1"
+                <Typography
+                  variant="subtitle1"
                   sx={{ fontSize: { xs: "11px", md: "14px" } }}
                 >
-                  {selectedTrackActivity.length <= 1 ? `${selectedTrackActivity.length} Activity selected` : `${selectedTrackActivity.length} Activities selected`}
+                  {selectedTrackActivity.length <= 1
+                    ? `${selectedTrackActivity.length} Activity selected`
+                    : `${selectedTrackActivity.length} Activities selected`}
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -418,7 +415,9 @@ export default function Activity(props) {
                     size="small"
                     sx={{ minWidth: 160 }}
                   >
-                    <MenuItem value="auto">Populate Missing Legislators</MenuItem>
+                    <MenuItem value="auto">
+                      Populate Missing Legislators
+                    </MenuItem>
                   </TextField>
 
                   <Button
@@ -427,16 +426,23 @@ export default function Activity(props) {
                       setFetching(true);
                       try {
                         const selectedActivityObjects = activities.filter((a) =>
-                          selectedTrackActivity.includes(a._id || String(a._id))
+                          selectedTrackActivity.includes(
+                            a._id || String(a._id),
+                          ),
                         );
 
                         if (!selectedActivityObjects.length) {
-                          showSnackbar("No valid activities selected.", "warning");
+                          showSnackbar(
+                            "No valid activities selected.",
+                            "warning",
+                          );
                           setFetching(false);
                           return;
                         }
 
-                        const ids = selectedActivityObjects.map((a) => a._id || String(a._id));
+                        const ids = selectedActivityObjects.map(
+                          (a) => a._id || String(a._id),
+                        );
 
                         const getEditorInfo = () => {
                           try {
@@ -444,26 +450,38 @@ export default function Activity(props) {
                             const decoded = jwtDecode(token);
                             const user = getUser();
                             return {
-                              editorId: decoded.userId || decoded.id || "unknown",
-                              editorName: user || decoded.name || decoded.username || "Unknown Editor",
+                              editorId:
+                                decoded.userId || decoded.id || "unknown",
+                              editorName:
+                                user ||
+                                decoded.name ||
+                                decoded.username ||
+                                "Unknown Editor",
                               editedAt: new Date().toISOString(),
                             };
                           } catch (e) {
-                            return { editorId: "unknown", editorName: "Unknown Editor", editedAt: new Date().toISOString() };
+                            return {
+                              editorId: "unknown",
+                              editorName: "Unknown Editor",
+                              editedAt: new Date().toISOString(),
+                            };
                           }
                         };
 
                         const editorInfo = getEditorInfo();
 
                         const response = await axios.post(
-                          `${API_URL}/api/v1/admin/activities/populate-sponsors`,
+                          `${API_URL}/v1/admin/activities/populate-sponsors`,
                           { billIds: ids, editorInfo },
-                          { headers: { Authorization: `Bearer ${token}` } }
+                          { headers: { Authorization: `Bearer ${token}` } },
                         );
 
                         if (response && response.data) {
                           await dispatch(getAllActivity());
-                          showSnackbar("Assigned/populated activities successfully.", "success");
+                          showSnackbar(
+                            "Assigned/populated activities successfully.",
+                            "success",
+                          );
                           setSelectedTrackActivity([]);
                           setIsAssignMode(false);
                         } else {
@@ -498,7 +516,7 @@ export default function Activity(props) {
           </Stack>
         </Box>
       </Box>
-      
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
@@ -547,12 +565,10 @@ export default function Activity(props) {
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
         PaperProps={{
-          sx: { borderRadius: 3, padding: 2,width: '90%', maxWidth: 420 },
+          sx: { borderRadius: 3, padding: 2, width: "90%", maxWidth: 420 },
         }}
       >
-        <DialogTitle className="dialogBox">
-          Confirm Deletion
-        </DialogTitle>
+        <DialogTitle className="dialogBox">Confirm Deletion</DialogTitle>
 
         <DialogContent>
           <DialogContentText className="dialogTitle">
