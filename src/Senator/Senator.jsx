@@ -904,7 +904,9 @@ export default function Senator(props) {
         showSnackbar("Failed to update status.", "error");
       });
   };
-
+  const handleAddSenator = () => {
+    navigate("/add-senator");
+  };
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <LoadingOverlay loading={loading || fetching} />
@@ -927,7 +929,6 @@ export default function Senator(props) {
                   </Button>
                 </Box>
               )}
-
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
@@ -949,6 +950,15 @@ export default function Senator(props) {
                   }}
                   className="custom-search"
                 />
+                {userRole === "admin" && (
+                  <Button
+                    className="addBillsBtn"
+                    onClick={() => navigate("/add-senator")}
+                  >
+                    Add Senator
+                  </Button>
+                )}
+
                 {/* Current/Former Toggle */}
                 <Box
                   sx={{
