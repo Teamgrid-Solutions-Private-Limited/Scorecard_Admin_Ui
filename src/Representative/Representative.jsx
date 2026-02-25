@@ -832,6 +832,14 @@ export default function Representative(props) {
                     },
                   }}
                 />
+                {userRole === "admin" && (
+                  <Button
+                    className="addBillsBtn"
+                    onClick={() => navigate("/add-representative")}
+                  >
+                    Add Representative
+                  </Button>
+                )}
                 {/* Current/Former Toggle */}
                 <Box
                   sx={{
