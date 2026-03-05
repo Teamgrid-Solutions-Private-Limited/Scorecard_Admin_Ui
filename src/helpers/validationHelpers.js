@@ -256,7 +256,7 @@ export const validateVoteInTermRange = (voteId, termId, allVotes, terms) => {
 
   const voteDate = new Date(vote.date);
   const termStart = new Date(`${term.startYear}-01-03`);
-  const termEnd = new Date(`${term.endYear}-01-02`);
+  const termEnd = new Date(`${term.endYear+1}-01-02`);
 
   const isDateInRange = voteDate >= termStart && voteDate <= termEnd;
   const isCongressInTerm = term.congresses.includes(Number(vote.congress));
@@ -312,7 +312,7 @@ export const validateActivityInTermRange = (
 
   const activityDate = new Date(activity.date);
   const termStart = new Date(`${term.startYear}-01-03`);
-  const termEnd = new Date(`${term.endYear}-01-02`);
+  const termEnd = new Date(`${term.endYear+1}-01-02`);
 
   const isDateInRange = activityDate >= termStart && activityDate <= termEnd;
   const isCongressInTerm = term.congresses.includes(
