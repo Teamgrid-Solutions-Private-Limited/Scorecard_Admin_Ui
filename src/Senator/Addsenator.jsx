@@ -126,7 +126,7 @@ export default function AddSenator(props) {
     `${senatorData?.currentSenator?.[0]?.termId?.startYear}-01-03`
   );
   const termEnd = new Date(
-    `${senatorData?.currentSenator?.[0]?.termId?.endYear}-01-02`
+    `${senatorData?.currentSenator?.[0]?.termId?.endYear+1}-01-02`
   );
 
   const senatorr = senatorData?.currentSenator?.[0];
@@ -166,7 +166,7 @@ export default function AddSenator(props) {
   }
 
   const termStart = new Date(`${term.startYear}-01-03`);
-  const termEnd = new Date(`${term.endYear}-01-02`);
+  const termEnd = new Date(`${term.endYear+1}-01-02`);
 
   const inDateRange = voteDate >= termStart && voteDate <= termEnd;
   const inCongress = term.congresses.includes(Number(voteData.congress));
@@ -179,7 +179,7 @@ export default function AddSenator(props) {
 
     const activityDate = new Date(activityData.date);
     const termStart = new Date(`${term.startYear}-01-03`);
-    const termEnd = new Date(`${term.endYear}-01-02`);
+    const termEnd = new Date(`${term.endYear+1}-01-02`);
 
     const inDateRange = activityDate >= termStart && activityDate <= termEnd;
 
@@ -360,7 +360,7 @@ const handleTermChange = (e, termIndex) => {
 
           if (selectedTerm) {
             const newTermStart = new Date(`${selectedTerm.startYear}-01-03`);
-            const newTermEnd = new Date(`${selectedTerm.endYear}-01-02`);
+            const newTermEnd = new Date(`${selectedTerm.endYear+1}-01-02`);
 
             const newFilteredVotes = allVotes.filter((vote) => {
               const voteDate = new Date(vote.date);
@@ -818,7 +818,7 @@ const handleTermChange = (e, termIndex) => {
         let termVotes = [];
         if (matchedTerm) {
           const termStart = new Date(`${matchedTerm.startYear}-01-03`);
-          const termEnd = new Date(`${matchedTerm.endYear}-01-02`);
+          const termEnd = new Date(`${matchedTerm.endYear+1}-01-02`);
 
           termVotes = allVotes.filter((vote) => {
             const voteDate = new Date(vote.date);
@@ -871,7 +871,7 @@ const handleTermChange = (e, termIndex) => {
               if (isBeforeCutoffDate) return false;
 
               const termStart = new Date(`${matchedTerm.startYear}-01-03`);
-              const termEnd = new Date(`${matchedTerm.endYear}-01-02`);
+              const termEnd = new Date(`${matchedTerm.endYear+1}-01-02`);
 
               return (
                 voteDate >= termStart &&
@@ -1271,7 +1271,7 @@ if (  isBeforeCutoffDate) {
         let termActivities = [];
         if (matchedTerm) {
           const termStart = new Date(`${matchedTerm.startYear}-01-03`);
-          const termEnd = new Date(`${matchedTerm.endYear}-01-02`);
+          const termEnd = new Date(`${matchedTerm.endYear+1}-01-02`);
 
           termActivities = allActivities.filter((activity) => {
             const activityDate = new Date(activity.date);
@@ -1311,7 +1311,7 @@ if (  isBeforeCutoffDate) {
 
               const activityDate = new Date(activityData.date);
               const termStart = new Date(`${matchedTerm.startYear}-01-03`);
-              const termEnd = new Date(`${matchedTerm.endYear}-01-02`);
+              const termEnd = new Date(`${matchedTerm.endYear+1}-01-02`);
 
               return (
                 activityDate >= termStart &&
@@ -1340,7 +1340,7 @@ if (  isBeforeCutoffDate) {
             .filter((activity) => {
               const activityDate = new Date(activity.date);
               const termStart = new Date(`${matchedTerm.startYear}-01-03`);
-              const termEnd = new Date(`${matchedTerm.endYear}-01-02`);
+              const termEnd = new Date(`${matchedTerm.endYear+1}-01-02`);
 
               const inRange =
                 activityDate >= termStart &&
@@ -1427,7 +1427,7 @@ if (  isBeforeCutoffDate) {
           ? new Date(`${matchedTerm.startYear}-01-03`)
           : null;
         const termEnd = matchedTerm
-          ? new Date(`${matchedTerm.endYear}-01-02`)
+          ? new Date(`${matchedTerm.endYear+1}-01-02`)
           : null;
 
         const autoCurrentTerm =
